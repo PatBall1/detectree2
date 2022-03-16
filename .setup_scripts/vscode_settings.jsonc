@@ -1,0 +1,54 @@
+{
+    // EDITOR SETTINGS
+    // Enable automatic formatting on save
+    "editor.formatOnSave": true,
+    "editor.minimap.enabled": true,
+    "editor.minimap.renderCharacters": false,
+    "editor.detectIndentation": true,
+    "editor.roundedSelection": false,
+    "editor.renderIndentGuides": true,
+    "editor.formatOnPaste": true,
+    "explorer.openEditors.visible": 0,
+    // Autosave every 2 minutes
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 120000,
+    // Trailing spaces
+    // Render trailing whitespaces
+    "editor.renderWhitespace": "trailing",
+    "trailing-spaces.trimOnSave": true,
+    "trailing-spaces.syntaxIgnore": [
+        "markdown"
+    ],
+    // Automatically hide these files
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/__pycache__": true,
+        "**/**/*.pyc": true,
+    },
+    // PYTHON SETTINGS
+    // Python interpreter
+    "python.pythonPath": "env/bin/python",
+    // Set python formatter to black
+    "python.formatting.provider": "black",
+    // Include [extendedSummary] tag in automatic docstring generation
+    "autoDocstring.includeExtendedSummary": true,
+    // Start each docstring on a new line
+    "autoDocstring.startOnNewLine": true,
+    // Enable linting
+    "python.linting.enabled": true,
+    // Set linter to be flake8 (will then use the setup.cfg file for linting rules)
+    "python.linting.flake8Enabled": true,
+    // Automatically trim trailing whitespaces only for python files
+    "[python]": {
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        // Set vertical lines through editor
+        "editor.rulers": [
+            88,
+            120
+        ],
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+    },
+}
