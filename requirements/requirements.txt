@@ -1,17 +1,31 @@
 absl-py==1.0.0
+affine==2.3.0
 antlr4-python3-runtime==4.8
 appdirs==1.4.4
+asttokens @ file:///home/conda/feedstock_root/build_artifacts/asttokens_1618968359944/work
+attrs==21.4.0
+backcall @ file:///home/conda/feedstock_root/build_artifacts/backcall_1592338393461/work
+backports.functools-lru-cache @ file:///home/conda/feedstock_root/build_artifacts/backports.functools_lru_cache_1618230623929/work
 black==21.4b2
 cachetools==5.0.0
 certifi==2021.10.8
 charset-normalizer==2.0.12
 click==8.0.4
+click-plugins==1.1.1
+cligj==0.7.2
 cloudpickle==2.0.0
 cycler==0.11.0
+debugpy @ file:///home/conda/feedstock_root/build_artifacts/debugpy_1636043259437/work
+decorator @ file:///home/conda/feedstock_root/build_artifacts/decorator_1641555617451/work
+descartes==1.1.0
 detectron2==0.6+cu111
+entrypoints @ file:///home/conda/feedstock_root/build_artifacts/entrypoints_1643888246732/work
+executing @ file:///home/conda/feedstock_root/build_artifacts/executing_1646044401614/work
+Fiona==1.8.21
 fonttools==4.30.0
 future==0.18.2
 fvcore==0.1.5.post20220305
+geopandas==0.10.2
 google-auth==2.6.0
 google-auth-oauthlib==0.4.6
 grpcio==1.44.0
@@ -20,31 +34,60 @@ idna==3.3
 importlib-metadata==4.11.3
 importlib-resources==5.4.0
 iopath==0.1.9
+ipykernel @ file:///home/conda/feedstock_root/build_artifacts/ipykernel_1647271132494/work/dist/ipykernel-6.9.2-py3-none-any.whl
+ipython @ file:///home/conda/feedstock_root/build_artifacts/ipython_1646324678335/work
+jedi @ file:///home/conda/feedstock_root/build_artifacts/jedi_1637175084646/work
+jupyter-client @ file:///home/conda/feedstock_root/build_artifacts/jupyter_client_1642858610849/work
+jupyter-core @ file:///home/conda/feedstock_root/build_artifacts/jupyter_core_1645024265313/work
 kiwisolver==1.4.0
 Markdown==3.3.6
 matplotlib==3.5.1
+matplotlib-inline @ file:///home/conda/feedstock_root/build_artifacts/matplotlib-inline_1631080358261/work
+munch==2.5.0
 mypy-extensions==0.4.3
+nest-asyncio @ file:///home/conda/feedstock_root/build_artifacts/nest-asyncio_1638419302549/work
 numpy==1.22.3
 oauthlib==3.2.0
 omegaconf==2.1.1
+opencv-python==4.5.5.64
 packaging==21.3
+pandas==1.4.1
+parso @ file:///home/conda/feedstock_root/build_artifacts/parso_1638334955874/work
 pathspec==0.9.0
+pexpect @ file:///home/conda/feedstock_root/build_artifacts/pexpect_1602535608087/work
+pickleshare @ file:///home/conda/feedstock_root/build_artifacts/pickleshare_1602536217715/work
 Pillow==9.0.1
 portalocker==2.4.0
+prompt-toolkit @ file:///home/conda/feedstock_root/build_artifacts/prompt-toolkit_1644497866770/work
 protobuf==3.19.4
+psutil @ file:///home/conda/feedstock_root/build_artifacts/psutil_1640887117172/work
+ptyprocess @ file:///home/conda/feedstock_root/build_artifacts/ptyprocess_1609419310487/work/dist/ptyprocess-0.7.0-py2.py3-none-any.whl
+pure-eval @ file:///home/conda/feedstock_root/build_artifacts/pure_eval_1642875951954/work
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycocotools==2.0.4
+PyCRS==1.0.2
 pydot==1.4.2
+pygeos==0.12.0
+Pygments @ file:///home/conda/feedstock_root/build_artifacts/pygments_1641580240686/work
 pyparsing==3.0.7
-python-dateutil==2.8.2
+pypng==0.0.21
+pyproj==3.3.0
+python-dateutil @ file:///home/conda/feedstock_root/build_artifacts/python-dateutil_1626286286081/work
+pytz==2021.3
 PyYAML==5.1
+pyzmq @ file:///home/conda/feedstock_root/build_artifacts/pyzmq_1635877406326/work
+rasterio==1.2.10
 regex==2022.3.15
 requests==2.27.1
 requests-oauthlib==1.3.1
 rsa==4.8
-six==1.16.0
--e git+https://github.com/PatBall1/detectree2.git@5a4287e651c2b4e59b76592fb68e2fe41809e9ac#egg=src
+Rtree==0.9.7
+Shapely==1.8.1.post1
+six @ file:///home/conda/feedstock_root/build_artifacts/six_1620240208055/work
+snuggs==1.4.7
+-e git+https://github.com/PatBall1/detectree2.git@ab1bc35d70ea33babe73b5c006d537165f244149#egg=src
+stack-data @ file:///home/conda/feedstock_root/build_artifacts/stack_data_1644872665635/work
 tabulate==0.8.9
 tensorboard==2.8.0
 tensorboard-data-server==0.6.1
@@ -53,9 +96,12 @@ termcolor==1.1.0
 toml==0.10.2
 torch==1.9.0+cu111
 torchvision==0.10.0+cu111
+tornado @ file:///home/conda/feedstock_root/build_artifacts/tornado_1635819587273/work
 tqdm==4.63.0
+traitlets @ file:///home/conda/feedstock_root/build_artifacts/traitlets_1635260543454/work
 typing_extensions==4.1.1
 urllib3==1.26.9
+wcwidth @ file:///home/conda/feedstock_root/build_artifacts/wcwidth_1600965781394/work
 Werkzeug==2.0.3
 yacs==0.1.8
 zipp==3.7.0
