@@ -8,6 +8,8 @@
 
 ## Getting started
 
+Original repo at https://github.com/shmh40/detectreeRGB
+
 
 ## Project Organization
 ```
