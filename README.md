@@ -8,6 +8,8 @@
 
 ## Getting started
 
+Code developed by Seb Hickman & James Ball
+
 Original repo at https://github.com/shmh40/detectreeRGB
 
 Here is an example image of the predictions made by Mask R-CNN.
@@ -23,8 +25,12 @@ Here is an example image of the predictions made by Mask R-CNN.
 ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
 |   |                     the creator's initials, and a short `-` delimited description, e.g.
 |   |                     `1.0_jqp_initial-data-exploration`.
+|   ├── colab          <- Operational Google Colab notebooks.
+|   ├── colabPan       <- Operational Google Colab notebooks updated by Panagiotis Ioannou.
 │   ├── exploratory    <- Notebooks for initial exploration.
-│   └── reports        <- Polished notebooks for presentations or intermediate results.
+│   ├── reports        <- Polished notebooks for presentations or intermediate results.
+│   └── turing         <- Notebooks developed by Seb Hickman (Cambridge) and 
+|                         Alejandro Coca Castro (Turing Institute) for Environmental AI Book.
 │
 ├── report             <- Generated analysis as HTML, PDF, LaTeX, etc.
 │   ├── figures        <- Generated graphics and figures to be used in reporting
