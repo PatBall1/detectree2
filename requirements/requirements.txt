@@ -22,6 +22,7 @@ detectron2==0.6+cu111
 entrypoints @ file:///home/conda/feedstock_root/build_artifacts/entrypoints_1643888246732/work
 executing @ file:///home/conda/feedstock_root/build_artifacts/executing_1646044401614/work
 Fiona==1.8.21
+flake8==4.0.1
 fonttools==4.30.0
 future==0.18.2
 fvcore==0.1.5.post20220305
@@ -43,6 +44,7 @@ kiwisolver==1.4.0
 Markdown==3.3.6
 matplotlib==3.5.1
 matplotlib-inline @ file:///home/conda/feedstock_root/build_artifacts/matplotlib-inline_1631080358261/work
+mccabe==0.6.1
 munch==2.5.0
 mypy-extensions==0.4.3
 nest-asyncio @ file:///home/conda/feedstock_root/build_artifacts/nest-asyncio_1638419302549/work
@@ -66,8 +68,10 @@ pure-eval @ file:///home/conda/feedstock_root/build_artifacts/pure_eval_16428759
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycocotools==2.0.4
+pycodestyle==2.8.0
 PyCRS==1.0.2
 pydot==1.4.2
+pyflakes==2.4.0
 pygeos==0.12.0
 Pygments @ file:///home/conda/feedstock_root/build_artifacts/pygments_1641580240686/work
 pyparsing==3.0.7
@@ -86,7 +90,7 @@ Rtree==0.9.7
 Shapely==1.8.1.post1
 six @ file:///home/conda/feedstock_root/build_artifacts/six_1620240208055/work
 snuggs==1.4.7
--e git+https://github.com/PatBall1/detectree2.git@ab1bc35d70ea33babe73b5c006d537165f244149#egg=src
+-e git+https://github.com/PatBall1/detectree2.git@564b9956c34afebc36a1efb7f9fc1e268cbf56fe#egg=src
 stack-data @ file:///home/conda/feedstock_root/build_artifacts/stack_data_1644872665635/work
 tabulate==0.8.9
 tensorboard==2.8.0
