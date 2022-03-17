@@ -12,7 +12,7 @@ Original repo at https://github.com/shmh40/detectreeRGB
 
 Here is an example image of the predictions made by Mask R-CNN.
 
-<img width="500" alt="workflow" src= https://github.com/patball1/detectree2/blob/main/report/figures/plot_13_285520_583300.jpg > 
+<img width="500" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/plot_13_285520_583300.jpg > 
 
 ## Project Organization
 ```
