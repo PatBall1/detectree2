@@ -2,6 +2,8 @@
 
 All re-usable source code for the project goes here. 
 
+NEED TO CONVERT NOTEBOOKS INTO SCRIPTS
+
 The source folder is structured as follows:
 ```
 src

@@ -8,7 +8,7 @@
 
 ## Getting started
 
-Code developed by Seb Hickman & James Ball
+Code developed by Seb Hickman, James Ball, Thomas Koay, Panagiotis Ioannou
 
 Original repo at https://github.com/shmh40/detectreeRGB
 
