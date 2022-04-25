@@ -16,6 +16,12 @@ Here is an example image of the predictions made by Mask R-CNN.
 
 <img width="500" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/plot_13_285520_583300.jpg > 
 
+## To do
+
+- FIX TILING
+- Implement early stopping
+- Gather "prisine" training and testing tiles across all available sites
+
 ## Project Organization
 ```
 ├── LICENSE
