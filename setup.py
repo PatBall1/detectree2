@@ -12,7 +12,7 @@ setup(
     install_requires=[
         "pygeos",
     ],
-    dependency_links = [
-        https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html
-    ]
+    dependency_links=[
+        "https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html"
+    ],
 )
