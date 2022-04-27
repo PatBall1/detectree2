@@ -7,6 +7,11 @@
 - Python 3.8+
 - PyTorch ≥ 1.8 and torchvision that matches the PyTorch installation
 
+
+## Installation
+
+```pip install git+https://github.com/PatBall1/detectree2.git```
+
 ## Getting started
 
 Code developed by Seb Hickman, James Ball, Thomas Koay, Panagiotis Ioannou
