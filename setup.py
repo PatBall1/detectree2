@@ -4,9 +4,13 @@ setup(
     name="src",
     version="0.0.1",
     author="James G. C. Ball",
-    author_email="author@example.com",
+    author_email="ball.jgc@gmail.com.com",
     description="Detectree packaging",
-    url="url-to-github-page",
+    url="https://github.com/PatBall1/detectree2",
     packages=find_packages(),
     test_suite="src.tests.test_all.suite",
+    install_requires=["pyyaml==5.1"],
+    dependency_links=[
+        "https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.10/index.html"
+    ],
 )
