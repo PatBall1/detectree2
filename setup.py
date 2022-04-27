@@ -10,13 +10,9 @@ setup(
     packages=find_packages(),
     test_suite="src.tests.test_all.suite",
     install_requires=[
-        "pyyaml==5.1",
-        "Cython",
-        "cupy-cuda112",
-        "cupy-cuda102",
-        "torch",
-        "torchvision",
-        "torchaudio",
-        "detectron2 @ git+https://github.com/facebookresearch/detectron2",
+        "pygeos",
     ],
+    dependency_links = [
+        https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html
+    ]
 )
