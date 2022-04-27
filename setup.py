@@ -11,6 +11,7 @@ setup(
     test_suite="src.tests.test_all.suite",
     install_requires=[
         "pygeos",
+        "detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html",
     ],
     dependency_links=[
         "https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html"
