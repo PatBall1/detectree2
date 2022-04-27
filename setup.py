@@ -9,8 +9,8 @@ setup(
     url="https://github.com/PatBall1/detectree2",
     packages=find_packages(),
     test_suite="src.tests.test_all.suite",
-    install_requires=["pyyaml==5.1", "detectron2"],
-    dependency_links=[
-        "https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.10/index.html"
+    install_requires=[
+        "pyyaml==5.1",
+        "detectron2 @ https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.10/index.html",
     ],
 )
