@@ -11,7 +11,10 @@ setup(
     test_suite="src.tests.test_all.suite",
     install_requires=[
         "pyyaml==5.1",
-        "torch>=1.8",
+        "Cython",
+        "cupy-cuda112",
+        "cupy-cuda102",
+        "torch",
         "torchvision",
         "torchaudio",
         "detectron2 @ git+https://github.com/facebookresearch/detectron2",
