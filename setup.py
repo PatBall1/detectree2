@@ -11,6 +11,6 @@ setup(
     test_suite="src.tests.test_all.suite",
     install_requires=[
         "pyyaml==5.1",
-        "detectron2 @ https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.10/index.html",
+        "detectron2 @ https://github.com/facebookresearch/detectron2",
     ],
 )
