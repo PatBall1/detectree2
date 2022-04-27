@@ -11,6 +11,7 @@ setup(
     test_suite="src.tests.test_all.suite",
     install_requires=[
         "pyyaml==5.1",
+        "GDAL",
         "pygeos",
         "geopandas",
         "rasterio==1.2.10",
