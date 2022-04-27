@@ -13,7 +13,6 @@ setup(
         "pyyaml==5.1",
         "pygeos",
         "geopandas",
-        "json",
         "matplotlib",
         "rasterio",
         "fiona",
