@@ -13,8 +13,10 @@ setup(
         "pyyaml==5.1",
         "pygeos",
         "geopandas",
-        "rasterio>=1.2",
+        "rasterio==1.2.10",
         "fiona",
+        "pycrs",
+        "descartes",
         "detectron2@git+https://github.com/facebookresearch/detectron2.git",
     ],
 )
