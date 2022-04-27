@@ -11,6 +11,6 @@ setup(
     test_suite="src.tests.test_all.suite",
     install_requires=[
         "pyyaml==5.1",
-        "detectron2 @ https://github.com/facebookresearch/detectron2",
+        "detectron2 @ git+https://github.com/facebookresearch/detectron2",
     ],
 )
