@@ -10,7 +10,14 @@ setup(
     packages=find_packages(),
     test_suite="src.tests.test_all.suite",
     install_requires=[
+        "pyyaml==5.1",
         "pygeos",
+        "geopandas",
+        "json",
+        "matplotlib",
+        "rasterio",
+        "fiona",
+        "Pillow",
         "detectron2@git+https://github.com/facebookresearch/detectron2.git",
     ],
 )

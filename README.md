@@ -5,6 +5,7 @@
 
 ## Requirements
 - Python 3.8+
+- PyTorch ≥ 1.8 and torchvision that matches the PyTorch installation
 
 ## Getting started
 
