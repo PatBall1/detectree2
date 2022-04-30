@@ -7,10 +7,14 @@
 - Python 3.8+
 - PyTorch ≥ 1.8 and torchvision that matches the PyTorch installation
 
+```pip3 install torch torchvision torchaudio```
+
 
 ## Installation
 
 ```pip install git+https://github.com/PatBall1/detectree2.git```
+
+Currently works 
 
 ## Getting started
 
@@ -25,8 +29,14 @@ Here is an example image of the predictions made by Mask R-CNN.
 ## To do
 
 - FIX TILING
+- Functions for multiple labels vs single "tree" label
 - Implement early stopping
 - Gather "prisine" training and testing tiles across all available sites
+
+
+Here is an example image of the predictions made by Mask R-CNN.
+
+<img width="500" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/seg.gif > 
 
 ## Project Organization
 ```
