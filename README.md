@@ -35,7 +35,7 @@ Here is an example image of the predictions made by Mask R-CNN.
 - Gather "prisine" training and testing tiles across all available sites
 
 
-Here is an example image of the predictions made by Mask R-CNN.
+
 
 <p align="center">
 <img width="700" align="center" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/seg.gif > 
