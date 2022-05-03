@@ -5,8 +5,9 @@
 
 ## Requirements
 - Python 3.8+
-- PyTorch ≥ 1.8 and torchvision that matches the PyTorch installation
+- [PyTorch ≥ 1.8 and torchvision that matches the PyTorch installation](https://pytorch.org/get-started/previous-versions/)
 
+e.g.
 ```pip3 install torch torchvision torchaudio```
 
 
