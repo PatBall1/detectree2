@@ -43,7 +43,7 @@ Here is an example image of the predictions made by Mask R-CNN.
 ### Counting urban trees (Buffalo, NY)
 
 <p align="center">
-<img width="700" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/urban.gif > 
+<img width="700" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/urban.png > 
 </p>
 
 ### Multi-temporal tree crown segmentation
