@@ -34,12 +34,22 @@ Here is an example image of the predictions made by Mask R-CNN.
 - Functions for multiple labels vs single "tree" label
 - Implement early stopping
 - Gather "prisine" training and testing tiles across all available sites
+- Availability of pre-trained model
 
+## Applications
 
+### Tracking tree growth and mortality
 
+### Counting urban trees (Buffalo, NY)
 
 <p align="center">
-<img width="700" align="center" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/seg.gif > 
+<img width="700" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/urban.gif > 
+</p>
+
+### Multi-temporal tree crown segmentation
+
+<p align="center">
+<img width="700" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/seg.gif > 
 </p>
 
 ## Project Organization
