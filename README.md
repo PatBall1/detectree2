@@ -38,7 +38,7 @@ Here is an example image of the predictions made by Mask R-CNN.
 
 ## Applications
 
-### Tracking tree growth and mortality
+### Tracking tropical tree growth and mortality
 
 ### Counting urban trees (Buffalo, NY)
 
