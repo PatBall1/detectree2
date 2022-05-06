@@ -9,7 +9,7 @@ setup(
     url="https://github.com/PatBall1/detectree2",
     package_dir={"": "src"},
     packages=find_packages(),
-    test_suite="tests.test_all.suite",
+    # test_suite="src.tests.test_all.suite",
     install_requires=[
         "pyyaml==5.1",
         "GDAL>=1.11",
