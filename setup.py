@@ -15,7 +15,7 @@ setup(
         "GDAL>=1.11",
         "proj",
         "geos",
-        "png",
+        "pypng",
         "pygeos",
         "geopandas",
         "rasterio==1.2.10",
