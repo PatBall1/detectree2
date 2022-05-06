@@ -25,6 +25,11 @@ import pycrs
 import descartes
 
 
+def getFeatures(gdf):
+    """Function to parse features from GeoDataFrame in such a manner that rasterio wants them"""
+    return [json.loads(gdf.to_json())["features"][0]["geometry"]]
+
+
 if __name__ == "__main__":
     ### Right let's test this first with Sepilok 10cm resolution, then I need to try it with 50cm resolution.
 
