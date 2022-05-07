@@ -36,11 +36,11 @@ def tile_data(data, buffer, tile_width, tile_height, out_dir, crowns=None):
     Function to tile up image and (if included) corresponding crowns
     """
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width, int):
-        # print('minx:', minx)
+        print("minx:", minx)
         for miny in np.arange(
             data.bounds[1], data.bounds[3] - tile_height, tile_height, int
         ):
-            # print('miny:', miny)
+            print("miny:", miny)
 
             # new tiling bbox including the buffer
             bbox = box(
