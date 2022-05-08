@@ -156,7 +156,12 @@ def tile_data(data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=
                 scalingy = -1 / (data.transform[4])
                 moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
                 # print(moved_scaled)
-
+                impath = {
+                    "imagePath": (
+                        out_dir + "tile_" + str(minx) + "_" + str(miny) + ".png"
+                    )
+                }
+                moved_scaled.update(impath)
                 # save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
                 # If the box selected from the image is outside of the mapped region due to the image being on a slant
                 # then the shp file will have no info on the crowns and hence will create an empty gpd Dataframe.
@@ -304,6 +309,12 @@ def tile_data_reduced(
                 moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
                 # print(moved_scaled)
 
+                impath = {
+                    "imagePath": (
+                        out_dir + "tile_" + str(minx) + "_" + str(miny) + ".png"
+                    )
+                }
+                moved_scaled.update(impath)
                 # save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
                 # If the box selected from the image is outside of the mapped region due to the image being on a slant
                 # then the shp file will have no info on the crowns and hence will create an empty gpd Dataframe.
@@ -324,7 +335,7 @@ if __name__ == "__main__":
     crown_path = "gdrive/MyDrive/JamesHirst/NY/Buffalo/Buffalo_raw_data/all_crowns.shp"
     out_dir = "./"
     # Read in the tiff file
-    data = img_data.open(img_path)
+    # data = img_data.open(img_path)
     # Read in crowns
     crowns = geopandas.read_file(crown_path)
     print(
