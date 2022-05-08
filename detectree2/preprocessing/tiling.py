@@ -31,7 +31,7 @@ def getFeatures(gdf):
     return [json.loads(gdf.to_json())["features"][0]["geometry"]]
 
 
-def tile_data(data, buffer, tile_width, tile_height, out_dir, crowns=None):
+def tile_data(data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=None):
     """
     Function to tile up image and (if included) corresponding crowns
     """
@@ -131,7 +131,9 @@ def tile_data(data, buffer, tile_width, tile_height, out_dir, crowns=None):
             # )
             # print('png shape:', img.shape)
             if crowns:
-                # select the crowns that intersect the non-buffered central section of the tile using the inner join
+                # select the crowns that intersect the non-buffered central
+                # section of the tile using the inner join
+                # JB : a better solution would be to clip crowns to tile extent
                 overlapping_crowns = sjoin(crowns, geo_central, how="inner")
                 overlapping_crowns = overlapping_crowns.explode(index_parts=True)
                 print("Overlapping crowns:", overlapping_crowns)
@@ -162,17 +164,18 @@ def tile_data(data, buffer, tile_width, tile_height, out_dir, crowns=None):
                     # If the box selected from the image is outside of the mapped region due to the image being on a slant
                     # then the shp file will have no info on the crowns and hence will create an empty gpd Dataframe.
                     # this causes an error so skip creating geojson. The training code will also ignore png so no problem.
-                    try:
-                        moved_scaled.to_file(
-                            driver="GeoJSON",
-                            filename="gdrive/MyDrive/JamesHirst/NY/Buffalo/Buffalo_train/tile_"
-                            + str(minx)
-                            + "_"
-                            + str(miny)
-                            + ".geojson",
-                        )
-                    except:
-                        print("ValueError: Cannot write empty DataFrame to file.")
+                try:
+                    moved_scaled.to_file(
+                        driver="GeoJSON",
+                        filename="gdrive/MyDrive/JamesHirst/NY/Buffalo/Buffalo_train/tile_"
+                        + str(minx)
+                        + "_"
+                        + str(miny)
+                        + ".geojson",
+                    )
+                except:
+                    print("ValueError: Cannot write empty DataFrame to file.")
+                    continue
 
 
 if __name__ == "__main__":
