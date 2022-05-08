@@ -331,11 +331,11 @@ def tile_data_reduced(
                         driver="GeoJSON",
                         filename=filename,
                     )
-                    # with open(filename, "r") as f:
-                    #    shp = json.load(f)
-                    #    shp.update(impath)
-                    # with open(filename, "w") as f:
-                    #    shp.dump(data, f)
+                    with open(filename, "r") as f:
+                        shp = json.load(f)
+                        shp.update(impath)
+                    with open(filename, "w") as f:
+                        json.dump(shp, f)
                 except:
                     print("ValueError: Cannot write empty DataFrame to file.")
                     continue
