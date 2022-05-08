@@ -225,7 +225,7 @@ def tile_data_reduced(
 
             # define the tile as a mask of the whole tiff with just the bounding box
             # out_img, out_transform = mask(data, shapes=coords, crop=True)
-            newbox = overlapping_crowns.dissolve().bounds
+            newbox = box(overlapping_crowns.total_bounds)
             out_img, out_transform = mask(data, shapes=newbox, crop=True)
             # print('out transform:', out_transform)
 
