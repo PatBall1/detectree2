@@ -320,7 +320,7 @@ def tile_data_reduced(
                         out_dir + "tile_" + str(minx) + "_" + str(miny) + ".png"
                     )
                 }
-                moved_scaled.update(impath)
+
                 # save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
                 # If the box selected from the image is outside of the mapped region due to the image being on a slant
                 # then the shp file will have no info on the crowns and hence will create an empty gpd Dataframe.
@@ -331,11 +331,11 @@ def tile_data_reduced(
                         driver="GeoJSON",
                         filename=filename,
                     )
-                    with open(filename, "r") as f:
-                        shp = json.load(f)
-                        shp.update(impath)
-                    with open(filename, "w") as f:
-                        shp.dump(data, f)
+                    # with open(filename, "r") as f:
+                    #    shp = json.load(f)
+                    #    shp.update(impath)
+                    # with open(filename, "w") as f:
+                    #    shp.dump(data, f)
                 except:
                     print("ValueError: Cannot write empty DataFrame to file.")
                     continue
