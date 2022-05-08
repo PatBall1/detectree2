@@ -225,9 +225,8 @@ def tile_data_reduced(
 
             # define the tile as a mask of the whole tiff with just the bounding box
             # out_img, out_transform = mask(data, shapes=coords, crop=True)
-            out_img, out_transform = mask(
-                data, shapes=overlapping_crowns.bounds, crop=True
-            )
+            newbox = overlapping_crowns.dissolve().bounds
+            out_img, out_transform = mask(data, shapes=newbox, crop=True)
             # print('out transform:', out_transform)
 
             # This can be useful when reprojecting later as know the crs format to put it into
