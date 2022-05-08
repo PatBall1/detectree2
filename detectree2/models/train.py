@@ -150,7 +150,7 @@ def get_tree_dicts(directory):
         record["height"] = height
         record["width"] = width
         record["image_id"] = filename[0:400]
-        print(filename[0:400])
+        # print(filename[0:400])
 
         objs = []
         for features in img_anns["features"]:

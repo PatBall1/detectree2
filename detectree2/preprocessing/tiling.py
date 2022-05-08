@@ -183,7 +183,7 @@ def tile_data(data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=
 
 
 def tile_data_reduced(
-    data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=None
+    data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=None, threshold=0
 ):
     """
     Function to tile up image and (if included) corresponding crowns.
@@ -216,6 +216,8 @@ def tile_data_reduced(
             # skip firward if there are no crowns in a tile
             if crowns is not None:
                 if overlapping_crowns.empty:
+                    continue
+                if len(overlapping_crowns) < threshold:
                     continue
             # here we are cropping the tiff to the bounding box of the tile we want
             coords = getFeatures(geo)
