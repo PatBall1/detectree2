@@ -231,6 +231,7 @@ def tile_data_reduced(
                 index=[0],
                 crs=from_epsg(4326),
             )
+            newbox = getFeatures(newbox)
             out_img, out_transform = mask(data, shapes=newbox, crop=True)
             # print('out transform:', out_transform)
 
