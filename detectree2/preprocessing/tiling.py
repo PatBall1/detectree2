@@ -176,7 +176,7 @@ def tile_data(data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=
                         shp = json.load(f)
                         shp.update(impath)
                     with open(filename, "w") as f:
-                        shp.dump(data, f)
+                        json.dump(shp, f)
                 except:
                     print("ValueError: Cannot write empty DataFrame to file.")
                     continue
