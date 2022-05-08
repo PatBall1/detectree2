@@ -178,10 +178,11 @@ def get_tree_dicts(directory):
 
 def load_json_arr(json_path):
     lines = []
-    with open(json_path, 'r') as f:
+    with open(json_path, "r") as f:
         for line in f:
             lines.append(json.loads(line))
     return lines
 
+
 if __name__ == "__main__":
-    
+    pint("test")
