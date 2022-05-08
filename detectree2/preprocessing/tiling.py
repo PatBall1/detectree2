@@ -130,7 +130,7 @@ def tile_data(data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=
             #    + ".png"
             # )
             # print('png shape:', img.shape)
-            if crowns:
+            if crowns is not None:
                 # select the crowns that intersect the non-buffered central
                 # section of the tile using the inner join
                 # JB : a better solution would be to clip crowns to tile extent
@@ -154,24 +154,20 @@ def tile_data(data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=
                     moved = overlapping_crowns.translate(-minx + buffer, -miny + buffer)
                     print("Moved coords:", moved)
 
-                    # scale to deal with the resolution
-                    scalingx = 1 / (data.pixelSizeX)
-                    scalingy = 1 / (data.pixelSizeY)
-                    moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
-                    # print(moved_scaled)
+                # scale to deal with the resolution
+                scalingx = 1 / (data.pixelSizeX)
+                scalingy = 1 / (data.pixelSizeY)
+                moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
+                # print(moved_scaled)
 
-                    # save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
-                    # If the box selected from the image is outside of the mapped region due to the image being on a slant
-                    # then the shp file will have no info on the crowns and hence will create an empty gpd Dataframe.
-                    # this causes an error so skip creating geojson. The training code will also ignore png so no problem.
+                # save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
+                # If the box selected from the image is outside of the mapped region due to the image being on a slant
+                # then the shp file will have no info on the crowns and hence will create an empty gpd Dataframe.
+                # this causes an error so skip creating geojson. The training code will also ignore png so no problem.
                 try:
                     moved_scaled.to_file(
                         driver="GeoJSON",
-                        filename="gdrive/MyDrive/JamesHirst/NY/Buffalo/Buffalo_train/tile_"
-                        + str(minx)
-                        + "_"
-                        + str(miny)
-                        + ".geojson",
+                        filename="./tile_" + str(minx) + "_" + str(miny) + ".geojson",
                     )
                 except:
                     print("ValueError: Cannot write empty DataFrame to file.")
