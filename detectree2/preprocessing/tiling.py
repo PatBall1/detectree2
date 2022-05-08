@@ -12,16 +12,17 @@ import geopandas as gpd
 from fiona.crs import from_epsg
 
 
-class img_data(DatasetReader):
-    """
-    Class for image data to be processed for tiling
-    """
-
-    def __init__(self):
-        self.x_origin = self.bounds[0]
-        self.y_origin = self.bounds[3]
-        self.pixelSizeX = self.affine[0]
-        self.pixelSizeY = -self.affine[4]
+# class img_data(DatasetReader):
+#    """
+#    Class for image data to be processed for tiling
+#    """
+#
+#    def __init__(self):
+#        self.x_origin = self.bounds[0]
+#        self.y_origin = self.bounds[3]
+#        self.pixelSizeX = self.affine[0]
+#        self.pixelSizeY = -self.affine[4]
+#
 
 
 def getFeatures(gdf):
@@ -155,8 +156,8 @@ def tile_data(data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=
                     print("Moved coords:", moved)
 
                 # scale to deal with the resolution
-                scalingx = 1 / (data.pixelSizeX)
-                scalingy = 1 / (data.pixelSizeY)
+                scalingx = 1 / (data.transform[0])
+                scalingy = -1 / (data.transform[4])
                 moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
                 # print(moved_scaled)
 
