@@ -224,15 +224,19 @@ def tile_data_reduced(
             # print("Coords:", coords)
 
             # define the tile as a mask of the whole tiff with just the bounding box
-            # out_img, out_transform = mask(data, shapes=coords, crop=True)
-            newbox = overlapping_crowns.total_bounds
-            newbox = gpd.GeoDataFrame(
-                {"geometry": box(newbox[0], newbox[1], newbox[2], newbox[3])},
-                index=[0],
-                crs=from_epsg(4326),
-            )
-            newbox = getFeatures(newbox)
-            out_img, out_transform = mask(data, shapes=newbox, crop=True)
+            out_img, out_transform = mask(data, shapes=coords, crop=True)
+
+            # Or to really narrow down the crop onto the crown area
+            # newbox = overlapping_crowns.total_bounds
+            # newbox = gpd.GeoDataFrame(
+            #    {"geometry": box(newbox[0], newbox[1], newbox[2], newbox[3])},
+            #    index=[0],
+            #    crs=from_epsg(4326),
+            # )
+            # newbox = getFeatures(newbox)
+
+            # out_img, out_transform = mask(data, shapes=newbox, crop=True)
+
             # print('out transform:', out_transform)
 
             # This can be useful when reprojecting later as know the crs format to put it into
