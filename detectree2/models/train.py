@@ -9,7 +9,7 @@ import os
 import numpy as np
 import json
 from detectron2 import model_zoo
-from detectron2.engine import DefaultPredictor
+from detectron2.engine import DefaultPredictor, DefaultTrainer
 from detectron2.config import get_cfg
 from detectron2.utils.visualizer import Visualizer
 from detectron2.structures import BoxMode
@@ -30,12 +30,19 @@ import datetime
 
 
 class LossEvalHook(HookBase):
-    """
+    """Do inference and get the loss metric
+
     Class to:
     - Do inference of dataset like an Evaluator does
     - Get the loss metric like the trainer does
     https://github.com/facebookresearch/detectron2/blob/master/detectron2/evaluation/evaluator.py
     https://github.com/facebookresearch/detectron2/blob/master/detectron2/engine/train_loop.py
+    See https://gist.github.com/ortegatron/c0dad15e49c2b74de8bb09a5615d9f6b
+
+    Attributes:
+        model:
+        period
+        data loader
     """
 
     def __init__(self, eval_period, model, data_loader):
@@ -44,7 +51,11 @@ class LossEvalHook(HookBase):
         self._data_loader = data_loader
 
     def _do_loss_eval(self):
-        # Copying inference_on_dataset from evaluator.py
+        """Copying inference_on_dataset from evaluator.py
+
+        Returns:
+            _type_: _description_
+        """
         total = len(self._data_loader)
         num_warmup = min(5, total - 1)
 
@@ -84,7 +95,15 @@ class LossEvalHook(HookBase):
         return losses
 
     def _get_loss(self, data):
-        # How loss is calculated on train_loop
+        """How loss is calculated on train_loop
+
+        Args:
+            data (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        #
         metrics_dict = self._model(data)
         metrics_dict = {
             k: v.detach().cpu().item() if isinstance(v, torch.Tensor) else float(v)
@@ -102,6 +121,15 @@ class LossEvalHook(HookBase):
 
 
 class MyTrainer(DefaultTrainer):
+    """_summary_
+
+    Args:
+        DefaultTrainer (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+
     @classmethod
     def build_evaluator(cls, cfg, dataset_name, output_folder=None):
         if output_folder is None:
@@ -124,6 +152,14 @@ class MyTrainer(DefaultTrainer):
         return hooks
 
     def build_train_loader(cls, cfg):
+        """_summary_
+
+        Args:
+            cfg (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
         return build_detection_train_loader(
             cfg,
             mapper=DatasetMapper(
@@ -142,8 +178,21 @@ class MyTrainer(DefaultTrainer):
         )
 
 
-def get_tree_dicts(directory):
-    classes = ["tree"]
+def get_tree_dicts(directory, classes=None):
+    """Function to grab manual delineations and (optional) classes
+
+
+    Args:
+      directory: in which crown geojsons are stored
+      classes: field that should be used for classes ('None' for generic tree)
+
+    Returns:
+      dataset dictionary
+
+    """
+    if classes is None:
+        classes = ["tree"]
+
     dataset_dicts = []
     for filename in [
         file for file in os.listdir(directory) if file.endswith(".geojson")
