@@ -179,20 +179,24 @@ class MyTrainer(DefaultTrainer):
 
 
 def get_tree_dicts(directory, classes=None):
-    """Function to grab manual delineations and (optional) classes
-
-
-    Args:
-      directory: in which crown geojsons are stored
-      classes: field that should be used for classes ('None' for generic tree)
-
-    Returns:
-      dataset dictionary
-
     """
-    if classes is None:
-        classes = ["tree"]
+    directory points to files
+    classes signifies which column (if any) corresponds to the class labels
+    """
+    # filepath = '/content/drive/MyDrive/forestseg/paracou_data/Panayiotis_Outputs/220303_AllSpLabelled.gpkg'
+    # datagpd = gpd.read_file(filepath)
+    # List_Genus = datagpd.Genus_Species.to_list()
+    # Genus_Species_UniqueList = list(set(List_Genus))
 
+    #
+    if classes is not None:
+        # list_of_classes = crowns[variable].unique().tolist()
+        # list_of_classes = ['Pradosia_cochlearia','Eperua_falcata','Dicorynia_guianensis','Eschweilera_sagotiana','Eperua_grandiflora','Symphonia_sp.1','Sextonia_rubra','Vouacapoua_americana','Sterculia_pruriens','Tapura_capitulifera','Pouteria_eugeniifolia','Recordoxylon_speciosum','Chrysophyllum_prieurii','Platonia_insignis','Chrysophyllum_pomiferum','Parkia_nitida','Goupia_glabra','Carapa_surinamensis','Licania_alba','Bocoa_prouacensis','Lueheopsis_rugosa']
+        list_of_classes = ["CIRAD", "CNES", "INRA"]
+        classes = list_of_classes
+    else:
+        classes = ["tree"]
+    # classes = Genus_Species_UniqueList #['tree'] # genus_species list
     dataset_dicts = []
     for filename in [
         file for file in os.listdir(directory) if file.endswith(".geojson")
@@ -211,11 +215,13 @@ def get_tree_dicts(directory, classes=None):
         record["height"] = height
         record["width"] = width
         record["image_id"] = filename[0:400]
-        # print(filename[0:400])
+        print(filename[0:400])
 
         objs = []
         for features in img_anns["features"]:
             anno = features["geometry"]
+            # pdb.set_trace()
+            # GenusSpecies = features['properties']['Genus_Species']
             # print("##### HERE IS AN ANNO #####", anno)...weirdly sometimes (but not always) have to make 1000 into a np.array
             px = [a[0] for a in anno["coordinates"][0]]
             py = [np.array(height) - a[1] for a in anno["coordinates"][0]]
@@ -223,13 +229,26 @@ def get_tree_dicts(directory, classes=None):
             poly = [(x, y) for x, y in zip(px, py)]
             poly = [p for x in poly for p in x]
             # print("#### HERE ARE SOME POLYS #####", poly)
-            obj = {
-                "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
-                "bbox_mode": BoxMode.XYXY_ABS,
-                "segmentation": [poly],
-                "category_id": 0,
-                "iscrowd": 0,
-            }
+            if classes is not None:
+                obj = {
+                    "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
+                    "bbox_mode": BoxMode.XYXY_ABS,
+                    "segmentation": [poly],
+                    "category_id": classes.index(
+                        features["properties"]["PlotOrg"]
+                    ),  # id
+                    # "category_id": 0,  #id
+                    "iscrowd": 0,
+                }
+            else:
+                obj = {
+                    "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
+                    "bbox_mode": BoxMode.XYXY_ABS,
+                    "segmentation": [poly],
+                    "category_id": 0,  # id
+                    "iscrowd": 0,
+                }
+            # pdb.set_trace()
             objs.append(obj)
             # print("#### HERE IS OBJS #####", objs)
         record["annotations"] = objs
