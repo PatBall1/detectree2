@@ -213,12 +213,12 @@ def tile_data_reduced(
             # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
 
             # skip forward if there are no crowns in a tile
-            if crowns is not None:
-                overlapping_crowns = sjoin(crowns, geo, predicate="within", how="left")
-                if overlapping_crowns.empty:
-                    continue
-                if len(overlapping_crowns) < threshold:
-                    continue
+
+            overlapping_crowns = sjoin(crowns, geo, predicate="within", how="inner")
+            if overlapping_crowns.empty:
+                continue
+            if len(overlapping_crowns) < threshold:
+                continue
             # here we are cropping the tiff to the bounding box of the tile we want
             coords = getFeatures(geo)
             # print("Coords:", coords)
@@ -298,61 +298,59 @@ def tile_data_reduced(
             #    + ".png"
             # )
             # print('png shape:', img.shape)
-            if crowns is not None:
-                # select the crowns that intersect the non-buffered central
-                # section of the tile using the inner join
-                # JB : a better solution would be to clip crowns to tile extent
-                # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
-                # Maybe left join to keep information of crowns?
 
-                overlapping_crowns = overlapping_crowns.explode(index_parts=True)
-                # print("Overlapping crowns:", overlapping_crowns)
+            # select the crowns that intersect the non-buffered central
+            # section of the tile using the inner join
+            # JB : a better solution would be to clip crowns to tile extent
+            # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
+            # Maybe left join to keep information of crowns?
 
-                # translate to 0,0 to overlay on png
-                # this now works as a universal approach.
-                if minx == data.bounds[0] and miny == data.bounds[1]:
-                    # print("We are in the bottom left!")
-                    moved = overlapping_crowns.translate(-minx, -miny)
-                elif miny == data.bounds[1]:
-                    # print("We are on the bottom, but not bottom left")
-                    moved = overlapping_crowns.translate(-minx + buffer, -miny)
-                elif minx == data.bounds[0]:
-                    # print("We are along the left hand side, but not bottom left!")
-                    moved = overlapping_crowns.translate(-minx, -miny + buffer)
-                else:
-                    # print("We are in the middle!")
-                    moved = overlapping_crowns.translate(-minx + buffer, -miny + buffer)
-                # print("Moved coords:", moved)
+            overlapping_crowns = overlapping_crowns.explode(index_parts=True)
+            # print("Overlapping crowns:", overlapping_crowns)
 
-                # scale to deal with the resolution
-                scalingx = 1 / (data.transform[0])
-                scalingy = -1 / (data.transform[4])
-                moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
-                # print(moved_scaled)
+            # translate to 0,0 to overlay on png
+            # this now works as a universal approach.
+            if minx == data.bounds[0] and miny == data.bounds[1]:
+                # print("We are in the bottom left!")
+                moved = overlapping_crowns.translate(-minx, -miny)
+            elif miny == data.bounds[1]:
+                # print("We are on the bottom, but not bottom left")
+                moved = overlapping_crowns.translate(-minx + buffer, -miny)
+            elif minx == data.bounds[0]:
+                # print("We are along the left hand side, but not bottom left!")
+                moved = overlapping_crowns.translate(-minx, -miny + buffer)
+            else:
+                # print("We are in the middle!")
+                moved = overlapping_crowns.translate(-minx + buffer, -miny + buffer)
+            # print("Moved coords:", moved)
 
-                impath = {
-                    "imagePath": (
-                        out_dir + "tile_" + str(minx) + "_" + str(miny) + ".png"
-                    )
-                }
+            # scale to deal with the resolution
+            scalingx = 1 / (data.transform[0])
+            scalingy = -1 / (data.transform[4])
+            moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
+            # print(moved_scaled)
 
-                # save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
-                # If the box selected from the image is outside of the mapped region due to the image being on a slant
-                # then the shp file will have no info on the crowns and hence will create an empty gpd Dataframe.
-                # this causes an error so skip creating geojson. The training code will also ignore png so no problem.
-                try:
-                    filename = "./tile_" + str(minx) + "_" + str(miny) + ".geojson"
-                    moved_scaled.to_file(
-                        driver="GeoJSON", filename=filename,
-                    )
-                    with open(filename, "r") as f:
-                        shp = json.load(f)
-                        shp.update(impath)
-                    with open(filename, "w") as f:
-                        json.dump(shp, f)
-                except:
-                    print("ValueError: Cannot write empty DataFrame to file.")
-                    continue
+            impath = {
+                "imagePath": (out_dir + "tile_" + str(minx) + "_" + str(miny) + ".png")
+            }
+
+            # save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
+            # If the box selected from the image is outside of the mapped region due to the image being on a slant
+            # then the shp file will have no info on the crowns and hence will create an empty gpd Dataframe.
+            # this causes an error so skip creating geojson. The training code will also ignore png so no problem.
+            try:
+                filename = "./tile_" + str(minx) + "_" + str(miny) + ".geojson"
+                moved_scaled.to_file(
+                    driver="GeoJSON", filename=filename,
+                )
+                with open(filename, "r") as f:
+                    shp = json.load(f)
+                    shp.update(impath)
+                with open(filename, "w") as f:
+                    json.dump(shp, f)
+            except:
+                print("ValueError: Cannot write empty DataFrame to file.")
+                continue
 
 
 if __name__ == "__main__":
