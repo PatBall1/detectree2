@@ -5,7 +5,9 @@
 
 ## Requirements
 - Python 3.8+
+- [gdal](https://gdal.org/download.html)
 - [PyTorch ≥ 1.8 and torchvision that matches the PyTorch installation](https://pytorch.org/get-started/previous-versions/)
+
 
 e.g.
 ```pip3 install torch torchvision torchaudio```
@@ -15,13 +17,13 @@ e.g.
 
 ```pip install git+https://github.com/PatBall1/detectree2.git```
 
-Currently works on Google Colab. May struggle on clusters if geospatial libraries not configured.
+Currently works on Google Colab (Pro version recommended). May struggle on clusters if geospatial libraries not configured.
 
 ## Getting started
 
-Code developed by Seb Hickman, James Ball, Thomas Koay, Panagiotis Ioannou in the [Forest Ecology and Conservation Group](https://coomeslab.org/) at the University of Cambridge.
+Code developed by Seb Hickman, James Ball, Thomas Koay, Panagiotis Ioannou and James Hinton in the [Forest Ecology and Conservation Group](https://coomeslab.org/) at the University of Cambridge.
 
-The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the Cambridge Conservation Initiative (CCI).
+The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge [Conservation Research Institute](https://www.conservation.cam.ac.uk/).
 
 Original project repo at https://github.com/shmh40/detectreeRGB
 
@@ -32,7 +34,6 @@ Here is an example image of the predictions made by Mask R-CNN.
 
 ## To do
 
-- FIX TILING
 - Functions for multiple labels vs single "tree" label
 - Implement early stopping
 - Gather "prisine" training and testing tiles across all available sites

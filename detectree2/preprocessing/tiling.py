@@ -115,8 +115,7 @@ def tile_data(data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=
             # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
             # here as a naughty method
             cv2.imwrite(
-                out_dir + "tile_" + str(minx) + "_" + str(miny) + ".png",
-                rgb_rescaled,
+                out_dir + "tile_" + str(minx) + "_" + str(miny) + ".png", rgb_rescaled,
             )
 
             # img = cv2.imread(
@@ -132,6 +131,7 @@ def tile_data(data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=
                 # section of the tile using the inner join
                 # JB : a better solution would be to clip crowns to tile extent
                 overlapping_crowns = sjoin(crowns, geo_central, how="inner")
+                # Maybe left join to keep information of crowns?
                 overlapping_crowns = overlapping_crowns.explode(index_parts=True)
                 # print("Overlapping crowns:", overlapping_crowns)
 
@@ -169,8 +169,7 @@ def tile_data(data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=
                 try:
                     filename = "./tile_" + str(minx) + "_" + str(miny) + ".geojson"
                     moved_scaled.to_file(
-                        driver="GeoJSON",
-                        filename=filename,
+                        driver="GeoJSON", filename=filename,
                     )
                     with open(filename, "r") as f:
                         shp = json.load(f)
@@ -287,8 +286,7 @@ def tile_data_reduced(
             # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
             # here as a naughty method
             cv2.imwrite(
-                out_dir + "tile_" + str(minx) + "_" + str(miny) + ".png",
-                rgb_rescaled,
+                out_dir + "tile_" + str(minx) + "_" + str(miny) + ".png", rgb_rescaled,
             )
 
             # img = cv2.imread(
@@ -303,7 +301,9 @@ def tile_data_reduced(
                 # select the crowns that intersect the non-buffered central
                 # section of the tile using the inner join
                 # JB : a better solution would be to clip crowns to tile extent
-                overlapping_crowns = sjoin(crowns, geo_central, how="inner")
+                # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
+                # Maybe left join to keep information of crowns?
+                overlapping_crowns = sjoin(crowns, geo, predicate="within", how="left")
                 overlapping_crowns = overlapping_crowns.explode(index_parts=True)
                 # print("Overlapping crowns:", overlapping_crowns)
 
@@ -342,8 +342,7 @@ def tile_data_reduced(
                 try:
                     filename = "./tile_" + str(minx) + "_" + str(miny) + ".geojson"
                     moved_scaled.to_file(
-                        driver="GeoJSON",
-                        filename=filename,
+                        driver="GeoJSON", filename=filename,
                     )
                     with open(filename, "r") as f:
                         shp = json.load(f)
