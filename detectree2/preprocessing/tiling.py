@@ -169,7 +169,7 @@ def tile_data(data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=
                 try:
                     filename = "./tile_" + str(minx) + "_" + str(miny) + ".geojson"
                     # Try this to keep columns
-                    moved_scaled = overlapping_crowns.set_geometry(moved_scaled)
+                    # moved_scaled = overlapping_crowns.set_geometry(moved_scaled)
                     moved_scaled.to_file(
                         driver="GeoJSON", filename=filename,
                     )
@@ -342,6 +342,7 @@ def tile_data_reduced(
             # this causes an error so skip creating geojson. The training code will also ignore png so no problem.
             try:
                 filename = "./tile_" + str(minx) + "_" + str(miny) + ".geojson"
+                moved_scaled = overlapping_crowns.set_geometry(moved_scaled)
                 moved_scaled.to_file(
                     driver="GeoJSON", filename=filename,
                 )
