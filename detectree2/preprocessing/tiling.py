@@ -221,7 +221,7 @@ def tile_data_reduced(
                 continue
             # if len(overlapping_crowns) < threshold:
             #    continue
-            if (overlapping_crowns.dissolve().area()[0] / geo.area()[0]) < threshold:
+            if (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
                 continue
             # here we are cropping the tiff to the bounding box of the tile we want
             coords = getFeatures(geo)
