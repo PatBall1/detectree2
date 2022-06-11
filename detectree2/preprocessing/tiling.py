@@ -210,10 +210,11 @@ def tile_data_reduced(
             geo_central = gpd.GeoDataFrame(
                 {"geometry": bbox_central}, index=[0], crs=from_epsg(4326)
             )  # 3182
-            overlapping_crowns = sjoin(crowns, geo_central, how="inner")
+            # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
 
-            # skip firward if there are no crowns in a tile
+            # skip forward if there are no crowns in a tile
             if crowns is not None:
+                overlapping_crowns = sjoin(crowns, geo, predicate="within", how="left")
                 if overlapping_crowns.empty:
                     continue
                 if len(overlapping_crowns) < threshold:
@@ -303,7 +304,7 @@ def tile_data_reduced(
                 # JB : a better solution would be to clip crowns to tile extent
                 # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
                 # Maybe left join to keep information of crowns?
-                overlapping_crowns = sjoin(crowns, geo, predicate="within", how="left")
+
                 overlapping_crowns = overlapping_crowns.explode(index_parts=True)
                 # print("Overlapping crowns:", overlapping_crowns)
 
