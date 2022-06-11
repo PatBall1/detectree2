@@ -19,9 +19,11 @@ Currently works on Google Colab. May struggle on clusters if geospatial librarie
 
 ## Getting started
 
-Code developed by Seb Hickman, James Ball, Thomas Koay, Panagiotis Ioannou
+Code developed by Seb Hickman, James Ball, Thomas Koay, Panagiotis Ioannou in the [Forest Ecology and Conservation Group](https://coomeslab.org/) at the University of Cambridge.
 
-Original repo at https://github.com/shmh40/detectreeRGB
+The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the Cambridge Conservation Initiative (CCI).
+
+Original project repo at https://github.com/shmh40/detectreeRGB
 
 Here is an example image of the predictions made by Mask R-CNN.
 <p align="center">
