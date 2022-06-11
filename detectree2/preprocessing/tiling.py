@@ -209,9 +209,9 @@ def tile_data_reduced(
 
             # turn the bounding boxes into geopandas DataFrames
             geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=from_epsg(4326))
-            geo_central = gpd.GeoDataFrame(
-                {"geometry": bbox_central}, index=[0], crs=from_epsg(4326)
-            )  # 3182
+            # geo_central = gpd.GeoDataFrame(
+            #    {"geometry": bbox_central}, index=[0], crs=from_epsg(4326)
+            # )  # 3182
             # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
 
             # skip forward if there are no crowns in a tile
@@ -219,7 +219,9 @@ def tile_data_reduced(
             overlapping_crowns = sjoin(crowns, geo, predicate="within", how="inner")
             if overlapping_crowns.empty:
                 continue
-            if len(overlapping_crowns) < threshold:
+            # if len(overlapping_crowns) < threshold:
+            #    continue
+            if (overlapping_crowns.dissolve().area()[0] / geo.area()[0]) < threshold:
                 continue
             # here we are cropping the tiff to the bounding box of the tile we want
             coords = getFeatures(geo)
