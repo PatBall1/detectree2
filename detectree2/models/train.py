@@ -8,6 +8,7 @@ from PIL import Image
 import os
 import numpy as np
 import json
+import logging
 from detectron2 import model_zoo
 from detectron2.engine import DefaultPredictor, DefaultTrainer
 from detectron2.config import get_cfg
@@ -15,6 +16,7 @@ from detectron2.utils.visualizer import Visualizer
 from detectron2.structures import BoxMode
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import inference_context
+from detectron2.evaluation import COCOEvaluator
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.data import (
     MetadataCatalog,
@@ -24,6 +26,7 @@ from detectron2.data import (
     build_detection_train_loader,
 )
 import detectron2.utils.comm as comm
+import detectron2.data.transforms as T
 import torch
 import time
 import datetime
