@@ -216,7 +216,8 @@ def tile_data_reduced(
 
             # skip forward if there are no crowns in a tile
 
-            overlapping_crowns = sjoin(crowns, geo, predicate="within", how="inner")
+            # overlapping_crowns = sjoin(crowns, geo, predicate="within", how="inner")
+            overlapping_crowns = gpd.clip(crowns, geo)
             if overlapping_crowns.empty:
                 continue
             # if len(overlapping_crowns) < threshold:
@@ -343,7 +344,7 @@ def tile_data_reduced(
             # then the shp file will have no info on the crowns and hence will create an empty gpd Dataframe.
             # this causes an error so skip creating geojson. The training code will also ignore png so no problem.
             try:
-                filename = "./tile_" + str(minx) + "_" + str(miny) + ".geojson"
+                filename = out_dir + "tile_" + str(minx) + "_" + str(miny) + ".geojson"
                 moved_scaled = overlapping_crowns.set_geometry(moved_scaled)
                 moved_scaled.to_file(
                     driver="GeoJSON", filename=filename,
