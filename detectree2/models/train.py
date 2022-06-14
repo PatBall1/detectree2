@@ -123,6 +123,7 @@ class LossEvalHook(HookBase):
         self.trainer.storage.put_scalars(timetest=12)
 
 
+# See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
 class MyTrainer(DefaultTrainer):
     """_summary_
 
@@ -175,7 +176,7 @@ class MyTrainer(DefaultTrainer):
                     T.RandomSaturation(0.8, 1.4),
                     T.RandomRotation(angle=[90, 90], expand=False),
                     T.RandomLighting(0.7),
-                    T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
+                    T.RandomFlip(prob=0.4, horizontal=True, vertical=True),
                 ],
             ),
         )

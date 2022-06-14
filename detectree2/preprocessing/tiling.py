@@ -183,7 +183,7 @@ def tile_data(data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=
                     continue
 
 
-def tile_data_reduced(
+def tile_data_train(
     data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=None, threshold=0
 ):
     """
@@ -218,10 +218,12 @@ def tile_data_reduced(
 
             # overlapping_crowns = sjoin(crowns, geo, predicate="within", how="inner")
             overlapping_crowns = gpd.clip(crowns, geo)
+            # Discard tiles with no crowns
             if overlapping_crowns.empty:
                 continue
             # if len(overlapping_crowns) < threshold:
             #    continue
+            # Discard tiles that do no have a sufficient coverage of training crowns
             if (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
                 continue
             # here we are cropping the tiff to the bounding box of the tile we want
