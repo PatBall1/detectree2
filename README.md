@@ -20,13 +20,15 @@ e.g.
 
 ## Installation
 
+To install run:
+
 ```pip install git+https://github.com/PatBall1/detectree2.git```
 
 Currently works on Google Colab (Pro version recommended). May struggle on clusters if geospatial libraries not configured.
 
 ## Getting started
 
-
+Detectree2, based on Mask R-CNN architectures, locates trees in aerial images. It has been designed to delineate trees in challenging dense tropical forests for a range of ecological applications.
 
 Here is an example image of the predictions made by Mask R-CNN.
 <p align="center">
