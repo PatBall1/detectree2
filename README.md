@@ -28,7 +28,7 @@ Currently works on Google Colab (Pro version recommended). May struggle on clust
 
 ## Getting started
 
-Detectree2, based on Mask R-CNN architectures, locates trees in aerial images. It has been designed to delineate trees in challenging dense tropical forests for a range of ecological applications.
+Detectree2, based on the [Detectron2](https://github.com/facebookresearch/detectron2) Mask R-CNN architecture, locates trees in aerial images. It has been designed to delineate trees in challenging dense tropical forests for a range of ecological applications.
 
 Here is an example image of the predictions made by Mask R-CNN.
 <p align="center">
