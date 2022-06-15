@@ -11,7 +11,7 @@ Original MSc project repo at https://github.com/shmh40/detectreeRGB.</sub>
 ## Requirements
 - Python 3.8+
 - [gdal](https://gdal.org/download.html) geospatial libraries
-- [PyTorch ≥ 1.8 and torchvision that matches the PyTorch installation](https://pytorch.org/get-started/previous-versions/)
+- [PyTorch ≥ 1.8 and torchvision](https://pytorch.org/get-started/previous-versions/) versions that match
 
 
 e.g.
@@ -24,7 +24,7 @@ To install run:
 
 ```pip install git+https://github.com/PatBall1/detectree2.git```
 
-Currently works on Google Colab (Pro version recommended). May struggle on clusters if geospatial libraries not configured.
+Currently works on Google Colab (Pro version recommended). May struggle on clusters if geospatial libraries are not configured.
 
 ## Getting started
 
