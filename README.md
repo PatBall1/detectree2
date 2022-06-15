@@ -10,7 +10,7 @@ Original MSc project repo at https://github.com/shmh40/detectreeRGB.</sub>
 
 ## Requirements
 - Python 3.8+
-- [gdal](https://gdal.org/download.html)
+- [gdal](https://gdal.org/download.html) geospatial libraries
 - [PyTorch ≥ 1.8 and torchvision that matches the PyTorch installation](https://pytorch.org/get-started/previous-versions/)
 
 
