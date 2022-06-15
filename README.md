@@ -3,6 +3,13 @@
  [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
  <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
+<sub>Code developed by Seb Hickman, James Ball, Thomas Koay, Panagiotis Ioannou and James Hinton in the [Forest Ecology and Conservation Group](https://coomeslab.org/) at the University of Cambridge.</sub>
+
+<sub>The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge [Conservation Research Institute](https://www.conservation.cam.ac.uk/).</sub>
+
+<sub>Original MSc project repo at https://github.com/shmh40/detectreeRGB</sub>
+
+
 ## Requirements
 - Python 3.8+
 - [gdal](https://gdal.org/download.html)
@@ -21,11 +28,7 @@ Currently works on Google Colab (Pro version recommended). May struggle on clust
 
 ## Getting started
 
-Code developed by Seb Hickman, James Ball, Thomas Koay, Panagiotis Ioannou and James Hinton in the [Forest Ecology and Conservation Group](https://coomeslab.org/) at the University of Cambridge.
 
-The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge [Conservation Research Institute](https://www.conservation.cam.ac.uk/).
-
-Original project repo at https://github.com/shmh40/detectreeRGB
 
 Here is an example image of the predictions made by Mask R-CNN.
 <p align="center">
