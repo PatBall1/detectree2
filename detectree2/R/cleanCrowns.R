@@ -1,3 +1,4 @@
+# Script to combine tiles of output crowns into a single sensible output
 library(sf)
 library(raster)
 library(dplyr)

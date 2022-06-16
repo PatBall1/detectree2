@@ -16,7 +16,7 @@ summed = np.sum(split)
 percs = 100 * split / summed
 percs = np.cumsum(percs)
 
-filenames = glob.glob("./data/*.txt")
+filenames = glob.glob("./data/*.png")
 jsonnames = glob.glob("./data/*.json")
 
 stemname = Path(filenames[0]).stem.split("_", 1)[0]
@@ -43,7 +43,7 @@ for i in range(0, len(indices)):
 
 folds = 3
 
-filenames = glob.glob("./data/train/*.txt")
+filenames = glob.glob("./data/train/*.png")
 jsonnames = glob.glob("./data/train/*.json")
 
 stemname = Path(filenames[0]).stem.split("_", 1)[0]
@@ -58,7 +58,7 @@ for i in range(0, folds):
     for ind in ind_split[i]:
         print(ind)
         shutil.move(
-            "./data/train/" + stemname + "_" + ind + ".txt",
+            "./data/train/" + stemname + "_" + ind + ".png",
             "./data/train/fold_" + str(i + 1) + "/",
         )
         shutil.move(
