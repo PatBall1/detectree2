@@ -8,8 +8,15 @@ from geopandas.tools import sjoin
 from rasterio.mask import mask
 from rasterio.io import DatasetReader
 from shapely.geometry import box
-import geopandas as gpd
+# import geopandas as gpd
 from fiona.crs import from_epsg
+import warnings
+
+with warnings.catch_warnings():
+#     warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.simplefilter("ignore")
+
+    import geopandas as gpd
 
 
 # class img_data(DatasetReader):
@@ -23,6 +30,8 @@ from fiona.crs import from_epsg
 #        self.pixelSizeX = self.affine[0]
 #        self.pixelSizeY = -self.affine[4]
 #
+
+
 
 
 def getFeatures(gdf):
@@ -217,6 +226,8 @@ def tile_data_train(
             # skip forward if there are no crowns in a tile
 
             # overlapping_crowns = sjoin(crowns, geo, predicate="within", how="inner")
+
+            break
             overlapping_crowns = gpd.clip(crowns, geo)
             # Discard tiles with no crowns
             if overlapping_crowns.empty:
@@ -363,13 +374,17 @@ def tile_data_train(
 
 if __name__ == "__main__":
     # Right let's test this first with Sepilok 10cm resolution, then I need to try it with 50cm resolution.
-    img_path = "/content/drive/Shareddrives/detectreeRGB/benchmark/Ortho2015_benchmark/P4_Ortho_2015.tif"
-    crown_path = "gdrive/MyDrive/JamesHirst/NY/Buffalo/Buffalo_raw_data/all_crowns.shp"
-    out_dir = "./"
+    # img_path = "/content/drive/Shareddrives/detectreeRGB/benchmark/Ortho2015_benchmark/P4_Ortho_2015.tif"
+    # crown_path = "gdrive/MyDrive/JamesHirst/NY/Buffalo/Buffalo_raw_data/all_crowns.shp"
+
+    img_path = "./data/NY/LargeArea_images/naip_hwf/naip_hwf.tif"
+    crown_path = "./data/NY/Buffalo_raw_data/all_crowns.shp"
+    out_dir = "./output/buffalo"
     # Read in the tiff file
-    # data = img_data.open(img_path)
+    data = rasterio.open(img_path)
     # Read in crowns
     crowns = geopandas.read_file(crown_path)
+    crowns = crowns.to_crs(data.crs.data)
     print(
         "shape =",
         data.shape,
@@ -381,9 +396,12 @@ if __name__ == "__main__":
         data.crs,
     )
 
+    # buffer = 20
+    # tile_width = 200
+    # tile_height = 200
+    # resolution = 0.6 # in metres per pixel - @James Ball can you get this from the tiff?
+
     buffer = 20
     tile_width = 200
     tile_height = 200
-    # resolution = 0.6 # in metres per pixel - @James Ball can you get this from the tiff?
-
-    tile_data(data, buffer, tile_width, tile_height, out_dir, crowns)
+    tile_data_train(data, buffer, tile_width, tile_height, out_dir, crowns, threshold=0.2)
