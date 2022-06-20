@@ -1,4 +1,8 @@
 # necessary basic libraries
+import glob
+import random
+import shutil
+from pathlib import Path
 import numpy as np
 import cv2
 import json
@@ -10,6 +14,7 @@ from rasterio.io import DatasetReader
 from shapely.geometry import box
 import geopandas as gpd
 from fiona.crs import from_epsg
+
 
 
 # class img_data(DatasetReader):
@@ -89,7 +94,8 @@ def tile_data(data, out_dir, buffer=30, tile_width=200, tile_height=200, crowns=
             # Saving the tile as a new tiff, named by the origin of the tile. If tile appears blank in folder can show the image here and may
             # need to fix RGB data or the dtype
             # show(out_img)
-            out_tif = out_dir + "tile_" + str(minx) + "_" + str(miny) + ".tif"
+            
+            out_tif = out_dir + "/tile_" + str(minx) + "_" + str(miny) + ".tif"
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
 
@@ -196,7 +202,9 @@ def tile_data_train(
             data.bounds[1], data.bounds[3] - tile_height, tile_height, int
         ):
             # print("miny:", miny)
-
+            # Naming conventions
+            tilename = Path(data.name).stem
+            out_path = out_dir + tilename + "_" + str(minx) + "_" + str(miny) + "_" + tile_width + "_" + buffer
             # new tiling bbox including the buffer
             bbox = box(
                 minx - buffer,
@@ -268,14 +276,12 @@ def tile_data_train(
             # Saving the tile as a new tiff, named by the origin of the tile. If tile appears blank in folder can show the image here and may
             # need to fix RGB data or the dtype
             # show(out_img)
-            out_tif = out_dir + "tile_" + str(minx) + "_" + str(miny) + ".tif"
+            out_tif = out_path + ".tif"
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
 
             # read in the tile we have just saved
-            clipped = rasterio.open(
-                out_dir + "/tile_" + str(minx) + "_" + str(miny) + ".tif"
-            )
+            clipped = rasterio.open(out_tif)
             # read it as an array
             # show(clipped)
             arr = clipped.read()
@@ -294,7 +300,7 @@ def tile_data_train(
             # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
             # here as a naughty method
             cv2.imwrite(
-                out_dir + "tile_" + str(minx) + "_" + str(miny) + ".png", rgb_rescaled,
+                out_path + ".png", rgb_rescaled,
             )
 
             # img = cv2.imread(
@@ -338,7 +344,7 @@ def tile_data_train(
             # print(moved_scaled)
 
             impath = {
-                "imagePath": (out_dir + "tile_" + str(minx) + "_" + str(miny) + ".png")
+                "imagePath": (out_path +  ".png")
             }
 
             # save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
@@ -346,7 +352,7 @@ def tile_data_train(
             # then the shp file will have no info on the crowns and hence will create an empty gpd Dataframe.
             # this causes an error so skip creating geojson. The training code will also ignore png so no problem.
             try:
-                filename = out_dir + "tile_" + str(minx) + "_" + str(miny) + ".geojson"
+                filename = out_path + ".geojson"
                 moved_scaled = overlapping_crowns.set_geometry(moved_scaled)
                 moved_scaled.to_file(
                     driver="GeoJSON", filename=filename,
@@ -362,7 +368,7 @@ def tile_data_train(
 
 def to_traintest_folders(tiles_folder="./", out_folder="./data/", test_frac=0.2, folds=1):
   """
-  To send tiles to training (validation) and test folder
+  To send tiles to training (+validation) and test folder
   """
 
   Path(out_folder + "train").mkdir(parents=True, exist_ok=True)
@@ -376,48 +382,47 @@ def to_traintest_folders(tiles_folder="./", out_folder="./data/", test_frac=0.2,
   percs = np.cumsum(percs)
 
   filenames = glob.glob(tiles_folder + "*.png")
-  jsonnames = glob.glob(tiles_folder + "*.geojson")
+  fileroots = [Path(item).stem for item in filenames]
+  #jsonnames = glob.glob(tiles_folder + "*.geojson")
+  #stemname = Path(filenames[0]).stem.split("_", 1)[0]
+  #indices = [item.split("_", 1)[-1].split(".", 1)[0] for item in filenames]
 
-  stemname = Path(filenames[0]).stem.split("_", 1)[0]
-
-  indices = [item.split("_", 1)[-1].split(".", 1)[0] for item in filenames]
-
-  num = list(range(0, len(indices)))
+  num = list(range(0, len(filenames)))
   random.shuffle(num)
-
-
-  for i in range(0, len(indices)):
+  
+  for i in range(0, len(filenames)):
       #print(i)
       if num[i] < np.percentile(num, percs[0]):
-          shutil.copy(filenames[i], out_folder + "train")
-          shutil.copy("./" + stemname + "_" + indices[i] + ".geojson", "./data/train/")
+          shutil.copy(filenames[i], out_folder + "train/")
+          shutil.copy("./" + fileroots[i] + ".geojson", out_folder + "train/")
       # elif num[i] < np.percentile(num, percs[1]):
       #    shutil.copy(filenames[i], "./data/val/")
       #    shutil.copy("./data/" + stemname + "_" + indices[i] + ".geojson", "./data/val/")
       else:
-          shutil.copy(filenames[i], out_folder + "test")
-          shutil.copy("./" + stemname + "_" + indices[i] + ".geojson", "./data/test/")
+          shutil.copy(filenames[i], out_folder + "test/")
+          shutil.copy("./" + fileroots[i] + ".geojson", out_folder + "test/")
 
   filenames = glob.glob(out_folder + "/train/*.png")
-  jsonnames = glob.glob(out_folder + "/train/*.geojson")
+  #jsonnames = glob.glob(out_folder + "/train/*.geojson")
+  fileroots = [Path(item).stem for item in filenames]
+  #stemname = Path(filenames[0]).stem.split("_", 1)[0]
 
-  stemname = Path(filenames[0]).stem.split("_", 1)[0]
-
-  indices = [item.split("_", 1)[-1].split(".", 1)[0] for item in filenames]
-
-  random.shuffle(indices)
-  ind_split = np.array_split(indices, folds)
+  #indices = [item.split("_", 1)[-1].split(".", 1)[0] for item in filenames]
+  num = list(range(0, len(filenames)))
+  random.shuffle(num)
+  #random.shuffle(indices)
+  ind_split = np.array_split(fileroots, folds)
 
   for i in range(0, folds):
       Path(out_folder + "/train/fold_" + str(i + 1) + "/").mkdir(parents=True, exist_ok=True)
-      for ind in ind_split[i]:
+      for name in ind_split[i]:
           #print(ind)
           shutil.move(
-              out_folder + "train/" + stemname + "_" + ind + ".png",
+              out_folder + "train/" + name + ".png",
               out_folder + "train/fold_" + str(i + 1) + "/",
           )
           shutil.move(
-              out_folder + "train/" + stemname + "_" + ind + ".geojson",
+              out_folder + "train/" + name + ".geojson",
               out_folder + "train/fold_" + str(i + 1) + "/",
           )
 
@@ -431,6 +436,7 @@ if __name__ == "__main__":
     # Read in the tiff file
     # data = img_data.open(img_path)
     # Read in crowns
+    data = rasterio.open(img_path)
     crowns = geopandas.read_file(crown_path)
     print(
         "shape =",
@@ -448,4 +454,5 @@ if __name__ == "__main__":
     tile_height = 200
     # resolution = 0.6 # in metres per pixel - @James Ball can you get this from the tiff?
 
-    tile_data(data, buffer, tile_width, tile_height, out_dir, crowns)
+    tile_data_train(data, buffer, tile_width, tile_height, out_dir, crowns)
+    to_traintest_folders(folds=3)
