@@ -15,8 +15,6 @@ from shapely.geometry import box
 import geopandas as gpd
 from fiona.crs import from_epsg
 
-
-
 # class img_data(DatasetReader):
 #    """
 #    Class for image data to be processed for tiling
@@ -204,7 +202,7 @@ def tile_data_train(
             # print("miny:", miny)
             # Naming conventions
             tilename = Path(data.name).stem
-            out_path = out_dir + tilename + "_" + str(minx) + "_" + str(miny) + "_" + tile_width + "_" + buffer
+            out_path = out_dir + tilename + "_" + str(minx) + "_" + str(miny) + "_" + str(tile_width) + "_" + str(buffer)
             # new tiling bbox including the buffer
             bbox = box(
                 minx - buffer,
