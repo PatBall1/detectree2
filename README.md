@@ -26,6 +26,22 @@ To install run:
 
 Currently works on Google Colab (Pro version recommended). May struggle on clusters if geospatial libraries are not configured.
 
+### Conda / mamba install
+It is recommended to install mamba to speed up build process.
+
+`mamba create --name detectenv --file conda-linux-64.lock`
+
+
+### Update conda install
+
+Re-generate Conda lock file(s) based on environment.yml
+
+`conda-lock -k explicit --conda mamba`
+
+Update Conda packages based on re-generated lock file
+
+`mamba update --file conda-linux-64.lock`
+
 ## Getting started
 
 Detectree2, based on the [Detectron2](https://github.com/facebookresearch/detectron2) Mask R-CNN architecture, locates trees in aerial images. It has been designed to delineate trees in challenging dense tropical forests for a range of ecological applications.
