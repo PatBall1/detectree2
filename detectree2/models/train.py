@@ -219,7 +219,7 @@ def get_tree_dicts(directory, classes=None):
         record["height"] = height
         record["width"] = width
         record["image_id"] = filename[0:400]
-        print(filename[0:400])
+        #print(filename[0:400])
 
         objs = []
         for features in img_anns["features"]:
@@ -233,7 +233,7 @@ def get_tree_dicts(directory, classes=None):
             poly = [(x, y) for x, y in zip(px, py)]
             poly = [p for x in poly for p in x]
             # print("#### HERE ARE SOME POLYS #####", poly)
-            if classes is not None:
+            if classes != ['tree']:
                 obj = {
                     "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
                     "bbox_mode": BoxMode.XYXY_ABS,

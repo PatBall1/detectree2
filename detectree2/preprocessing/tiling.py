@@ -364,6 +364,7 @@ def tile_data_train(
                 print("ValueError: Cannot write empty DataFrame to file.")
                 continue
 
+
 def to_traintest_folders(tiles_folder="./", out_folder="./data/", test_frac=0.2, folds=1):
   """
   To send tiles to training (+validation) and test folder
@@ -392,13 +393,13 @@ def to_traintest_folders(tiles_folder="./", out_folder="./data/", test_frac=0.2,
       #print(i)
       if num[i] < np.percentile(num, percs[0]):
           shutil.copy(filenames[i], out_folder + "train/")
-          shutil.copy("./" + fileroots[i] + ".geojson", out_folder + "train/")
+          shutil.copy(tiles_folder + fileroots[i] + ".geojson", out_folder + "train/")
       # elif num[i] < np.percentile(num, percs[1]):
       #    shutil.copy(filenames[i], "./data/val/")
       #    shutil.copy("./data/" + stemname + "_" + indices[i] + ".geojson", "./data/val/")
       else:
           shutil.copy(filenames[i], out_folder + "test/")
-          shutil.copy("./" + fileroots[i] + ".geojson", out_folder + "test/")
+          shutil.copy(tiles_folder + fileroots[i] + ".geojson", out_folder + "test/")
 
   filenames = glob.glob(out_folder + "/train/*.png")
   #jsonnames = glob.glob(out_folder + "/train/*.geojson")
@@ -423,6 +424,8 @@ def to_traintest_folders(tiles_folder="./", out_folder="./data/", test_frac=0.2,
               out_folder + "train/" + name + ".geojson",
               out_folder + "train/fold_" + str(i + 1) + "/",
           )
+
+
 
 
 
