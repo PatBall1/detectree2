@@ -392,17 +392,17 @@ def to_traintest_folders(tiles_folder="./", out_folder="./data/", test_frac=0.2,
   for i in range(0, len(filenames)):
       #print(i)
       if num[i] < np.percentile(num, percs[0]):
-          shutil.copy(filenames[i], out_folder + "train/")
+          #shutil.copy(filenames[i], out_folder + "train/")
           shutil.copy(tiles_folder + fileroots[i] + ".geojson", out_folder + "train/")
       # elif num[i] < np.percentile(num, percs[1]):
       #    shutil.copy(filenames[i], "./data/val/")
       #    shutil.copy("./data/" + stemname + "_" + indices[i] + ".geojson", "./data/val/")
       else:
-          shutil.copy(filenames[i], out_folder + "test/")
+          #shutil.copy(filenames[i], out_folder + "test/")
           shutil.copy(tiles_folder + fileroots[i] + ".geojson", out_folder + "test/")
 
-  filenames = glob.glob(out_folder + "/train/*.png")
-  #jsonnames = glob.glob(out_folder + "/train/*.geojson")
+  #filenames = glob.glob(out_folder + "/train/*.png")
+  filenames = glob.glob(out_folder + "/train/*.geojson")
   fileroots = [Path(item).stem for item in filenames]
   #stemname = Path(filenames[0]).stem.split("_", 1)[0]
 
@@ -416,16 +416,14 @@ def to_traintest_folders(tiles_folder="./", out_folder="./data/", test_frac=0.2,
       Path(out_folder + "/train/fold_" + str(i + 1) + "/").mkdir(parents=True, exist_ok=True)
       for name in ind_split[i]:
           #print(ind)
-          shutil.move(
-              out_folder + "train/" + name + ".png",
-              out_folder + "train/fold_" + str(i + 1) + "/",
-          )
+          #shutil.move(
+          #    out_folder + "train/" + name + ".png",
+          #    out_folder + "train/fold_" + str(i + 1) + "/",
+          #)
           shutil.move(
               out_folder + "train/" + name + ".geojson",
               out_folder + "train/fold_" + str(i + 1) + "/",
           )
-
-
 
 
 

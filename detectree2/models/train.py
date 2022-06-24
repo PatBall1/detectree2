@@ -176,7 +176,8 @@ class MyTrainer(DefaultTrainer):
                     T.RandomSaturation(0.8, 1.4),
                     T.RandomRotation(angle=[90, 90], expand=False),
                     T.RandomLighting(0.7),
-                    T.RandomFlip(prob=0.4, horizontal=True, vertical=True),
+                    T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
+                    T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
                 ],
             ),
         )
@@ -202,6 +203,12 @@ def get_tree_dicts(directory, classes=None):
         classes = ["tree"]
     # classes = Genus_Species_UniqueList #['tree'] # genus_species list
     dataset_dicts = []
+    #for root, dirs, files in os.walk(train_location):
+    #    for file in files:
+    #        if file.endswith(".geojson"):
+    #            print(os.path.join(root, file))
+    
+    
     for filename in [
         file for file in os.listdir(directory) if file.endswith(".geojson")
     ]:
@@ -259,6 +266,22 @@ def get_tree_dicts(directory, classes=None):
         dataset_dicts.append(record)
     return dataset_dicts
 
+def combine_dicts(folder, val_folder, mode='train'):
+    train_dirs = [os.path.join(folder, file) for file in os.listdir(folder)]
+    if mode == 'train':
+        del train_dirs[(val_folder-1)]
+        tree_dicts = []
+        for d in train_dirs:
+            tree_dicts = tree_dicts + get_tree_dicts(d)
+        return tree_dicts
+    else:
+        tree_dicts = get_tree_dicts(train_dirs[(val_folder-1)])
+        return tree_dicts
+
+def register_train_data(train_location, val_fold=1):
+    for d in ['train', 'val']:
+        DatasetCatalog.register("trees_" + d, lambda d=d: combine_dicts(train_location, 1, d))
+        MetadataCatalog.get("trees_" + d).set(thing_classes=['tree'])
 
 def load_json_arr(json_path):
     lines = []
