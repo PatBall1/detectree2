@@ -206,6 +206,7 @@ def get_tree_dicts(directory, classes=None):
         file for file in os.listdir(directory) if file.endswith(".geojson")
     ]:
         json_file = os.path.join(directory, filename)
+        # print("json file ", json_file)
         with open(json_file) as f:
             img_anns = json.load(f)
 
@@ -219,7 +220,7 @@ def get_tree_dicts(directory, classes=None):
         record["height"] = height
         record["width"] = width
         record["image_id"] = filename[0:400]
-        print(filename[0:400])
+        # print(filename[0:400])
 
         objs = []
         for features in img_anns["features"]:
