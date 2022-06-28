@@ -294,5 +294,38 @@ def load_json_arr(json_path):
   return lines
 
 
+def setup_cfg(
+    base_model="COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
+    update_model=None,
+    trains=("trees_train",),
+    tests=("trees_val",),
+    workers=2,
+    ims_per_batch=2,
+    base_lr=0.0003,
+    max_iter=1000,
+    num_classes=1,
+    eval_period=100):
+  """
+  To set up config object
+  """
+  cfg = get_cfg()
+  cfg.merge_from_file(model_zoo.get_config_file(base_model))
+  cfg.DATASETS.TRAIN = trains    # Possible to load in multiple registrations here?
+  cfg.DATASETS.TEST = tests
+  cfg.DATALOADER.NUM_WORKERS = workers
+
+  if update_model is None:
+    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
+  else:
+    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(update_model)
+
+  cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
+  cfg.SOLVER.BASE_LR = base_lr
+  cfg.SOLVER.MAX_ITER = max_iter
+  cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes
+  cfg.TEST.EVAL_PERIOD = eval_period
+  return cfg
+
+
 if __name__ == "__main__":
   print("test")

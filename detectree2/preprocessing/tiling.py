@@ -466,4 +466,4 @@ if __name__ == "__main__":
   # resolution = 0.6 # in metres per pixel - @James Ball can you get this from the tiff?
 
   tile_data_train(data, buffer, tile_width, tile_height, out_dir, crowns)
-  to_traintest_folders(folds=3)
+  to_traintest_folders(folds=5)
