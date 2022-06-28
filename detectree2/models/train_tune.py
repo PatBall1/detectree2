@@ -18,7 +18,6 @@ from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog, DatasetCatalog
 from detectron2.structures import BoxMode
 
-
 if __name__ == "__main__":
-    setup_logger()
-    wandb.login()
+  setup_logger()
+  wandb.login()
