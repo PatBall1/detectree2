@@ -279,11 +279,11 @@ def combine_dicts(folder, val_folder, mode='train'):
     return tree_dicts
 
 
-def register_train_data(train_location, val_fold=1):
+def register_train_data(train_location, name= "tree", val_fold=1):
   for d in ['train', 'val']:
-    DatasetCatalog.register("trees_" + d,
-                            lambda d=d: combine_dicts(train_location, 1, d))
-    MetadataCatalog.get("trees_" + d).set(thing_classes=['tree'])
+    DatasetCatalog.register(name +"_" + d,
+                            lambda d=d: combine_dicts(train_location, val_fold, d))
+    MetadataCatalog.get(name +"_" + d).set(thing_classes=['tree'])
 
 
 def load_json_arr(json_path):
@@ -296,9 +296,9 @@ def load_json_arr(json_path):
 
 def setup_cfg(
     base_model="COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
-    update_model=None,
     trains=("trees_train",),
     tests=("trees_val",),
+    update_model=None,
     workers=2,
     ims_per_batch=2,
     base_lr=0.0003,
@@ -314,11 +314,11 @@ def setup_cfg(
   cfg.DATASETS.TEST = tests
   cfg.DATALOADER.NUM_WORKERS = workers
 
-  if update_model is None:
-    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
-  else:
+  if update_model is not None:
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(update_model)
-
+  else:
+    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
+  
   cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
   cfg.SOLVER.BASE_LR = base_lr
   cfg.SOLVER.MAX_ITER = max_iter

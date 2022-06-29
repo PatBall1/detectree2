@@ -1,5 +1,6 @@
 # necessary basic libraries
 import glob
+import os
 import random
 import shutil
 from pathlib import Path
@@ -202,6 +203,9 @@ def tile_data_train(data,
     Only outputs tiles with crowns in.
     """
   # Should clip data to crowns straight off to speed things up
+  os.mkdirs(out_dir, exist_ok=True)
+  # More efficient if we could clip to crowns immediately...
+  #out_img, out_transform = mask(data, shapes=crowns, crop=True)
   for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width,
                         int):
     # print("minx:", minx)
