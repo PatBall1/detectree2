@@ -205,7 +205,7 @@ def tile_data_train(data,
   # Should clip data to crowns straight off to speed things up
   os.mkdirs(out_dir, exist_ok=True)
   # More efficient if we could clip to crowns immediately...
-  #out_img, out_transform = mask(data, shapes=crowns, crop=True)
+  #out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
   for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width,
                         int):
     # print("minx:", minx)
@@ -303,7 +303,11 @@ def tile_data_train(data,
       # stack up the bands in an order appropriate for saving with cv2, then rescale to the correct 0-255 range for cv2
 
       rgb = np.dstack((B, G, R))    # BGR for cv2
-      rgb_rescaled = rgb    # scale to image
+      
+      if np.max(G) != 255:
+        rgb_rescaled = numpy.array([normalize_band(rgb[i,:,:], 0, 255) for i in range(rgb.shape[0])])
+      else:
+        rgb_rescaled = rgb    # scale to image
       # print('rgb rescaled', rgb_rescaled)
 
       # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
@@ -375,6 +379,18 @@ def tile_data_train(data,
         print("ValueError: Cannot write empty DataFrame to file.")
         continue
 
+def normalize_band(x, lower=0, upper=255):
+    """
+    Normalize an array to a given bound interval
+    """
+
+    x_max = numpy.max(x)
+    x_min = numpy.min(x)
+
+    m = (upper - lower) / (x_max - x_min)
+    x_norm = (m * (x - x_min)) + lower
+
+    return x_norm
 
 def to_traintest_folders(tiles_folder="./",
                          out_folder="./data/",
