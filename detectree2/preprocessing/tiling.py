@@ -278,7 +278,7 @@ def tile_data_train(data,
           "width": out_img.shape[2],
           "transform": out_transform,
           "nodata": None,
-          "dtype": "uint8",
+          #"dtype": "uint8", this causes issue - perhaps no need to update...
       })
       # print('Out Meta:',out_meta)
 
@@ -304,8 +304,8 @@ def tile_data_train(data,
 
       rgb = np.dstack((B, G, R))    # BGR for cv2
       
-      if np.max(G) != 255:
-        rgb_rescaled = np.array([normalize_band(rgb[i,:,:], 0, 255) for i in range(rgb.shape[0])])
+      if np.max(G) > 255:
+        rgb_rescaled = 255*rgb/65535
       else:
         rgb_rescaled = rgb    # scale to image
       # print('rgb rescaled', rgb_rescaled)
