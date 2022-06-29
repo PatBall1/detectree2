@@ -104,7 +104,6 @@ def to_traintest_folders(tiles_folder="./",
     #    shutil.copy(filenames[i], "./data/val/")
     #    shutil.copy("./data/" + stemname + "_" + indices[i] + ".geojson", "./data/val/")
     else:
-<<<<<<< HEAD
       shutil.copy(filenames[i], out_folder + "test/")
       shutil.copy(tiles_folder + fileroots[i] + ".geojson",
                   out_folder + "test/")
@@ -137,36 +136,3 @@ def to_traintest_folders(tiles_folder="./",
 
 if __name__ == "__main__":
   to_traintest_folders(folds=3)
-=======
-        shutil.copy(filenames[i], "./data/paracou/test/")
-        shutil.copy("./output/Paracou/" + stemname + "_" + indices[i] + ".geojson", "./data/paracou/test/")
-
-
-# MAD ignore folds for a second. 
-
-# folds = 3
-
-# filenames = glob.glob("./data/paracou/train/*.png")
-# jsonnames = glob.glob("./data/paracou/train/*.geojson")
-
-# stemname = Path(filenames[0]).stem.split("_", 1)[0]
-
-# indices = [item.split("_", 1)[-1].split(".", 1)[0] for item in filenames]
-
-# random.shuffle(indices)
-# ind_split = np.array_split(indices, folds)
-
-# for i in range(0, folds):
-#     Path("./data/paracou/train/fold_" + str(i + 1) + "/").mkdir(parents=True, exist_ok=True)
-#     for ind in ind_split[i]:
-#         print(ind)
-#         shutil.move(
-#             "./data/paracou/train/" + stemname + "_" + ind + ".png",
-#             "./data/paracou/train/fold_" + str(i + 1) + "/",
-#         )
-#         shutil.move(
-#             "./data/paracou/train/" + stemname + "_" + ind + ".geojson",
-#             "./data/paracou/train/fold_" + str(i + 1) + "/",
-#         )
-
->>>>>>> 10ae840 (preprocessing steps)
