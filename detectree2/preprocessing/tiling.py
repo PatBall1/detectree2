@@ -203,7 +203,7 @@ def tile_data_train(data,
     Only outputs tiles with crowns in.
     """
   # Should clip data to crowns straight off to speed things up
-  os.mkdirs(out_dir, exist_ok=True)
+  os.makedirs(out_dir, exist_ok=True)
   # More efficient if we could clip to crowns immediately...
   #out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
   for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width,
@@ -224,7 +224,7 @@ def tile_data_train(data,
           miny + tile_height + buffer,
       )
       # define the bounding box of the tile, excluding the buffer (hence selecting just the central part of the tile)
-      bbox_central = box(minx, miny, minx + tile_width, miny + tile_height)
+      #bbox_central = box(minx, miny, minx + tile_width, miny + tile_height)
 
       # turn the bounding boxes into geopandas DataFrames
       geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=from_epsg(4326))
@@ -305,7 +305,7 @@ def tile_data_train(data,
       rgb = np.dstack((B, G, R))    # BGR for cv2
       
       if np.max(G) != 255:
-        rgb_rescaled = numpy.array([normalize_band(rgb[i,:,:], 0, 255) for i in range(rgb.shape[0])])
+        rgb_rescaled = np.array([normalize_band(rgb[i,:,:], 0, 255) for i in range(rgb.shape[0])])
       else:
         rgb_rescaled = rgb    # scale to image
       # print('rgb rescaled', rgb_rescaled)
@@ -384,8 +384,8 @@ def normalize_band(x, lower=0, upper=255):
     Normalize an array to a given bound interval
     """
 
-    x_max = numpy.max(x)
-    x_min = numpy.min(x)
+    x_max = ny.max(x)
+    x_min = ny.min(x)
 
     m = (upper - lower) / (x_max - x_min)
     x_norm = (m * (x - x_min)) + lower
