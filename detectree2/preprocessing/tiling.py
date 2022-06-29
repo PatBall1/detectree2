@@ -278,7 +278,7 @@ def tile_data_train(data,
           "width": out_img.shape[2],
           "transform": out_transform,
           "nodata": None,
-          #"dtype": "uint8", this causes issue - perhaps no need to update...
+          "dtype": "uint8", # this causes issue - comment out for the Malaysia data
       })
       # print('Out Meta:',out_meta)
 
