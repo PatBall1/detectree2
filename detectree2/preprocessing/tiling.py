@@ -384,8 +384,8 @@ def normalize_band(x, lower=0, upper=255):
     Normalize an array to a given bound interval
     """
 
-    x_max = ny.max(x)
-    x_min = ny.min(x)
+    x_max = np.max(x)
+    x_min = np.min(x)
 
     m = (upper - lower) / (x_max - x_min)
     x_norm = (m * (x - x_min)) + lower
