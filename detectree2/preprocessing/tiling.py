@@ -234,7 +234,6 @@ def tile_data_train(data,
       # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
 
       # skip forward if there are no crowns in a tile
-
       # overlapping_crowns = sjoin(crowns, geo, predicate="within", how="inner")
       overlapping_crowns = gpd.clip(crowns, geo)
       # Discard tiles with no crowns
@@ -251,7 +250,20 @@ def tile_data_train(data,
 
       # define the tile as a mask of the whole tiff with just the bounding box
       out_img, out_transform = mask(data, shapes=coords, crop=True)
+      
+      # Discard scenes with many out-of-range pixels
+      out_sumbands = np.sum(out_img, 0)
+      zero_mask = np.where(out_sumbands == 0, 1 , 0)
+      nan_mask = np.where(out_sumbands == 765, 1 , 0)
+      sumzero = zero_mask.sum()
+      sumnan = nan_mask.sum()
+      totalpix = out_img.shape[1] * out_img.shape[2]
+      if sumzero > 0.25 * totalpix:
+        continue
+      elif sumnan > 0.25 * totalpix:
+        continue
 
+      #out_img = out_img.astype("uint8")
       # Or to really narrow down the crop onto the crown area
       # newbox = overlapping_crowns.total_bounds
       # newbox = gpd.GeoDataFrame(
@@ -379,18 +391,6 @@ def tile_data_train(data,
         print("ValueError: Cannot write empty DataFrame to file.")
         continue
 
-def normalize_band(x, lower=0, upper=255):
-    """
-    Normalize an array to a given bound interval
-    """
-
-    x_max = np.max(x)
-    x_min = np.min(x)
-
-    m = (upper - lower) / (x_max - x_min)
-    x_norm = (m * (x - x_min)) + lower
-
-    return x_norm
 
 def to_traintest_folders(tiles_folder="./",
                          out_folder="./data/",
