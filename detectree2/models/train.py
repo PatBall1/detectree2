@@ -304,7 +304,8 @@ def setup_cfg(
     base_lr=0.0003,
     max_iter=1000,
     num_classes=1,
-    eval_period=100):
+    eval_period=100,
+    out_dir="/content/drive/Shareddrives/detectree2/train_outputs"):
   """
   To set up config object
   """
@@ -313,7 +314,8 @@ def setup_cfg(
   cfg.DATASETS.TRAIN = trains    # Possible to load in multiple registrations here?
   cfg.DATASETS.TEST = tests
   cfg.DATALOADER.NUM_WORKERS = workers
-
+  cfg.OUTPUT_DIR = out_dir
+  os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
   if update_model is not None:
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(update_model)
   else:
