@@ -285,6 +285,11 @@ def register_train_data(train_location, name= "tree", val_fold=1):
                             lambda d=d: combine_dicts(train_location, val_fold, d))
     MetadataCatalog.get(name +"_" + d).set(thing_classes=['tree'])
 
+def remove_registered_data(name= "tree"):
+  for d in ['train', 'val']:
+    DatasetCatalog.remove(name +"_" + d)
+    MetadataCatalog.remove(name +"_" + d)
+
 
 def load_json_arr(json_path):
   lines = []
