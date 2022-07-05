@@ -416,13 +416,13 @@ def isOverlappingBox(test_boxes_array, train_box):
     test_box_y = test_box[1]
     train_box_x = train_box[0]
     train_box_y = train_box[1]
-    print("test:", test_box)
-    print("train:", train_box)
+    # print("test:", test_box)
+    # print("train:", train_box)
 
     #Check if both the x and y coords overlap meaning the entire box does and hence end loop
     if test_box_x[1] >= train_box_x[0] and train_box_x[1] >= test_box_x[0]:
       if test_box_y[1] >= train_box_y[0] and train_box_y[1] >= test_box_y[0]:
-        print("Overlap")
+        # print("Overlap")
         return True
 
   return False
