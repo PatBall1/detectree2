@@ -2,6 +2,7 @@ from detectron2.utils.logger import setup_logger
 import pandas as pd
 import numpy as np
 import cv2
+from google.colab.patches import cv2_imshow
 import random
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -9,15 +10,18 @@ import os
 import numpy as np
 import json
 import logging
+from pathlib import Path
 from detectron2 import model_zoo
 from detectron2.engine import DefaultPredictor, DefaultTrainer
 from detectron2.config import get_cfg
 from detectron2.utils.visualizer import Visualizer
+from detectron2.utils.visualizer import ColorMode
 from detectron2.structures import BoxMode
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import inference_context
 from detectron2.evaluation import COCOEvaluator
 from detectron2.utils.logger import log_every_n_seconds
+from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 from detectron2.data import (
     MetadataCatalog,
     DatasetCatalog,
@@ -28,6 +32,7 @@ from detectron2.data import (
 import detectron2.utils.comm as comm
 import detectron2.data.transforms as T
 import torch
+from IPython.display import display, clear_output
 import time
 import datetime
 
@@ -290,6 +295,12 @@ def remove_registered_data(name= "tree"):
     DatasetCatalog.remove(name +"_" + d)
     MetadataCatalog.remove(name +"_" + d)
 
+def register_test_data(test_location, name= "tree"):
+  d="test"
+  DatasetCatalog.register(name +"_" + d,
+                          lambda d=d: get_tree_dicts(test_location))
+  MetadataCatalog.get(name +"_" + d).set(thing_classes=['tree'])
+
 
 def load_json_arr(json_path):
   lines = []
@@ -334,5 +345,74 @@ def setup_cfg(
   return cfg
 
 
+def get_filenames(directory):
+  """
+  Used to get the file names if no geojson is present, i.e allows for predictions
+  where no delinations have been manually produced
+  """
+  dataset_dicts = []
+  for filename in [file for file in os.listdir(directory)]:
+    file = {}
+    filename = os.path.join(directory, filename)
+    file["file_name"] = filename
+
+    dataset_dicts.append(file)
+  return dataset_dicts
+
+
+def predictions_on_data(
+  directory = None,
+  predictor = DefaultTrainer,
+  trees_metadata = None,
+  save = True,
+  scale = 1,
+  geos_exist = True,
+  num_predictions = 0
+  ):
+  """
+  Prediction produced from a test folder and outputted to predictions folder
+  """
+
+  test_location = directory + "test"
+  pred_dir = directory + "predictions"
+
+  Path(pred_dir).mkdir(parents=True, exist_ok=True)
+
+  if geos_exist:
+    dataset_dicts= get_tree_dicts(test_location)
+  else:
+    dataset_dicts = get_filenames(test_location)
+  
+  # Works out if all items in folder should be predicted on
+  if num_predictions == 0:
+    num_to_pred = len(dataset_dicts)
+  else:
+    num_to_pred = num_predictions
+
+  for d in random.sample(dataset_dicts,num_to_pred):
+    img = cv2.imread(d["file_name"])
+    # cv2_imshow(img)
+    outputs = predictor(img)
+    v = Visualizer(img[:, :, ::-1], metadata=trees_metadata, scale=scale, instance_mode=ColorMode.SEGMENTATION)   # remove the colors of unsegmented pixels
+    v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+    image = cv2.cvtColor(v.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
+    display(Image.fromarray(image))
+
+    ### Creating the file name of the output file
+    file_name_path = d["file_name"]
+    file_name = os.path.basename(os.path.normpath(file_name_path))  #Strips off all slashes so just final file name left
+    file_name = file_name.replace("png","json")
+    
+    output_file = pred_dir + "/Prediction_" + file_name
+    print(output_file)
+
+    if save: 
+      ## Converting the predictions to json files and saving them in the specfied output file.
+      evaluations= instances_to_coco_json(outputs["instances"].to("cpu"),d["file_name"])
+      with open(output_file, "w") as dest:
+        json.dump(evaluations,dest)
+
+
+    
 if __name__ == "__main__":
   print("test")
