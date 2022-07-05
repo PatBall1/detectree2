@@ -401,7 +401,7 @@ def predictions_on_data(
     ### Creating the file name of the output file
     file_name_path = d["file_name"]
     file_name = os.path.basename(os.path.normpath(file_name_path))  #Strips off all slashes so just final file name left
-    file_name = file_name.replace("png","json")
+    file_name = file_name.replace("png","geojson")
     
     output_file = pred_dir + "/Prediction_" + file_name
     print(output_file)
