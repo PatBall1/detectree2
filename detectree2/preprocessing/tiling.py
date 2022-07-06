@@ -197,7 +197,8 @@ def tile_data_train(data,
                     tile_width=200,
                     tile_height=200,
                     crowns=None,
-                    threshold=0):
+                    threshold=0,
+                    dtype_bool=False):
   """
     Function to tile up image and (if included) corresponding crowns.
     Only outputs tiles with crowns in.
@@ -290,8 +291,10 @@ def tile_data_train(data,
           "width": out_img.shape[2],
           "transform": out_transform,
           "nodata": None,
-          "dtype": "uint8", # this causes issue - comment out for the Malaysia data
       })
+      # dtype needs to be unchanged for some data and set to uint8 for others
+      if dtype_bool: 
+            out_meta.update({"dtype": "uint8"})
       # print('Out Meta:',out_meta)
 
       # Saving the tile as a new tiff, named by the origin of the tile. If tile appears blank in folder can show the image here and may
@@ -328,15 +331,6 @@ def tile_data_train(data,
           out_path + ".png",
           rgb_rescaled,
       )
-
-      # img = cv2.imread(
-      #    "gdrive/MyDrive/JamesHirst/NY/LargeArea_images/naip_cayuga/naip_cayuga_tiled_by_me/tile_"
-      #    + str(minx)
-      #    + "_"
-      #    + str(miny)
-      #    + ".png"
-      # )
-      # print('png shape:', img.shape)
 
       # select the crowns that intersect the non-buffered central
       # section of the tile using the inner join
@@ -463,14 +457,14 @@ def to_traintest_folders(tiles_folder="./",
       #if num[i] < np.percentile(num, 100-percs[0]):  DELETE THIS LINE
       if i <= len(filenames)* test_frac: 
         test_boxes.append(image_details(fileroots[num[i]]))
-        print("test boxes", test_boxes)
+        # print("test boxes", test_boxes)
         #shutil.copy(filenames[num[i]], out_folder + "test/")
         shutil.copy(tiles_folder + fileroots[num[i]] + ".geojson",
                   out_folder + "test/")
       else:
         train_box = image_details(fileroots[num[i]])
         if not isOverlappingBox(test_boxes, train_box):
-          print("Not overlapping")
+          # print("Not overlapping")
           #shutil.copy(filenames[num[i]], out_folder + "train/")
           shutil.copy(tiles_folder + fileroots[num[i]] + ".geojson",
                      out_folder + "train/")
