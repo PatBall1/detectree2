@@ -61,9 +61,7 @@ def polygonFromMask(maskedArr):
 
 
 
-def reproject_for_GIS(
-    directory = None,
-    ):
+def reproject_to_geojson(directory = None):
     """
     Takes a json and changes it to a geojson so it can overlay tiffs in GIS
     """
