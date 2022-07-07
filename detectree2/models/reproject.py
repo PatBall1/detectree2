@@ -82,7 +82,6 @@ def reproject_to_geojson(directory = None, EPSG = "26917"):
             file_mins_split = file_mins.split("_")
             img_dict["minx"]= file_mins_split[-4]
             img_dict["miny"]= file_mins_split[-3]
-            img_dict["buffer"]= file_mins_split[-1]
 
             # load the json file we need to convert into a geojson
             with open(directory+img_dict["filename"]) as prediction_file:
@@ -91,7 +90,7 @@ def reproject_to_geojson(directory = None, EPSG = "26917"):
         
             img_dict["width"] = datajson[0]["segmentation"]["size"][0]
             img_dict["height"] = datajson[0]["segmentation"]["size"][1]
-            print(img_dict)
+            # print(img_dict)
 
             # json file is formated as a list of segmentation polygons so cycle through each one
             for crown_data in datajson:
@@ -111,10 +110,10 @@ def reproject_to_geojson(directory = None, EPSG = "26917"):
                         x_coord=crown_coords[c]
                         y_coord=crown_coords[c+1]
 
-                    if EPSG == "26917":
-                        rescaled_coords.append([x_coord,-y_coord])
-                    else:
-                        rescaled_coords.append([x_coord,-y_coord+int(img_dict["height"])])
+                        if EPSG == "26917":
+                            rescaled_coords.append([x_coord,-y_coord])
+                        else:
+                            rescaled_coords.append([x_coord,-y_coord+int(img_dict["height"])])
 
                     geofile["features"].append({"type": "Feature", "properties": {}, "geometry" :{"type": "Polygon", "coordinates": [rescaled_coords]}})
 
