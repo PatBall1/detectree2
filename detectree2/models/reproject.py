@@ -61,9 +61,10 @@ def polygonFromMask(maskedArr):
 
 
 
-def reproject_to_geojson(directory = None):
+def reproject_to_geojson(directory = None, EPSG = "26917"):
     """
-    Takes a json and changes it to a geojson so it can overlay tiffs in GIS
+    Takes a json and changes it to a geojson so it can overlay with crowns
+    Another copy is produced to overlay with PNGs
     """
 
     entries = os.listdir(directory)
@@ -71,7 +72,7 @@ def reproject_to_geojson(directory = None):
     for file in entries:
         if ".json" in file: 
             #create a geofile for each tile --> the EPSG value might need to be changed.
-            geofile = {"type": "FeatureCollection", "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::4326"}}, "features":[]}
+            geofile = {"type": "FeatureCollection", "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::" + EPSG }}, "features":[]}
 
             # create a dictionary for each file to store data used multiple times
             img_dict = {}
@@ -109,14 +110,18 @@ def reproject_to_geojson(directory = None):
                     for c in range(0, len(crown_coords), 2): 
                         x_coord=crown_coords[c]
                         y_coord=crown_coords[c+1]
-                        rescaled_coords.append([x_coord,-y_coord+img_dict["width"]+2*img_dict["buffer"]])
+
+                    if EPSG == "26917":
+                        rescaled_coords.append([x_coord,-y_coord])
+                    else:
+                        rescaled_coords.append([x_coord,-y_coord+int(img_dict["height"])])
 
                     geofile["features"].append({"type": "Feature", "properties": {}, "geometry" :{"type": "Polygon", "coordinates": [rescaled_coords]}})
 
             # Check final form is correct - compare to a known geojson file if error appears.
             print(geofile)
 
-            output_geo_file = directory + img_dict["filename"].replace('.json','.geojson')
+            output_geo_file = directory + img_dict["filename"].replace('.json',"_"+EPSG+'.geojson')
             print(output_geo_file)
             with open(output_geo_file, "w") as dest:
                 json.dump(geofile,dest)
