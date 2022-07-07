@@ -71,7 +71,7 @@ def reproject_to_geojson(directory = None):
     for file in entries:
         if ".json" in file: 
             #create a geofile for each tile --> the EPSG value might need to be changed.
-            geofile = {"type": "FeatureCollection", "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::26917"}}, "features":[]}
+            geofile = {"type": "FeatureCollection", "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::4326"}}, "features":[]}
 
             # create a dictionary for each file to store data used multiple times
             img_dict = {}
@@ -81,6 +81,7 @@ def reproject_to_geojson(directory = None):
             file_mins_split = file_mins.split("_")
             img_dict["minx"]= file_mins_split[-4]
             img_dict["miny"]= file_mins_split[-3]
+            img_dict["buffer"]= file_mins_split[-1]
 
             # load the json file we need to convert into a geojson
             with open(directory+img_dict["filename"]) as prediction_file:
@@ -108,7 +109,7 @@ def reproject_to_geojson(directory = None):
                     for c in range(0, len(crown_coords), 2): 
                         x_coord=crown_coords[c]
                         y_coord=crown_coords[c+1]
-                        rescaled_coords.append([x_coord,-y_coord])
+                        rescaled_coords.append([x_coord,-y_coord+img_dict["width"]+2*img_dict["buffer"]])
 
                     geofile["features"].append({"type": "Feature", "properties": {}, "geometry" :{"type": "Polygon", "coordinates": [rescaled_coords]}})
 
