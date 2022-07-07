@@ -53,7 +53,12 @@ def intersection_data(test_features =list,
         intersection["pred_feat_"+ str(pred_count)+"_area"]= pred_feats_areas[str(pred_count)]
         intersection["test_feat_"+ str(test_count)+"_area"]= test_feats_areas[str(test_count)]
         test_feats_appearing.append(test_count)
-        intersection["Intersection"] = (shape(pred_feat['geometry']).intersection(shape(test_feat['geometry']))).area
+        
+        # If there is a self intersecting loop we cannot calculate the area so ignore this delineation
+        try:
+          intersection["Intersection"] = (shape(pred_feat['geometry']).intersection(shape(test_feat['geometry']))).area
+        except Exception:
+          continue
         
         union_area = test_feats_areas[str(test_count)]+ pred_feats_areas[str(pred_count)] -  intersection["Intersection"]
         intersection["IoU"] = intersection["Intersection"] / union_area
