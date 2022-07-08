@@ -2,7 +2,6 @@
 import os 
 import numpy as np
 import json
-from __future__ import annotations
 from shapely.geometry import shape, Polygon
 
 def PolyArea(feature= type(dict)):
@@ -16,7 +15,7 @@ def PolyArea(feature= type(dict)):
     coord_tuples.append((entry[0], entry[1]))
 
   polygon = Polygon(coord_tuples)
-
+ 
   return polygon.area
 
 def all_polys_area(features = list):
