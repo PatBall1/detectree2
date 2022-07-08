@@ -2,7 +2,7 @@
 import os 
 import numpy as np
 import json
-import type
+from __future__ import annotations
 from shapely.geometry import shape, Polygon
 
 def PolyArea(feature= type(dict)):
