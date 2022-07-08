@@ -33,15 +33,17 @@ def all_polys_area(features = list):
   return poly_areas
 
 def intersection_data(test_features =list,
-                       pred_features =list,
-                       test_feats_areas = type(dict), 
-                       pred_feats_areas = type(dict)
+                      pred_features =list,
+                      test_feats_areas = dict, 
+                      pred_feats_areas = dict,
                            ):
   """
   Generates a dictionary of the intersections and IoU for each tile
   """
   # Create a list of the test features appearing so we can caluclate the number of false negatives easier
   test_feats_appearing = [] 
+  # Record the greatest IoU so if multiple for the same test feature we can record lower ones as false positives
+  greatest_IoU = {}
   
   all_tile_intersections = []
   pred_count = 0
@@ -54,7 +56,6 @@ def intersection_data(test_features =list,
         intersection["test_feat_"+ str(test_count)+"_area"]= test_feats_areas[str(test_count)]
         test_feats_appearing.append(test_count)
         
-        # If there is a self intersecting loop we cannot calculate the area so ignore this delineation
         try:
           intersection["Intersection"] = (shape(pred_feat['geometry']).intersection(shape(test_feat['geometry']))).area
         except Exception:
@@ -63,6 +64,14 @@ def intersection_data(test_features =list,
         union_area = test_feats_areas[str(test_count)]+ pred_feats_areas[str(pred_count)] -  intersection["Intersection"]
         intersection["IoU"] = intersection["Intersection"] / union_area
 
+        if str(test_count) in greatest_IoU.keys():
+          if intersection["IoU"] > greatest_IoU[str(test_count)]:
+            greatest_IoU[str(test_count)]= intersection["IoU"]
+        else:
+          greatest_IoU[str(test_count)]= intersection["IoU"]
+        
+        #Record the test feature number as well to allow for easier matching to greatest IoU
+        intersection["test_feat_num"] = str(test_count)
 
         all_tile_intersections.append(intersection)
 
@@ -73,26 +82,30 @@ def intersection_data(test_features =list,
     pred_count +=1
 
     false_negatives = test_count - len(set(test_feats_appearing))
-  
-  return all_tile_intersections, false_negatives
+    
+    return all_tile_intersections, greatest_IoU, false_negatives
 
 def threshold_positives(
     tile_intersection = list,
-    num_test_feats = int,
+    GIoU = dict,
     threshold = 0.5
     ):
+  """
+  Calculating the positives, only the one with the highest IoU above 0.5 is counted as a true positive
+  """
   
   true_positives = 0
   false_positives = 0
   false_negatives = 0
 
   for entry in tile_intersection:
-    if entry["IoU"] >= threshold:
+    if entry["IoU"] >= threshold and entry["IoU"] == GIoU[entry["test_feat_num"]]:
       true_positives +=1
     else: 
       false_positives +=1
   
   return true_positives, false_positives
+
 
 
 def prec_recall_func(
@@ -145,15 +158,18 @@ def site_F1_score(
 
       # create a dict of all intersections and their area
       test_feats_areas = all_polys_area(test_features)
-      test_feat_count = len(test_feats_areas)
       pred_feats_areas = all_polys_area(pred_features)
-      pred_feat_count = len(pred_feats_areas)
+      # test_feat_count = len(test_feats_areas)
+      # pred_feat_count = len(pred_feats_areas)
 
       # print(test_feats_areas)
       # print(pred_feats_areas)
       
-      tile_intersections, fns = intersection_data(test_features, pred_features, test_feats_areas, pred_feats_areas)
-      tps, fps = threshold_positives(tile_intersections)
+      tile_intersections, GIoU, fns = intersection_data(test_features, pred_features, test_feats_areas, pred_feats_areas)
+      tps, fps = threshold_positives(tile_intersections, GIoU)
+
+      print(tile_intersections)
+      # print(GIoU)
       
       # update the information
       site_intersections[file] = tile_intersections
@@ -166,4 +182,3 @@ def site_F1_score(
 
   print(f1_score)
   
-
