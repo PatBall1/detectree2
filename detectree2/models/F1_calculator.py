@@ -34,8 +34,8 @@ def all_polys_area(features = list):
 
 def intersection_data(test_features =list,
                       pred_features =list,
-                      test_feats_areas = dict, 
-                      pred_feats_areas = dict,
+                      test_feats_areas = "dict", 
+                      pred_feats_areas = "dict",
                            ):
   """
   Generates a dictionary of the intersections and IoU for each tile
@@ -87,7 +87,7 @@ def intersection_data(test_features =list,
 
 def threshold_positives(
     tile_intersection = list,
-    GIoU = dict,
+    GIoU = "dict",
     threshold = 0.5
     ):
   """
