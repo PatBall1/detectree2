@@ -4,7 +4,7 @@ import numpy as np
 import json
 from shapely.geometry import shape, Polygon
 
-def PolyArea(feature= type(dict)):
+def PolyArea(feature= dict):
   """
   Take a featrue from a geojson and calculates the area of the polygon
   """
@@ -15,14 +15,13 @@ def PolyArea(feature= type(dict)):
     coord_tuples.append((entry[0], entry[1]))
 
   polygon = Polygon(coord_tuples)
- 
+
   return polygon.area
 
 def all_polys_area(features = list):
   """
   Take a list of polygons and find the corresponding area of each of them
   """
-
   poly_areas = {}
   poly_count = 0
   for feat in features:
@@ -33,8 +32,8 @@ def all_polys_area(features = list):
 
 def intersection_data(test_features =list,
                       pred_features =list,
-                      test_feats_areas = "dict", 
-                      pred_feats_areas = "dict",
+                      test_feats_areas = dict, 
+                      pred_feats_areas = dict,
                            ):
   """
   Generates a dictionary of the intersections and IoU for each tile
@@ -81,12 +80,12 @@ def intersection_data(test_features =list,
     pred_count +=1
 
     false_negatives = test_count - len(set(test_feats_appearing))
-    
-    return all_tile_intersections, greatest_IoU, false_negatives
+  
+  return all_tile_intersections, greatest_IoU, false_negatives
 
 def threshold_positives(
     tile_intersection = list,
-    GIoU = "dict",
+    GIoU = dict,
     threshold = 0.5
     ):
   """
@@ -104,8 +103,6 @@ def threshold_positives(
       false_positives +=1
   
   return true_positives, false_positives
-
-
 
 def prec_recall_func(
     total_tps, 
@@ -144,6 +141,7 @@ def site_F1_score(
 
   for file in test_entries:
     if ".geojson" in file:
+      print(file)
       
       #open the geojson in the test folder and the corresponding one in the prediction folder
       with open(test_directory+file) as test_file:
@@ -157,9 +155,9 @@ def site_F1_score(
 
       # create a dict of all intersections and their area
       test_feats_areas = all_polys_area(test_features)
+      test_feat_count = len(test_feats_areas)
       pred_feats_areas = all_polys_area(pred_features)
-      # test_feat_count = len(test_feats_areas)
-      # pred_feat_count = len(pred_feats_areas)
+      pred_feat_count = len(pred_feats_areas)
 
       # print(test_feats_areas)
       # print(pred_feats_areas)
