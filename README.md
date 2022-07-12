@@ -7,6 +7,12 @@
 The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge [Conservation Research Institute](https://www.conservation.cam.ac.uk/).
 Original MRes project repo at https://github.com/shmh40/detectreeRGB.</sub>
 
+**Please cite**:
+
+Accurate tropical forest individual tree crown delineation from RGB imagery using Mask R-CNN
+Sebastian H M Hickman, James George Clifford Ball, Tobias D Jackson, Xian Jing Koay, James Hirst, William Jay, Melaine Aubry-Kientz, Gregoire Vincent, David A Coomes
+*bioRxiv* 2022.07.10.499480; doi: [https://doi.org/10.1101/2022.07.10.499480](https://doi.org/10.1101/2022.07.10.499480)
+
 
 ## Requirements
 - Python 3.8+
