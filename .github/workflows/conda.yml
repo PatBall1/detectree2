@@ -1,0 +1,29 @@
+name: Python Package Using Conda
+
+on:
+  push:
+    branches: [ "matt/conda" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [  '3.9' ]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        # $CONDA/bin/conda env update --file environment.yml --name base
+        $CONDA/bin/conda install mamba
+        mamba env create -f environment.yaml  --prefix ./env2 python=${{ matrix.python-version }}
+

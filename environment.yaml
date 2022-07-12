@@ -1,4 +1,4 @@
-name: my_project_env
+name: my_project_env1
 channels:
   - pytorch
   - conda-forge
@@ -13,7 +13,7 @@ dependencies:
   # - poetry=1.*  # or 1.1.*, or no version at all -- as you want
   # - pytorch::pytorch=1.10.0 [build=*cuda112*]
   # # - pytorch::pytorch=1.10.0 
-  - pytorch::torchvision=0.11.3 [build=*cuda112*]
+  - torchvision=0.11.3 [build=*cuda112*]
   # - pytorch::torchaudio
   - gdal=3.5.0
   - detectron2=0.6.0 [build=*cuda112*]
@@ -31,5 +31,5 @@ dependencies:
   # - detectron2=0.6.0 
 
 # Non-standard section listing target platforms for conda-lock:
-platforms:
-  - linux-64
+# platforms:
+#   - linux-64
