@@ -25,10 +25,8 @@ jobs:
         # $CONDA is an environment variable pointing to the root of the miniconda directory
         # $CONDA/bin/conda env update --file environment.yml --name base
         $CONDA/bin/conda install mamba -n base -c conda-forge
-        $CONDA/bin/conda activate base
-        mamba env create -f environment.yaml  --prefix ./env python=${{ matrix.python-version }}
+        $CONDA/bin/mamba env update -f environment.yaml -n base 
     - name: Install detectree2 
       run: | 
-        conda activate ./env
         pip install .
 
