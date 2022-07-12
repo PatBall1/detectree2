@@ -28,5 +28,7 @@ jobs:
         $CONDA/bin/mamba env update -f environment.yaml -n base 
     - name: Install detectree2 
       run: | 
-        pip install .
+        which conda
+        which pip
+        $CONDA/bin/pip install .
 
