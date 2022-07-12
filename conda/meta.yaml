@@ -1,0 +1,52 @@
+package:
+  name: detectree2
+  version: 0.0.1
+
+source:
+  url: https://github.com/ma595/detectree2/archive/5f7137c709635a67b2b1d9ab9688aa9973d62e22.zip
+  sha256: 720bc90f09998a66302387d9a5c5791b20e3154c442383b28bbe04353466dfc3
+
+build:
+  noarch: python
+  number: 0
+
+requirements:
+  host:
+    - python
+    - pip
+    - gdal=3.5.0
+    - torchvision=0.11.3 *cuda112*
+    - detectron2=0.6.0 *cuda112*
+    - proj
+    - geos
+    - pypng
+    - pygeos
+    - geopandas
+    - rasterio=1.2.10
+    - fiona
+    - pycrs
+    - descartes
+    - opencv 
+  run:
+    - python
+    - pip
+    - gdal=3.5.0
+    - torchvision=0.11.3 *cuda112*
+    - detectron2=0.6.0 *cuda112*
+    - proj
+    - geos
+    - pypng
+    - pygeos
+    - geopandas
+    - rasterio=1.2.10
+    - fiona
+    - pycrs
+    - descartes
+    - opencv 
+
+about:
+  home: https://github.com/patball1/detectree2
+  summary: detectree2
+
+  
+
