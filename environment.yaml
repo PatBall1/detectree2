@@ -1,4 +1,4 @@
-name: my_project_env1
+name: detectree
 channels:
   - pytorch
   - conda-forge
@@ -13,9 +13,9 @@ dependencies:
   # - poetry=1.*  # or 1.1.*, or no version at all -- as you want
   # - pytorch::pytorch=1.10.0 [build=*cuda112*]
   # # - pytorch::pytorch=1.10.0 
-  - torchvision=0.11.3 [build=*cuda112*]
   # - pytorch::torchaudio
   - gdal=3.5.0
+  - torchvision=0.11.3 [build=*cuda112*]
   - detectron2=0.6.0 [build=*cuda112*]
   - proj
   - geos
