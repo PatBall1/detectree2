@@ -1,0 +1,53 @@
+detectree2.preprocessing package
+================================
+
+Submodules
+----------
+
+detectree2.preprocessing.FixJsonForTrain module
+-----------------------------------------------
+
+.. automodule:: detectree2.preprocessing.FixJsonForTrain
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+detectree2.preprocessing.crowns module
+--------------------------------------
+
+.. automodule:: detectree2.preprocessing.crowns
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+detectree2.preprocessing.folds module
+-------------------------------------
+
+.. automodule:: detectree2.preprocessing.folds
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+detectree2.preprocessing.tiling module
+--------------------------------------
+
+.. automodule:: detectree2.preprocessing.tiling
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+detectree2.preprocessing.toFolders module
+-----------------------------------------
+
+.. automodule:: detectree2.preprocessing.toFolders
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: detectree2.preprocessing
+   :members:
+   :undoc-members:
+   :show-inheritance:

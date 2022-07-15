@@ -1,0 +1,45 @@
+detectree2.tests package
+========================
+
+Submodules
+----------
+
+detectree2.tests.test\_all module
+---------------------------------
+
+.. automodule:: detectree2.tests.test_all
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+detectree2.tests.test\_data module
+----------------------------------
+
+.. automodule:: detectree2.tests.test_data
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+detectree2.tests.test\_models module
+------------------------------------
+
+.. automodule:: detectree2.tests.test_models
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+detectree2.tests.test\_preprocessing module
+-------------------------------------------
+
+.. automodule:: detectree2.tests.test_preprocessing
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: detectree2.tests
+   :members:
+   :undoc-members:
+   :show-inheritance:

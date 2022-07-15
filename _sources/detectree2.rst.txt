@@ -1,0 +1,32 @@
+detectree2 package
+==================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   detectree2.data_loading
+   detectree2.models
+   detectree2.preprocessing
+   detectree2.tests
+
+Submodules
+----------
+
+detectree2.constants module
+---------------------------
+
+.. automodule:: detectree2.constants
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: detectree2
+   :members:
+   :undoc-members:
+   :show-inheritance:

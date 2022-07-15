@@ -1,0 +1,45 @@
+detectree2.data\_loading package
+================================
+
+Submodules
+----------
+
+detectree2.data\_loading.gdrive module
+--------------------------------------
+
+.. automodule:: detectree2.data_loading.gdrive
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+detectree2.data\_loading.gdrive\_load module
+--------------------------------------------
+
+.. automodule:: detectree2.data_loading.gdrive_load
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+detectree2.data\_loading.gee\_download module
+---------------------------------------------
+
+.. automodule:: detectree2.data_loading.gee_download
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+detectree2.data\_loading.quickstart module
+------------------------------------------
+
+.. automodule:: detectree2.data_loading.quickstart
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: detectree2.data_loading
+   :members:
+   :undoc-members:
+   :show-inheritance:

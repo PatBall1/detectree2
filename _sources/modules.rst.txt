@@ -1,0 +1,7 @@
+detectree2
+==========
+
+.. toctree::
+   :maxdepth: 4
+
+   detectree2

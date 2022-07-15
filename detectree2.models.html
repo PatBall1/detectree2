@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>detectree2.models package &#8212; detectree2 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="detectree2-models-package">
+<h1>detectree2.models package<a class="headerlink" href="#detectree2-models-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-detectree2.models.models">
+<span id="detectree2-models-models-module"></span><h2>detectree2.models.models module<a class="headerlink" href="#module-detectree2.models.models" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-detectree2.models.predict">
+<span id="detectree2-models-predict-module"></span><h2>detectree2.models.predict module<a class="headerlink" href="#module-detectree2.models.predict" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-detectree2.models.test">
+<span id="detectree2-models-test-module"></span><h2>detectree2.models.test module<a class="headerlink" href="#module-detectree2.models.test" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-detectree2.models.train">
+<span id="detectree2-models-train-module"></span><h2>detectree2.models.train module<a class="headerlink" href="#module-detectree2.models.train" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="detectree2.models.train.LossEvalHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">LossEvalHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_period</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_loader</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.LossEvalHook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">HookBase</span></code></p>
+<p>Do inference and get the loss metric</p>
+<p>Class to:
+- Do inference of dataset like an Evaluator does
+- Get the loss metric like the trainer does
+<a class="reference external" href="https://github.com/facebookresearch/detectron2/blob/master/detectron2/evaluation/evaluator.py">https://github.com/facebookresearch/detectron2/blob/master/detectron2/evaluation/evaluator.py</a>
+<a class="reference external" href="https://github.com/facebookresearch/detectron2/blob/master/detectron2/engine/train_loop.py">https://github.com/facebookresearch/detectron2/blob/master/detectron2/engine/train_loop.py</a>
+See <a class="reference external" href="https://gist.github.com/ortegatron/c0dad15e49c2b74de8bb09a5615d9f6b">https://gist.github.com/ortegatron/c0dad15e49c2b74de8bb09a5615d9f6b</a></p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><p>model:
+period
+data loader</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="detectree2.models.train.LossEvalHook.after_step">
+<span class="sig-name descname"><span class="pre">after_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.LossEvalHook.after_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called after each iteration.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="detectree2.models.train.MyTrainer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">MyTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.MyTrainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DefaultTrainer</span></code></p>
+<p>_summary_</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>DefaultTrainer (_type_): _description_</p>
+</dd>
+<dt>Returns:</dt><dd><p>_type_: _description_</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="detectree2.models.train.MyTrainer.build_evaluator">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_evaluator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.MyTrainer.build_evaluator" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Returns:</dt><dd><p>DatasetEvaluator or None</p>
+</dd>
+</dl>
+<p>It is not implemented by default.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="detectree2.models.train.MyTrainer.build_hooks">
+<span class="sig-name descname"><span class="pre">build_hooks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.MyTrainer.build_hooks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a list of default hooks, including timing, evaluation,
+checkpointing, lr scheduling, precise BN, writing events.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>list[HookBase]:</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="detectree2.models.train.MyTrainer.build_train_loader">
+<span class="sig-name descname"><span class="pre">build_train_loader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.MyTrainer.build_train_loader" title="Permalink to this definition">¶</a></dt>
+<dd><p>_summary_</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>cfg (_type_): _description_</p>
+</dd>
+<dt>Returns:</dt><dd><p>_type_: _description_</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.train.combine_dicts">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">combine_dicts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'train'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.combine_dicts" title="Permalink to this definition">¶</a></dt>
+<dd><p>function to join tree dicts from different directories</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.train.get_tree_dicts">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">get_tree_dicts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.get_tree_dicts" title="Permalink to this definition">¶</a></dt>
+<dd><p>directory points to files
+classes signifies which column (if any) corresponds to the class labels</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.train.load_json_arr">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">load_json_arr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.load_json_arr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.train.register_train_data">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">register_train_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_location</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tree'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_fold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.register_train_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.train.setup_cfg">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">setup_cfg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trains</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('trees_train',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tests</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('trees_val',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ims_per_batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0003</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/content/drive/Shareddrives/detectree2/train_outputs'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.setup_cfg" title="Permalink to this definition">¶</a></dt>
+<dd><p>To set up config object</p>
+</dd></dl>
+
+</section>
+<section id="module-detectree2.models.train_tune">
+<span id="detectree2-models-train-tune-module"></span><h2>detectree2.models.train_tune module<a class="headerlink" href="#module-detectree2.models.train_tune" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-detectree2.models">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-detectree2.models" title="Permalink to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">detectree2</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, James Ball.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/detectree2.models.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
