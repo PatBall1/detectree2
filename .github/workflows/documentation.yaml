@@ -3,7 +3,7 @@ name: Sphinx build
 on:
   push:
     branches:
-      - documentation
+      - master
 
 jobs:
   build:
@@ -33,7 +33,7 @@ jobs:
         path: docs/build/html/
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
-      if: github.ref == 'refs/heads/documentation' #was main
+      if: github.ref == 'refs/heads/master' 
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: docs/build/html
