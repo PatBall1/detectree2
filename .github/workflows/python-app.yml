@@ -39,4 +39,5 @@ jobs:
         pytest
     - name: Test with mypy
       run: |
+        pip install mypy
         mypy
