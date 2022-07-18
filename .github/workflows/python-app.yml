@@ -40,4 +40,4 @@ jobs:
     - name: Test with mypy
       run: |
         pip install mypy
-        mypy
+        mypy detectree2
