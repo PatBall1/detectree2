@@ -37,6 +37,52 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
+<section id="module-detectree2.models.F1_calculator">
+<span id="detectree2-models-f1-calculator-module"></span><h2>detectree2.models.F1_calculator module<a class="headerlink" href="#module-detectree2.models.F1_calculator" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.F1_calculator.PolyArea">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.F1_calculator.</span></span><span class="sig-name descname"><span class="pre">PolyArea</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature=&lt;class</span> <span class="pre">'dict'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.F1_calculator.PolyArea" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take a featrue from a geojson and calculates the area of the polygon</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.F1_calculator.all_polys_area">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.F1_calculator.</span></span><span class="sig-name descname"><span class="pre">all_polys_area</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features=&lt;class</span> <span class="pre">'list'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.F1_calculator.all_polys_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take a list of polygons and find the corresponding area of each of them</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.F1_calculator.f1_cal">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.F1_calculator.</span></span><span class="sig-name descname"><span class="pre">f1_cal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">precision</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recall</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.F1_calculator.f1_cal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculating the F1 score</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.F1_calculator.intersection_data">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.F1_calculator.</span></span><span class="sig-name descname"><span class="pre">intersection_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_features=&lt;class</span> <span class="pre">'list'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_features=&lt;class</span> <span class="pre">'list'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_feats_areas=&lt;class</span> <span class="pre">'dict'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_feats_areas=&lt;class</span> <span class="pre">'dict'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.F1_calculator.intersection_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a dictionary of the intersections and IoU for each tile</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.F1_calculator.prec_recall_func">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.F1_calculator.</span></span><span class="sig-name descname"><span class="pre">prec_recall_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_tps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_fps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_fns</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.F1_calculator.prec_recall_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the precision and recall by standard formulas</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.F1_calculator.site_F1_score">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.F1_calculator.</span></span><span class="sig-name descname"><span class="pre">site_F1_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EPSG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.F1_calculator.site_F1_score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Code to calculate all the intersections of shapes in a pair of files and the area of the corresponding polygons
+Output the test_count so</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.F1_calculator.threshold_positives">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.F1_calculator.</span></span><span class="sig-name descname"><span class="pre">threshold_positives</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tile_intersection=&lt;class</span> <span class="pre">'list'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">GIoU=&lt;class</span> <span class="pre">'dict'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold=0.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.F1_calculator.threshold_positives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculating the positives, only the one with the highest IoU above 0.5 is counted as a true positive</p>
+</dd></dl>
+
+</section>
 <section id="module-detectree2.models.models">
 <span id="detectree2-models-models-module"></span><h2>detectree2.models.models module<a class="headerlink" href="#module-detectree2.models.models" title="Permalink to this heading">¶</a></h2>
 </section>
@@ -49,111 +95,28 @@
 </dd></dl>
 
 </section>
+<section id="module-detectree2.models.reproject">
+<span id="detectree2-models-reproject-module"></span><h2>detectree2.models.reproject module<a class="headerlink" href="#module-detectree2.models.reproject" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.reproject.polygonFromMask">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.reproject.</span></span><span class="sig-name descname"><span class="pre">polygonFromMask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maskedArr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.reproject.polygonFromMask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Code to convert RLE data from the output instances into Polygons, a small about of info is lost but is fine.
+<a class="reference external" href="https://github.com/hazirbas/coco-json-converter/blob/master/generate_coco_json.py">https://github.com/hazirbas/coco-json-converter/blob/master/generate_coco_json.py</a> &lt;– found here</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.reproject.reproject_to_geojson">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.reproject.</span></span><span class="sig-name descname"><span class="pre">reproject_to_geojson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EPSG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'26917'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.reproject.reproject_to_geojson" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a json and changes it to a geojson so it can overlay with crowns
+Another copy is produced to overlay with PNGs</p>
+</dd></dl>
+
+</section>
 <section id="module-detectree2.models.test">
 <span id="detectree2-models-test-module"></span><h2>detectree2.models.test module<a class="headerlink" href="#module-detectree2.models.test" title="Permalink to this heading">¶</a></h2>
 </section>
-<section id="module-detectree2.models.train">
-<span id="detectree2-models-train-module"></span><h2>detectree2.models.train module<a class="headerlink" href="#module-detectree2.models.train" title="Permalink to this heading">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="detectree2.models.train.LossEvalHook">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">LossEvalHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_period</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_loader</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.LossEvalHook" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">HookBase</span></code></p>
-<p>Do inference and get the loss metric</p>
-<p>Class to:
-- Do inference of dataset like an Evaluator does
-- Get the loss metric like the trainer does
-<a class="reference external" href="https://github.com/facebookresearch/detectron2/blob/master/detectron2/evaluation/evaluator.py">https://github.com/facebookresearch/detectron2/blob/master/detectron2/evaluation/evaluator.py</a>
-<a class="reference external" href="https://github.com/facebookresearch/detectron2/blob/master/detectron2/engine/train_loop.py">https://github.com/facebookresearch/detectron2/blob/master/detectron2/engine/train_loop.py</a>
-See <a class="reference external" href="https://gist.github.com/ortegatron/c0dad15e49c2b74de8bb09a5615d9f6b">https://gist.github.com/ortegatron/c0dad15e49c2b74de8bb09a5615d9f6b</a></p>
-<dl class="simple">
-<dt>Attributes:</dt><dd><p>model:
-period
-data loader</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="detectree2.models.train.LossEvalHook.after_step">
-<span class="sig-name descname"><span class="pre">after_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.LossEvalHook.after_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Called after each iteration.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="detectree2.models.train.MyTrainer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">MyTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.MyTrainer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DefaultTrainer</span></code></p>
-<p>_summary_</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>DefaultTrainer (_type_): _description_</p>
-</dd>
-<dt>Returns:</dt><dd><p>_type_: _description_</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="detectree2.models.train.MyTrainer.build_evaluator">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_evaluator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.MyTrainer.build_evaluator" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="simple">
-<dt>Returns:</dt><dd><p>DatasetEvaluator or None</p>
-</dd>
-</dl>
-<p>It is not implemented by default.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="detectree2.models.train.MyTrainer.build_hooks">
-<span class="sig-name descname"><span class="pre">build_hooks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.MyTrainer.build_hooks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build a list of default hooks, including timing, evaluation,
-checkpointing, lr scheduling, precise BN, writing events.</p>
-<dl class="simple">
-<dt>Returns:</dt><dd><p>list[HookBase]:</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="detectree2.models.train.MyTrainer.build_train_loader">
-<span class="sig-name descname"><span class="pre">build_train_loader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.MyTrainer.build_train_loader" title="Permalink to this definition">¶</a></dt>
-<dd><p>_summary_</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>cfg (_type_): _description_</p>
-</dd>
-<dt>Returns:</dt><dd><p>_type_: _description_</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="detectree2.models.train.combine_dicts">
-<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">combine_dicts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'train'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.combine_dicts" title="Permalink to this definition">¶</a></dt>
-<dd><p>function to join tree dicts from different directories</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="detectree2.models.train.get_tree_dicts">
-<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">get_tree_dicts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.get_tree_dicts" title="Permalink to this definition">¶</a></dt>
-<dd><p>directory points to files
-classes signifies which column (if any) corresponds to the class labels</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="detectree2.models.train.load_json_arr">
-<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">load_json_arr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.load_json_arr" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="detectree2.models.train.register_train_data">
-<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">register_train_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_location</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tree'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_fold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.register_train_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="detectree2.models.train.setup_cfg">
-<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">setup_cfg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trains</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('trees_train',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tests</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('trees_val',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ims_per_batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0003</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/content/drive/Shareddrives/detectree2/train_outputs'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.setup_cfg" title="Permalink to this definition">¶</a></dt>
-<dd><p>To set up config object</p>
-</dd></dl>
-
+<section id="detectree2-models-train-module">
+<h2>detectree2.models.train module<a class="headerlink" href="#detectree2-models-train-module" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-detectree2.models.train_tune">
 <span id="detectree2-models-train-tune-module"></span><h2>detectree2.models.train_tune module<a class="headerlink" href="#module-detectree2.models.train_tune" title="Permalink to this heading">¶</a></h2>

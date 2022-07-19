@@ -4,6 +4,14 @@ detectree2.models package
 Submodules
 ----------
 
+detectree2.models.F1\_calculator module
+---------------------------------------
+
+.. automodule:: detectree2.models.F1_calculator
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 detectree2.models.models module
 -------------------------------
 
@@ -16,6 +24,14 @@ detectree2.models.predict module
 --------------------------------
 
 .. automodule:: detectree2.models.predict
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+detectree2.models.reproject module
+----------------------------------
+
+.. automodule:: detectree2.models.reproject
    :members:
    :undoc-members:
    :show-inheritance:
