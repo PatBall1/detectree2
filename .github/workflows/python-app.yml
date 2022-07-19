@@ -42,4 +42,4 @@ jobs:
         pip install mypy data-science-types pandas-stubs types-pillow
         pwd
         ls
-        mypy detectree2
+        mypy -v detectree2
