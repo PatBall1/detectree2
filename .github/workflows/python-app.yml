@@ -40,4 +40,6 @@ jobs:
     - name: Test with mypy
       run: |
         pip install mypy data-science-types pandas-stubs types-pillow
+        pwd
+        ls
         mypy detectree2
