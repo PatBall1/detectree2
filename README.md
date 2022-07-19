@@ -45,7 +45,7 @@ Here is an example image of the predictions made by Mask R-CNN.
 
 - Functions for multiple labels vs single "tree" label
 - Implement early stopping
-- Gather "prisine" training and testing tiles across all available sites
+- Gather "pristine" training and testing tiles across all available sites
 - Availability of pre-trained model
 
 ## Applications
