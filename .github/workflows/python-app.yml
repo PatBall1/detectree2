@@ -39,7 +39,8 @@ jobs:
         pytest
     - name: Test with mypy
       run: |
-        pip install mypy data-science-types pandas-stubs types-pillow
+        pip list
+        pip install mypy data-science-types pandas-stubs types-pillow numpy
         pwd
         ls
-        mypy -v detectree2
+        mypy detectree2
