@@ -1,8 +1,8 @@
 import unittest
 
-from src.tests import test_data
-from src.tests import test_preprocessing
-from src.tests import test_models
+from detectree2.tests import test_data
+from detectree2.tests import test_preprocessing
+from detectree2.tests import test_models
 
 suites = []
 suites.append(test_data.suite)

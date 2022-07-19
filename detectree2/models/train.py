@@ -1,4 +1,3 @@
-from detectron2.utils.logger import setup_logger
 import pandas as pd
 import numpy as np
 import cv2
@@ -7,7 +6,6 @@ import random
 import matplotlib.pyplot as plt
 from PIL import Image
 import os
-import numpy as np
 import json
 import logging
 from pathlib import Path
@@ -16,11 +14,12 @@ from detectron2.engine import DefaultPredictor, DefaultTrainer
 from detectron2.config import get_cfg
 from detectron2.utils.visualizer import Visualizer
 from detectron2.utils.visualizer import ColorMode
+from detectron2.utils.logger import log_every_n_seconds, setup_logger
+import detectron2.utils.comm as comm
 from detectron2.structures import BoxMode
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import inference_context
 from detectron2.evaluation import COCOEvaluator
-from detectron2.utils.logger import log_every_n_seconds
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 from detectron2.data import (
     MetadataCatalog,
@@ -29,7 +28,6 @@ from detectron2.data import (
     build_detection_test_loader,
     build_detection_train_loader,
 )
-import detectron2.utils.comm as comm
 import detectron2.data.transforms as T
 import torch
 from IPython.display import display, clear_output
@@ -188,7 +186,7 @@ def get_tree_dicts(directory, classes=None):
   """
     directory points to files
     classes signifies which column (if any) corresponds to the class labels
-    """
+  """
   # filepath = '/content/drive/MyDrive/forestseg/paracou_data/Panayiotis_Outputs/220303_AllSpLabelled.gpkg'
   # datagpd = gpd.read_file(filepath)
   # List_Genus = datagpd.Genus_Species.to_list()
@@ -327,7 +325,7 @@ def setup_cfg(
   """
   cfg = get_cfg()
   cfg.merge_from_file(model_zoo.get_config_file(base_model))
-  cfg.DATASETS.TRAIN = trains    # Possible to load in multiple registrations here?
+  cfg.DATASETS.TRAIN = trains 
   cfg.DATASETS.TEST = tests
   cfg.DATALOADER.NUM_WORKERS = workers
   cfg.OUTPUT_DIR = out_dir
@@ -415,4 +413,31 @@ def predictions_on_data(
 
     
 if __name__ == "__main__":
-  print("test")
+  train_location = "/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/"
+  register_train_data(train_location, "Paracou", 1) # folder, name, validation fold
+
+  name = "Paracou2019"
+  train_location = "/content/drive/Shareddrives/detectree2/data/Paracou/tiles2019/train/"
+  dataset_dicts = combine_dicts(train_location, 1)
+  trees_metadata = MetadataCatalog.get(name + "_train")
+  #dataset_dicts = get_tree_dicts("./")
+  for d in dataset_dicts:
+    img = cv2.imread(d["file_name"])
+    visualizer = Visualizer(img[:, :, ::-1], metadata=trees_metadata, scale=0.5)
+    out = visualizer.draw_dataset_dict(d)
+    image = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
+    display(Image.fromarray(image))
+  # Set the base (pre-trained) model from the detectron2 model_zoo
+  model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
+  # Set the names of the registered train and test sets
+  # pretrained model?
+  # trained_model = "/content/drive/Shareddrives/detectree2/models/220629_ParacouSepilokDanum_JB.pth"
+  trains = ("Paracou_train", "Paracou2019_train", "ParacouUAV_train", "Danum_train", "SepilokEast_train", "SepilokWest_train")
+  tests = ("Paracou_val", "Paracou2019_val", "ParacouUAV_val", "Danum_val", "SepilokEast_val", "SepilokWest_val")
+  out_dir = "/content/drive/Shareddrives/detectree2/220703_train_outputs"
+
+  cfg = setup_cfg(model, trains, tests, eval_period=100, max_iter=3000, out_dir=out_dir) # update_model arg can be used to load in trained  model
+  trainer = MyTrainer(cfg) 
+  trainer.resume_or_load(resume=False)
+  trainer.train()
+
