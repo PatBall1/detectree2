@@ -41,6 +41,4 @@ jobs:
       run: |
         pip list
         pip install mypy data-science-types pandas-stubs types-pillow numpy
-        pwd
-        ls
         mypy detectree2
