@@ -197,7 +197,8 @@ def tile_data_train(data,
                     tile_width=200,
                     tile_height=200,
                     crowns=None,
-                    threshold=0):
+                    threshold=0,
+                    dtype_bool=False):
   """
     Function to tile up image and (if included) corresponding crowns.
     Only outputs tiles with crowns in.
@@ -290,8 +291,10 @@ def tile_data_train(data,
           "width": out_img.shape[2],
           "transform": out_transform,
           "nodata": None,
-          "dtype": "uint8", # this causes issue - comment out for the Malaysia data
       })
+      # dtype needs to be unchanged for some data and set to uint8 for others
+      if dtype_bool: 
+            out_meta.update({"dtype": "uint8"})
       # print('Out Meta:',out_meta)
 
       # Saving the tile as a new tiff, named by the origin of the tile. If tile appears blank in folder can show the image here and may
@@ -328,15 +331,6 @@ def tile_data_train(data,
           out_path + ".png",
           rgb_rescaled,
       )
-
-      # img = cv2.imread(
-      #    "gdrive/MyDrive/JamesHirst/NY/LargeArea_images/naip_cayuga/naip_cayuga_tiled_by_me/tile_"
-      #    + str(minx)
-      #    + "_"
-      #    + str(miny)
-      #    + ".png"
-      # )
-      # print('png shape:', img.shape)
 
       # select the crowns that intersect the non-buffered central
       # section of the tile using the inner join
@@ -392,23 +386,61 @@ def tile_data_train(data,
         continue
 
 
+def image_details(fileroot):
+  """
+  Take a filename a split it up to get the coordinates, tile width and the buffer and then output box structure
+  """
+  image_info = fileroot.split("_")
+  minx = int(image_info[-4])
+  miny = int(image_info[-3])
+  tile_width = int(image_info[-2])
+  buffer = int(image_info[-1])
+
+  xbox_coords = (minx-buffer, minx+tile_width+buffer)
+  ybox_coords = (miny-buffer, miny+tile_width+buffer)
+  return [xbox_coords, ybox_coords]
+
+
+def isOverlappingBox(test_boxes_array, train_box):
+  """
+  Testing if the train box overlaps with any of the test boxes
+  """
+  for test_box in test_boxes_array:
+    test_box_x = test_box[0]
+    test_box_y = test_box[1]
+    train_box_x = train_box[0]
+    train_box_y = train_box[1]
+    # print("test:", test_box)
+    # print("train:", train_box)
+
+    #Check if both the x and y coords overlap meaning the entire box does and hence end loop
+    if test_box_x[1] > train_box_x[0] and train_box_x[1] > test_box_x[0]:
+      if test_box_y[1] > train_box_y[0] and train_box_y[1] > test_box_y[0]:
+        # print("Overlap")
+        return True
+
+  return False
+
 def to_traintest_folders(tiles_folder="./",
                          out_folder="./data/",
                          test_frac=0.2,
                          folds=1):
   """
-  To send tiles to training (+validation) and test folder
+  To send tiles to training (+validation) and test folder and automatically make sure no overlap
   """
 
   Path(out_folder + "train").mkdir(parents=True, exist_ok=True)
   Path(out_folder + "test").mkdir(parents=True, exist_ok=True)
 
-  # First split between train and test
-  #split = np.array([4, 1])
-  split = np.array([(1 - test_frac), test_frac])
-  summed = np.sum(split)
-  percs = 100 * split / summed
-  percs = np.cumsum(percs)
+  ### I split differently by just randomly ordering a list and picking the first 
+  ### fraction of them- I think this is easier and it still works so this comment 
+  ### section is irrelevant? 
+  # # First split between train and test
+  # #split = np.array([4, 1])
+  # split = np.array([(1 - test_frac), test_frac])
+  # summed = np.sum(split)
+  # percs = 100 * split / summed
+  # percs = np.cumsum(percs)
 
   filenames = glob.glob(tiles_folder + "*.png")
   fileroots = [Path(item).stem for item in filenames]
@@ -418,20 +450,29 @@ def to_traintest_folders(tiles_folder="./",
 
   num = list(range(0, len(filenames)))
   random.shuffle(num)
+  test_boxes=[]
 
   for i in range(0, len(filenames)):
-    #print(i)
-    if num[i] < np.percentile(num, percs[0]):
-      #shutil.copy(filenames[i], out_folder + "train/")
-      shutil.copy(tiles_folder + fileroots[i] + ".geojson",
-                  out_folder + "train/")
+      #print(i)
+      #if num[i] < np.percentile(num, 100-percs[0]):  DELETE THIS LINE
+      if i <= len(filenames)* test_frac: 
+        test_boxes.append(image_details(fileroots[num[i]]))
+        # print("test boxes", test_boxes)
+        #shutil.copy(filenames[num[i]], out_folder + "test/")
+        shutil.copy(tiles_folder + fileroots[num[i]] + ".geojson",
+                  out_folder + "test/")
+      else:
+        train_box = image_details(fileroots[num[i]])
+        if not isOverlappingBox(test_boxes, train_box):
+          # print("Not overlapping")
+          #shutil.copy(filenames[num[i]], out_folder + "train/")
+          shutil.copy(tiles_folder + fileroots[num[i]] + ".geojson",
+                     out_folder + "train/")
     # elif num[i] < np.percentile(num, percs[1]):
     #    shutil.copy(filenames[i], "./data/val/")
     #    shutil.copy("./data/" + stemname + "_" + indices[i] + ".geojson", "./data/val/")
-    else:
-      #shutil.copy(filenames[i], out_folder + "test/")
-      shutil.copy(tiles_folder + fileroots[i] + ".geojson",
-                  out_folder + "test/")
+
+      
 
   #filenames = glob.glob(out_folder + "/train/*.png")
   filenames = glob.glob(out_folder + "/train/*.geojson")
@@ -457,6 +498,7 @@ def to_traintest_folders(tiles_folder="./",
           out_folder + "train/" + name + ".geojson",
           out_folder + "train/fold_" + str(i + 1) + "/",
       )
+
 
 
 if __name__ == "__main__":
