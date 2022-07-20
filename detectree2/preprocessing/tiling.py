@@ -191,21 +191,30 @@ def tile_data(data,
           continue
 
 
-def tile_data_train(data,
-                    out_dir,
-                    buffer=30,
-                    tile_width=200,
-                    tile_height=200,
-                    crowns=None,
-                    threshold=0,
-                    dtype_bool=False):
+def tile_data_train(data: DatasetReader,
+                    out_dir: str,
+                    buffer: int = 30,
+                    tile_width: int=200,
+                    tile_height: int=200,
+                    crowns: gpd.GeoDataFrame = None,
+                    threshold: float = 0,
+                    dtype_bool: bool = False):
+  """Tiles up orthomosaic and corresponding crowns into training tiles
+  
+  Tiles up othomosaic and crowns into training tiles. A threshold can be used
+  to ensure a good coverage of crowns across a tile.
+  
+  Args:
+    data: Orthomosaic as a rasterio object in a UTM type projection
+    buffer: Overlapping buffer of tiles in meters (UTM)
+    tile_width: Tile width in meters
+    tile_height: Tile height in meters
+    crowns: Crown polygons as a geopandas dataframe
+    threshold: Min proportion of the tile covered by crowns to be accepted {0,1}
+    dtype_bool: Flag to edit dtype to prevent black tiles
   """
-    Function to tile up image and (if included) corresponding crowns.
-    Only outputs tiles with crowns in.
-    """
   # Should clip data to crowns straight off to speed things up
   os.makedirs(out_dir, exist_ok=True)
-  # More efficient if we could clip to crowns immediately...
   #out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
   for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width,
                         int):
