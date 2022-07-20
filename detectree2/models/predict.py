@@ -1,5 +1,3 @@
-import pandas as pd
-import numpy as np
 import cv2
 import random
 import matplotlib.pyplot as plt
@@ -29,6 +27,7 @@ import fiona
 from shapely.geometry import shape, mapping, box
 from shapely.geometry.multipolygon import MultiPolygon
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
+from detectron2.engine import DefaultPredictor, DefaultTrainer
 from detectree2.models.train import get_tree_dicts, get_filenames
 
 
@@ -55,20 +54,18 @@ def polygonFromMask(maskedArr):
     return segmentation[0] #, [x, y, w, h], area
 
 
-def predictions_on_data(
-  directory = None,
-  predictor = DefaultTrainer,
+def predict_on_data(
+  directory: str = None,
+  predictor = DefaultPredictor,
   trees_metadata = None,
-  save = True,
+  save: bool = True,
   scale = 1,
   geos_exist = True,
   num_predictions = 0
   ):
-  """
-  Prediction produced from a test folder and outputted to predictions folder
+  """Prediction produced from a folder of tiled data
   """
 
-  test_location = directory + "test"
   pred_dir = directory + "predictions"
 
   Path(pred_dir).mkdir(parents=True, exist_ok=True)

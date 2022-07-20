@@ -80,17 +80,6 @@ def tile_data(data: DatasetReader,
       # )  # 3182
       # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
 
-      # skip forward if there are no crowns in a tile
-      # overlapping_crowns = sjoin(crowns, geo, predicate="within", how="inner")
-      overlapping_crowns = gpd.clip(crowns, geo)
-      # Discard tiles with no crowns
-      if overlapping_crowns.empty:
-        continue
-      # if len(overlapping_crowns) < threshold:
-      #    continue
-      # Discard tiles that do no have a sufficient coverage of training crowns
-      if (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
-        continue
       # here we are cropping the tiff to the bounding box of the tile we want
       coords = getFeatures(geo)
       # print("Coords:", coords)
