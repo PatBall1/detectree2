@@ -30,6 +30,9 @@ from detectron2.data import (
 import detectron2.data.transforms as T
 from IPython.display import display, clear_output
 
+from typing import TypedDict
+from typing import Any
+
 
 class LossEvalHook(HookBase):
     """Do inference and get the loss metric
@@ -182,10 +185,17 @@ class MyTrainer(DefaultTrainer):
         )
 
 
-def get_tree_dicts(directory, classes=None):
+def get_tree_dicts(directory: str, classes: list[str] = None) -> list[dict]:
     """
     directory points to files
     classes signifies which column (if any) corresponds to the class labels
+
+    Args:
+        directory: Path to directory
+        classes:
+
+    Returns:
+        List of dictionaries corresponding to segmentations of trees. Each dictionary includes bounding box around tree and points tracing a polygon around a tree.
     """
     # filepath = '/content/drive/MyDrive/forestseg/paracou_data/Panayiotis_Outputs/220303_AllSpLabelled.gpkg'
     # datagpd = gpd.read_file(filepath)
@@ -213,8 +223,8 @@ def get_tree_dicts(directory, classes=None):
         json_file = os.path.join(directory, filename)
         with open(json_file) as f:
             img_anns = json.load(f)
-
-        record = {}
+        # Turn off type checking for annotations until we have a better solution
+        record: dict[str, Any] = {}
 
         filename = os.path.join(directory, img_anns["imagePath"])
         # Make sure we have the correct height and width
@@ -224,6 +234,7 @@ def get_tree_dicts(directory, classes=None):
         record["height"] = height
         record["width"] = width
         record["image_id"] = filename[0:400]
+        record["annotations"] = {}
         # print(filename[0:400])
 
         objs = []
@@ -266,19 +277,27 @@ def get_tree_dicts(directory, classes=None):
     return dataset_dicts
 
 
-def combine_dicts(folder, val_folder, mode="train"):
+def combine_dicts(root_dir: str, val_dir: int, mode: str = "train") -> list[dict]:
     """
-    function to join tree dicts from different directories
+    Join tree dicts from different directories
+
+    Args:
+        root_dir:
+        val_dir:
+
+    Returns:
+        Concatenated array of dictionaries over all directories
+
     """
-    train_dirs = [os.path.join(folder, file) for file in os.listdir(folder)]
+    train_dirs = [os.path.join(root_dir, dir) for dir in os.listdir(root_dir)]
     if mode == "train":
-        del train_dirs[(val_folder - 1)]
+        del train_dirs[(val_dir - 1)]
         tree_dicts = []
         for d in train_dirs:
-            tree_dicts = tree_dicts + get_tree_dicts(d)
+            tree_dicts += get_tree_dicts(d)
         return tree_dicts
     else:
-        tree_dicts = get_tree_dicts(train_dirs[(val_folder - 1)])
+        tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)])
         return tree_dicts
 
 
