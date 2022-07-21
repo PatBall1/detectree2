@@ -328,7 +328,7 @@ def setup_cfg(
   cfg.OUTPUT_DIR = out_dir
   os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
   if update_model is not None:
-    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(update_model)
+    cfg.MODEL.WEIGHTS = update_model # DOESN'T WORK
   else:
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
   
