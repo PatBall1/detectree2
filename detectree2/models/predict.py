@@ -29,48 +29,46 @@ def polygonFromMask(maskedArr):
     area = mask_util.area(RLE)
     [x, y, w, h] = cv2.boundingRect(maskedArr)
 
-    return segmentation[0] #, [x, y, w, h], area
+    return segmentation[0]  # , [x, y, w, h], area
 
 
 def predict_on_data(
-  directory: str = None,
-  predictor = DefaultPredictor,
-  save: bool = True,
-  ):
-  """Make predictions on tiled data
+    directory: str = None,
+    predictor=DefaultPredictor,
+    save: bool = True,
+):
+    """Make predictions on tiled data
+    """
 
+    pred_dir = directory + "predictions"
 
-  """
+    Path(pred_dir).mkdir(parents=True, exist_ok=True)
 
-  pred_dir = directory + "predictions"
+    dataset_dicts = get_filenames(directory)
 
-  Path(pred_dir).mkdir(parents=True, exist_ok=True)
+    # Works out if all items in folder should be predicted on
 
+    num_to_pred = len(dataset_dicts)
 
-  dataset_dicts = get_filenames(directory)
-  
-  # Works out if all items in folder should be predicted on
+    for d in random.sample(dataset_dicts, num_to_pred):
+        img = cv2.imread(d["file_name"])
+        outputs = predictor(img)
 
-  num_to_pred = len(dataset_dicts)
+        # Creating the file name of the output file
+        file_name_path = d["file_name"]
+        # Strips off all slashes so just final file name left
+        file_name = os.path.basename(os.path.normpath(file_name_path))
+        file_name = file_name.replace("png", "json")
 
-  for d in random.sample(dataset_dicts,num_to_pred):
-    img = cv2.imread(d["file_name"])
-    outputs = predictor(img)
+        output_file = pred_dir + "/Prediction_" + file_name
+        print(output_file)
 
-    ### Creating the file name of the output file
-    file_name_path = d["file_name"]
-    file_name = os.path.basename(os.path.normpath(file_name_path))  #Strips off all slashes so just final file name left
-    file_name = file_name.replace("png","json")
-    
-    output_file = pred_dir + "/Prediction_" + file_name
-    print(output_file)
-
-    if save: 
-      ## Converting the predictions to json files and saving them in the specfied output file.
-      evaluations= instances_to_coco_json(outputs["instances"].to("cpu"),d["file_name"])
-      with open(output_file, "w") as dest:
-        json.dump(evaluations,dest)
+        if save:
+            # Converting the predictions to json files and saving them in the specfied output file.
+            evaluations = instances_to_coco_json(outputs["instances"].to("cpu"), d["file_name"])
+            with open(output_file, "w") as dest:
+                json.dump(evaluations, dest)
 
 
 if __name__ == "__main__":
-  print("something")
+    print("something")

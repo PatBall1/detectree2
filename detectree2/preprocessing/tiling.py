@@ -27,15 +27,15 @@ from fiona.crs import from_epsg
 
 
 def get_features(gdf: gpd.GeoDataFrame):
-  """Function to parse features from GeoDataFrame in such a manner that rasterio wants them
+    """Function to parse features from GeoDataFrame in such a manner that rasterio wants them
 
-  Args:
-    gdf: Input geopandas dataframe
-  
-  Returns:
-    json style data
-  """
-  return [json.loads(gdf.to_json())["features"][0]["geometry"]]
+    Args:
+      gdf: Input geopandas dataframe
+
+    Returns:
+      json style data
+    """
+    return [json.loads(gdf.to_json())["features"][0]["geometry"]]
 
 
 def tile_data(data: DatasetReader,
