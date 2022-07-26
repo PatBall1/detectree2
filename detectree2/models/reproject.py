@@ -129,7 +129,7 @@ def reproject_to_geojson_spatially(data, output_fold = None, pred_fold = None, b
     entries = os.listdir(pred_fold)
 
     for file in entries:
-        if ".geojson" in file: 
+        if ".json" in file: 
             #create a geofile for each tile --> the EPSG value might need to be changed.
             geofile = {"type": "FeatureCollection", "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::" + EPSG }}, "features":[]}
 
