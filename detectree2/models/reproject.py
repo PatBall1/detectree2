@@ -88,7 +88,7 @@ def reproject_to_geojson(directory = None, EPSG = "26917"):
             #just a check that the crown image is correct
                 if img_dict["minx"]+'_'+img_dict["miny"] in crown_data["image_id"]:
                     crown = crown_data["segmentation"]
-                    confidence_score = crown['score']
+                    confidence_score = crown_data['score']
 
                     # changing the coords from RLE format so can be read as numbers, here the numbers are
                     # integers so a bit of info on position is lost
@@ -157,6 +157,7 @@ def reproject_to_geojson_spatially(data, output_fold = None, pred_fold = None, b
             #just a check that the crown image is correct
                 if img_dict["minx"]+'_'+img_dict["miny"] in crown_data["image_id"]:
                     crown = crown_data["segmentation"]
+                    confidence_score = crown_data['score']
 
                     # changing the coords from RLE format so can be read as numbers, here the numbers are
                     # integers so a bit of info on position is lost
@@ -195,7 +196,7 @@ def reproject_to_geojson_spatially(data, output_fold = None, pred_fold = None, b
 
                         moved_coords.append([x_coord,y_coord])
 
-                    geofile["features"].append({"type": "Feature", "properties": {}, "geometry" :{"type": "Polygon", "coordinates": [moved_coords]}})
+                    geofile["features"].append({"type": "Feature", "properties": {"Confidence score": confidence_score}, "geometry" :{"type": "Polygon", "coordinates": [moved_coords]}})
 
             # Check final form is correct - compare to a known geojson file if error appears.
             print(geofile)
