@@ -156,8 +156,15 @@ def tile_data_train(data: DatasetReader,
                     tile_height: int = 200,
                     crowns: gpd.GeoDataFrame = None,
                     threshold: float = 0,
+<<<<<<< HEAD
                     dtype_bool: bool = False):
     """Tiles up orthomosaic and corresponding crowns into training tiles. A threshold can be used
+=======
+                    dtype_bool: bool = False)->None:
+    """Tiles up orthomosaic and corresponding crowns into training tiles
+
+    Tiles up othomosaic and crowns into training tiles. A threshold can be used
+>>>>>>> 35e2f24 (small deletes)
     to ensure a good coverage of crowns across a tile.
 
     Args:
@@ -169,17 +176,19 @@ def tile_data_train(data: DatasetReader,
       threshold: Min proportion of the tile covered by crowns to be accepted {0,1}
       dtype_bool: Flag to edit dtype to prevent black tiles
     """
-    # Should clip data to crowns straight off to speed things up
+
+    # TODO: Clip data to crowns straight off to speed things up
+    out_dir = Path(out_dir)
     os.makedirs(out_dir, exist_ok=True)
     #out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width,
                           int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
-            # Naming conventions
+
             tilename = Path(data.name).stem
-            out_path = out_dir + tilename + "_" + str(minx) + "_" + str(
-                miny) + "_" + str(tile_width) + "_" + str(buffer)
+            out_path = out_dir / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}"
+
             # new tiling bbox including the buffer
             bbox = box(
                 minx - buffer,
@@ -210,7 +219,6 @@ def tile_data_train(data: DatasetReader,
                 continue
             # here we are cropping the tiff to the bounding box of the tile we want
             coords = getFeatures(geo)
-            # print("Coords:", coords)
 
             # define the tile as a mask of the whole tiff with just the bounding box
             out_img, out_transform = mask(data, shapes=coords, crop=True)
@@ -253,15 +261,15 @@ def tile_data_train(data: DatasetReader,
                 "transform": out_transform,
                 "nodata": None,
             })
+            
             # dtype needs to be unchanged for some data and set to uint8 for others
             if dtype_bool:
                 out_meta.update({"dtype": "uint8"})
-            # print("Out Meta:",out_meta)
 
             # Saving the tile as a new tiff, named by the origin of the tile. If tile appears blank in folder can show the image here and may
             # need to fix RGB data or the dtype
             # show(out_img)
-            out_tif = out_path + ".tif"
+            out_tif = out_path.with_suffix('.tif')
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
 
@@ -287,7 +295,7 @@ def tile_data_train(data: DatasetReader,
             # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
             # here as a naughty method
             cv2.imwrite(
-                out_path + ".png",
+                out_path.with_suffix(".png"),
                 rgb_rescaled,
             )
 
@@ -298,7 +306,6 @@ def tile_data_train(data: DatasetReader,
             # Maybe left join to keep information of crowns?
 
             overlapping_crowns = overlapping_crowns.explode(index_parts=True)
-            # print("Overlapping crowns:", overlapping_crowns)
 
             # translate to 0,0 to overlay on png
             # this now works as a universal approach.
@@ -314,7 +321,6 @@ def tile_data_train(data: DatasetReader,
             else:
                 # print("We are in the middle!")
                 moved = overlapping_crowns.translate(-minx + buffer, -miny + buffer)
-            # print("Moved coords:", moved)
 
             # scale to deal with the resolution
             scalingx = 1 / (data.transform[0])
@@ -322,7 +328,7 @@ def tile_data_train(data: DatasetReader,
             moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
             # print(moved_scaled)
 
-            impath = {"imagePath": (out_path + ".png")}
+            impath = {"imagePath": out_path.with_suffix(".png")}
 
             # save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
             # If the box selected from the image is outside of the mapped region due to the image being on a slant
