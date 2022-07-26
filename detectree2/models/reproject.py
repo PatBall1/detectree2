@@ -196,7 +196,7 @@ def reproject_to_geojson_spatially(data, output_fold = None, pred_fold = None, b
 
                         moved_coords.append([x_coord,y_coord])
 
-                    geofile["features"].append({"type": "Feature", "properties": {"Confidence score": confidence_score}, "geometry" :{"type": "Polygon", "coordinates": [rescaled_coords]}})
+                    geofile["features"].append({"type": "Feature", "properties": {"Confidence score": confidence_score}, "geometry" :{"type": "Polygon", "coordinates": [moved_coords]}})
 
             # Check final form is correct - compare to a known geojson file if error appears.
             print(geofile)
