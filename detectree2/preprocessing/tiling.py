@@ -177,7 +177,7 @@ def tile_data_train(data: DatasetReader,
       dtype_bool: Flag to edit dtype to prevent black tiles
     """
 
-    # TODO: Clip data to crowns straight off to speed things up
+    # TODO: Clip data to crowns straight away to speed things up
     out_dir = Path(out_dir)
     os.makedirs(out_dir, exist_ok=True)
     #out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
@@ -206,17 +206,17 @@ def tile_data_train(data: DatasetReader,
             # )  # 3182
             # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
 
-            # skip forward if there are no crowns in a tile
             # overlapping_crowns = sjoin(crowns, geo, predicate="within", how="inner")
             overlapping_crowns = gpd.clip(crowns, geo)
-            # Discard tiles with no crowns
+           
+            # Ignore tiles with no crowns
             if overlapping_crowns.empty:
                 continue
-            # if len(overlapping_crowns) < threshold:
-            #    continue
-            # Discard tiles that do no have a sufficient coverage of training crowns
+            
+            # Discard tiles that do not have a sufficient coverage of training crowns
             if (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
                 continue
+            
             # here we are cropping the tiff to the bounding box of the tile we want
             coords = getFeatures(geo)
 
@@ -235,7 +235,7 @@ def tile_data_train(data: DatasetReader,
             elif sumnan > 0.25 * totalpix:
                 continue
 
-            #out_img = out_img.astype("uint8")
+            # out_img = out_img.astype("uint8")
             # Or to really narrow down the crop onto the crown area
             # newbox = overlapping_crowns.total_bounds
             # newbox = gpd.GeoDataFrame(
