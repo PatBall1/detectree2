@@ -58,10 +58,8 @@ def tile_data(data: DatasetReader,
     #out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width,
                           int):
-        # print("minx:", minx)
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
-            # print("miny:", miny)
             # Naming conventions
             tilename = Path(data.name).stem
             out_path = out_dir + tilename + "_" + str(minx) + "_" + str(
@@ -241,8 +239,6 @@ def tile_data_train(data: DatasetReader,
 
             # out_img, out_transform = mask(data, shapes=newbox, crop=True)
 
-            # print("out transform:", out_transform)
-
             # This can be useful when reprojecting later as know the crs format to put it into
             # epsg_code = int(data.crs.data["init"][5:])
             # print(epsg_code)
@@ -271,8 +267,8 @@ def tile_data_train(data: DatasetReader,
 
             # read in the tile we have just saved
             clipped = rasterio.open(out_tif)
+            
             # read it as an array
-            # show(clipped)
             arr = clipped.read()
 
             # each band of the tiled tiff is a colour!
@@ -281,14 +277,12 @@ def tile_data_train(data: DatasetReader,
             B = arr[2]
 
             # stack up the bands in an order appropriate for saving with cv2, then rescale to the correct 0-255 range for cv2
-
             rgb = np.dstack((B, G, R))    # BGR for cv2
 
             if np.max(G) > 255:
                 rgb_rescaled = 255 * rgb / 65535
             else:
                 rgb_rescaled = rgb    # scale to image
-            # print("rgb rescaled", rgb_rescaled)
 
             # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
             # here as a naughty method
