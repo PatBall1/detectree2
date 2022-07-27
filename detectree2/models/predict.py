@@ -40,7 +40,7 @@ def predict_on_data(
     """Make predictions on tiled data
     """
 
-    pred_dir = directory + "predictions"
+    pred_dir = os.path.join(directory, "predictions")
 
     Path(pred_dir).mkdir(parents=True, exist_ok=True)
 
@@ -60,7 +60,7 @@ def predict_on_data(
         file_name = os.path.basename(os.path.normpath(file_name_path))
         file_name = file_name.replace("png", "json")
 
-        output_file = pred_dir + "/Prediction_" + file_name
+        output_file = os.path.join(pred_dir, f"Prediction_{file_name}")
         print(output_file)
 
         if save:
