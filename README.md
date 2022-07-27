@@ -39,7 +39,7 @@ Detectree2, based on the [Detectron2](https://github.com/facebookresearch/detect
 Training crowns are used to teach the network to delineate tree crowns
 <p align="center">
 <img width="500" align="center" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/Workflow_Diagram2_a.png#gh-light-mode-only>
-<img width="500" align="center" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/Workflow_Diagram2_b.png#gh-light-mode-only> 
+<img width="500" align="center" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/Workflow_Diagram2_b.png#gh-dark-mode-only> 
 </p>
 
 
