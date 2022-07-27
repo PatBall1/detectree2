@@ -36,6 +36,12 @@ Currently works on Google Colab (Pro version recommended). May struggle on clust
 
 Detectree2, based on the [Detectron2](https://github.com/facebookresearch/detectron2) Mask R-CNN architecture, locates trees in aerial images. It has been designed to delineate trees in challenging dense tropical forests for a range of ecological applications.
 
+Training crowns are used to teach the network to delineate tree crowns
+<p align="center">
+<img width="700" align="center" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/Workflow_Diagram2.png > 
+</p>
+
+
 Here is an example image of the predictions made by Mask R-CNN.
 <p align="center">
 <img width="700" align="center" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/plot_13_285520_583300.jpg > 
