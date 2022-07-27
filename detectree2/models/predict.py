@@ -59,7 +59,6 @@ def predict_on_data(
         # Strips off all slashes so just final file name left
         file_name = os.path.basename(os.path.normpath(file_name_path))
         file_name = file_name.replace("png", "json")
-
         output_file = os.path.join(pred_dir, f"Prediction_{file_name}")
         print(output_file)
 
