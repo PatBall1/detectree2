@@ -117,6 +117,86 @@ Output the test_count so</p>
 </dd></dl>
 
 </section>
+<section id="module-detectree2.models.NewF1Calculator">
+<span id="detectree2-models-newf1calculator-module"></span><h2>detectree2.models.NewF1Calculator module<a class="headerlink" href="#module-detectree2.models.NewF1Calculator" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="detectree2.models.NewF1Calculator.Feature">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">detectree2.models.NewF1Calculator.</span></span><span class="sig-name descname"><span class="pre">Feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lidar_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lidar_img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EPSG</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.NewF1Calculator.Feature" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="detectree2.models.NewF1Calculator.Feature.PolyArea">
+<span class="sig-name descname"><span class="pre">PolyArea</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.NewF1Calculator.Feature.PolyArea" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the area of the feature from scaled geojson</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="detectree2.models.NewF1Calculator.Feature.TreeHeight">
+<span class="sig-name descname"><span class="pre">TreeHeight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.NewF1Calculator.Feature.TreeHeight" title="Permalink to this definition"></a></dt>
+<dd><p>Crops the lidar tif to the features and then calculcates the 95% greatest height to account for error at the top end.
+If no lidar file is inputted than the height is given as 0</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="detectree2.models.NewF1Calculator.Feature.get_tuple_coords">
+<span class="sig-name descname"><span class="pre">get_tuple_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.NewF1Calculator.Feature.get_tuple_coords" title="Permalink to this definition"></a></dt>
+<dd><p>Changes the coordinates from a list of lists to a list of tuples</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.NewF1Calculator.f1_cal">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.NewF1Calculator.</span></span><span class="sig-name descname"><span class="pre">f1_cal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">precision</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recall</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.NewF1Calculator.f1_cal" title="Permalink to this definition"></a></dt>
+<dd><p>Calculating the F1 score</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.NewF1Calculator.feats_tall_enough">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.NewF1Calculator.</span></span><span class="sig-name descname"><span class="pre">feats_tall_enough</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_feats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_height</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.NewF1Calculator.feats_tall_enough" title="Permalink to this definition"></a></dt>
+<dd><p>Stores the numbers of all the features above the minimun height</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.NewF1Calculator.find_intersections">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.NewF1Calculator.</span></span><span class="sig-name descname"><span class="pre">find_intersections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_test_feats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_pred_feats</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.NewF1Calculator.find_intersections" title="Permalink to this definition"></a></dt>
+<dd><p>Finds the greatest intersection between the predicted and manual crowns and then
+updates the objects respectively</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.NewF1Calculator.get_tile_area">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.NewF1Calculator.</span></span><span class="sig-name descname"><span class="pre">get_tile_area</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.NewF1Calculator.get_tile_area" title="Permalink to this definition"></a></dt>
+<dd><p>Splitting up the file name to get width and buffer then squaring the result to get area</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.NewF1Calculator.initialise_feats">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.NewF1Calculator.</span></span><span class="sig-name descname"><span class="pre">initialise_feats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lidar_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lidar_img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">area_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EPSG</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.NewF1Calculator.initialise_feats" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a list of all the features as objects of the class.
+It filters out features with areas too small which are often crowns
+that are from an adjacent tile that have a bit of split over</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.NewF1Calculator.positives_test">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.NewF1Calculator.</span></span><span class="sig-name descname"><span class="pre">positives_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_test_feats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_pred_feats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_IoU</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_height</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.NewF1Calculator.positives_test" title="Permalink to this definition"></a></dt>
+<dd><p>Works out how many true postives, false positives and false negatives we have.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.NewF1Calculator.prec_recall_func">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.NewF1Calculator.</span></span><span class="sig-name descname"><span class="pre">prec_recall_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_tps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_fps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_fns</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.NewF1Calculator.prec_recall_func" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the precision and recall by standard formulas</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.NewF1Calculator.site_F1_score">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.NewF1Calculator.</span></span><span class="sig-name descname"><span class="pre">site_F1_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tile_directory=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_directory=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_directory=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lidar_img=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IoU_threshold=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_threshold=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">area_fraction_limit=0.0005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling=&lt;class</span> <span class="pre">'list'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EPSG=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.NewF1Calculator.site_F1_score" title="Permalink to this definition"></a></dt>
+<dd><p>Code to calculate all the intersections of shapes in a pair of files and the area of the corresponding polygons
+Output the test_count so</p>
+</dd></dl>
+
+</section>
 <section id="module-detectree2.models.models">
 <span id="detectree2-models-models-module"></span><h2>detectree2.models.models module<a class="headerlink" href="#module-detectree2.models.models" title="Permalink to this heading"></a></h2>
 </section>
@@ -135,6 +215,13 @@ Output the test_count so</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.reproject.reproject_to_geojson">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.reproject.</span></span><span class="sig-name descname"><span class="pre">reproject_to_geojson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EPSG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'26917'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.reproject.reproject_to_geojson" title="Permalink to this definition"></a></dt>
+<dd><p>Takes a json and changes it to a geojson so it can overlay with crowns
+Another copy is produced to overlay with PNGs</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.reproject.reproject_to_geojson_spatially">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.reproject.</span></span><span class="sig-name descname"><span class="pre">reproject_to_geojson_spatially</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_fold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_fold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EPSG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'26917'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.reproject.reproject_to_geojson_spatially" title="Permalink to this definition"></a></dt>
 <dd><p>Takes a json and changes it to a geojson so it can overlay with crowns
 Another copy is produced to overlay with PNGs</p>
 </dd></dl>
