@@ -307,6 +307,7 @@ def tile_data_train(data: DatasetReader,
       overlapping_crowns = overlapping_crowns.explode(index_parts=True)
       # print("Overlapping crowns:", overlapping_crowns)
 
+
       # translate to 0,0 to overlay on png
       # this now works as a universal approach.
       if minx == data.bounds[0] and miny == data.bounds[1]:
@@ -336,16 +337,34 @@ def tile_data_train(data: DatasetReader,
       # then the shp file will have no info on the crowns and hence will create an empty gpd Dataframe.
       # this causes an error so skip creating geojson. The training code will also ignore png so no problem.
       try:
-        filename = out_path + ".geojson"
+        filename_moved = out_path + ".geojson"
         moved_scaled = overlapping_crowns.set_geometry(moved_scaled)
         moved_scaled.to_file(
             driver="GeoJSON",
-            filename=filename,
+            filename=filename_moved,
         )
-        with open(filename, "r") as f:
+        with open(filename_moved, "r") as f:
           shp = json.load(f)
           shp.update(impath)
-        with open(filename, "w") as f:
+        with open(filename_moved, "w") as f:
+          json.dump(shp, f)
+      except:
+        print("ValueError: Cannot write empty DataFrame to file.")
+        continue
+
+      # Repeat and want to save crowns before being moved as overlap with lidar data to get the heights
+      # can try clean up the code here as lots of reprojecting and resaving but just going to get to 
+      # work for now
+      try:
+        filename_unmoved = out_path + "_lidar.geojson"
+        overlapping_crowns.to_file(
+            driver="GeoJSON",
+            filename=filename_unmoved,
+        )
+        with open(filename_unmoved, "r") as f:
+          shp = json.load(f)
+          shp.update(impath)
+        with open(filename_unmoved, "w") as f:
           json.dump(shp, f)
       except:
         print("ValueError: Cannot write empty DataFrame to file.")
