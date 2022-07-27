@@ -31,10 +31,16 @@ class TestCase(unittest.TestCase):
       
         from detectree2.preprocessing.tiling import tile_data_train
         
-        out_dir = "./out/"
+        out_dir = "./out/tiles/"
  
         tile_data_train(data, out_dir, buffer, tile_width, tile_height, crowns, threshold)
         
         return True
+    
+    def test_to_traintest_dir(self):
+        from detectree2.preprocessing.tiling import to_traintest_folders
+        data_folder = out_dir
+        out_folder = out_dir
+        to_traintest_folders(data_folder, out_folder, test_frac=0.15,folds=5)
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)

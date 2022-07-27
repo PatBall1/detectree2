@@ -47,4 +47,13 @@ class TestCase(unittest.TestCase):
         
         self.assertEqual(1,1)
         
+    def test_train():
+        from detectree2.models.train import register_train_data, remove_registered_data
+        val_fold = 1
+        root = '/rds/project/rds-5mCMIDBOkPU/ma595/detectree2/data/tiles/'
+        # 10.5281/zenodo.5515408
+        train_location = os.path.join(root, 'paracou/tiles/train')
+
+        
+        
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
