@@ -1,13 +1,13 @@
-import pandas as pd
-import numpy as np
-import cv2
-from google.colab.patches import cv2_imshow
-import random
-import matplotlib.pyplot as plt
-from PIL import Image
 import os
 import json
 import logging
+import time
+import datetime
+import cv2
+import random
+import torch
+import numpy as np
+from PIL import Image
 from pathlib import Path
 from detectron2 import model_zoo
 from detectron2.engine import DefaultPredictor, DefaultTrainer
@@ -18,7 +18,6 @@ from detectron2.utils.logger import log_every_n_seconds, setup_logger
 import detectron2.utils.comm as comm
 from detectron2.structures import BoxMode
 from detectron2.engine.hooks import HookBase
-from detectron2.evaluation import inference_context
 from detectron2.evaluation import COCOEvaluator
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 from detectron2.data import (
@@ -29,10 +28,8 @@ from detectron2.data import (
     build_detection_train_loader,
 )
 import detectron2.data.transforms as T
-import torch
 from IPython.display import display, clear_output
-import time
-import datetime
+
 
 
 class LossEvalHook(HookBase):
@@ -283,7 +280,7 @@ def combine_dicts(folder, val_folder, mode='train'):
 
 
 def register_train_data(train_location, name= "tree", val_fold=1):
-  for d in ['train', 'val']:
+  for d in ["train", "val"]:
     DatasetCatalog.register(name +"_" + d,
                             lambda d=d: combine_dicts(train_location, val_fold, d))
     MetadataCatalog.get(name +"_" + d).set(thing_classes=['tree'])
@@ -331,7 +328,7 @@ def setup_cfg(
   cfg.OUTPUT_DIR = out_dir
   os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
   if update_model is not None:
-    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(update_model)
+    cfg.MODEL.WEIGHTS = update_model # DOESN'T WORK
   else:
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
   
