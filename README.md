@@ -43,7 +43,7 @@ Training crowns are used to teach the network to delineate tree crowns
 </p>
 
 
-Here is an example image of the predictions made by Mask R-CNN.
+Here is an example image of the predictions made by Detectree2.
 <p align="center">
 <img width="700" align="center" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/plot_13_285520_583300.jpg > 
 </p>
@@ -58,6 +58,10 @@ Here is an example image of the predictions made by Mask R-CNN.
 ## Applications
 
 ### Tracking tropical tree growth and mortality
+
+<p align="center">
+<img width="500" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/growth_mortality_bootstrap.png > 
+</p>
 
 ### Counting urban trees (Buffalo, NY)
 
