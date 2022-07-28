@@ -1,4 +1,3 @@
-##Necessary imports
 import os 
 import numpy as np
 import json
@@ -203,8 +202,13 @@ def prec_recall_func(
   return precision, recall
 
 
-def f1_cal(precision, recall):
-  "Calculating the F1 score"
+def f1_cal(precision:float, recall:float):
+  """Calculate the F1 score
+
+  Args:
+    precision
+    recall
+  """
 
   return (2*precision*recall)/(precision+recall)
 
