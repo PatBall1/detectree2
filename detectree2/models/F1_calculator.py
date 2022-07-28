@@ -250,6 +250,7 @@ def site_F1_score(
     IoU_threshold = 0,
     height_threshold = 0,
     area_fraction_limit = 0.0005,
+    conf_threshold = 0,
     scaling = list,
     EPSG = None,
     ):
@@ -264,6 +265,7 @@ def site_F1_score(
     IoU_threshold: minimum value of IoU such that the intersection can be considered a true positive
     height_threshold: minimum height of the features to be considered
     area_fraction_limit: proportion of the tile for which crowns with areas less than this will be ignored
+    conf_threshold: minimun confidence of a predicted feature so that it is considered
     scaling: x and y scaling used when tiling the image
     EPSG: area code of tree location
   """
@@ -285,11 +287,11 @@ def site_F1_score(
       area_threshold = tile_area* area_fraction_limit*scaling[0]*scaling[1]
 
       test_lidar = tile_directory + file.replace(".geojson", "_lidar.geojson")
-      all_test_feats = initialise_feats(test_directory, file, test_lidar, lidar_img, area_threshold, EPSG)
+      all_test_feats = initialise_feats(test_directory, file, test_lidar, lidar_img, area_threshold, conf_threshold, EPSG)
 
       pred_file_path = "Prediction_"+ file.replace('.geojson', '_'+ EPSG + '.geojson')
       pred_lidar = tile_directory + "reprojected/" + pred_file_path.replace('.geojson', '_lidar.geojson')
-      all_pred_feats = initialise_feats(pred_directory, pred_file_path, pred_lidar, lidar_img, area_threshold, EPSG)
+      all_pred_feats = initialise_feats(pred_directory, pred_file_path, pred_lidar, lidar_img, area_threshold, conf_threshold, EPSG)
 
       find_intersections(all_test_feats, all_pred_feats)
       tps, fps, fns = positives_test(all_test_feats, all_pred_feats, IoU_threshold, height_threshold)
