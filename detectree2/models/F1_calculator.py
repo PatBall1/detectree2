@@ -255,7 +255,7 @@ def site_F1_score(
     EPSG = None,
     ):
   """
-  Code to calculate all the intersections of shapes in a pair of files and the area of the corresponding polygons
+  Calculating all the intersections of shapes in a pair of files and the area of the corresponding polygons
 
   Args:
     tile_directory: path to the folderr containing all of the tiles
