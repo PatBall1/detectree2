@@ -1,34 +1,12 @@
 import cv2
 import random
-import matplotlib.pyplot as plt
-from PIL import Image
 import os
-import numpy as np
 import json
-import png
-import glob
-import rasterio
-import geopandas
-from geopandas.tools import sjoin
 from pathlib import Path
-import fiona
-from rasterio.plot import show
-from rasterio.mask import mask
-from shapely.geometry import box
-import geopandas as gpd
-from fiona.crs import from_epsg
-import pycrs
-import descartes
-import rasterio
-from rasterio.transform import from_origin
-import rasterio.features
 import pycocotools.mask as mask_util
-import fiona
-from shapely.geometry import shape, mapping, box
-from shapely.geometry.multipolygon import MultiPolygon
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
-from detectron2.engine import DefaultPredictor, DefaultTrainer
-from detectree2.models.train import get_tree_dicts, get_filenames
+from detectron2.engine import DefaultPredictor
+from detectree2.models.train import get_filenames
 
 
 # Code to convert RLE data from the output instances into Polygons, a small about of info is lost but is fine.
