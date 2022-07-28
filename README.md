@@ -10,7 +10,7 @@ Original MRes project repo at https://github.com/shmh40/detectreeRGB.</sub>
 **Please cite**:
 
 Accurate tropical forest individual tree crown delineation from RGB imagery using Mask R-CNN.
-Sebastian H M Hickman, James George Clifford Ball, Tobias D Jackson, Xian Jing Koay, James Hirst, William Jay, Melaine Aubry-Kientz, Gregoire Vincent, David A Coomes
+Sebastian H M Hickman, James G C Ball, Tobias D Jackson, Xian Jing Koay, James Hirst, William Jay, Melaine Aubry-Kientz, Gregoire Vincent, David A Coomes
 *bioRxiv* 2022.07.10.499480; doi: [https://doi.org/10.1101/2022.07.10.499480](https://doi.org/10.1101/2022.07.10.499480)
 
 
@@ -35,6 +35,12 @@ Currently works on Google Colab (Pro version recommended). May struggle on clust
 ## Getting started
 
 Detectree2, based on the [Detectron2](https://github.com/facebookresearch/detectron2) Mask R-CNN architecture, locates trees in aerial images. It has been designed to delineate trees in challenging dense tropical forests for a range of ecological applications.
+
+The standard workflow includes:
+1) Tile the orthomosaics and crown data (for training, validation and testing)
+2) Train (and tune) a model a model on the training tiles
+3) Evaluate the model performance by predicting on the test tiles and comparing to manual crowns for the tiles
+4) Using the trained model to predict the crowns over the entire region of interest
 
 Training crowns are used to teach the network to delineate tree crowns
 <p align="center">
@@ -75,6 +81,10 @@ Here is an example image of the predictions made by Detectree2.
 <img width="700" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/seg.gif > 
 </p>
 
+### Liana detection and infestation mapping
+
+### Tree species identification and mapping
+
 ## Project Organization
 ```
 ├── LICENSE
@@ -112,6 +122,38 @@ Here is an example image of the predictions made by Detectree2.
 │   └── tests          <- Scripts for unit tests of your functions
 │
 └── setup.cfg          <- setup configuration file for linting rules
+
+NEW TREE:
+
+├── LICENSE
+├── Makefile
+├── README.md
+├── detectree2
+│   ├── data_loading
+│   ├── models
+│   ├── preprocessing
+│   ├── R
+│   └── tests
+├── docs
+│   └── source
+├── model_garden
+├── notebooks
+│   ├── colab
+│   ├── colabJB
+│   ├── colabJH
+│   ├── colabKoay
+│   ├── colabPan
+│   ├── colabSeb
+│   ├── exploratory
+│   ├── mask_rcnn
+│   │   ├── testing
+│   │   └── training
+│   ├── reports
+│   └── turing
+├── report
+│   ├── figures
+│   └── sections
+└── requirements
 ```
 
 ## Code formatting

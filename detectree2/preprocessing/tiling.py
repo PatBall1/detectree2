@@ -26,10 +26,15 @@ from fiona.crs import from_epsg
 #
 
 
-def getFeatures(gdf):
+def get_features(gdf: gpd.GeoDataFrame):
+  """Function to parse features from GeoDataFrame in such a manner that rasterio wants them
+
+  Args:
+    gdf: Input geopandas dataframe
+  
+  Returns:
+    json style data
   """
-    Function to parse features from GeoDataFrame in such a manner that rasterio wants them
-    """
   return [json.loads(gdf.to_json())["features"][0]["geometry"]]
 
 
@@ -41,7 +46,10 @@ def tile_data(data: DatasetReader,
               dtype_bool: bool = False):
   """Tiles up orthomosaic
   
-  Tiles up othomosaic into managable chunks to make predictions on.
+  Tiles up full othomosaic into managable chunks to make predictions on. Use
+  tile_data_train to generate tiled training data. A bug exists on some input
+  raster types whereby outputed tiles are completely black - the dtype_bool
+  argument should be switched if this is the case.
   
   Args:
     data: Orthomosaic as a rasterio object in a UTM type projection
@@ -81,7 +89,7 @@ def tile_data(data: DatasetReader,
       # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
 
       # here we are cropping the tiff to the bounding box of the tile we want
-      coords = getFeatures(geo)
+      coords = get_features(geo)
       # print("Coords:", coords)
 
       # define the tile as a mask of the whole tiff with just the bounding box
@@ -159,7 +167,7 @@ def tile_data_train(data: DatasetReader,
   """Tiles up orthomosaic and corresponding crowns into training tiles
   
   Tiles up othomosaic and crowns into training tiles. A threshold can be used
-  to ensure a good coverage of crowns across a tile.
+  to regect tiles that do not have sufficient coverage of crowns across the tile.
   
   Args:
     data: Orthomosaic as a rasterio object in a UTM type projection
@@ -212,7 +220,7 @@ def tile_data_train(data: DatasetReader,
       if (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
         continue
       # here we are cropping the tiff to the bounding box of the tile we want
-      coords = getFeatures(geo)
+      coords = get_features(geo)
       # print("Coords:", coords)
 
       # define the tile as a mask of the whole tiff with just the bounding box
@@ -238,7 +246,7 @@ def tile_data_train(data: DatasetReader,
       #    index=[0],
       #    crs=from_epsg(4326),
       # )
-      # newbox = getFeatures(newbox)
+      # newbox = get_features(newbox)
 
       # out_img, out_transform = mask(data, shapes=newbox, crop=True)
 
