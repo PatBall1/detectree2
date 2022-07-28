@@ -54,7 +54,6 @@ class Feature:
 
       # Want coord tuples for the unmoved crown coordinates so using the lidar copied crown file 
       lidar_coords = lidar_json['features'][self.number]['geometry']['coordinates'][0]
-      # print(lidar_coords)
       geo = [{'type': 'Polygon', 'coordinates': [self.get_tuple_coords(lidar_coords)]}]
 
       with rasterio.open(self.lidar_img) as src:
@@ -257,16 +256,11 @@ def site_F1_score(
       print("tps:",tps)
       print("fps:",fps)
       print("fns:",fns)
+      print("")
 
       total_tps = total_tps + tps
       total_fps = total_fps + fps
       total_fns = total_fns + fns
-
-      # print("height:", all_test_feats[0].height)
-      # print("area:", all_test_feats[0].crown_area)
-      # print("len:", len(all_test_feats))
-      print("")
-
 
   try:
     prec, rec = prec_recall_func(total_tps, total_fps, total_fns)
