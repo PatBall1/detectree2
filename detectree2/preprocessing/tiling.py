@@ -41,7 +41,7 @@ def tile_data(data: DatasetReader,
               dtype_bool: bool = False):
   """Tiles up orthomosaic
   
-  Tiles up othomosaic into managable chunks to make predictions on.
+  Tiles up full othomosaic into managable chunks to make predictions on.
   
   Args:
     data: Orthomosaic as a rasterio object in a UTM type projection
@@ -159,7 +159,7 @@ def tile_data_train(data: DatasetReader,
   """Tiles up orthomosaic and corresponding crowns into training tiles
   
   Tiles up othomosaic and crowns into training tiles. A threshold can be used
-  to ensure a good coverage of crowns across a tile.
+  to regect tiles that do not have sufficient coverage of crowns across the tile.
   
   Args:
     data: Orthomosaic as a rasterio object in a UTM type projection

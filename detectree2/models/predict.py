@@ -57,12 +57,11 @@ def polygonFromMask(maskedArr):
 def predict_on_data(
   directory: str = None,
   predictor = DefaultPredictor,
-  trees_metadata = None,
   save: bool = True,
-  scale = 1,
-  num_predictions = 0
   ):
-  """Prediction produced from a folder of tiled data
+  """Make predictions on tiled data
+
+
   """
 
   pred_dir = directory + "predictions"
@@ -78,12 +77,7 @@ def predict_on_data(
 
   for d in random.sample(dataset_dicts,num_to_pred):
     img = cv2.imread(d["file_name"])
-    # cv2_imshow(img)
     outputs = predictor(img)
-    #v = Visualizer(img[:, :, ::-1], metadata=trees_metadata, scale=scale, instance_mode=ColorMode.SEGMENTATION)   # remove the colors of unsegmented pixels
-    #v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-    #image = cv2.cvtColor(v.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
-    #display(Image.fromarray(image))
 
     ### Creating the file name of the output file
     file_name_path = d["file_name"]
@@ -98,7 +92,6 @@ def predict_on_data(
       evaluations= instances_to_coco_json(outputs["instances"].to("cpu"),d["file_name"])
       with open(output_file, "w") as dest:
         json.dump(evaluations,dest)
-
 
 
 if __name__ == "__main__":
