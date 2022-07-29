@@ -191,10 +191,11 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):
 
 
 def prec_recall_func(
-    total_tps, 
-    total_fps, 
-    total_fns):
-  "Calculate the precision and recall by standard formulas"
+    total_tps: int, 
+    total_fps: int, 
+    total_fns: int):
+  """Calculate the precision and recall by standard formulas
+  """
 
   precision = total_tps/(total_tps+total_fps)
   recall = total_tps/(total_tps+total_fns)
@@ -208,6 +209,8 @@ def f1_cal(precision:float, recall:float):
   Args:
     precision
     recall
+  
+  retu
   """
 
   return (2*precision*recall)/(precision+recall)
