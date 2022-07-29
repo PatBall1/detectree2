@@ -13,10 +13,9 @@ from detectree2.models.train import get_filenames
 # Code to convert RLE data from the output instances into Polygons, a small about of info is lost but is fine.
 # https://github.com/hazirbas/coco-json-converter/blob/master/generate_coco_json.py <-- found here
 
+
 def polygonFromMask(maskedArr):
-    """
-    Turn mask into polygons
-    """
+    """Turn mask into polygons."""
     contours, _ = cv2.findContours(maskedArr, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     segmentation = []
@@ -38,8 +37,7 @@ def predict_on_data(
     predictor=DefaultPredictor,
     save: bool = True,
 ):
-    """Make predictions on tiled data
-    """
+    """Make predictions on tiled data"""
 
     pred_dir = os.path.join(directory, "predictions")
 

@@ -5,7 +5,7 @@ import os
 import random
 import time
 from pathlib import Path
-from typing import Any, TypedDict
+from typing import Any
 
 import cv2
 import detectron2.data.transforms as T
@@ -17,19 +17,19 @@ from detectron2.config import get_cfg
 from detectron2.data import (DatasetCatalog, DatasetMapper, MetadataCatalog,
                              build_detection_test_loader,
                              build_detection_train_loader)
-from detectron2.engine import DefaultPredictor, DefaultTrainer
+from detectron2.engine import DefaultTrainer
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 from detectron2.structures import BoxMode
-from detectron2.utils.logger import log_every_n_seconds, setup_logger
+from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
-from IPython.display import clear_output, display
+from IPython.display import display
 from PIL import Image
 
 
 class LossEvalHook(HookBase):
-    """Do inference and get the loss metric
+    """Do inference and get the loss metric.
 
     Class to:
     - Do inference of dataset like an Evaluator does
@@ -45,12 +45,13 @@ class LossEvalHook(HookBase):
     """
 
     def __init__(self, eval_period, model, data_loader):
+        """Inits LossEvalHook."""
         self._model = model
         self._period = eval_period
         self._data_loader = data_loader
 
     def _do_loss_eval(self):
-        """Copying inference_on_dataset from evaluator.py
+        """Copying inference_on_dataset from evaluator.py.
 
         Returns:
             _type_: _description_
@@ -94,7 +95,7 @@ class LossEvalHook(HookBase):
         return losses
 
     def _get_loss(self, data):
-        """How loss is calculated on train_loop
+        """How loss is calculated on train_loop.
 
         Args:
             data (_type_): _description_
@@ -121,7 +122,7 @@ class LossEvalHook(HookBase):
 
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
 class MyTrainer(DefaultTrainer):
-    """_summary_
+    """Summary.
 
     Args:
         DefaultTrainer (_type_): _description_
@@ -151,8 +152,8 @@ class MyTrainer(DefaultTrainer):
         )
         return hooks
 
-    def build_train_loader(cls, cfg):
-        """_summary_
+    def build_train_loader(self, cls, cfg):
+        """Summary_.
 
         Args:
             cfg (_type_): _description_
@@ -180,16 +181,16 @@ class MyTrainer(DefaultTrainer):
 
 
 def get_tree_dicts(directory: str, classes: list[str] = None) -> list[dict]:
-    """
-    directory points to files
-    classes signifies which column (if any) corresponds to the class labels
+    """Get the tree dictionaries.
 
     Args:
         directory: Path to directory
-        classes:
+        classes: Signifies which column (if any) corresponds to the class labels
+
 
     Returns:
-        List of dictionaries corresponding to segmentations of trees. Each dictionary includes bounding box around tree and points tracing a polygon around a tree.
+        List of dictionaries corresponding to segmentations of trees. Each dictionary includes
+        bounding box around tree and points tracing a polygon around a tree.
     """
     # filepath = '/content/drive/MyDrive/forestseg/paracou_data/Panayiotis_Outputs/220303_AllSpLabelled.gpkg'
     # datagpd = gpd.read_file(filepath)
@@ -199,7 +200,11 @@ def get_tree_dicts(directory: str, classes: list[str] = None) -> list[dict]:
     #
     if classes is not None:
         # list_of_classes = crowns[variable].unique().tolist()
-        # list_of_classes = ['Pradosia_cochlearia','Eperua_falcata','Dicorynia_guianensis','Eschweilera_sagotiana','Eperua_grandiflora','Symphonia_sp.1','Sextonia_rubra','Vouacapoua_americana','Sterculia_pruriens','Tapura_capitulifera','Pouteria_eugeniifolia','Recordoxylon_speciosum','Chrysophyllum_prieurii','Platonia_insignis','Chrysophyllum_pomiferum','Parkia_nitida','Goupia_glabra','Carapa_surinamensis','Licania_alba','Bocoa_prouacensis','Lueheopsis_rugosa']
+        # list_of_classes = ['Pradosia_cochlearia','Eperua_falcata','Dicorynia_guianensis',
+        # 'Eschweilera_sagotiana','Eperua_grandiflora','Symphonia_sp.1','Sextonia_rubra',
+        # 'Vouacapoua_americana','Sterculia_pruriens','Tapura_capitulifera','Pouteria_eugeniifolia',
+        # 'Recordoxylon_speciosum','Chrysophyllum_prieurii','Platonia_insignis','Chrysophyllum_pomiferum',
+        # 'Parkia_nitida','Goupia_glabra','Carapa_surinamensis','Licania_alba','Bocoa_prouacensis','Lueheopsis_rugosa']
         list_of_classes = ["CIRAD", "CNES", "INRA"]
         classes = list_of_classes
     else:
@@ -272,8 +277,7 @@ def get_tree_dicts(directory: str, classes: list[str] = None) -> list[dict]:
 
 
 def combine_dicts(root_dir: str, val_dir: int, mode: str = "train") -> list[dict]:
-    """
-    Join tree dicts from different directories
+    """Join tree dicts from different directories.
 
     Args:
         root_dir:
@@ -336,9 +340,8 @@ def setup_cfg(
     eval_period=100,
     out_dir="/content/drive/Shareddrives/detectree2/train_outputs",
 ):
-    """
-    To set up config object
-    """
+    """Set config object."""
+
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(base_model))
     cfg.DATASETS.TRAIN = trains
@@ -360,10 +363,11 @@ def setup_cfg(
 
 
 def get_filenames(directory):
+    """Get file names if no geojson is present.
+
+    I.e. Allows for predictions where no delinations have been manually produced.
     """
-    Used to get the file names if no geojson is present, i.e allows for predictions
-    where no delinations have been manually produced
-    """
+
     dataset_dicts = []
     for filename in [file for file in os.listdir(directory)]:
         file = {}
@@ -383,9 +387,7 @@ def predictions_on_data(
     geos_exist=True,
     num_predictions=0,
 ):
-    """
-    Prediction produced from a test folder and outputted to predictions folder
-    """
+    """Prediction produced from a test folder and outputted to predictions folder."""
 
     test_location = directory + "test"
     pred_dir = directory + "predictions"
