@@ -43,4 +43,5 @@ jobs:
         pip install mypy data-science-types pandas-stubs types-pillow numpy
         mypy detectree2
     - name: Test with isort
+      run: |
         isort --check detectree2
