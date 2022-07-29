@@ -6,6 +6,7 @@ from shapely.geometry import shape, Polygon
 import rasterio
 import rasterio.drivers
 from rasterio.mask import mask
+from pathlib import Path
 
 
 # Initialising the parent class so any attributes or functions that are common to both
@@ -157,6 +158,22 @@ def initialise_feats(directory, file, lidar_filename, lidar_img, area_threshold,
 
   return all_feats
 
+def save_feats(tile_directory, all_feats):
+  """
+  Collating all the information for the features back into a geojson to save
+  """
+  adjusted_directory = tile_directory + "adjusted/"
+  Path(adjusted_directory).mkdir(parents=True, exist_ok=True)
+
+  geofile = {"type": "FeatureCollection", "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::" + all_feats[0].EPSG }}, "features":[]}
+
+  for feat in all_feats:
+    geofile["features"].append({"type": "Feature", "properties": feat.properties, "geometry" : feat.geometry})
+  
+  output_geo_file = adjusted_directory + feat.filename.replace('.geojson', '_adjusted.geojson')
+  with open(output_geo_file, "w") as dest:
+    json.dump(geofile,dest)
+
 def find_intersections(all_test_feats, all_pred_feats):
   """
   Finds the greatest intersection between the predicted and manual crowns and then
@@ -268,12 +285,13 @@ def site_F1_score(
     boarder_filter = tuple,
     scaling = list,
     EPSG = None,
+    save = False
     ):
   """
     Calculating all the intersections of shapes in a pair of files and the area of the corresponding polygons
     
     Args:
-      tile_directory: path to the folderr containing all of the tiles
+      tile_directory: path to the folder containing all of the tiles
       test_directory: path to the folder containing just the test files
       pred_directory: path to the folder containing the predictions and the reprojections
       lidar_img: path to the lidar image of an entire region
@@ -284,6 +302,7 @@ def site_F1_score(
       boarder_filter: (bool of whether to remove boarder crowns, proportion of boarder to be used in relation to tile size)
       scaling: x and y scaling used when tiling the image
       EPSG: area code of tree location
+      save: bool to tell program whether the filtered crowns should be saved
     """
 
   if EPSG == None:
@@ -310,6 +329,10 @@ def site_F1_score(
       pred_lidar = tile_directory + "reprojected/" + pred_file_path.replace('.geojson', '_lidar.geojson')
       all_pred_feats = initialise_feats(pred_directory, pred_file_path, pred_lidar, lidar_img, 
                                         area_threshold, conf_threshold, boarder_filter, tile_width, EPSG)
+
+      if save:
+        save_feats(tile_directory, all_test_feats)
+        save_feats(tile_directory, all_pred_feats)
 
       find_intersections(all_test_feats, all_pred_feats)
       tps, fps, fns = positives_test(all_test_feats, all_pred_feats, IoU_threshold, height_threshold)
