@@ -19,6 +19,7 @@ import detectron2.utils.comm as comm
 from detectron2.structures import BoxMode
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator
+from detectron2.checkpoint import DetectionCheckpointer###
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 from detectron2.data import (
     MetadataCatalog,
@@ -52,6 +53,10 @@ class LossEvalHook(HookBase):
     self._model = model
     self._period = eval_period
     self._data_loader = data_loader
+    self.patience = patience###
+    self.iter = 0###
+    self.max_ap = 0###
+    self.best_iter = 0###
 
   def _do_loss_eval(self):
     """Copying inference_on_dataset from evaluator.py
@@ -89,7 +94,10 @@ class LossEvalHook(HookBase):
       loss_batch = self._get_loss(inputs)
       losses.append(loss_batch)
     mean_loss = np.mean(losses)
+    AP = self.trainer.test(self.trainer.cfg, self.trainer.model)['segm']['AP50']###
+    self.trainer.APs.append(AP)###
     self.trainer.storage.put_scalar("validation_loss", mean_loss)
+    self.trainer.storage.put_scalar("validation_ap", AP)###
     comm.synchronize()
 
     return losses
@@ -112,12 +120,26 @@ class LossEvalHook(HookBase):
     total_losses_reduced = sum(loss for loss in metrics_dict.values())
     return total_losses_reduced
 
-  def after_step(self):
+  def after_step(self):###
     next_iter = self.trainer.iter + 1
     is_final = next_iter == self.trainer.max_iter
     if is_final or (self._period > 0 and next_iter % self._period == 0):
       self._do_loss_eval()
+      if self.max_ap < self.trainer.APs[-1]:
+        self.iter = 0
+        self.max_ap = self.trainer.APs[-1]
+        self.trainer.checkpointer.save('model_' + str(len(self.trainer.APs)))
+        self.best_iter = self.trainer.iter
+      else:
+        self.iter += 1
+    if self.iter == self.patience:
+      self.trainer.early_stop = True
+      print("Early stopping occurs in iter {}, max ap is {}".format(self.best_iter, self.max_ap))
     self.trainer.storage.put_scalars(timetest=12)
+   
+  def after_train(self):###
+    index = self.trainer.APs.index(min(self.trainer.APs)) + 1
+    self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' + str(index) + '.pth')
 
 
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
@@ -130,8 +152,58 @@ class MyTrainer(DefaultTrainer):
     Returns:
         _type_: _description_
     """
+  def __init__(self, cfg, patience):###
+    self.patience = patience
+    super().__init__(cfg)
 
-  @classmethod
+  def train(self):###
+    """
+    Run training.
+
+    Returns:
+        OrderedDict of results, if evaluation is enabled. Otherwise None.
+    """
+    """
+    Args:
+        start_iter, max_iter (int): See docs above
+    """
+    start_iter = self.start_iter
+    max_iter = self.max_iter
+    logger = logging.getLogger(__name__)
+    logger.info("Starting training from iteration {}".format(start_iter))
+
+    self.iter = self.start_iter = start_iter
+    self.max_iter = max_iter
+    self.early_stop = False
+    self.APs = []
+
+    with EventStorage(start_iter) as self.storage:
+        try:
+            self.before_train()
+            for self.iter in range(start_iter, max_iter):
+                self.before_step()
+                self.run_step()
+                self.after_step()
+                if self.early_stop:
+                  break
+            # self.iter == max_iter can be used by `after_train` to
+            # tell whether the training successfully finished or failed
+            # due to exceptions.
+            self.iter += 1
+        except Exception:
+            logger.exception("Exception during training:")
+            raise
+        finally:
+            self.after_train()
+    if len(self.cfg.TEST.EXPECTED_RESULTS) and comm.is_main_process():
+        assert hasattr(
+            self, "_last_eval_results"
+        ), "No evaluation results obtained during training!"
+        verify_results(self.cfg, self._last_eval_results)
+        return self._last_eval_results
+    
+    
+    @classmethod
   def build_evaluator(cls, cfg, dataset_name, output_folder=None):
     if output_folder is None:
       os.makedirs("eval_2", exist_ok=True)
@@ -312,7 +384,12 @@ def setup_cfg(
     update_model=None,
     workers=2,
     ims_per_batch=2,
-    base_lr=0.0003,
+    gamma = 0.1,
+    backbone_freeze = 3,
+    warm_iter = 120,
+    momentum = 0.9,
+    batch_size_per_im = 1024,
+    base_lr=0.001,
     max_iter=1000,
     num_classes=1,
     eval_period=100,
@@ -325,6 +402,14 @@ def setup_cfg(
   cfg.DATASETS.TRAIN = trains 
   cfg.DATASETS.TEST = tests
   cfg.DATALOADER.NUM_WORKERS = workers
+  #cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
+  cfg.SOLVER.GAMMA = gamma
+  cfg.MODEL.BACKBONE.FREEZE_AT = backbone_freeze
+  cfg.SOLVER.WARMUP_ITERS = warm_iter
+  cfg.SOLVER.MOMENTUM = momentum
+  #cfg.MODEL.RPN.BATCH_SIZE_PER_IMAGE = batch_size_per_im
+  #cfg.SOLVER.WEIGHT_DECAY = 0.001
+  cfg.SOLVER.BASE_LR = base_lr
   cfg.OUTPUT_DIR = out_dir
   os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
   if update_model is not None:
@@ -434,7 +519,7 @@ if __name__ == "__main__":
   out_dir = "/content/drive/Shareddrives/detectree2/220703_train_outputs"
 
   cfg = setup_cfg(model, trains, tests, eval_period=100, max_iter=3000, out_dir=out_dir) # update_model arg can be used to load in trained  model
-  trainer = MyTrainer(cfg) 
+  trainer = MyTrainer(cfg, patience = 4) 
   trainer.resume_or_load(resume=False)
   trainer.train()
 
