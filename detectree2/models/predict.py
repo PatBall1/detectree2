@@ -14,20 +14,20 @@ from detectree2.models.train import get_filenames
 # https://github.com/hazirbas/coco-json-converter/blob/master/generate_coco_json.py <-- found here
 
 
-def polygonFromMask(maskedArr):
+def polygon_from_mask(masked_arr):
     """Turn mask into polygons."""
-    contours, _ = cv2.findContours(maskedArr, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(masked_arr, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     segmentation = []
     for contour in contours:
         # Valid polygons have >= 6 coordinates (3 points)
         if contour.size >= 6:
             segmentation.append(contour.flatten().tolist())
-    RLEs = mask_util.frPyObjects(segmentation, maskedArr.shape[0], maskedArr.shape[1])
+    RLEs = mask_util.frPyObjects(segmentation, masked_arr.shape[0], masked_arr.shape[1])
     RLE = mask_util.merge(RLEs)
-    # RLE = mask.encode(np.asfortranarray(maskedArr))
+    # RLE = mask.encode(np.asfortranarray(masked_arr))
     area = mask_util.area(RLE)
-    [x, y, w, h] = cv2.boundingRect(maskedArr)
+    [x, y, w, h] = cv2.boundingRect(masked_arr)
 
     return segmentation[0]  # , [x, y, w, h], area
 
@@ -37,7 +37,7 @@ def predict_on_data(
     predictor=DefaultPredictor,
     save: bool = True,
 ):
-    """Make predictions on tiled data"""
+    """Make predictions on tiled data."""
 
     pred_dir = os.path.join(directory, "predictions")
 
