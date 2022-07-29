@@ -13,10 +13,9 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
-from tqdm.autonotebook import tqdm
-
 from src.constants import PROJECT_PATH
 from src.utils.logging import get_logger
+from tqdm.autonotebook import tqdm
 
 logger = get_logger(__file__)
 SECRETS_PATH = PROJECT_PATH / "secrets"

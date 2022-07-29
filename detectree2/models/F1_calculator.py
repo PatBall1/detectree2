@@ -1,8 +1,9 @@
 # necessary imports
-import os
-import numpy as np
 import json
-from shapely.geometry import shape, Polygon
+import os
+
+import numpy as np
+from shapely.geometry import Polygon, shape
 
 
 def PolyArea(feature=dict):

@@ -1,37 +1,31 @@
-import os
+import datetime
 import json
 import logging
-import time
-import datetime
-import cv2
+import os
 import random
-import torch
-import numpy as np
-from PIL import Image
+import time
 from pathlib import Path
-from detectron2 import model_zoo
-from detectron2.engine import DefaultPredictor, DefaultTrainer
-from detectron2.config import get_cfg
-from detectron2.utils.visualizer import Visualizer
-from detectron2.utils.visualizer import ColorMode
-from detectron2.utils.logger import log_every_n_seconds, setup_logger
+from typing import Any, TypedDict
+
+import cv2
+import detectron2.data.transforms as T
 import detectron2.utils.comm as comm
-from detectron2.structures import BoxMode
+import numpy as np
+import torch
+from detectron2 import model_zoo
+from detectron2.config import get_cfg
+from detectron2.data import (DatasetCatalog, DatasetMapper, MetadataCatalog,
+                             build_detection_test_loader,
+                             build_detection_train_loader)
+from detectron2.engine import DefaultPredictor, DefaultTrainer
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
-from detectron2.data import (
-    MetadataCatalog,
-    DatasetCatalog,
-    DatasetMapper,
-    build_detection_test_loader,
-    build_detection_train_loader,
-)
-import detectron2.data.transforms as T
-from IPython.display import display, clear_output
-
-from typing import TypedDict
-from typing import Any
+from detectron2.structures import BoxMode
+from detectron2.utils.logger import log_every_n_seconds, setup_logger
+from detectron2.utils.visualizer import ColorMode, Visualizer
+from IPython.display import clear_output, display
+from PIL import Image
 
 
 class LossEvalHook(HookBase):

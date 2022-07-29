@@ -5,9 +5,10 @@ from pathlib import Path
 
 import cv2
 import pycocotools.mask as mask_util
-from detectree2.models.train import get_filenames
 from detectron2.engine import DefaultPredictor
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
+
+from detectree2.models.train import get_filenames
 
 # Code to convert RLE data from the output instances into Polygons, a small about of info is lost but is fine.
 # https://github.com/hazirbas/coco-json-converter/blob/master/generate_coco_json.py <-- found here

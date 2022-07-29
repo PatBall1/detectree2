@@ -87,7 +87,7 @@ def tile_data(data: DatasetReader,
             # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
 
             # here we are cropping the tiff to the bounding box of the tile we want
-            coords = getFeatures(geo)
+            coords = get_features(geo)
             # print("Coords:", coords)
 
             # define the tile as a mask of the whole tiff with just the bounding box
@@ -220,7 +220,7 @@ def tile_data_train(data: DatasetReader,
                 continue
             
             # here we are cropping the tiff to the bounding box of the tile we want
-            coords = getFeatures(geo)
+            coords = get_features(geo)
 
             # define the tile as a mask of the whole tiff with just the bounding box
             out_img, out_transform = mask(data, shapes=coords, crop=True)

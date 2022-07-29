@@ -1,11 +1,11 @@
-##Necessary imports
-import os 
-import numpy as np
 import json
-from shapely.geometry import shape, Polygon
+import os
+
+import numpy as np
 import rasterio
 import rasterio.drivers
 from rasterio.mask import mask
+from shapely.geometry import Polygon, shape
 
 
 # Initialising the feature class
