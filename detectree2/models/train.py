@@ -19,7 +19,8 @@ import detectron2.utils.comm as comm
 from detectron2.structures import BoxMode
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator
-from detectron2.checkpoint import DetectionCheckpointer###
+from detectron2.checkpoint import DetectionCheckpointer
+from detectron2.utils.events import EventStorage, get_event_storage
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 from detectron2.data import (
     MetadataCatalog,
@@ -49,14 +50,14 @@ class LossEvalHook(HookBase):
         data loader
     """
 
-  def __init__(self, eval_period, model, data_loader):
+  def __init__(self, eval_period, model, data_loader, patience):
     self._model = model
     self._period = eval_period
     self._data_loader = data_loader
-    self.patience = patience###
-    self.iter = 0###
-    self.max_ap = 0###
-    self.best_iter = 0###
+    self.patience = patience
+    self.iter = 0
+    self.max_ap = 0
+    self.best_iter = 0
 
   def _do_loss_eval(self):
     """Copying inference_on_dataset from evaluator.py
@@ -94,10 +95,10 @@ class LossEvalHook(HookBase):
       loss_batch = self._get_loss(inputs)
       losses.append(loss_batch)
     mean_loss = np.mean(losses)
-    AP = self.trainer.test(self.trainer.cfg, self.trainer.model)['segm']['AP50']###
-    self.trainer.APs.append(AP)###
+    AP = self.trainer.test(self.trainer.cfg, self.trainer.model)['segm']['AP50']
+    self.trainer.APs.append(AP)
     self.trainer.storage.put_scalar("validation_loss", mean_loss)
-    self.trainer.storage.put_scalar("validation_ap", AP)###
+    self.trainer.storage.put_scalar("validation_ap", AP)
     comm.synchronize()
 
     return losses
@@ -120,7 +121,7 @@ class LossEvalHook(HookBase):
     total_losses_reduced = sum(loss for loss in metrics_dict.values())
     return total_losses_reduced
 
-  def after_step(self):###
+  def after_step(self):
     next_iter = self.trainer.iter + 1
     is_final = next_iter == self.trainer.max_iter
     if is_final or (self._period > 0 and next_iter % self._period == 0):
@@ -137,7 +138,7 @@ class LossEvalHook(HookBase):
       print("Early stopping occurs in iter {}, max ap is {}".format(self.best_iter, self.max_ap))
     self.trainer.storage.put_scalars(timetest=12)
    
-  def after_train(self):###
+  def after_train(self):
     index = self.trainer.APs.index(min(self.trainer.APs)) + 1
     self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' + str(index) + '.pth')
 
@@ -152,11 +153,11 @@ class MyTrainer(DefaultTrainer):
     Returns:
         _type_: _description_
     """
-  def __init__(self, cfg, patience):###
+  def __init__(self, cfg, patience):
     self.patience = patience
     super().__init__(cfg)
 
-  def train(self):###
+  def train(self):
     """
     Run training.
 
@@ -203,7 +204,7 @@ class MyTrainer(DefaultTrainer):
         return self._last_eval_results
     
     
-    @classmethod
+  @classmethod
   def build_evaluator(cls, cfg, dataset_name, output_folder=None):
     if output_folder is None:
       os.makedirs("eval_2", exist_ok=True)
@@ -218,7 +219,8 @@ class MyTrainer(DefaultTrainer):
             self.cfg.TEST.EVAL_PERIOD,
             self.model,
             build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST[0],
-                                        DatasetMapper(self.cfg, True)),
+            DatasetMapper(self.cfg, True)),
+            self.patience,
         ),
     )
     return hooks
