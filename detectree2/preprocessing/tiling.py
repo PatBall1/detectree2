@@ -44,7 +44,8 @@ def tile_data(data: DatasetReader,
               buffer: int = 30,
               tile_width: int = 200,
               tile_height: int = 200,
-              dtype_bool: bool = False) -> None:
+              dtype_bool: bool = False
+              ) -> None:
     """Tiles othomosaic into managable chunks to make predictions on.
 
     Args:

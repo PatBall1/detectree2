@@ -4,32 +4,10 @@ import random
 from pathlib import Path
 
 import cv2
-import pycocotools.mask as mask_util
 from detectron2.engine import DefaultPredictor
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 
 from detectree2.models.train import get_filenames
-
-# Code to convert RLE data from the output instances into Polygons, a small about of info is lost but is fine.
-# https://github.com/hazirbas/coco-json-converter/blob/master/generate_coco_json.py <-- found here
-
-
-def polygon_from_mask(masked_arr):
-    """Turn mask into polygons."""
-    contours, _ = cv2.findContours(masked_arr, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    segmentation = []
-    for contour in contours:
-        # Valid polygons have >= 6 coordinates (3 points)
-        if contour.size >= 6:
-            segmentation.append(contour.flatten().tolist())
-    RLEs = mask_util.frPyObjects(segmentation, masked_arr.shape[0], masked_arr.shape[1])
-    RLE = mask_util.merge(RLEs)
-    # RLE = mask.encode(np.asfortranarray(masked_arr))
-    area = mask_util.area(RLE)
-    [x, y, w, h] = cv2.boundingRect(masked_arr)
-
-    return segmentation[0]  # , [x, y, w, h], area
 
 
 def predict_on_data(

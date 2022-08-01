@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import cv2
-import detectron2.data.transforms as T
+import detectron2.data.transforms as T  # noqa:N812
 import detectron2.utils.comm as comm
 import numpy as np
 import torch

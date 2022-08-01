@@ -20,20 +20,20 @@ def polygon_from_mask(masked_arr):
         # Valid polygons have >= 6 coordinates (3 points)
         if contour.size >= 6:
             segmentation.append(contour.flatten().tolist())
-    RLEs = mask_util.frPyObjects(segmentation, masked_arr.shape[0], masked_arr.shape[1])
-    RLE = mask_util.merge(RLEs)
+    # rles = mask_util.frPyObjects(segmentation, masked_arr.shape[0], masked_arr.shape[1])
+    # RLE = mask_util.merge(RLEs) # not used
     # RLE = mask.encode(np.asfortranarray(masked_arr))
-    area = mask_util.area(RLE)
+    # area = mask_util.area(RLE) # not used
     [x, y, w, h] = cv2.boundingRect(masked_arr)
 
     return segmentation[0]  # , [x, y, w, h], area
 
 
-# Reprojecting the crowns to overlay with the cropped crowns and the cropped png
-def reproject_to_geojson(directory=None, EPSG="26917"):
-    """Takes a json and changes it to a geojson so it can overlay with crowns.
+def reproject_to_geojson(directory=None, EPSG="26917"):  # noqa:N803
+    """Converts a json to a geojson so it can overlay with crowns.
 
-    Another copy is produced to overlay with PNGs
+    Reprojecting the crowns to overlay with the cropped crowns and cropped pngs
+    Another copy is produced to overlay with pngss
     """
 
     entries = os.listdir(directory)
@@ -57,7 +57,6 @@ def reproject_to_geojson(directory=None, EPSG="26917"):
             # load the json file we need to convert into a geojson
             with open(directory + img_dict["filename"]) as prediction_file:
                 datajson = json.load(prediction_file)
-            # print(datajson)
 
             img_dict["width"] = datajson[0]["segmentation"]["size"][0]
             img_dict["height"] = datajson[0]["segmentation"]["size"][1]
@@ -100,11 +99,11 @@ def reproject_to_geojson(directory=None, EPSG="26917"):
                 json.dump(geofile, dest)
 
 
-# Reprojects the coordinates back so the crowns can be overlaid with the original tif file of the entire region
-def reproject_to_geojson_spatially(data, output_fold=None, pred_fold=None, EPSG="26917"):
+def reproject_to_geojson_spatially(data, output_fold=None, pred_fold=None, EPSG="26917"):  # noqa:N803
     """Takes a json and changes it to a geojson so it can overlay with crowns.
 
-    Another copy is produced to overlay with PNGs
+    Reprojects the coordinates back so the crowns can be overlaid with the original tif file of the entire region
+    Another copy is produced to overlay with PNGs.
     """
 
     Path(output_fold).mkdir(parents=True, exist_ok=True)
