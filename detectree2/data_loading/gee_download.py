@@ -4,10 +4,9 @@ import argparse
 import logging
 import pathlib
 
-from tqdm.autonotebook import tqdm
-
 from src.constants import DATA_PATH
 from src.data.gdrive import DriveAPI
+from tqdm.autonotebook import tqdm
 
 DEFAULT_SAVE_PATH = DATA_PATH / "gdrive"
 
