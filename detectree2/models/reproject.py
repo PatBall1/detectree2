@@ -32,8 +32,8 @@ def polygon_from_mask(masked_arr):
 def reproject_to_geojson(directory=None, EPSG="26917"):  # noqa:N803
     """Converts a json to a geojson so it can overlay with crowns.
 
-    Reprojecting the crowns to overlay with the cropped crowns and cropped pngs
-    Another copy is produced to overlay with pngss
+    Reproject the crowns to overlay with the cropped crowns and cropped pngs.
+    Another copy is produced to overlay with pngs.
     """
 
     entries = os.listdir(directory)
@@ -100,9 +100,9 @@ def reproject_to_geojson(directory=None, EPSG="26917"):  # noqa:N803
 
 
 def reproject_to_geojson_spatially(data, output_fold=None, pred_fold=None, EPSG="26917"):  # noqa:N803
-    """Takes a json and changes it to a geojson so it can overlay with crowns.
+    """Reprojects the coordinates back so the crowns can be overlaid with the original tif file of the entire region.
 
-    Reprojects the coordinates back so the crowns can be overlaid with the original tif file of the entire region
+    Takes a json and changes it to a geojson so it can overlay with crowns.
     Another copy is produced to overlay with PNGs.
     """
 
@@ -193,7 +193,7 @@ def reproject_to_geojson_spatially(data, output_fold=None, pred_fold=None, EPSG=
             # Check final form is correct - compare to a known geojson file if error appears.
             # print("geofile",geofile)
 
-            output_geo_file = output_fold + img_dict["filename"].replace('.json', "_" + EPSG + '.geojson')
+            output_geo_file = output_fold + img_dict["filename"].replace('.json', "_" + EPSG + '_lidar.geojson')
             # print("output location:", output_geo_file)
             with open(output_geo_file, "w") as dest:
                 json.dump(geofile, dest)
