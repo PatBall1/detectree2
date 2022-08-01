@@ -3,6 +3,7 @@ import random
 import os
 import json
 from pathlib import Path
+import geopandas as gpd
 import pycocotools.mask as mask_util
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 from detectron2.engine import DefaultPredictor
@@ -39,7 +40,8 @@ def predict_on_data(
   ):
   """Make predictions on tiled data
 
-
+  Predicts crowns for all png images present in a directory and outputs masks 
+  as jsons
   """
 
   pred_dir = directory + "predictions"
@@ -71,6 +73,26 @@ def predict_on_data(
       with open(output_file, "w") as dest:
         json.dump(evaluations,dest)
 
+
+def stitch_crowns(folder:str, shift:int=1):
+  """Stitch together predicted crowns
+  """
+  folder = Path(folder)
+  files = folder.glob("*geojson")
+  crowns = gpd.GeoDataFrame(columns=["Confidence score", "geometry"], geometry="geometry", crs=from_epsg(32622))
+  for file in files:
+    crowns_tile = gpd.read_file(file)
+    crowns_tile.crs = "epsg:32622"
+    #crowns_tile = crowns_tile.set_crs(from_epsg(32622))
+    #print(crowns_tile)
+    
+    geo = box_make(file, shift)
+    #geo.plot()
+    crowns_tile = gpd.sjoin(crowns_tile, geo, "inner", "within")
+    #print(crowns_tile)
+    crowns = crowns.append(crowns_tile)
+    #print(crowns)
+  return crowns
 
 if __name__ == "__main__":
   print("something")
