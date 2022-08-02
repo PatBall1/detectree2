@@ -4,20 +4,22 @@ import random
 from pathlib import Path
 
 import cv2
+import geopandas as gpd
 from detectron2.engine import DefaultPredictor
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
+from fiona.crs import from_epsg
 
 from detectree2.models.train import get_filenames
 
 
 def predict_on_data(
-    directory: str = None,
+    directory: str,
     predictor=DefaultPredictor,
     save: bool = True,
 ):
-    """Make predictions on tiled data
+    """Make predictions on tiled data.
 
-    Predicts crowns for all png images present in a directory and outputs masks 
+    Predicts crowns for all png images present in a directory and outputs masks
     as jsons
     """
 
@@ -51,15 +53,14 @@ def predict_on_data(
 
 
 def stitch_crowns(folder: str, shift: int = 1):
-    """Stitch together predicted crowns
-    """
+    """Stitch together predicted crowns."""
     folder = Path(folder)
     files = folder.glob("*geojson")
     crowns = gpd.GeoDataFrame(columns=["Confidence score", "geometry"], geometry="geometry", crs=from_epsg(32622))
     for file in files:
         crowns_tile = gpd.read_file(file)
         crowns_tile.crs = "epsg:32622"
-        #crowns_tile = crowns_tile.set_crs(from_epsg(32622))
+        # crowns_tile = crowns_tile.set_crs(from_epsg(32622))
         # print(crowns_tile)
 
         geo = box_make(file, shift)
