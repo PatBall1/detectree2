@@ -23,7 +23,7 @@ jobs:
         python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
         pip install . 
         pip install sphinx_rtd_theme
-        sphinx-apidoc -o ./docs/source/ detectree2/
+        sphinx-apidoc -f -o ./docs/source/ detectree2/
         sphinx-build -b html docs/source/ docs/build/html
     # - name: Build HTML
     #   uses: ammaraskar/sphinx-action@0.4
