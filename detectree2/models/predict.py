@@ -54,8 +54,8 @@ def predict_on_data(
 
 def stitch_crowns(folder: str, shift: int = 1):
     """Stitch together predicted crowns."""
-    folder = Path(folder)
-    files = folder.glob("*geojson")
+    crowns_path = Path(folder)
+    files = crowns_path.glob("*geojson")
     crowns = gpd.GeoDataFrame(columns=["Confidence score", "geometry"], geometry="geometry", crs=from_epsg(32622))
     for file in files:
         crowns_tile = gpd.read_file(file)
