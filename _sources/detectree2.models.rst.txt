@@ -12,10 +12,10 @@ detectree2.models.F1\_calculator module
    :undoc-members:
    :show-inheritance:
 
-detectree2.models.NewF1Calculator module
-----------------------------------------
+detectree2.models.evaluation module
+-----------------------------------
 
-.. automodule:: detectree2.models.NewF1Calculator
+.. automodule:: detectree2.models.evaluation
    :members:
    :undoc-members:
    :show-inheritance:
