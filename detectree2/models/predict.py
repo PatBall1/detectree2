@@ -11,11 +11,15 @@ from detectree2.models.train import get_filenames
 
 
 def predict_on_data(
-    directory: str,
+    directory: str = None,
     predictor=DefaultPredictor,
     save: bool = True,
 ):
-    """Make predictions on tiled data."""
+    """Make predictions on tiled data
+
+    Predicts crowns for all png images present in a directory and outputs masks 
+    as jsons
+    """
 
     pred_dir = os.path.join(directory, "predictions")
 
@@ -44,6 +48,27 @@ def predict_on_data(
             evaluations = instances_to_coco_json(outputs["instances"].to("cpu"), d["file_name"])
             with open(output_file, "w") as dest:
                 json.dump(evaluations, dest)
+
+
+def stitch_crowns(folder: str, shift: int = 1):
+    """Stitch together predicted crowns
+    """
+    folder = Path(folder)
+    files = folder.glob("*geojson")
+    crowns = gpd.GeoDataFrame(columns=["Confidence score", "geometry"], geometry="geometry", crs=from_epsg(32622))
+    for file in files:
+        crowns_tile = gpd.read_file(file)
+        crowns_tile.crs = "epsg:32622"
+        #crowns_tile = crowns_tile.set_crs(from_epsg(32622))
+        # print(crowns_tile)
+
+        geo = box_make(file, shift)
+        # geo.plot()
+        crowns_tile = gpd.sjoin(crowns_tile, geo, "inner", "within")
+        # print(crowns_tile)
+        crowns = crowns.append(crowns_tile)
+        # print(crowns)
+    return crowns
 
 
 if __name__ == "__main__":
