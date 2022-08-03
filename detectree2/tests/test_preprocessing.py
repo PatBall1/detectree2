@@ -1,7 +1,8 @@
-import unittest
 import os
-import rasterio
+import unittest
+
 import geopandas as gpd
+import rasterio
 
 
 class TestCase(unittest.TestCase):
@@ -16,7 +17,7 @@ class TestCase(unittest.TestCase):
         img_path = os.path.join(site_path, "RCD105_MA14_21_orthomosaic_20141023_reprojected_full_res.tif")
         crown_path = os.path.join(site_path, "crowns/SepilokEast.gpkg")
         # crown_path = os.path.join(site_path, "crowns/SepilokWest.gpkg")
-     
+
         # Read in the tiff file
         data = rasterio.open(img_path)
         # Read in crowns (then filter by an attribute?)
@@ -27,20 +28,21 @@ class TestCase(unittest.TestCase):
         buffer = 15
         tile_width = 40
         tile_height = 40
-        threshold = 0.5 
-      
+        threshold = 0.5
+
         from detectree2.preprocessing.tiling import tile_data_train
-        
+
         out_dir = "./out/tiles/"
- 
+
         tile_data_train(data, out_dir, buffer, tile_width, tile_height, crowns, threshold)
-        
+
         return True
-    
-    def test_to_traintest_dir(self):
-        from detectree2.preprocessing.tiling import to_traintest_folders
-        data_folder = out_dir
-        out_folder = out_dir
-        to_traintest_folders(data_folder, out_folder, test_frac=0.15,folds=5)
+
+    # def test_to_traintest_dir(self):
+    #     from detectree2.preprocessing.tiling import to_traintest_folders
+    #     data_folder = out_dir
+    #     out_folder = out_dir
+    #     to_traintest_folders(data_folder, out_folder, test_frac=0.15, folds=5)
+
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
