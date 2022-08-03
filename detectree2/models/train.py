@@ -5,7 +5,7 @@ import os
 import random
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List
 
 import cv2
 import detectron2.data.transforms as T  # noqa:N812
@@ -180,7 +180,7 @@ class MyTrainer(DefaultTrainer):
         )
 
 
-def get_tree_dicts(directory: str, classes: list[str] = None) -> list[dict]:
+def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
     """Get the tree dictionaries.
 
     Args:
@@ -276,7 +276,7 @@ def get_tree_dicts(directory: str, classes: list[str] = None) -> list[dict]:
     return dataset_dicts
 
 
-def combine_dicts(root_dir: str, val_dir: int, mode: str = "train") -> list[dict]:
+def combine_dicts(root_dir: str, val_dir: int, mode: str = "train") -> List[Dict]:
     """Join tree dicts from different directories.
 
     Args:
