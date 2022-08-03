@@ -21,9 +21,13 @@ import torch
 from detectron2 import model_zoo
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
-from detectron2.data import (DatasetCatalog, DatasetMapper, MetadataCatalog,
-                             build_detection_test_loader,
-                             build_detection_train_loader)
+from detectron2.data import (
+    DatasetCatalog,
+    DatasetMapper,
+    MetadataCatalog,
+    build_detection_test_loader,
+    build_detection_train_loader,
+)
 from detectron2.engine import DefaultTrainer
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator, verify_results
@@ -86,10 +90,10 @@ class LossEvalHook(HookBase):
             iters_after_start = idx + 1 - num_warmup * int(idx >= num_warmup)
             seconds_per_img = total_compute_time / iters_after_start
             if idx >= num_warmup * 2 or seconds_per_img > 5:
-                total_seconds_per_img = (time.perf_counter()
-                                         - start_time) / iters_after_start
-                eta = datetime.timedelta(seconds=int(total_seconds_per_img
-                                                     * (total - idx - 1)))
+                total_seconds_per_img = (time.perf_counter() -
+                                         start_time) / iters_after_start
+                eta = datetime.timedelta(seconds=int(total_seconds_per_img *
+                                                     (total - idx - 1)))
                 log_every_n_seconds(
                     logging.INFO,
                     "Loss on Validation  done {}/{}. {:.4f} s / img. ETA={}".
@@ -131,8 +135,8 @@ class LossEvalHook(HookBase):
         """
         metrics_dict = self._model(data)
         metrics_dict = {
-            k:
-            v.detach().cpu().item() if isinstance(v, torch.Tensor) else float(v)
+            k: v.detach().cpu().item()
+            if isinstance(v, torch.Tensor) else float(v)
             for k, v in metrics_dict.items()
         }
         total_losses_reduced = sum(loss for loss in metrics_dict.values())
@@ -146,8 +150,8 @@ class LossEvalHook(HookBase):
             if self.max_ap < self.trainer.APs[-1]:
                 self.iter = 0
                 self.max_ap = self.trainer.APs[-1]
-                self.trainer.checkpointer.save('model_'
-                                               + str(len(self.trainer.APs)))
+                self.trainer.checkpointer.save('model_' +
+                                               str(len(self.trainer.APs)))
                 self.best_iter = self.trainer.iter
             else:
                 self.iter += 1
@@ -160,8 +164,8 @@ class LossEvalHook(HookBase):
     def after_train(self):
         # Select the model with the best AP50
         index = self.trainer.APs.index(max(self.trainer.APs)) + 1
-        self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_'
-                                       + str(index) + '.pth')
+        self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR +
+                                       '/model_' + str(index) + '.pth')
 
 
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
@@ -245,37 +249,39 @@ class MyTrainer(DefaultTrainer):
         )
         return hooks
 
-    def build_train_loader(cls, cfg):
-        """Summary.
-          Args:
-              cfg (_type_): _description_
 
-          Returns:
-              _type_: _description_
-        """
-        augmentations=[
-            T.RandomBrightness(0.8, 1.8),
-            T.RandomContrast(0.6, 1.3),
-            T.RandomSaturation(0.8, 1.4),
-            T.RandomRotation(angle=[90, 90], expand=False),
-            T.RandomLighting(0.7),
-            T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
-            T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
-        ]
-                
-        if cfg.RESIZE:
-            augmentations.append(T.Resize((1000, 1000)))
-        elif cfg.RESIZE == "random":
-            augmentations.append(T.Resize((1000, 1000)))
-            augmentations.append(T.ResizeScale(800/1000, 1333/800, 1000, 1000))
-        return build_detection_train_loader(
+def build_train_loader(cls, cfg):
+    """Summary.
+        Args:
+            cfg (_type_): _description_
+
+        Returns:
+            _type_: _description_
+    """
+    augmentations = [
+        T.RandomBrightness(0.8, 1.8),
+        T.RandomContrast(0.6, 1.3),
+        T.RandomSaturation(0.8, 1.4),
+        T.RandomRotation(angle=[90, 90], expand=False),
+        T.RandomLighting(0.7),
+        T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
+        T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
+    ]
+
+    if cfg.RESIZE:
+        augmentations.append(T.Resize((1000, 1000)))
+    elif cfg.RESIZE == "random":
+        augmentations.append(T.Resize((1000, 1000)))
+        augmentations.append(T.ResizeScale(800 / 1000, 1333 / 800, 1000, 1000))
+    return build_detection_train_loader(
+        cfg,
+        mapper=DatasetMapper(
             cfg,
-            mapper=DatasetMapper(
-                cfg,
-                is_train=True,
-                augmentations=augmentations,
-            ),
-        ) 
+            is_train=True,
+            augmentations=augmentations,
+        ),
+    )
+
 
 def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
     """Get the tree dictionaries.
@@ -344,15 +350,12 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
                              np.min(py),
                              np.max(px),
                              np.max(py)],
-                    "bbox_mode":
-                        BoxMode.XYXY_ABS,
+                    "bbox_mode": BoxMode.XYXY_ABS,
                     "segmentation": [poly],
                     "category_id":
-                        classes.index(features["properties"]["PlotOrg"]
-                                      ),    # id
+                    classes.index(features["properties"]["PlotOrg"]),  # id
                     # "category_id": 0,  #id
-                    "iscrowd":
-                        0,
+                    "iscrowd": 0,
                 }
             else:
                 obj = {
@@ -362,7 +365,7 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
                              np.max(py)],
                     "bbox_mode": BoxMode.XYXY_ABS,
                     "segmentation": [poly],
-                    "category_id": 0,    # id
+                    "category_id": 0,  # id
                     "iscrowd": 0,
                 }
             # pdb.set_trace()
@@ -462,24 +465,25 @@ def load_json_arr(json_path):
     return lines
 
 
-def setup_cfg(base_model:
-              str = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
-              trains=("trees_train",),
-              tests=("trees_val",),
-              update_model=None,
-              workers=2,
-              ims_per_batch=2,
-              gamma=0.1,
-              backbone_freeze=3,
-              warm_iter=120,
-              momentum=0.9,
-              batch_size_per_im=1024,
-              base_lr=0.001,
-              max_iter=1000,
-              num_classes=1,
-              eval_period=100,
-              out_dir="/content/drive/Shareddrives/detectree2/train_outputs",
-              resize=True,):
+def setup_cfg(
+    base_model: str = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
+    trains=("trees_train", ),
+    tests=("trees_val", ),
+    update_model=None,
+    workers=2,
+    ims_per_batch=2,
+    gamma=0.1,
+    backbone_freeze=3,
+    warm_iter=120,
+    momentum=0.9,
+    batch_size_per_im=1024,
+    base_lr=0.001,
+    max_iter=1000,
+    num_classes=1,
+    eval_period=100,
+    out_dir="/content/drive/Shareddrives/detectree2/train_outputs",
+    resize=True,
+):
     """Set up config object.
 
     Args:
@@ -529,7 +533,6 @@ def setup_cfg(base_model:
     return cfg
 
 
-
 def predictions_on_data(directory=None,
                         predictor=DefaultTrainer,
                         trees_metadata=None,
@@ -565,7 +568,7 @@ def predictions_on_data(directory=None,
             metadata=trees_metadata,
             scale=scale,
             instance_mode=ColorMode.SEGMENTATION,
-        )    # remove the colors of unsegmented pixels
+        )  # remove the colors of unsegmented pixels
         v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
         image = cv2.cvtColor(v.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
         display(Image.fromarray(image))
@@ -581,8 +584,8 @@ def predictions_on_data(directory=None,
 
         if save:
             # Converting the predictions to json files and saving them in the specfied output file.
-            evaluations = instances_to_coco_json(outputs["instances"].to("cpu"),
-                                                 d["file_name"])
+            evaluations = instances_to_coco_json(
+                outputs["instances"].to("cpu"), d["file_name"])
             with open(output_file, "w") as dest:
                 json.dump(evaluations, dest)
 
@@ -590,7 +593,7 @@ def predictions_on_data(directory=None,
 if __name__ == "__main__":
     train_location = "/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/"
     register_train_data(train_location, "Paracou",
-                        1)    # folder, name, validation fold
+                        1)  # folder, name, validation fold
 
     name = "Paracou2019"
     train_location = "/content/drive/Shareddrives/detectree2/data/Paracou/tiles2019/train/"

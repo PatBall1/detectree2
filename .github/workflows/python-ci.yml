@@ -1,4 +1,4 @@
-name: Detectree2 CI
+name: Detectree CI
 
 on:
   push:
@@ -37,6 +37,7 @@ jobs:
       run: |
         pytest
     - name: mypy checks
+      continue-on-error: true
       run: |
         mypy detectree2
     - name: isort checks
