@@ -153,7 +153,7 @@ class MyTrainer(DefaultTrainer):
         return hooks
 
     def build_train_loader(self, cls, cfg):
-        """Summary_.
+        """Summary.
 
         Args:
             cfg (_type_): _description_

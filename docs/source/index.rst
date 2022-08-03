@@ -29,8 +29,11 @@ Original MRes project repo at https://github.com/shmh40/detectreeRGB.
    :maxdepth: 2
    :caption: Contents:
 
-   usage
+   installation
    tutorial
+   contributing
+   _notebooks/contributing_guide
+   _notebooks/trainingJB
 
 
 

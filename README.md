@@ -1,7 +1,8 @@
 # detectree2
 
- [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
- <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+ [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Detectree CI](https://github.com/patball1/detectree2/actions/workflows/python-ci.yml/badge.svg)](https://github.com/patball1/detectree2/actions/workflows/python-ci.yml)[![PEP8](https://img.shields.io/badge/code%20style-pep8-orange.svg)](https://www.python.org/dev/peps/pep-0008/)
+
+<!-- <a href="https://github.com/hhatto/autopep8"><img alt="Code style: autopep8" src="https://img.shields.io/badge/code%20style-autopep8-000000.svg"></a> -->
 
 <sub>Code developed by Seb Hickman, James Ball, Thomas Koay, Panagiotis Ioannou and James Hinton in the [Forest Ecology and Conservation Group](https://coomeslab.org/) at the University of Cambridge.
 The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge [Conservation Research Institute](https://www.conservation.cam.ac.uk/).
@@ -13,16 +14,14 @@ Accurate tropical forest individual tree crown delineation from RGB imagery usin
 Sebastian H M Hickman, James G C Ball, Tobias D Jackson, Xian Jing Koay, James Hirst, William Jay, Melaine Aubry-Kientz, Gregoire Vincent, David A Coomes
 *bioRxiv* 2022.07.10.499480; doi: [https://doi.org/10.1101/2022.07.10.499480](https://doi.org/10.1101/2022.07.10.499480)
 
-
 ## Requirements
+
 - Python 3.8+
 - [gdal](https://gdal.org/download.html) geospatial libraries
 - [PyTorch ≥ 1.8 and torchvision](https://pytorch.org/get-started/previous-versions/) versions that match
 
-
 e.g.
 ```pip3 install torch torchvision torchaudio```
-
 
 ## Installation
 
@@ -37,6 +36,7 @@ Currently works on Google Colab (Pro version recommended). May struggle on clust
 Detectree2, based on the [Detectron2](https://github.com/facebookresearch/detectron2) Mask R-CNN architecture, locates trees in aerial images. It has been designed to delineate trees in challenging dense tropical forests for a range of ecological applications.
 
 The standard workflow includes:
+
 1) Tile the orthomosaics and crown data (for training, validation and testing)
 2) Train (and tune) a model on the training tiles
 3) Evaluate the model performance by predicting on the test tiles and comparing to manual crowns for the tiles
@@ -47,7 +47,6 @@ Training crowns are used to teach the network to delineate tree crowns
 <img width="500" align="center" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/Workflow_Diagram2_a.png#gh-light-mode-only>
 <img width="500" align="center" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/Workflow_Diagram2_b.png#gh-dark-mode-only> 
 </p>
-
 
 Here is an example image of the predictions made by Detectree2.
 <p align="center">
