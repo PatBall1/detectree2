@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    # - name: Set up Python 3.8
-    #   uses: actions/setup-python@v3
-    #   with:
-    #     python-version: "3.8"
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
     - name: Install code development dependencies # put in docker container detectree/dev eventually
       run: |
         python3 --version
@@ -35,11 +35,9 @@ jobs:
         export C_INCLUDE_PATH=/usr/include/gdal
         pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu \
         opencv-python wandb numpy==1.23 sphinx
-        python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
+        pip3 install 'git+https://github.com/facebookresearch/detectron2.git'
     - name: Install detectree2
       run: |
-        pip3 list
-        which pip
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
         export C_INCLUDE_PATH=/usr/include/gdal
         pip3 install .
