@@ -11,17 +11,16 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.8"
+    # - name: Set up Python 3.8
+    #   uses: actions/setup-python@v3
+    #   with:
+    #     python-version: "3.8"
     - name: Install code development dependencies # put in docker container detectree/dev eventually
       run: |
+        python3 --version
         python -m pip install --upgrade pip
         pip install flake8 pep8-naming pydocstyle pytest isort
         pip install mypy data-science-types pandas-stubs types-pillow numpy
@@ -37,11 +36,11 @@ jobs:
         pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu \
         opencv-python wandb numpy==1.23 sphinx
         python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
-        pip install .
     - name: Install detectree2
       run: |
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
         export C_INCLUDE_PATH=/usr/include/gdal
+        pip install .
     - name: flake8 checks
       continue-on-error: true
       run: |
