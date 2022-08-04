@@ -33,10 +33,13 @@ jobs:
         flake8 detectree2 --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. 
         flake8 detectree2 --count --max-complexity=10 --statistics
+    - name: wget
+      uses: wei/wget@v1 
+      with:
+        args: https://zenodo.org/record/5515408/files/RCD105_MA14_21_orthomosaic_20141023_reprojected_full_res.tif?download=1
     - name: pytest checks
       run: |
         # pytest
-        wget https://zenodo.org/record/5515408/files/RCD105_MA14_21_orthomosaic_20141023_reprojected_full_res.tif?download=1
         python -m pytest -rP -v detectree2/tests/test_preprocessing.py 
     - name: mypy checks
       run: |
