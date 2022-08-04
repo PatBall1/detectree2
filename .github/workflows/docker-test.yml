@@ -16,16 +16,16 @@ jobs:
   build:
 
     runs-on: ubuntu-20.04
-    container: ma595/detectree-cpu-dev:latest
+    container: ma595/detectree-cpu-all:latest
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python 3.8
       uses: actions/setup-python@v3
       with:
         python-version: "3.8"
-    - name: Install detectree2
-      run: |
-        pip install .
+    # - name: Install detectree2
+    #   run: |
+    #     pip install .
     - name: flake8 checks
       continue-on-error: true
       run: |
@@ -35,7 +35,9 @@ jobs:
         flake8 detectree2 --count --max-complexity=10 --statistics
     - name: pytest checks
       run: |
-        pytest
+        # pytest
+        wget https://zenodo.org/record/5515408/files/RCD105_MA14_21_orthomosaic_20141023_reprojected_full_res.tif?download=1
+        python -m pytest -rP -v detectree2/tests/test_preprocessing.py 
     - name: mypy checks
       run: |
         mypy detectree2

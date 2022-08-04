@@ -13,7 +13,7 @@ class TestCase(unittest.TestCase):
     def test_tiling(self):
         ### SEPILOK (East/West)
         #site_path = "/content/drive/Shareddrives/detectree2/data/Sepilok"
-        site_path = "../data/sepilok"
+        site_path = "./"
         img_path = os.path.join(site_path, "RCD105_MA14_21_orthomosaic_20141023_reprojected_full_res.tif")
         crown_path = os.path.join(site_path, "crowns/SepilokEast.gpkg")
         # crown_path = os.path.join(site_path, "crowns/SepilokWest.gpkg")
@@ -28,7 +28,7 @@ class TestCase(unittest.TestCase):
         buffer = 15
         tile_width = 40
         tile_height = 40
-        threshold = 0.5
+        threshold = 0.2
 
         from detectree2.preprocessing.tiling import tile_data_train
 
