@@ -308,7 +308,7 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
         with open(json_file) as f:
             img_anns = json.load(f)
         # Turn off type checking for annotations until we have a better solution
-        record: dict[str, Any] = {}
+        record: Dict[str, Any] = {}
 
         filename = img_anns["imagePath"]
         # Make sure we have the correct height and width

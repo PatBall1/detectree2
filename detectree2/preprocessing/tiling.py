@@ -489,7 +489,7 @@ def to_traintest_folders(tiles_folder: str = "./",
         Path(out_dir / f"train/fold_{i + 1}").mkdir(parents=True, exist_ok=True)
         for name in ind_split[i]:
             shutil.move(
-                out_dir / f"train/{name}.geojson",
+                out_dir / f"train/{name}.geojson",  # type: ignore
                 out_dir / f"train/fold_{i + 1}/{name}.geojson",
             )
 
