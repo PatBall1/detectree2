@@ -35,7 +35,7 @@ class TestCase(unittest.TestCase):
 
         return True
 
-    def test_to_traintest_folders():
+    def test_to_traintest_folders(self):
         root_path = 'detectree2-data'
         tiles_path = os.path.join(root_path, 'out/tiles')
         out_path = os.path.join(root_path, 'out/train_test_tiles')

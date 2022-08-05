@@ -46,7 +46,7 @@ class TestCase(unittest.TestCase):
 
         self.assertEqual(1, 1)
 
-    def test_train():
+    def test_train(self):
         """Integration test: test training detectree2 on tree data for a single step.
 
             Run on CPU.  
