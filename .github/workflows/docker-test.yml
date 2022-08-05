@@ -41,10 +41,6 @@ jobs:
       with:
         owner: 'ma595'
         repository: 'detectree2-data'
-    - name: clone latest code
-      run:
-        ls -latr
-        git clone git@github.com:PatBall1/detectree2.git
     - name: pytest checks
       run: |
         # pytest
