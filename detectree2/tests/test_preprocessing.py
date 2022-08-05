@@ -13,9 +13,11 @@ class TestCase(unittest.TestCase):
     def test_tiling(self):
         ### SEPILOK (East/West)
         #site_path = "/content/drive/Shareddrives/detectree2/data/Sepilok"
-        site_path = "./"
-        img_path = os.path.join(site_path, "RCD105_MA14_21_orthomosaic_20141023_reprojected_full_res.tif")
-        crown_path = os.path.join(site_path, "crowns/SepilokEast.gpkg")
+        site_path = "./data/sepilok"
+        # img_path = os.path.join(site_path, "RCD105_MA14_21_orthomosaic_20141023_reprojected_full_res.tif")
+        # img_path = os.path.join(site_path, "Sep_2014_coarse_CHM_g10_sub0.01_0.5m.tif")
+        # crown_path = os.path.join(site_path, "crowns/SepilokEast.gpkg")
+        crown_path = os.path.join(site_path, "manual_crowns_sepilok.shp")
         # crown_path = os.path.join(site_path, "crowns/SepilokWest.gpkg")
 
         # Read in the tiff file
@@ -32,7 +34,7 @@ class TestCase(unittest.TestCase):
 
         from detectree2.preprocessing.tiling import tile_data_train
 
-        out_dir = "./out/tiles/"
+        out_dir = "./out/tiles-coarse/"
 
         tile_data_train(data, out_dir, buffer, tile_width, tile_height, crowns, threshold)
 
