@@ -18,11 +18,11 @@ jobs:
     container: ma595/detectree-cpu-all:latest
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.8"
-    # - name: Install detectree2
+    # - name: Set up Python 3.8
+    #   uses: actions/setup-python@v3
+    #   with:
+    #     python-version: "3.8"
+    # # - name: Install detectree2
     #   run: |
     #     pip install .
     - name: flake8 checks
@@ -44,7 +44,8 @@ jobs:
     - name: pytest checks
       run: |
         # pytest
-        python -m pytest -rP -v detectree2/tests/test_preprocessing.py 
+        # python -m pytest -rP -v detectree2/tests/test_preprocessing.py 
+        pytest -rP -v detectree2/tests/test_preprocessing.py -k test_tiling
     - name: mypy checks
       run: |
         mypy detectree2
