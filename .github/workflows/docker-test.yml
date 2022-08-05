@@ -45,9 +45,12 @@ jobs:
       run: |
         # pytest
         # python -m pytest -rP -v detectree2/tests/test_preprocessing.py 
+        
         pytest -rP -v detectree2/tests/test_preprocessing.py -k test_tiling
     - name: mypy checks
       run: |
+        which python3
+        python3 --version
         mypy detectree2
     - name: isort checks
       run: |
