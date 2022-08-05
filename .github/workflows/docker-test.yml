@@ -41,6 +41,9 @@ jobs:
       with:
         owner: 'ma595'
         repository: 'detectree2-data'
+    - name: clone latest code
+      run:
+        git clone git@github.com:PatBall1/detectree2.git detectree2
     - name: pytest checks
       run: |
         # pytest
@@ -48,11 +51,6 @@ jobs:
         pytest -rP -v detectree2/tests/test_preprocessing.py -k test_tiling
     - name: mypy checks
       run: |
-        which python3
-        python3 --version
-        python3 -c "import mypy; print(mypy.__file__)"
-        pwd
-        ls
         mypy detectree2
     - name: isort checks
       run: |
