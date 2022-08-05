@@ -426,13 +426,12 @@ def is_overlapping_box(test_boxes_array, train_box):
     return False
 
 
-def to_traintest_folders(
-    tiles_folder: str = "./",
-    out_folder: str = "./data/",
-    test_frac: float = 0.2,
-    folds: int = 1,
-):
-    """Send tiles to training (+val) and test dir and automatically making sure no overlap between test and train tiles.
+def to_traintest_folders(tiles_folder: str = "./",
+                         out_folder: str = "./data/",
+                         test_frac: float = 0.2,
+                         folds: int = 1,
+                         seed: int = None) -> None:
+    """Send tiles to training (+validation) and test dir and automatically make sure no overlap.
 
     Args:
         tiles_folder:
@@ -443,45 +442,55 @@ def to_traintest_folders(
     Returns:
         None
     """
-    if Path(out_folder + "train").exists() and Path(out_folder + "train").is_dir():
-        shutil.rmtree(Path(out_folder + "train"))
-    if Path(out_folder + "test").exists() and Path(out_folder + "test").is_dir():
-        shutil.rmtree(Path(out_folder + "test"))
-    Path(out_folder + "train").mkdir(parents=True, exist_ok=True)
-    Path(out_folder + "test").mkdir(parents=True, exist_ok=True)
+    tiles_dir = Path(tiles_folder)
+    out_dir = Path(out_folder)
 
-    filenames = glob.glob(tiles_folder + "*.png")
-    fileroots = [Path(item).stem for item in filenames]
+    if Path(out_dir / "train").exists() and Path(out_dir / "train").is_dir():
+        shutil.rmtree(Path(out_dir / "train"))
+    if Path(out_dir / "test").exists() and Path(out_dir / "test").is_dir():
+        shutil.rmtree(Path(out_dir / "test"))
+    Path(out_dir / "train").mkdir(parents=True, exist_ok=True)
+    Path(out_dir / "test").mkdir(parents=True, exist_ok=True)
 
-    num = list(range(0, len(filenames)))
+    file_names = tiles_dir.glob("*.png")
+    file_roots = [item.stem for item in file_names]
+
+    num = list(range(0, len(file_roots)))
+
+    # this affects the random module module-wide
+    if seed is not None:
+        random.seed(seed)
     random.shuffle(num)
+
     test_boxes = []
 
-    for i in range(0, len(filenames)):
-        if i <= len(filenames) * test_frac:
-            test_boxes.append(image_details(fileroots[num[i]]))
-            shutil.copy(tiles_folder + fileroots[num[i]] + ".geojson", out_folder + "test/")
+    for i in range(0, len(file_roots)):
+        # copy to test
+        if i <= len(file_roots) * test_frac:
+            test_boxes.append(image_details(file_roots[num[i]]))
+            shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(".geojson"), out_dir / "test")
         else:
-            train_box = image_details(fileroots[num[i]])
+            # copy to train
+            train_box = image_details(file_roots[num[i]])
             if not is_overlapping_box(test_boxes, train_box):
-                shutil.copy(tiles_folder + fileroots[num[i]] + ".geojson", out_folder + "train/")
+                shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(".geojson"), out_dir / "train")
 
-    filenames = glob.glob(out_folder + "/train/*.geojson")
-    fileroots = [Path(item).stem for item in filenames]
+    # COMMENT NECESSARY HERE
+    file_names = (out_dir / "train").glob("*.geojson")
+    file_roots = [item.stem for item in file_names]
     # stemname = Path(filenames[0]).stem.split("_", 1)[0]
-
     # indices = [item.split("_", 1)[-1].split(".", 1)[0] for item in filenames]
-    num = list(range(0, len(filenames)))
-    random.shuffle(num)
     # random.shuffle(indices)
-    ind_split = np.array_split(fileroots, folds)
+    num = list(range(0, len(file_roots)))
+    random.shuffle(num)
+    ind_split = np.array_split(file_roots, folds)
 
     for i in range(0, folds):
-        Path(out_folder + "/train/fold_" + str(i + 1) + "/").mkdir(parents=True, exist_ok=True)
+        Path(out_dir / f"train/fold_{i + 1}").mkdir(parents=True, exist_ok=True)
         for name in ind_split[i]:
             shutil.move(
-                out_folder + "train/" + name + ".geojson",
-                out_folder + "train/fold_" + str(i + 1) + "/",
+                out_dir / f"train/{name}.geojson",
+                out_dir / f"train/fold_{i + 1}/{name}.geojson",
             )
 
 

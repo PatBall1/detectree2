@@ -11,18 +11,13 @@ class TestCase(unittest.TestCase):
         self.assertEqual("foo".upper(), "FOO")
 
     def test_tiling(self):
-        ### SEPILOK (East/West)
-        #site_path = "/content/drive/Shareddrives/detectree2/data/Sepilok"
-        site_path = "./data/sepilok"
-        # img_path = os.path.join(site_path, "RCD105_MA14_21_orthomosaic_20141023_reprojected_full_res.tif")
-        # img_path = os.path.join(site_path, "Sep_2014_coarse_CHM_g10_sub0.01_0.5m.tif")
-        # crown_path = os.path.join(site_path, "crowns/SepilokEast.gpkg")
-        crown_path = os.path.join(site_path, "manual_crowns_sepilok.shp")
-        # crown_path = os.path.join(site_path, "crowns/SepilokWest.gpkg")
+        site_path = "detectree2-data"
+        img_path = os.path.join(site_path, "cropped_high_res_small.tif")
+        crown_path = os.path.join(site_path, "UpdatedCrowns8.gpkg")
 
         # Read in the tiff file
         data = rasterio.open(img_path)
-        # Read in crowns (then filter by an attribute?)
+        # Read in crowns
         crowns = gpd.read_file(crown_path)
         crowns = crowns.to_crs(data.crs.data)
 
@@ -34,17 +29,23 @@ class TestCase(unittest.TestCase):
 
         from detectree2.preprocessing.tiling import tile_data_train
 
-        out_dir = "./out/tiles-coarse/"
+        out_dir = "./out/tiles/"
 
         tile_data_train(data, out_dir, buffer, tile_width, tile_height, crowns, threshold)
 
         return True
 
-    # def test_to_traintest_dir(self):
-    #     from detectree2.preprocessing.tiling import to_traintest_folders
-    #     data_folder = out_dir
-    #     out_folder = out_dir
-    #     to_traintest_folders(data_folder, out_folder, test_frac=0.15, folds=5)
+    def test_to_traintest_folders():
+        root_path = 'detectree2-data'
+        tiles_path = os.path.join(root_path, 'out/tiles')
+        out_path = os.path.join(root_path, 'out/train_test_tiles')
+        test_frac = 0.1
+        folds = 5
+        from detectree2.preprocessing.tiling import to_traintest_folders
+
+        to_traintest_folders(tiles_path, out_path, test_frac, folds, seed=1)
+
+        return True
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
