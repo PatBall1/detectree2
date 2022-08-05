@@ -52,6 +52,7 @@ jobs:
         python3 --version
         python3 -c "import mypy; print(mypy.__file__)"
         pwd
+        ls
         mypy detectree2
     - name: isort checks
       run: |
