@@ -29,7 +29,7 @@ class TestCase(unittest.TestCase):
 
         from detectree2.preprocessing.tiling import tile_data_train
 
-        out_dir = "./out/tiles/"
+        out_dir = os.path.join(site_path, "out/tiles")
 
         tile_data_train(data, out_dir, buffer, tile_width, tile_height, crowns, threshold)
 

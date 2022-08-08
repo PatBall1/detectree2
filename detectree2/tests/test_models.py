@@ -55,8 +55,8 @@ class TestCase(unittest.TestCase):
                                              setup_cfg)
 
         val_fold = 1
-        root = '/rds/project/rds-5mCMIDBOkPU/ma595/detectree2/data/tiles/'
-        train_location = os.path.join(root, 'paracou/tiles/train')
+        root = 'detectree2-data'
+        train_location = os.path.join(root, 'out/train_test_tiles/train/')
         register_train_data(train_location, "Paracou", val_fold)
         # 10.5281/zenodo.5515408
         model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
@@ -64,10 +64,10 @@ class TestCase(unittest.TestCase):
         tests = 'Paracou_val'
         out_dir = os.path.join(root, "0308_train_outputs")
         cfg = setup_cfg(model, trains, tests, eval_period=1, max_iter=1, out_dir=out_dir)
-        cfg.MODEL.DEVICE = 'cpu'
-        trainer = MyTrainer(cfg)
-        trainer.resume_or_load(resume=False)
-        trainer.train()
+        # cfg.MODEL.DEVICE = 'cpu'
+        # trainer = MyTrainer(cfg)
+        # trainer.resume_or_load(resume=False)
+        # trainer.train()
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
