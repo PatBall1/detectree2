@@ -559,7 +559,6 @@ def predictions_on_data(
         file_name = file_name.replace("png", "json")
 
         output_file = pred_dir + "/Prediction_" + file_name
-        print(output_file)
 
         if save:
             # Converting the predictions to json files and saving them in the specfied output file.

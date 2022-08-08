@@ -64,10 +64,10 @@ class TestCase(unittest.TestCase):
         tests = 'Paracou_val'
         out_dir = os.path.join(root, "0308_train_outputs")
         cfg = setup_cfg(model, trains, tests, eval_period=1, max_iter=1, out_dir=out_dir)
-        # cfg.MODEL.DEVICE = 'cpu'
-        # trainer = MyTrainer(cfg)
-        # trainer.resume_or_load(resume=False)
-        # trainer.train()
+        cfg.MODEL.DEVICE = 'cpu'
+        trainer = MyTrainer(cfg)
+        trainer.resume_or_load(resume=False)
+        trainer.train()
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
