@@ -96,8 +96,7 @@ class LossEvalHook(HookBase):
             loss_batch = self._get_loss(inputs)
             losses.append(loss_batch)
         mean_loss = np.mean(losses)
-        AP = self.trainer.test(self.trainer.cfg,
-                               self.trainer.model)['segm']['AP50']
+        AP = self.trainer.test(self.trainer.cfg,self.trainer.model)['segm']['AP50']
         self.trainer.APs.append(AP)
         self.trainer.storage.put_scalar("validation_loss", mean_loss)
         self.trainer.storage.put_scalar("validation_ap", AP)
@@ -106,7 +105,7 @@ class LossEvalHook(HookBase):
         return losses
 
     def _get_loss(self, data):
-        """How loss is calculated on train_loop
+        """Calculate loss in train_loop
 
         Args:
             data (_type_): _description_
