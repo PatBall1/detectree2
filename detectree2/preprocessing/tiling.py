@@ -350,7 +350,7 @@ def tile_data_train(data: DatasetReader,
                 )
                 with open(filename, "r") as f:
                     shp = json.load(f)
-                    shp.update(str(impath))
+                    shp.update(impath)
                 with open(filename, "w") as f:
                     json.dump(shp, f)
             except ValueError:
