@@ -96,7 +96,16 @@ class LossEvalHook(HookBase):
             loss_batch = self._get_loss(inputs)
             losses.append(loss_batch)
         mean_loss = np.mean(losses)
-        AP = self.trainer.test(self.trainer.cfg,self.trainer.model)['segm']['AP50']
+        #print(self.trainer.cfg.DATASETS.TEST)
+        # Combine the AP50s of the different datasets
+        if len(self.trainer.cfg.DATASETS.TEST) > 1:
+            APs = []
+            for dataset in self.trainer.cfg.DATASETS.TEST:
+                APs.append(self.trainer.test(self.trainer.cfg,self.trainer.model)[dataset]['segm']['AP50'])
+            AP = sum(APs)/len(APs)
+        else:
+            AP = self.trainer.test(self.trainer.cfg,self.trainer.model)['segm']['AP50']
+        print("Av. AP50 =", AP)
         self.trainer.APs.append(AP)
         self.trainer.storage.put_scalar("validation_loss", mean_loss)
         self.trainer.storage.put_scalar("validation_ap", AP)
@@ -221,7 +230,7 @@ class MyTrainer(DefaultTrainer):
             LossEvalHook(
                 self.cfg.TEST.EVAL_PERIOD,
                 self.model,
-                build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST[0],
+                build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST,
                                             DatasetMapper(self.cfg, True)),
                 self.patience,
             ),
@@ -448,16 +457,16 @@ def setup_cfg(
         update_model:
         workers:
         ims_per_batch:
-        gamma=0.1,
-        backbone_freeze=3,
-        warm_iter=120,
-        momentum=0.9,
-        batch_size_per_im=1024,
-        base_lr=0.001,
-        max_iter=1000,
-        num_classes=1,
-        eval_period=100,
-        out_dir="/content/drive/Shareddrives/detectree2/train_outputs"):
+        gamma:
+        backbone_freeze:
+        warm_iter:
+        momentum:
+        batch_size_per_im:
+        base_lr:
+        max_iter:
+        num_classes:
+        eval_period:
+        out_dir:
     """
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(base_model))
@@ -475,7 +484,7 @@ def setup_cfg(
     cfg.OUTPUT_DIR = out_dir
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
     if update_model is not None:
-        cfg.MODEL.WEIGHTS = update_model    # DOESN'T WORK
+        cfg.MODEL.WEIGHTS = update_model
     else:
         cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
 
