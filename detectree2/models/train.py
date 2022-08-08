@@ -143,7 +143,8 @@ class LossEvalHook(HookBase):
         self.trainer.storage.put_scalars(timetest=12)
 
     def after_train(self):
-        index = self.trainer.APs.index(min(self.trainer.APs)) + 1
+        # Select the model with the best AP50
+        index = self.trainer.APs.index(max(self.trainer.APs)) + 1
         self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' +
                                        str(index) + '.pth')
 
@@ -423,7 +424,7 @@ def load_json_arr(json_path):
 
 
 def setup_cfg(
-        base_model="COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
+        base_model:str ="COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
         trains=("trees_train",),
         tests=("trees_val",),
         update_model=None,
@@ -439,8 +440,25 @@ def setup_cfg(
         num_classes=1,
         eval_period=100,
         out_dir="/content/drive/Shareddrives/detectree2/train_outputs"):
-    """
-    To set up config object
+    """Set up config object
+
+    Args:
+        base_model:
+        trains:
+        tests:
+        update_model:
+        workers:
+        ims_per_batch:
+        gamma=0.1,
+        backbone_freeze=3,
+        warm_iter=120,
+        momentum=0.9,
+        batch_size_per_im=1024,
+        base_lr=0.001,
+        max_iter=1000,
+        num_classes=1,
+        eval_period=100,
+        out_dir="/content/drive/Shareddrives/detectree2/train_outputs"):
     """
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(base_model))
