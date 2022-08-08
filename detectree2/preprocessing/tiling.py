@@ -335,7 +335,7 @@ def tile_data_train(data: DatasetReader,
             scalingy = -1 / (data.transform[4])
             moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
 
-            impath = {"imagePath": out_path_root.with_suffix(".png")}
+            impath = {"imagePath": out_path_root.with_suffix(".png").as_posix()}
 
             # Save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
             # If the box selected from the image is outside of the mapped region due to the image being on a slant
