@@ -60,8 +60,8 @@ class TestCase(unittest.TestCase):
         register_train_data(train_location, "Paracou", val_fold)
         # 10.5281/zenodo.5515408
         model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
-        trains = 'Paracou_train'
-        tests = 'Paracou_val'
+        trains = ('Paracou_train',)
+        tests = ('Paracou_val',)
         out_dir = os.path.join(root, "0308_train_outputs")
         cfg = setup_cfg(model, trains, tests, eval_period=1, max_iter=1, out_dir=out_dir)
         cfg.MODEL.DEVICE = 'cpu'
