@@ -73,7 +73,7 @@ def predict_on_data(
         print(output_file)
 
         if save:
-            # Converting the predictions to json files and saving them in the 
+            # Converting the predictions to json files and saving them in the
             # specfied output file.
             evaluations = instances_to_coco_json(outputs["instances"].to("cpu"),
                                                  d["file_name"])
