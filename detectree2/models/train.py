@@ -290,7 +290,19 @@ def register_train_data(train_location, name= "tree", val_fold=1, classes=None):
     else:
       MetadataCatalog.get(name +"_" + d).set(thing_classes = classes)
 
+def read_data(out_dir):
+  list = []
+  out_tif = out_dir + 'classes.txt'
+  # open file and read the content in a list
+  with open(out_tif, 'r') as fp:
+    for line in fp:
+        # remove linebreak from a current name
+        # linebreak is the last character of each line
+        x = line[:-1]
 
+        # add current item to the list
+        list.append(x)
+  return(list)
 
 def load_json_arr(json_path):
   lines = []
