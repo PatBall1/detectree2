@@ -180,10 +180,11 @@ class MyTrainer(DefaultTrainer):
 
 
 def get_tree_dicts(directory, classes=None):
+  # can set classes=list_of_classes, such that it is not NONE
   """
     directory points to files
     classes signifies which column (if any) corresponds to the class labels
-    """
+  """
   # filepath = '/content/drive/MyDrive/forestseg/paracou_data/Panayiotis_Outputs/220303_AllSpLabelled.gpkg'
   # datagpd = gpd.read_file(filepath)
   # List_Genus = datagpd.Genus_Species.to_list()
@@ -193,7 +194,7 @@ def get_tree_dicts(directory, classes=None):
   if classes is not None:
     # list_of_classes = crowns[variable].unique().tolist()
     # list_of_classes = ['Pradosia_cochlearia','Eperua_falcata','Dicorynia_guianensis','Eschweilera_sagotiana','Eperua_grandiflora','Symphonia_sp.1','Sextonia_rubra','Vouacapoua_americana','Sterculia_pruriens','Tapura_capitulifera','Pouteria_eugeniifolia','Recordoxylon_speciosum','Chrysophyllum_prieurii','Platonia_insignis','Chrysophyllum_pomiferum','Parkia_nitida','Goupia_glabra','Carapa_surinamensis','Licania_alba','Bocoa_prouacensis','Lueheopsis_rugosa']
-    list_of_classes = ["CIRAD", "CNES", "INRA"]
+    list_of_classes = classes
     classes = list_of_classes
   else:
     classes = ["tree"]
@@ -236,12 +237,14 @@ def get_tree_dicts(directory, classes=None):
       poly = [p for x in poly for p in x]
       # print("#### HERE ARE SOME POLYS #####", poly)
       if classes != ['tree']:
+        print(classes)
+        print(features["properties"])
         obj = {
             "bbox": [np.min(px), np.min(py),
                      np.max(px), np.max(py)],
             "bbox_mode": BoxMode.XYXY_ABS,
             "segmentation": [poly],
-            "category_id": classes.index(features["properties"]["PlotOrg"]
+            "category_id": classes.index(features["properties"]["status"]
                                         ),    # id
         # "category_id": 0,  #id
             "iscrowd": 0,
@@ -260,30 +263,33 @@ def get_tree_dicts(directory, classes=None):
       # print("#### HERE IS OBJS #####", objs)
     record["annotations"] = objs
     dataset_dicts.append(record)
+  print(dataset_dicts)
   return dataset_dicts
 
 
-def combine_dicts(folder, val_folder, mode='train'):
+def combine_dicts(folder, val_folder, mode='train',classes=None):
   """
-  function to join tree dicts from different directories
+  function to join tree dicts from different directories!
   """
   train_dirs = [os.path.join(folder, file) for file in os.listdir(folder)]
   if mode == 'train':
     del train_dirs[(val_folder - 1)]
     tree_dicts = []
     for d in train_dirs:
-      tree_dicts = tree_dicts + get_tree_dicts(d)
+      tree_dicts = tree_dicts + get_tree_dicts(d,classes=classes)
     return tree_dicts
   else:
-    tree_dicts = get_tree_dicts(train_dirs[(val_folder - 1)])
+    tree_dicts = get_tree_dicts(train_dirs[(val_folder - 1)],classes=classes)
     return tree_dicts
 
+def register_train_data(train_location, name= "tree", val_fold=1, classes=None):
+  for d in ["train", "val"]:
+    DatasetCatalog.register(name +"_" + d, lambda d=d: combine_dicts(train_location, val_fold, d, classes=classes))
+    if classes == None:
+      MetadataCatalog.get(name +"_" + d).set(thing_classes = 'trees')
+    else:
+      MetadataCatalog.get(name +"_" + d).set(thing_classes = classes)
 
-def register_train_data(train_location, name= "tree", val_fold=1):
-  for d in ['train', 'val']:
-    DatasetCatalog.register(name +"_" + d,
-                            lambda d=d: combine_dicts(train_location, val_fold, d))
-    MetadataCatalog.get(name +"_" + d).set(thing_classes=['tree'])
 
 
 def load_json_arr(json_path):
