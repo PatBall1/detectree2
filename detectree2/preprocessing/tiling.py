@@ -487,3 +487,44 @@ if __name__ == "__main__":
 
   tile_data_train(data, buffer, tile_width, tile_height, out_dir, crowns)
   to_traintest_folders(folds=5)
+  
+
+ 
+def modify_crown_classes(crowns):
+  """ functions to add a column to the crowns Geodataframe which record the liana conditions when already in class 0,1,2,3,4"""
+    # add a column which shows the status of a tree 
+  crowns["Lianas"]=crowns["Lianas"].astype(float)
+  crowns = crowns.assign(status='healthy')
+
+  for i in range (len(crowns)):
+    if crowns["Lianas"][i] == 1:
+      crowns["status"][i] = "slightly_infested"
+    elif crowns["Lianas"][i] == 2:
+      crowns['status'][i] = "partly_infested"
+    elif crowns["Lianas"][i] == 3:
+      crowns['status'][i] = "greatly_infested"
+    elif crowns["Lianas"][i] == 4:
+      crowns['status'][i] = "completely_infested"
+    elif crowns["Lianas"][i] != crowns["Lianas"][i]:
+      crowns['status'][i] = "delete"
+    crowns = crowns.drop(crowns[crowns.status == "delete"].index)
+  return(crowns)
+
+def add_crown_classes(crowns):
+  """ functions to add a column to the crowns Geodataframe which record the liana conditions when the conditions range from 0 to 100"""
+    # add a column which shows the status of a tree 
+  crowns = crowns.assign(status='healthy')
+
+  for i in range (len(crowns)):
+    if crowns["LI_2017"][i] > 0 and crowns["LI_2017"][i] <= 25:
+      crowns["status"][i] = "slightly_infested"
+    elif crowns["LI_2017"][i] > 25 and crowns["LI_2017"][i] <= 50:
+      crowns['status'][i] = "partly_infested"
+    elif crowns["LI_2017"][i] > 50 and crowns["LI_2017"][i] <= 75:
+      crowns['status'][i] = "greatly_infested"
+    elif crowns["LI_2017"][i] > 75:
+      crowns['status'][i] = "completely_infested"
+    elif crowns["LI_2017"][i] != crowns["LI_2017"][i]:
+      crowns['status'][i] = "delete"
+    crowns = crowns.drop(crowns[crowns.status == "delete"].index)
+  return(crowns)
