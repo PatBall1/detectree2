@@ -189,7 +189,20 @@ def tile_data(data,
         except:
           print("ValueError: Cannot write empty DataFrame to file.")
           continue
-
+         
+def record_data(crowns, 
+                out_dir,
+                column='status'):
+  """Function that will record a list of classes into a file that can be readed during training."""
+  
+  list_of_classes = crowns[column].unique().tolist()
+  
+  #write it into file "classes.txt"
+  out_tif = out_dir + 'classes.txt'
+  f = open(out_tif, "w")
+  for i in list_of_classes:
+    f.write("%s\n" % i)
+  f.close()
 
 def tile_data_train(data,
                     out_dir,
@@ -390,7 +403,7 @@ def tile_data_train(data,
       except:
         print("ValueError: Cannot write empty DataFrame to file.")
         continue
-
+        
 
 def to_traintest_folders(tiles_folder="./",
                          out_folder="./data/",
