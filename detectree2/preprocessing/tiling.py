@@ -314,7 +314,7 @@ def tile_data_train(data: DatasetReader,
             # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
             # here as a naughty method
             cv2.imwrite(
-                str(out_path_root.with_suffix(".png").resolve()),
+                str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
                 rgb_rescaled,
             )
 
