@@ -32,10 +32,6 @@ jobs:
         flake8 detectree2 --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. 
         flake8 detectree2 --count --max-complexity=10 --statistics
-    # - name: wget
-    #   uses: wei/wget@v1 
-    #   with:
-    #     args: https://zenodo.org/record/5515408/files/RCD105_MA14_21_orthomosaic_20141023_reprojected_full_res.tif?download=1
     - name: clone data for tests
       uses: GuillaumeFalourd/clone-github-repo-action@v2
       with:
@@ -43,10 +39,8 @@ jobs:
         repository: 'detectree2-data'
     - name: pytest checks
       run: |
-        # pytest
         # python -m pytest -rP -v detectree2/tests/test_preprocessing.py 
-        
-        pytest -rP -v detectree2/tests/test_preprocessing.py -k test_tiling
+        pytest -rP -v detectree2/tests/integration/
     - name: mypy checks
       run: |
         which python3
