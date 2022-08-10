@@ -1,4 +1,5 @@
 import datetime
+import glob
 import json
 import logging
 import os
@@ -46,7 +47,7 @@ class LossEvalHook(HookBase):
         patience: number of evaluation periods to wait for improvement
     """
 
-    def __init__(self, eval_period, model, data_loader):
+    def __init__(self, eval_period, model, data_loader, patience):
         """Inits LossEvalHook."""
         self._model = model
         self._period = eval_period
@@ -375,18 +376,18 @@ def combine_dicts(root_dir: str,
     """
     train_dirs = [os.path.join(root_dir, dir) for dir in os.listdir(root_dir)]
     if mode == "train":
-        del train_dirs[(val_folder - 1)]
+        del train_dirs[(val_dir - 1)]
         tree_dicts = []
         for d in train_dirs:
             tree_dicts += get_tree_dicts(d)
         return tree_dicts
     else:
-        tree_dicts = get_tree_dicts(train_dirs[(val_folder - 1)])
+        tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)])
         return tree_dicts
 
 
 def get_filenames(directory: str):
-    """Get the file names if no geojson is present
+    """Get the file names if no geojson is present.
     
     Allows for predictions where no delinations have been manually produced.
 
@@ -496,22 +497,6 @@ def setup_cfg(base_model:
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes
     cfg.TEST.EVAL_PERIOD = eval_period
     return cfg
-
-
-def get_filenames(directory):
-    """Get file names if no geojson is present.
-
-    I.e. Allows for predictions where no delinations have been manually produced.
-    """
-
-    dataset_dicts = []
-    for filename in [file for file in os.listdir(directory)]:
-        file = {}
-        filename = os.path.join(directory, filename)
-        file["file_name"] = filename
-
-        dataset_dicts.append(file)
-    return dataset_dicts
 
 
 def predictions_on_data(directory=None,

@@ -37,7 +37,7 @@ def polygonFromMask(maskedArr):
 
 
 def predict_on_data(
-    directory: str = None,
+    directory: str = "./",
     predictor=DefaultPredictor,
     save: bool = True,
 ):
