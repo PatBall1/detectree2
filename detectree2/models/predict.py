@@ -79,7 +79,7 @@ def predict_on_data(
                 json.dump(evaluations, dest)
 
 
-def filename_geoinfo(filename: str):
+def filename_geoinfo(filename):
     """Return geographic info of a tile from its filename
     """
     parts = os.path.basename(filename).split("_")
@@ -93,7 +93,7 @@ def filename_geoinfo(filename: str):
     return (minx, miny, width, buffer, crs)
 
 
-def box_filter(filename: str, shift: int = 0):
+def box_filter(filename, shift: int = 0):
     """Create a bounding box from a file name to filter edge crowns
     """
     minx, miny, width, buffer, crs = filename_geoinfo(filename)
