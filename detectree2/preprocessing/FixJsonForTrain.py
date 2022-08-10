@@ -20,8 +20,7 @@ for i in entries:
     if "geojson" in i:
         filename = (
             "/content/drive/MyDrive/forestseg/paracou_data/Panayiotis_Outputs/ForTrainingSegmentation/train/"
-            + i
-        )
+            + i)
         print(i)
         print(filename)
         j = i[:-8]
@@ -44,8 +43,7 @@ for i in entries:
     if "geojson" in i:
         filename = (
             "/content/drive/MyDrive/forestseg/paracou_data/Panayiotis_Outputs/ForTrainingSegmentation/test/"
-            + i
-        )
+            + i)
         print(i)
         print(filename)
         j = i[:-8]

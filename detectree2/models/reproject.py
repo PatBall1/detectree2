@@ -13,7 +13,8 @@ def polygon_from_mask(masked_arr):
     https://github.com/hazirbas/coco-json-converter/blob/master/generate_coco_json.py <-- found here
     """
 
-    contours, _ = cv2.findContours(masked_arr, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(masked_arr, cv2.RETR_TREE,
+                                   cv2.CHAIN_APPROX_SIMPLE)
 
     segmentation = []
     for contour in contours:
@@ -26,10 +27,10 @@ def polygon_from_mask(masked_arr):
     # area = mask_util.area(RLE) # not used
     [x, y, w, h] = cv2.boundingRect(masked_arr)
 
-    return segmentation[0]  # , [x, y, w, h], area
+    return segmentation[0]    # , [x, y, w, h], area
 
 
-def reproject_to_geojson(directory=None, EPSG="26917"):  # noqa:N803
+def reproject_to_geojson(directory=None, EPSG="26917"):    # noqa:N803
     """Converts a json to a geojson so it can overlay with crowns.
 
     Reproject the crowns to overlay with the cropped crowns and cropped pngs.
@@ -41,9 +42,16 @@ def reproject_to_geojson(directory=None, EPSG="26917"):  # noqa:N803
     for file in entries:
         if ".json" in file:
             # create a geofile for each tile --> the EPSG value might need to be changed.
-            geofile = {"type": "FeatureCollection",
-                       "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::" + EPSG}},
-                       "features": []}
+            geofile = {
+                "type": "FeatureCollection",
+                "crs": {
+                    "type": "name",
+                    "properties": {
+                        "name": "urn:ogc:def:crs:EPSG::" + EPSG
+                    }
+                },
+                "features": []
+            }
 
             # create a dictionary for each file to store data used multiple times
             img_dict = {}
@@ -65,7 +73,8 @@ def reproject_to_geojson(directory=None, EPSG="26917"):  # noqa:N803
             # json file is formated as a list of segmentation polygons so cycle through each one
             for crown_data in datajson:
                 # just a check that the crown image is correct
-                if img_dict["minx"] + '_' + img_dict["miny"] in crown_data["image_id"]:
+                if img_dict["minx"] + '_' + img_dict["miny"] in crown_data[
+                        "image_id"]:
                     crown = crown_data["segmentation"]
                     confidence_score = crown_data['score']
 
@@ -84,22 +93,34 @@ def reproject_to_geojson(directory=None, EPSG="26917"):  # noqa:N803
                         if EPSG == "26917":
                             rescaled_coords.append([x_coord, -y_coord])
                         else:
-                            rescaled_coords.append([x_coord, -y_coord + int(img_dict["height"])])
+                            rescaled_coords.append(
+                                [x_coord, -y_coord + int(img_dict["height"])])
 
-                    geofile["features"].append({"type": "Feature",
-                                                "properties": {"Confidence score": confidence_score},
-                                                "geometry": {"type": "Polygon", "coordinates": [rescaled_coords]}})
+                    geofile["features"].append({
+                        "type": "Feature",
+                        "properties": {
+                            "Confidence score": confidence_score
+                        },
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [rescaled_coords]
+                        }
+                    })
 
             # Check final form is correct - compare to a known geojson file if error appears.
             print(geofile)
 
-            output_geo_file = directory + img_dict["filename"].replace('.json', "_" + EPSG + '.geojson')
+            output_geo_file = directory + img_dict["filename"].replace(
+                '.json', "_" + EPSG + '.geojson')
             print(output_geo_file)
             with open(output_geo_file, "w") as dest:
                 json.dump(geofile, dest)
 
 
-def reproject_to_geojson_spatially(data, output_fold=None, pred_fold=None, EPSG="26917"):  # noqa:N803
+def reproject_to_geojson_spatially(data,
+                                   output_fold=None,
+                                   pred_fold=None,
+                                   EPSG="26917"):    # noqa:N803
     """Reprojects the coordinates back so the crowns can be overlaid with the original tif file of the entire region.
 
     Takes a json and changes it to a geojson so it can overlay with crowns.
@@ -116,9 +137,16 @@ def reproject_to_geojson_spatially(data, output_fold=None, pred_fold=None, EPSG=
     for file in entries:
         if ".json" in file:
             # create a geofile for each tile --> the EPSG value might need to be changed.
-            geofile = {"type": "FeatureCollection",
-                       "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::" + EPSG}},
-                       "features": []}
+            geofile = {
+                "type": "FeatureCollection",
+                "crs": {
+                    "type": "name",
+                    "properties": {
+                        "name": "urn:ogc:def:crs:EPSG::" + EPSG
+                    }
+                },
+                "features": []
+            }
 
             # create a dictionary for each file to store data used multiple times
             img_dict = {}
@@ -134,7 +162,12 @@ def reproject_to_geojson_spatially(data, output_fold=None, pred_fold=None, EPSG=
             height = (tile_height + 2 * buffer) / scalingx
 
             # update the image dictionary to store all information cleanly
-            img_dict.update({"minx": minx, "miny": miny, "height": height, "buffer": buffer})
+            img_dict.update({
+                "minx": minx,
+                "miny": miny,
+                "height": height,
+                "buffer": buffer
+            })
             # print("Img dict:", img_dict)
 
             # load the json file we need to convert into a geojson
@@ -174,26 +207,37 @@ def reproject_to_geojson_spatially(data, output_fold=None, pred_fold=None, EPSG=
                         elif minx == data.bounds[0]:
                             # print("Left Edge")
                             x_coord = (x_coord) * scalingx + minx
-                            y_coord = (height - y_coord) * scalingy - buffer + miny
+                            y_coord = (height
+                                       - y_coord) * scalingy - buffer + miny
                         elif miny == data.bounds[1]:
                             # print("Bottom Edge")
                             x_coord = (x_coord) * scalingx - buffer + minx
-                            y_coord = (height - y_coord) * scalingy - buffer + miny
+                            y_coord = (height
+                                       - y_coord) * scalingy - buffer + miny
                         else:
                             # print("Anywhere else")
                             x_coord = (x_coord) * scalingx - buffer + minx
-                            y_coord = (height - y_coord) * scalingy - buffer + miny
+                            y_coord = (height
+                                       - y_coord) * scalingy - buffer + miny
 
                         moved_coords.append([x_coord, y_coord])
 
-                    geofile["features"].append({"type": "Feature",
-                                                "properties": {"Confidence score": confidence_score},
-                                                "geometry": {"type": "Polygon", "coordinates": [moved_coords]}})
+                    geofile["features"].append({
+                        "type": "Feature",
+                        "properties": {
+                            "Confidence score": confidence_score
+                        },
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [moved_coords]
+                        }
+                    })
 
             # Check final form is correct - compare to a known geojson file if error appears.
             # print("geofile",geofile)
 
-            output_geo_file = output_fold + img_dict["filename"].replace('.json', "_" + EPSG + '_lidar.geojson')
+            output_geo_file = output_fold + img_dict["filename"].replace(
+                '.json', "_" + EPSG + '_lidar.geojson')
             # print("output location:", output_geo_file)
             with open(output_geo_file, "w") as dest:
                 json.dump(geofile, dest)

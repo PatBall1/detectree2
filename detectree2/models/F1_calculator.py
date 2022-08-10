@@ -18,7 +18,8 @@ class Feature:
     Longer class information.
     """
 
-    def __init__(self, filename, directory, number, feature, lidar_filename, lidar_img, EPSG):  # noqa:N803
+    def __init__(self, filename, directory, number, feature, lidar_filename,
+                 lidar_img, EPSG):    # noqa:N803
         """Initialise a crown feature with all the required attributes.
 
         Args:
@@ -54,7 +55,8 @@ class Feature:
 
     def poly_area(self):
         """Calculates the area of the feature from scaled geojson."""
-        polygon = Polygon(self.get_tuple_coords(self.geometry['coordinates'][0]))
+        polygon = Polygon(self.get_tuple_coords(
+            self.geometry['coordinates'][0]))
 
         self.crown_area = polygon.area
 
@@ -70,13 +72,16 @@ class Feature:
                 lidar_json = json.load(lidar_file)
 
             # Want coord tuples for the unmoved crown coordinates so using the lidar copied crown file
-            lidar_coords = lidar_json['features'][self.number]['geometry']['coordinates'][0]
-            # print(lidar_coords)
-            geo = [{'type': 'Polygon', 'coordinates': [self.get_tuple_coords(lidar_coords)]}]
+            lidar_coords = lidar_json['features'][
+                self.number]['geometry']['coordinates'][0]
+            geo = [{
+                'type': 'Polygon',
+                'coordinates': [self.get_tuple_coords(lidar_coords)]
+            }]
 
             with rasterio.open(self.lidar_img) as src:
                 out_image, out_transform = mask(src, geo, crop=True)
-            out_meta = src.meta.copy()  # noqa:F841
+            out_meta = src.meta.copy()    # noqa:F841
 
             # remove all the values that are nodata values and recorded as negatives
             fixed_array = (out_image[out_image > 0])
@@ -101,7 +106,8 @@ def get_tile_width(file):
     return tile_width
 
 
-def feat_threshold_tests(feature_instance, conf_threshold, area_threshold, boarder_filter, tile_width):
+def feat_threshold_tests(feature_instance, conf_threshold, area_threshold,
+                         boarder_filter, tile_width):
     """Tests completed to see if a feature should be considered valid.
 
     Checks if the feature is above the confidence threshold if there is a confidence score available (only applies in
@@ -125,22 +131,16 @@ def feat_threshold_tests(feature_instance, conf_threshold, area_threshold, board
         EB = tile_width * boarder_filter[1]
         for coords in feature_instance.geometry['coordinates'][0]:
             if (-EB <= coords[0] <= EB or -EB <= coords[1] <= EB
-                    or TW - EB <= coords[0] <= TW + EB or TW - EB <= coords[1] <= TW + EB):
+                    or TW - EB <= coords[0] <= TW + EB
+                    or TW - EB <= coords[1] <= TW + EB):
                 valid_feature = False
                 break
 
     return valid_feature
 
 
-def initialise_feats(directory,
-                     file,
-                     lidar_filename,
-                     lidar_img,
-                     area_threshold,
-                     conf_threshold,
-                     boarder_filter,
-                     tile_width,
-                     EPSG):
+def initialise_feats(directory, file, lidar_filename, lidar_img, area_threshold,
+                     conf_threshold, boarder_filter, tile_width, EPSG):
     """Creates a list of all the features as objects of the class."""
     with open(directory + file) as feat_file:
         feat_json = json.load(feat_file)
@@ -149,9 +149,11 @@ def initialise_feats(directory,
     all_feats = []
     count = 0
     for feat in feats:
-        feat_obj = Feature(file, directory, count, feat, lidar_filename, lidar_img, EPSG)
+        feat_obj = Feature(file, directory, count, feat, lidar_filename,
+                           lidar_img, EPSG)
 
-        if feat_threshold_tests(feat_obj, conf_threshold, area_threshold, boarder_filter, tile_width):
+        if feat_threshold_tests(feat_obj, conf_threshold, area_threshold,
+                                boarder_filter, tile_width):
             all_feats.append(feat_obj)
             count += 1
         else:
@@ -165,13 +167,26 @@ def save_feats(tile_directory, all_feats):
     adjusted_directory = tile_directory + "adjusted/"
     Path(adjusted_directory).mkdir(parents=True, exist_ok=True)
 
-    geofile = {"type": "FeatureCollection", "crs": {"type": "name", "properties": {
-        "name": "urn:ogc:def:crs:EPSG::" + all_feats[0].EPSG}}, "features": []}
+    geofile = {
+        "type": "FeatureCollection",
+        "crs": {
+            "type": "name",
+            "properties": {
+                "name": "urn:ogc:def:crs:EPSG::" + all_feats[0].EPSG
+            }
+        },
+        "features": []
+    }
 
     for feat in all_feats:
-        geofile["features"].append({"type": "Feature", "properties": feat.properties, "geometry": feat.geometry})
+        geofile["features"].append({
+            "type": "Feature",
+            "properties": feat.properties,
+            "geometry": feat.geometry
+        })
 
-    output_geo_file = adjusted_directory + feat.filename.replace('.geojson', '_adjusted.geojson')
+    output_geo_file = adjusted_directory + feat.filename.replace(
+        '.geojson', '_adjusted.geojson')
     with open(output_geo_file, "w") as dest:
         json.dump(geofile, dest)
 
@@ -183,7 +198,8 @@ def find_intersections(all_test_feats, all_pred_feats):
         for test_feat in all_test_feats:
             if shape(test_feat.geometry).intersects(shape(pred_feat.geometry)):
                 try:
-                    intersection = (shape(pred_feat.geometry).intersection(shape(test_feat.geometry))).area
+                    intersection = (shape(pred_feat.geometry).intersection(
+                        shape(test_feat.geometry))).area
                 except Exception:
                     continue
 
@@ -240,7 +256,7 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):
         # to also be above the threshold to allow it to be considered
         matching_test_feat = all_test_feats[pred_feat.GIoU_other_feat_num]
         if (pred_feat.number == matching_test_feat.GIoU_other_feat_num
-            and pred_feat.GIoU > min_IoU
+                and pred_feat.GIoU > min_IoU
                 and matching_test_feat.number in tall_test_nums):
             tps += 1
             test_feats_tps.append(matching_test_feat.number)
@@ -252,10 +268,7 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):
     return tps, fps, fns
 
 
-def prec_recall_func(
-        total_tps,
-        total_fps,
-        total_fns):
+def prec_recall_func(total_tps, total_fps, total_fns):
     """Calculate the precision and recall by standard formulas."""
 
     precision = total_tps / (total_tps + total_fps)
@@ -270,20 +283,18 @@ def f1_cal(precision, recall):
     return (2 * precision * recall) / (precision + recall)
 
 
-def site_f1_score(
-    tile_directory=None,
-    test_directory=None,
-    pred_directory=None,
-    lidar_img=None,
-    IoU_threshold=0,
-    height_threshold=0,
-    area_fraction_limit=0.0005,
-    conf_threshold=0,
-    boarder_filter=tuple,
-    scaling=list,
-    EPSG=None,
-    save=False
-):
+def site_f1_score(tile_directory=None,
+                  test_directory=None,
+                  pred_directory=None,
+                  lidar_img=None,
+                  IoU_threshold=0,
+                  height_threshold=0,
+                  area_fraction_limit=0.0005,
+                  conf_threshold=0,
+                  boarder_filter=tuple,
+                  scaling=list,
+                  EPSG=None,
+                  save=False):
     """Calculating all the intersections of shapes in a pair of files and the area of the corresponding polygons.
 
     Args:
@@ -318,21 +329,29 @@ def site_f1_score(
             tile_width = get_tile_width(file) * scaling[0]
             area_threshold = ((tile_width)**2) * area_fraction_limit
 
-            test_lidar = tile_directory + file.replace(".geojson", "_lidar.geojson")
-            all_test_feats = initialise_feats(test_directory, file, test_lidar, lidar_img,
-                                              area_threshold, conf_threshold, boarder_filter, tile_width, EPSG)
+            test_lidar = tile_directory + file.replace(".geojson",
+                                                       "_lidar.geojson")
+            all_test_feats = initialise_feats(test_directory, file, test_lidar,
+                                              lidar_img, area_threshold,
+                                              conf_threshold, boarder_filter,
+                                              tile_width, EPSG)
 
-            pred_file_path = "Prediction_" + file.replace('.geojson', '_' + EPSG + '.geojson')
-            pred_lidar = tile_directory + "reprojected/" + pred_file_path.replace('.geojson', '_lidar.geojson')
-            all_pred_feats = initialise_feats(pred_directory, pred_file_path, pred_lidar, lidar_img,
-                                              area_threshold, conf_threshold, boarder_filter, tile_width, EPSG)
+            pred_file_path = "Prediction_" + file.replace(
+                '.geojson', '_' + EPSG + '.geojson')
+            pred_lidar = tile_directory + "reprojected/" + pred_file_path.replace(
+                '.geojson', '_lidar.geojson')
+            all_pred_feats = initialise_feats(pred_directory, pred_file_path,
+                                              pred_lidar, lidar_img,
+                                              area_threshold, conf_threshold,
+                                              boarder_filter, tile_width, EPSG)
 
             if save:
                 save_feats(tile_directory, all_test_feats)
                 save_feats(tile_directory, all_pred_feats)
 
             find_intersections(all_test_feats, all_pred_feats)
-            tps, fps, fns = positives_test(all_test_feats, all_pred_feats, IoU_threshold, height_threshold)
+            tps, fps, fns = positives_test(all_test_feats, all_pred_feats,
+                                           IoU_threshold, height_threshold)
 
             print("tps:", tps)
             print("fps:", fps)
@@ -346,7 +365,7 @@ def site_f1_score(
     try:
         prec, rec = prec_recall_func(total_tps, total_fps, total_fns)
         # not used!
-        f1_score = f1_cal(prec, rec)  # noqa: F841
+        f1_score = f1_cal(prec, rec)    # noqa: F841
         print(f1_score)
     except ZeroDivisionError:
         print("ZeroDivisionError: Height threshold is too large.")
