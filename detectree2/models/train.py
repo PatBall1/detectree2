@@ -81,10 +81,10 @@ class LossEvalHook(HookBase):
             iters_after_start = idx + 1 - num_warmup * int(idx >= num_warmup)
             seconds_per_img = total_compute_time / iters_after_start
             if idx >= num_warmup * 2 or seconds_per_img > 5:
-                total_seconds_per_img = (time.perf_counter() -
-                                         start_time) / iters_after_start
-                eta = datetime.timedelta(seconds=int(total_seconds_per_img *
-                                                     (total - idx - 1)))
+                total_seconds_per_img = (time.perf_counter()
+                                         - start_time) / iters_after_start
+                eta = datetime.timedelta(seconds=int(total_seconds_per_img
+                                                     * (total - idx - 1)))
                 log_every_n_seconds(
                     logging.INFO,
                     "Loss on Validation  done {}/{}. {:.4f} s / img. ETA={}".
@@ -94,7 +94,7 @@ class LossEvalHook(HookBase):
             loss_batch = self._get_loss(inputs)
             losses.append(loss_batch)
         mean_loss = np.mean(losses)
-        #print(self.trainer.cfg.DATASETS.TEST)
+        # print(self.trainer.cfg.DATASETS.TEST)
         # Combine the AP50s of the different datasets
         if len(self.trainer.cfg.DATASETS.TEST) > 1:
             APs = []
@@ -141,8 +141,8 @@ class LossEvalHook(HookBase):
             if self.max_ap < self.trainer.APs[-1]:
                 self.iter = 0
                 self.max_ap = self.trainer.APs[-1]
-                self.trainer.checkpointer.save('model_' +
-                                               str(len(self.trainer.APs)))
+                self.trainer.checkpointer.save('model_'
+                                               + str(len(self.trainer.APs)))
                 self.best_iter = self.trainer.iter
             else:
                 self.iter += 1
@@ -155,8 +155,8 @@ class LossEvalHook(HookBase):
     def after_train(self):
         # Select the model with the best AP50
         index = self.trainer.APs.index(max(self.trainer.APs)) + 1
-        self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' +
-                                       str(index) + '.pth')
+        self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_'
+                                       + str(index) + '.pth')
 
 
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
@@ -176,10 +176,10 @@ class MyTrainer(DefaultTrainer):
 
     def train(self):
         """Run training.
-        
+
         Args:
             start_iter, max_iter (int): See docs above
-        
+
         Returns:
             OrderedDict of results, if evaluation is enabled. Otherwise None.
         """
@@ -214,7 +214,7 @@ class MyTrainer(DefaultTrainer):
                 self.after_train()
         if len(self.cfg.TEST.EXPECTED_RESULTS) and comm.is_main_process():
             assert hasattr(self, "_last_eval_results"
-                          ), "No evaluation results obtained during training!"
+                           ), "No evaluation results obtained during training!"
             verify_results(self.cfg, self._last_eval_results)
             return self._last_eval_results
 
@@ -243,7 +243,7 @@ class MyTrainer(DefaultTrainer):
         """Summary.
           Args:
               cfg (_type_): _description_
-  
+
           Returns:
               _type_: _description_
           """
@@ -338,8 +338,8 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
                     "segmentation": [poly],
                     "category_id":
                         classes.index(features["properties"]["PlotOrg"]
-                                     ),    # id
-                # "category_id": 0,  #id
+                                      ),    # id
+                    # "category_id": 0,  #id
                     "iscrowd":
                         0,
                 }
@@ -370,7 +370,7 @@ def combine_dicts(root_dir: str,
     Args:
         root_dir:
         val_dir:
-    
+
     Returns:
         Concatenated array of dictionaries over all directories
     """
@@ -388,7 +388,7 @@ def combine_dicts(root_dir: str,
 
 def get_filenames(directory: str):
     """Get the file names if no geojson is present.
-    
+
     Allows for predictions where no delinations have been manually produced.
 
     Args:

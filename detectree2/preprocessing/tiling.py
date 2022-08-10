@@ -231,8 +231,8 @@ def tile_data_train(data: DatasetReader,
                 continue
 
             # Discard tiles that do not have a sufficient coverage of training crowns
-            if (overlapping_crowns.dissolve().area[0] /
-                    geo.area[0]) < threshold:
+            if (overlapping_crowns.dissolve().area[0]
+                    / geo.area[0]) < threshold:
                 continue
 
             # here we are cropping the tiff to the bounding box of the tile we want

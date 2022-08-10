@@ -28,14 +28,14 @@ def polygonFromMask(maskedArr):
         # Valid polygons have >= 6 coordinates (3 points)
         if contour.size >= 6:
             segmentation.append(contour.flatten().tolist())
-    #RLEs = mask_util.frPyObjects(segmentation, maskedArr.shape[0],
+    # RLEs = mask_util.frPyObjects(segmentation, maskedArr.shape[0],
     #                             maskedArr.shape[1])
     #RLE = mask_util.merge(RLEs)
     # RLE = mask.encode(np.asfortranarray(maskedArr))
     # area = mask_util.area(RLE)
     # [x, y, w, h] = cv2.boundingRect(maskedArr)
 
-    return segmentation[0]    #, [x, y, w, h], area
+    return segmentation[0]  # , [x, y, w, h], area
 
 
 def predict_on_data(
@@ -85,7 +85,7 @@ def filename_geoinfo(filename):
     """
     parts = os.path.basename(filename).split("_")
 
-    parts = [int(part) for part in parts[-6:-1]] # type: ignore
+    parts = [int(part) for part in parts[-6:-1]]  # type: ignore
     minx = parts[0]
     miny = parts[1]
     width = parts[2]
@@ -134,14 +134,14 @@ def stitch_crowns(folder: str, shift: int = 1):
         crowns_tile = gpd.read_file(file)
         #crowns_tile.crs = "epsg:32622"
         #crowns_tile = crowns_tile.set_crs(from_epsg(32622))
-        #print(crowns_tile)
+        # print(crowns_tile)
 
         geo = box_filter(file, shift)
-        #geo.plot()
+        # geo.plot()
         crowns_tile = gpd.sjoin(crowns_tile, geo, "inner", "within")
-        #print(crowns_tile)
+        # print(crowns_tile)
         crowns = crowns.append(crowns_tile)
-        #print(crowns)
+        # print(crowns)
     return crowns
 
 
