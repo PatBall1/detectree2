@@ -256,7 +256,7 @@ class MyTrainer(DefaultTrainer):
                 cfg,
                 is_train=True,
                 augmentations=[
-                    T.Resize((800, 800)),    # is this necessary/helpful?
+                    #T.Resize((800, 800)),    # is this necessary/helpful?
                     T.RandomBrightness(0.8, 1.8),
                     T.RandomContrast(0.6, 1.3),
                     T.RandomSaturation(0.8, 1.4),
