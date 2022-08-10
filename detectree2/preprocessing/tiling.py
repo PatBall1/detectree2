@@ -44,8 +44,7 @@ def tile_data(data: DatasetReader,
               buffer: int = 30,
               tile_width: int = 200,
               tile_height: int = 200,
-              dtype_bool: bool = False
-              ) -> None:
+              dtype_bool: bool = False) -> None:
     """Tiles othomosaic into managable chunks to make predictions on.
 
     Args:
@@ -61,8 +60,8 @@ def tile_data(data: DatasetReader,
     # Should clip data to crowns straight off to speed things up
     os.makedirs(out_dir, exist_ok=True)
     # out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
-    for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width,
-                          int):
+    for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
+                          tile_width, int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
             # Naming conventions
@@ -81,7 +80,9 @@ def tile_data(data: DatasetReader,
             # bbox_central = box(minx, miny, minx + tile_width, miny + tile_height)
 
             # turn the bounding boxes into geopandas DataFrames
-            geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=from_epsg(4326))
+            geo = gpd.GeoDataFrame({"geometry": bbox},
+                                   index=[0],
+                                   crs=from_epsg(4326))
             # geo_central = gpd.GeoDataFrame(
             #    {"geometry": bbox_central}, index=[0], crs=from_epsg(4326)
             # )  # 3182
@@ -187,8 +188,8 @@ def tile_data_train(data: DatasetReader,
     out_path = Path(out_dir)
     os.makedirs(out_path, exist_ok=True)
     # out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
-    for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width,
-                          int):
+    for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
+                          tile_width, int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
 
@@ -207,7 +208,9 @@ def tile_data_train(data: DatasetReader,
             # bbox_central = box(minx, miny, minx + tile_width, miny + tile_height)
 
             # turn the bounding boxes into geopandas DataFrames
-            geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=from_epsg(4326))
+            geo = gpd.GeoDataFrame({"geometry": bbox},
+                                   index=[0],
+                                   crs=from_epsg(4326))
             # geo_central = gpd.GeoDataFrame(
             #    {"geometry": bbox_central}, index=[0], crs=from_epsg(4326)
             # )  # 3182
@@ -221,7 +224,8 @@ def tile_data_train(data: DatasetReader,
                 continue
 
             # Discard tiles that do not have a sufficient coverage of training crowns
-            if (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
+            if (overlapping_crowns.dissolve().area[0] /
+                    geo.area[0]) < threshold:
                 continue
 
             # here we are cropping the tiff to the bounding box of the tile we want
@@ -328,7 +332,8 @@ def tile_data_train(data: DatasetReader,
                 moved = overlapping_crowns.translate(-minx, -miny + buffer)
             else:
                 # print("We are in the middle!")
-                moved = overlapping_crowns.translate(-minx + buffer, -miny + buffer)
+                moved = overlapping_crowns.translate(-minx + buffer,
+                                                     -miny + buffer)
 
             # scale to deal with the resolution
             scalingx = 1 / (data.transform[0])
@@ -463,8 +468,8 @@ def to_traintest_folders(tiles_folder: str = "./",
     ind_split = np.array_split(fileroots, folds)
 
     for i in range(0, folds):
-        Path(out_folder + "/train/fold_" + str(i + 1) + "/").mkdir(parents=True,
-                                                                   exist_ok=True)
+        Path(out_folder + "/train/fold_" + str(i + 1) + "/").mkdir(
+            parents=True, exist_ok=True)
         for name in ind_split[i]:
             shutil.move(
                 out_folder + "train/" + name + ".geojson",

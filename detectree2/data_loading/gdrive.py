@@ -31,15 +31,16 @@ class DriveAPI:
 
     # Define the scopes
     SCOPES = [
-        "https://www.googleapis.com/auth/drive",  # For reading and writing
-        "https://www.googleapis.com/auth/drive.readonly",  # For reading only (download)
+        "https://www.googleapis.com/auth/drive",    # For reading and writing
+        "https://www.googleapis.com/auth/drive.readonly",    # For reading only (download)
     ]
     # Define GDrive types
     GDRIVE_FOLDER = "application/vnd.google-apps.folder"
 
     def __init__(
         self,
-        credentials_path: Union[str, PathLike] = SECRETS_PATH / "credentials.json",
+        credentials_path: Union[str,
+                                PathLike] = SECRETS_PATH / "credentials.json",
     ):
 
         # Variable self.creds will store the user access token.
@@ -91,8 +92,7 @@ class DriveAPI:
         Perform google OAuth 2.0 flow to authenticate user.
         """
         flow = InstalledAppFlow.from_client_secrets_file(
-            self.credentials_path, DriveAPI.SCOPES
-        )
+            self.credentials_path, DriveAPI.SCOPES)
         self.creds = flow.run_local_server(port=0)
 
     @property
@@ -140,7 +140,9 @@ class DriveAPI:
         file_handle = io.BytesIO()
 
         # Initialise a downloader object to download the file
-        downloader = MediaIoBaseDownload(file_handle, request, chunksize=chunksize)
+        downloader = MediaIoBaseDownload(file_handle,
+                                         request,
+                                         chunksize=chunksize)
         done = False
 
         if verbose:
@@ -203,9 +205,8 @@ class DriveAPI:
             bool: True, iff file is a gdrive folder
         """
 
-        return self.is_mimetype(
-            file_id=file_id, target_mime_type=DriveAPI.GDRIVE_FOLDER
-        )
+        return self.is_mimetype(file_id=file_id,
+                                target_mime_type=DriveAPI.GDRIVE_FOLDER)
 
     def is_tif(self, file_id: str) -> bool:
         """
@@ -227,11 +228,13 @@ class DriveAPI:
             bool: True, iff file is of type .kml
         """
 
-        return self.is_mimetype(file_id, target_mime_type="application/vnd.google-earth.kml+xml")
+        return self.is_mimetype(
+            file_id, target_mime_type="application/vnd.google-earth.kml+xml")
 
-    def get_folder(
-        self, folder_name: str, all_drives: bool = True, trashed_ok: bool = False
-    ) -> DriveFileJson:
+    def get_folder(self,
+                   folder_name: str,
+                   all_drives: bool = True,
+                   trashed_ok: bool = False) -> DriveFileJson:
         """
         Return metadata of gdrive folder with the given `folder_name`
         Raises an error if `folder_name` does not identify a unique folder (or does
@@ -248,9 +251,8 @@ class DriveAPI:
         file_metadata = {"name": folder_name, "mimeType": self.GDRIVE_FOLDER}
         # Fomulate http request
         query = file_browser.list(
-            q=self._metadata_to_query_string(
-                file_metadata=file_metadata, trashed_ok=trashed_ok
-            ),
+            q=self._metadata_to_query_string(file_metadata=file_metadata,
+                                             trashed_ok=trashed_ok),
             pageSize=1000,
             supportsAllDrives=all_drives,
             includeItemsFromAllDrives=all_drives,
@@ -262,7 +264,8 @@ class DriveAPI:
             raise UserWarning("No folder with this name exists")
         elif len(result) > 1:
             results = "\n".join([str(elem) for elem in result])
-            raise UserWarning(f"Multiple folders with this name exist: \n\n{results}")
+            raise UserWarning(
+                f"Multiple folders with this name exist: \n\n{results}")
 
         return result[0]
 
@@ -292,9 +295,9 @@ class DriveAPI:
             str: The filename
         """
 
-        query = self.service.files().get(
-            fileId=file_id, fields="name", supportsAllDrives=all_drives
-        )
+        query = self.service.files().get(fileId=file_id,
+                                         fields="name",
+                                         supportsAllDrives=all_drives)
         return query.execute()["name"]
 
     def list_all_files(self, all_drives=True) -> List[DriveFileJson]:
@@ -369,9 +372,8 @@ class DriveAPI:
         return query.execute()["files"]
 
     @staticmethod
-    def _metadata_to_query_string(
-        file_metadata: DriveFileJson, trashed_ok: bool = False
-    ) -> str:
+    def _metadata_to_query_string(file_metadata: DriveFileJson,
+                                  trashed_ok: bool = False) -> str:
         """
         Turns file metadata into query string to be used in GDrive API file queries.
 
@@ -414,16 +416,12 @@ class DriveAPI:
         """
         query_str = self._metadata_to_query_string(file_metadata, trashed_ok)
         print(query_str)
-        return (
-            self.service.files()
-            .list(
-                q=query_str,
-                supportsAllDrives=all_drives,
-                includeItemsFromAllDrives=all_drives,
-                pageSize=1000,
-            )
-            .execute()["files"]
-        )
+        return (self.service.files().list(
+            q=query_str,
+            supportsAllDrives=all_drives,
+            includeItemsFromAllDrives=all_drives,
+            pageSize=1000,
+        ).execute()["files"])
 
     def exists(
         self,
@@ -435,9 +433,8 @@ class DriveAPI:
         return len(self.get_file(file_metadata, trashed_ok, all_drives)) > 0
 
     @staticmethod
-    def _add_parent_to_metadata(
-        file_metadata: DriveFileJson, parent: DriveFileJson
-    ) -> DriveFileJson:
+    def _add_parent_to_metadata(file_metadata: DriveFileJson,
+                                parent: DriveFileJson) -> DriveFileJson:
         """
         Adds parent information to a given metadata template.
 
@@ -488,9 +485,9 @@ class DriveAPI:
             if parent is not None:
                 self._add_parent_to_metadata(file_metadata, parent)
             # Execute folder creation request
-            self.service.files().create(
-                body=file_metadata, fields="id", supportsAllDrives=True
-            ).execute()
+            self.service.files().create(body=file_metadata,
+                                        fields="id",
+                                        supportsAllDrives=True).execute()
         return True
 
     def upload_file(
@@ -526,7 +523,9 @@ class DriveAPI:
             return True
         # If not, upload
         else:
-            media = MediaFileUpload(file_to_upload, chunksize=chunksize, resumable=True)
+            media = MediaFileUpload(file_to_upload,
+                                    chunksize=chunksize,
+                                    resumable=True)
             # Set up http request to upload file
             file = self.service.files().create(
                 body=file_metadata,
@@ -584,9 +583,10 @@ class DriveAPI:
                 parent_folder_name = current_element.absolute().parent.name
                 logger.debug("Parent folder: %s", {parent_folder_name})
                 parent = self.get_folder(folder_name=parent_folder_name)
-                self.upload_file(
-                    current_element, parent=parent, exists_ok=True, chunksize=chunksize
-                )
+                self.upload_file(current_element,
+                                 parent=parent,
+                                 exists_ok=True,
+                                 chunksize=chunksize)
             # Else it is current node is a folder and we have to look at all children
             elif current_element.is_dir():
                 # Note: In first iteration, current_element will be folder_to_upload
@@ -595,7 +595,9 @@ class DriveAPI:
                 if current_element != folder_to_upload:
                     parent_folder_name = current_element.absolute().parent.name
                     parent = self.get_folder(folder_name=parent_folder_name)
-                self.create_folder(current_element.name, parent=parent, exists_ok=True)
+                self.create_folder(current_element.name,
+                                   parent=parent,
+                                   exists_ok=True)
                 folder_contents = list(current_element.glob("*"))
                 queue.extendleft(folder_contents)
             else:

@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import cv2
-import detectron2.data.transforms as T  # noqa:N812
+import detectron2.data.transforms as T    # noqa:N812
 import detectron2.utils.comm as comm
 import numpy as np
 import torch
@@ -73,17 +73,14 @@ class LossEvalHook(HookBase):
             iters_after_start = idx + 1 - num_warmup * int(idx >= num_warmup)
             seconds_per_img = total_compute_time / iters_after_start
             if idx >= num_warmup * 2 or seconds_per_img > 5:
-                total_seconds_per_img = (
-                    time.perf_counter() - start_time
-                ) / iters_after_start
-                eta = datetime.timedelta(
-                    seconds=int(total_seconds_per_img * (total - idx - 1))
-                )
+                total_seconds_per_img = (time.perf_counter() -
+                                         start_time) / iters_after_start
+                eta = datetime.timedelta(seconds=int(total_seconds_per_img *
+                                                     (total - idx - 1)))
                 log_every_n_seconds(
                     logging.INFO,
-                    "Loss on Validation  done {}/{}. {:.4f} s / img. ETA={}".format(
-                        idx + 1, total, seconds_per_img, str(eta)
-                    ),
+                    "Loss on Validation  done {}/{}. {:.4f} s / img. ETA={}".
+                    format(idx + 1, total, seconds_per_img, str(eta)),
                     n=5,
                 )
             loss_batch = self._get_loss(inputs)
@@ -106,7 +103,8 @@ class LossEvalHook(HookBase):
         #
         metrics_dict = self._model(data)
         metrics_dict = {
-            k: v.detach().cpu().item() if isinstance(v, torch.Tensor) else float(v)
+            k:
+            v.detach().cpu().item() if isinstance(v, torch.Tensor) else float(v)
             for k, v in metrics_dict.items()
         }
         total_losses_reduced = sum(loss for loss in metrics_dict.values())
@@ -145,9 +143,8 @@ class MyTrainer(DefaultTrainer):
             LossEvalHook(
                 self.cfg.TEST.EVAL_PERIOD,
                 self.model,
-                build_detection_test_loader(
-                    self.cfg, self.cfg.DATASETS.TEST[0], DatasetMapper(self.cfg, True)
-                ),
+                build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST[0],
+                                            DatasetMapper(self.cfg, True)),
             ),
         )
         return hooks
@@ -217,7 +214,7 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
     #            print(os.path.join(root, file))
 
     for filename in [
-        file for file in os.listdir(directory) if file.endswith(".geojson")
+            file for file in os.listdir(directory) if file.endswith(".geojson")
     ]:
         json_file = os.path.join(directory, filename)
         with open(json_file) as f:
@@ -251,21 +248,29 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
             # print("#### HERE ARE SOME POLYS #####", poly)
             if classes != ["tree"]:
                 obj = {
-                    "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
-                    "bbox_mode": BoxMode.XYXY_ABS,
+                    "bbox": [np.min(px),
+                             np.min(py),
+                             np.max(px),
+                             np.max(py)],
+                    "bbox_mode":
+                        BoxMode.XYXY_ABS,
                     "segmentation": [poly],
-                    "category_id": classes.index(
-                        features["properties"]["PlotOrg"]
-                    ),  # id
-                    # "category_id": 0,  #id
-                    "iscrowd": 0,
+                    "category_id":
+                        classes.index(features["properties"]["PlotOrg"]
+                                     ),    # id
+                # "category_id": 0,  #id
+                    "iscrowd":
+                        0,
                 }
             else:
                 obj = {
-                    "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
+                    "bbox": [np.min(px),
+                             np.min(py),
+                             np.max(px),
+                             np.max(py)],
                     "bbox_mode": BoxMode.XYXY_ABS,
                     "segmentation": [poly],
-                    "category_id": 0,  # id
+                    "category_id": 0,    # id
                     "iscrowd": 0,
                 }
             # pdb.set_trace()
@@ -276,7 +281,9 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
     return dataset_dicts
 
 
-def combine_dicts(root_dir: str, val_dir: int, mode: str = "train") -> List[Dict]:
+def combine_dicts(root_dir: str,
+                  val_dir: int,
+                  mode: str = "train") -> List[Dict]:
     """Join tree dicts from different directories.
 
     Args:
@@ -302,8 +309,8 @@ def combine_dicts(root_dir: str, val_dir: int, mode: str = "train") -> List[Dict
 def register_train_data(train_location, name="tree", val_fold=1):
     for d in ["train", "val"]:
         DatasetCatalog.register(
-            name + "_" + d, lambda d=d: combine_dicts(train_location, val_fold, d)
-        )
+            name + "_" + d,
+            lambda d=d: combine_dicts(train_location, val_fold, d))
         MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
 
 
@@ -315,7 +322,8 @@ def remove_registered_data(name="tree"):
 
 def register_test_data(test_location, name="tree"):
     d = "test"
-    DatasetCatalog.register(name + "_" + d, lambda d=d: get_tree_dicts(test_location))
+    DatasetCatalog.register(name + "_" + d,
+                            lambda d=d: get_tree_dicts(test_location))
     MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
 
 
@@ -350,7 +358,7 @@ def setup_cfg(
     cfg.OUTPUT_DIR = out_dir
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
     if update_model is not None:
-        cfg.MODEL.WEIGHTS = update_model  # DOESN'T WORK
+        cfg.MODEL.WEIGHTS = update_model    # DOESN'T WORK
     else:
         cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
 
@@ -414,7 +422,7 @@ def predictions_on_data(
             metadata=trees_metadata,
             scale=scale,
             instance_mode=ColorMode.SEGMENTATION,
-        )  # remove the colors of unsegmented pixels
+        )    # remove the colors of unsegmented pixels
         v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
         image = cv2.cvtColor(v.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
         display(Image.fromarray(image))
@@ -430,27 +438,28 @@ def predictions_on_data(
 
         if save:
             # Converting the predictions to json files and saving them in the specfied output file.
-            evaluations = instances_to_coco_json(
-                outputs["instances"].to("cpu"), d["file_name"]
-            )
+            evaluations = instances_to_coco_json(outputs["instances"].to("cpu"),
+                                                 d["file_name"])
             with open(output_file, "w") as dest:
                 json.dump(evaluations, dest)
 
 
 if __name__ == "__main__":
     train_location = "/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/"
-    register_train_data(train_location, "Paracou", 1)  # folder, name, validation fold
+    register_train_data(train_location, "Paracou",
+                        1)    # folder, name, validation fold
 
     name = "Paracou2019"
     train_location = (
-        "/content/drive/Shareddrives/detectree2/data/Paracou/tiles2019/train/"
-    )
+        "/content/drive/Shareddrives/detectree2/data/Paracou/tiles2019/train/")
     dataset_dicts = combine_dicts(train_location, 1)
     trees_metadata = MetadataCatalog.get(name + "_train")
     # dataset_dicts = get_tree_dicts("./")
     for d in dataset_dicts:
         img = cv2.imread(d["file_name"])
-        visualizer = Visualizer(img[:, :, ::-1], metadata=trees_metadata, scale=0.5)
+        visualizer = Visualizer(img[:, :, ::-1],
+                                metadata=trees_metadata,
+                                scale=0.5)
         out = visualizer.draw_dataset_dict(d)
         image = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
         display(Image.fromarray(image))
@@ -478,9 +487,12 @@ if __name__ == "__main__":
     out_dir = "/content/drive/Shareddrives/detectree2/220703_train_outputs"
 
     # update_model arg can be used to load in trained  model
-    cfg = setup_cfg(
-        model, trains, tests, eval_period=100, max_iter=3000, out_dir=out_dir
-    )
+    cfg = setup_cfg(model,
+                    trains,
+                    tests,
+                    eval_period=100,
+                    max_iter=3000,
+                    out_dir=out_dir)
     trainer = MyTrainer(cfg)
     trainer.resume_or_load(resume=False)
     trainer.train()
