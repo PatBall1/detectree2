@@ -13,11 +13,11 @@ DEFAULT_SAVE_PATH = DATA_PATH / "gdrive"
 
 
 def download_files(
-    folder_id: str,
-    save_path: str,
-    recursive: bool = True,
-    overwrite: bool = False,
-    logger: logging.Logger = logging.getLogger(),
+        folder_id: str,
+        save_path: str,
+        recursive: bool = True,
+        overwrite: bool = False,
+        logger: logging.Logger = logging.getLogger(),
 ) -> None:
     """
     Download all .tif files in a given directory. Can work recursively.
@@ -58,14 +58,15 @@ def download_files(
             file_path = save_path / file_name
 
             if file_path.exists() and not overwrite:
-                logger.info("File %s already exists. Not overwriting.", file_path)
+                logger.info("File %s already exists. Not overwriting.",
+                            file_path)
             else:
                 logger.debug("Saving file at %s", file_path)
                 # Save file
                 gdrive.file_download(
                     file_id,
                     save_path=file_path,
-                    chunksize=800 * 1024 * 1024,  # 800 MB
+                    chunksize=800 * 1024 * 1024,    # 800 MB
                     verbose=False,
                 )
                 file_path.chmod(0o664)
@@ -74,14 +75,15 @@ def download_files(
             file_path = save_path / file_name
 
             if file_path.exists() and not overwrite:
-                logger.info("File %s already exists. Not overwriting.", file_path)
+                logger.info("File %s already exists. Not overwriting.",
+                            file_path)
             else:
                 logger.debug("Saving file at %s", file_path)
                 # Save file
                 gdrive.file_download(
                     file_id,
                     save_path=file_path,
-                    chunksize=800 * 1024 * 1024,  # 800 MB
+                    chunksize=800 * 1024 * 1024,    # 800 MB
                     verbose=False,
                 )
                 file_path.chmod(0o664)
@@ -93,14 +95,15 @@ def download_files(
             file_path = save_path / file_name
 
             if file_path.exists() and not overwrite:
-                logger.info("File %s already exists. Not overwriting.", file_path)
+                logger.info("File %s already exists. Not overwriting.",
+                            file_path)
             else:
                 logger.debug("Saving file at %s", file_path)
                 # Save file
                 gdrive.file_download(
                     file_id,
                     save_path=file_path,
-                    chunksize=800 * 1024 * 1024,  # 800 MB
+                    chunksize=800 * 1024 * 1024,    # 800 MB
                     verbose=False,
                 )
                 file_path.chmod(0o664)
@@ -109,10 +112,12 @@ def download_files(
 if __name__ == "__main__":
 
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Google Drive TIF download script")
+    parser = argparse.ArgumentParser(
+        description="Google Drive TIF download script")
     parser.add_argument(
         "gdrive_folder_name",
-        help="The name of the gdrive folder from which to download the TIF files from.",
+        help=
+        "The name of the gdrive folder from which to download the TIF files from.",
         type=str,
     )
     parser.add_argument(
@@ -120,26 +125,25 @@ if __name__ == "__main__":
         help="The folder in which to save the downloaded files.",
         type=str,
         default=DEFAULT_SAVE_PATH,
-        nargs="?",  # Argument is optional
+        nargs="?",    # Argument is optional
     )
     parser.add_argument(
         "-r",
         "--recursive",
-        help="If True, copy content of gdrive folder recursively. Defaults to True.",
+        help=
+        "If True, copy content of gdrive folder recursively. Defaults to True.",
         type=bool,
         default=True,
-        nargs="?",  # Argument is optional
+        nargs="?",    # Argument is optional
     )
     parser.add_argument(
         "-o",
         "--overwrite",
-        help=(
-            "If True, existing files are downloaded again and overwritten. "
-            "Defaults to False."
-        ),
+        help=("If True, existing files are downloaded again and overwritten. "
+              "Defaults to False."),
         type=bool,
         default=False,
-        nargs="?",  # Argument is optional
+        nargs="?",    # Argument is optional
     )
 
     args = parser.parse_args()

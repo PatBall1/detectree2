@@ -11,5 +11,5 @@ suites.append(test_models.suite)
 
 suite = unittest.TestSuite(suites)
 
-if __name__ == "__main__":  # pragma: no cover
+if __name__ == "__main__":    # pragma: no cover
     unittest.TextTestRunner(verbosity=2).run(suite)

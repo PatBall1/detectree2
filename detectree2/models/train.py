@@ -101,10 +101,14 @@ class LossEvalHook(HookBase):
         if len(self.trainer.cfg.DATASETS.TEST) > 1:
             APs = []
             for dataset in self.trainer.cfg.DATASETS.TEST:
-                APs.append(self.trainer.test(self.trainer.cfg,self.trainer.model)[dataset]['segm']['AP50'])
-            AP = sum(APs)/len(APs)
+                APs.append(
+                    self.trainer.test(
+                        self.trainer.cfg,
+                        self.trainer.model)[dataset]['segm']['AP50'])
+            AP = sum(APs) / len(APs)
         else:
-            AP = self.trainer.test(self.trainer.cfg,self.trainer.model)['segm']['AP50']
+            AP = self.trainer.test(self.trainer.cfg,
+                                   self.trainer.model)['segm']['AP50']
         print("Av. AP50 =", AP)
         self.trainer.APs.append(AP)
         self.trainer.storage.put_scalar("validation_loss", mean_loss)
@@ -155,6 +159,7 @@ class LossEvalHook(HookBase):
         index = self.trainer.APs.index(max(self.trainer.APs)) + 1
         self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' +
                                        str(index) + '.pth')
+
 
 # comment
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
@@ -431,23 +436,23 @@ def load_json_arr(json_path):
     return lines
 
 
-def setup_cfg(
-        base_model:str ="COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
-        trains=("trees_train",),
-        tests=("trees_val",),
-        update_model=None,
-        workers=2,
-        ims_per_batch=2,
-        gamma=0.1,
-        backbone_freeze=3,
-        warm_iter=120,
-        momentum=0.9,
-        batch_size_per_im=1024,
-        base_lr=0.001,
-        max_iter=1000,
-        num_classes=1,
-        eval_period=100,
-        out_dir="/content/drive/Shareddrives/detectree2/train_outputs"):
+def setup_cfg(base_model:
+              str = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
+              trains=("trees_train",),
+              tests=("trees_val",),
+              update_model=None,
+              workers=2,
+              ims_per_batch=2,
+              gamma=0.1,
+              backbone_freeze=3,
+              warm_iter=120,
+              momentum=0.9,
+              batch_size_per_im=1024,
+              base_lr=0.001,
+              max_iter=1000,
+              num_classes=1,
+              eval_period=100,
+              out_dir="/content/drive/Shareddrives/detectree2/train_outputs"):
     """Set up config object
 
     Args:
