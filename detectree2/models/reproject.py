@@ -207,18 +207,18 @@ def reproject_to_geojson_spatially(data,
                         elif minx == data.bounds[0]:
                             # print("Left Edge")
                             x_coord = (x_coord) * scalingx + minx
-                            y_coord = (height -
-                                       y_coord) * scalingy - buffer + miny
+                            y_coord = (height
+                                       - y_coord) * scalingy - buffer + miny
                         elif miny == data.bounds[1]:
                             # print("Bottom Edge")
                             x_coord = (x_coord) * scalingx - buffer + minx
-                            y_coord = (height -
-                                       y_coord) * scalingy - buffer + miny
+                            y_coord = (height
+                                       - y_coord) * scalingy - buffer + miny
                         else:
                             # print("Anywhere else")
                             x_coord = (x_coord) * scalingx - buffer + minx
-                            y_coord = (height -
-                                       y_coord) * scalingy - buffer + miny
+                            y_coord = (height
+                                       - y_coord) * scalingy - buffer + miny
 
                         moved_coords.append([x_coord, y_coord])
 

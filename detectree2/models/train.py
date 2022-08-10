@@ -1,4 +1,5 @@
 import datetime
+import glob
 import json
 import logging
 import os
@@ -8,20 +9,22 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import cv2
-import detectron2.data.transforms as T    # noqa:N812
+import detectron2.data.transforms as T  # noqa:N812
 import detectron2.utils.comm as comm
 import numpy as np
 import torch
 from detectron2 import model_zoo
+from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
 from detectron2.data import (DatasetCatalog, DatasetMapper, MetadataCatalog,
                              build_detection_test_loader,
                              build_detection_train_loader)
 from detectron2.engine import DefaultTrainer
 from detectron2.engine.hooks import HookBase
-from detectron2.evaluation import COCOEvaluator
+from detectron2.evaluation import COCOEvaluator, verify_results
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 from detectron2.structures import BoxMode
+from detectron2.utils.events import EventStorage, get_event_storage
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
 from IPython.display import display
@@ -40,15 +43,20 @@ class LossEvalHook(HookBase):
 
     Attributes:
         model:
-        period
-        data loader
+        period:
+        data_loader:
+        patience: number of evaluation periods to wait for improvement
     """
 
-    def __init__(self, eval_period, model, data_loader):
+    def __init__(self, eval_period, model, data_loader, patience):
         """Inits LossEvalHook."""
         self._model = model
         self._period = eval_period
         self._data_loader = data_loader
+        self.patience = patience
+        self.iter = 0
+        self.max_ap = 0
+        self.best_iter = 0
 
     def _do_loss_eval(self):
         """Copying inference_on_dataset from evaluator.py.
@@ -73,10 +81,10 @@ class LossEvalHook(HookBase):
             iters_after_start = idx + 1 - num_warmup * int(idx >= num_warmup)
             seconds_per_img = total_compute_time / iters_after_start
             if idx >= num_warmup * 2 or seconds_per_img > 5:
-                total_seconds_per_img = (time.perf_counter() -
-                                         start_time) / iters_after_start
-                eta = datetime.timedelta(seconds=int(total_seconds_per_img *
-                                                     (total - idx - 1)))
+                total_seconds_per_img = (time.perf_counter()
+                                         - start_time) / iters_after_start
+                eta = datetime.timedelta(seconds=int(total_seconds_per_img
+                                                     * (total - idx - 1)))
                 log_every_n_seconds(
                     logging.INFO,
                     "Loss on Validation  done {}/{}. {:.4f} s / img. ETA={}".
@@ -86,13 +94,29 @@ class LossEvalHook(HookBase):
             loss_batch = self._get_loss(inputs)
             losses.append(loss_batch)
         mean_loss = np.mean(losses)
+        # print(self.trainer.cfg.DATASETS.TEST)
+        # Combine the AP50s of the different datasets
+        if len(self.trainer.cfg.DATASETS.TEST) > 1:
+            APs = []
+            for dataset in self.trainer.cfg.DATASETS.TEST:
+                APs.append(
+                    self.trainer.test(
+                        self.trainer.cfg,
+                        self.trainer.model)[dataset]['segm']['AP50'])
+            AP = sum(APs) / len(APs)
+        else:
+            AP = self.trainer.test(self.trainer.cfg,
+                                   self.trainer.model)['segm']['AP50']
+        print("Av. AP50 =", AP)
+        self.trainer.APs.append(AP)
         self.trainer.storage.put_scalar("validation_loss", mean_loss)
+        self.trainer.storage.put_scalar("validation_ap", AP)
         comm.synchronize()
 
         return losses
 
     def _get_loss(self, data):
-        """How loss is calculated on train_loop.
+        """Calculate loss in train_loop.
 
         Args:
             data (_type_): _description_
@@ -100,7 +124,6 @@ class LossEvalHook(HookBase):
         Returns:
             _type_: _description_
         """
-        #
         metrics_dict = self._model(data)
         metrics_dict = {
             k:
@@ -115,7 +138,25 @@ class LossEvalHook(HookBase):
         is_final = next_iter == self.trainer.max_iter
         if is_final or (self._period > 0 and next_iter % self._period == 0):
             self._do_loss_eval()
+            if self.max_ap < self.trainer.APs[-1]:
+                self.iter = 0
+                self.max_ap = self.trainer.APs[-1]
+                self.trainer.checkpointer.save('model_'
+                                               + str(len(self.trainer.APs)))
+                self.best_iter = self.trainer.iter
+            else:
+                self.iter += 1
+        if self.iter == self.patience:
+            self.trainer.early_stop = True
+            print("Early stopping occurs in iter {}, max ap is {}".format(
+                self.best_iter, self.max_ap))
         self.trainer.storage.put_scalars(timetest=12)
+
+    def after_train(self):
+        # Select the model with the best AP50
+        index = self.trainer.APs.index(max(self.trainer.APs)) + 1
+        self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_'
+                                       + str(index) + '.pth')
 
 
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
@@ -128,6 +169,54 @@ class MyTrainer(DefaultTrainer):
     Returns:
         _type_: _description_
     """
+
+    def __init__(self, cfg, patience):
+        self.patience = patience
+        super().__init__(cfg)
+
+    def train(self):
+        """Run training.
+
+        Args:
+            start_iter, max_iter (int): See docs above
+
+        Returns:
+            OrderedDict of results, if evaluation is enabled. Otherwise None.
+        """
+
+        start_iter = self.start_iter
+        max_iter = self.max_iter
+        logger = logging.getLogger(__name__)
+        logger.info("Starting training from iteration {}".format(start_iter))
+
+        self.iter = self.start_iter = start_iter
+        self.max_iter = max_iter
+        self.early_stop = False
+        self.APs = []
+
+        with EventStorage(start_iter) as self.storage:
+            try:
+                self.before_train()
+                for self.iter in range(start_iter, max_iter):
+                    self.before_step()
+                    self.run_step()
+                    self.after_step()
+                    if self.early_stop:
+                        break
+                # self.iter == max_iter can be used by `after_train` to
+                # tell whether the training successfully finished or failed
+                # due to exceptions.
+                self.iter += 1
+            except Exception:
+                logger.exception("Exception during training:")
+                raise
+            finally:
+                self.after_train()
+        if len(self.cfg.TEST.EXPECTED_RESULTS) and comm.is_main_process():
+            assert hasattr(self, "_last_eval_results"
+                           ), "No evaluation results obtained during training!"
+            verify_results(self.cfg, self._last_eval_results)
+            return self._last_eval_results
 
     @classmethod
     def build_evaluator(cls, cfg, dataset_name, output_folder=None):
@@ -143,28 +232,28 @@ class MyTrainer(DefaultTrainer):
             LossEvalHook(
                 self.cfg.TEST.EVAL_PERIOD,
                 self.model,
-                build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST[0],
+                build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST,
                                             DatasetMapper(self.cfg, True)),
+                self.patience,
             ),
         )
         return hooks
 
-    def build_train_loader(self, cls, cfg):
-        """Summary_.
+    def build_train_loader(cls, cfg):
+        """Summary.
+          Args:
+              cfg (_type_): _description_
 
-        Args:
-            cfg (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+          Returns:
+              _type_: _description_
+          """
         return build_detection_train_loader(
             cfg,
             mapper=DatasetMapper(
                 cfg,
                 is_train=True,
                 augmentations=[
-                    T.Resize((800, 800)),
+                    T.Resize((800, 800)),    # is this necessary/helpful?
                     T.RandomBrightness(0.8, 1.8),
                     T.RandomContrast(0.6, 1.3),
                     T.RandomSaturation(0.8, 1.4),
@@ -184,7 +273,6 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
         directory: Path to directory
         classes: Signifies which column (if any) corresponds to the class labels
 
-
     Returns:
         List of dictionaries corresponding to segmentations of trees. Each dictionary includes
         bounding box around tree and points tracing a polygon around a tree.
@@ -197,11 +285,6 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
     #
     if classes is not None:
         # list_of_classes = crowns[variable].unique().tolist()
-        # list_of_classes = ['Pradosia_cochlearia','Eperua_falcata','Dicorynia_guianensis',
-        # 'Eschweilera_sagotiana','Eperua_grandiflora','Symphonia_sp.1','Sextonia_rubra',
-        # 'Vouacapoua_americana','Sterculia_pruriens','Tapura_capitulifera','Pouteria_eugeniifolia',
-        # 'Recordoxylon_speciosum','Chrysophyllum_prieurii','Platonia_insignis','Chrysophyllum_pomiferum',
-        # 'Parkia_nitida','Goupia_glabra','Carapa_surinamensis','Licania_alba','Bocoa_prouacensis','Lueheopsis_rugosa']
         list_of_classes = ["CIRAD", "CNES", "INRA"]
         classes = list_of_classes
     else:
@@ -238,8 +321,6 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
             anno = features["geometry"]
             # pdb.set_trace()
             # GenusSpecies = features['properties']['Genus_Species']
-            # print("##### HERE IS AN ANNO #####", anno)...weirdly sometimes (but not
-            # always) have to make 1000 into a np.array
             px = [a[0] for a in anno["coordinates"][0]]
             py = [np.array(height) - a[1] for a in anno["coordinates"][0]]
             # print("### HERE IS PY ###", py)
@@ -257,8 +338,8 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
                     "segmentation": [poly],
                     "category_id":
                         classes.index(features["properties"]["PlotOrg"]
-                                     ),    # id
-                # "category_id": 0,  #id
+                                      ),    # id
+                    # "category_id": 0,  #id
                     "iscrowd":
                         0,
                 }
@@ -292,7 +373,6 @@ def combine_dicts(root_dir: str,
 
     Returns:
         Concatenated array of dictionaries over all directories
-
     """
     train_dirs = [os.path.join(root_dir, dir) for dir in os.listdir(root_dir)]
     if mode == "train":
@@ -304,6 +384,25 @@ def combine_dicts(root_dir: str,
     else:
         tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)])
         return tree_dicts
+
+
+def get_filenames(directory: str):
+    """Get the file names if no geojson is present.
+
+    Allows for predictions where no delinations have been manually produced.
+
+    Args:
+        directory (str): directory of images to be predicted on
+    """
+    dataset_dicts = []
+    files = glob.glob(directory + "*.png")
+    for filename in [file for file in files]:
+        file = {}
+        filename = os.path.join(directory, filename)
+        file["file_name"] = filename
+
+        dataset_dicts.append(file)
+    return dataset_dicts
 
 
 def register_train_data(train_location, name="tree", val_fold=1):
@@ -335,30 +434,60 @@ def load_json_arr(json_path):
     return lines
 
 
-def setup_cfg(
-    base_model="COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
-    trains=("trees_train",),
-    tests=("trees_val",),
-    update_model=None,
-    workers=2,
-    ims_per_batch=2,
-    base_lr=0.0003,
-    max_iter=1000,
-    num_classes=1,
-    eval_period=100,
-    out_dir="/content/drive/Shareddrives/detectree2/train_outputs",
-):
-    """Set config object."""
+def setup_cfg(base_model:
+              str = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
+              trains=("trees_train",),
+              tests=("trees_val",),
+              update_model=None,
+              workers=2,
+              ims_per_batch=2,
+              gamma=0.1,
+              backbone_freeze=3,
+              warm_iter=120,
+              momentum=0.9,
+              batch_size_per_im=1024,
+              base_lr=0.001,
+              max_iter=1000,
+              num_classes=1,
+              eval_period=100,
+              out_dir="/content/drive/Shareddrives/detectree2/train_outputs"):
+    """Set up config object
 
+    Args:
+        base_model:
+        trains:
+        tests:
+        update_model:
+        workers:
+        ims_per_batch:
+        gamma:
+        backbone_freeze:
+        warm_iter:
+        momentum:
+        batch_size_per_im:
+        base_lr:
+        max_iter:
+        num_classes:
+        eval_period:
+        out_dir:
+    """
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(base_model))
     cfg.DATASETS.TRAIN = trains
     cfg.DATASETS.TEST = tests
     cfg.DATALOADER.NUM_WORKERS = workers
+    #cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
+    cfg.SOLVER.GAMMA = gamma
+    cfg.MODEL.BACKBONE.FREEZE_AT = backbone_freeze
+    cfg.SOLVER.WARMUP_ITERS = warm_iter
+    cfg.SOLVER.MOMENTUM = momentum
+    #cfg.MODEL.RPN.BATCH_SIZE_PER_IMAGE = batch_size_per_im
+    #cfg.SOLVER.WEIGHT_DECAY = 0.001
+    cfg.SOLVER.BASE_LR = base_lr
     cfg.OUTPUT_DIR = out_dir
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
     if update_model is not None:
-        cfg.MODEL.WEIGHTS = update_model    # DOESN'T WORK
+        cfg.MODEL.WEIGHTS = update_model
     else:
         cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
 
@@ -370,32 +499,16 @@ def setup_cfg(
     return cfg
 
 
-def get_filenames(directory):
-    """Get file names if no geojson is present.
-
-    I.e. Allows for predictions where no delinations have been manually produced.
+def predictions_on_data(directory=None,
+                        predictor=DefaultTrainer,
+                        trees_metadata=None,
+                        save=True,
+                        scale=1,
+                        geos_exist=True,
+                        num_predictions=0):
     """
-
-    dataset_dicts = []
-    for filename in [file for file in os.listdir(directory)]:
-        file = {}
-        filename = os.path.join(directory, filename)
-        file["file_name"] = filename
-
-        dataset_dicts.append(file)
-    return dataset_dicts
-
-
-def predictions_on_data(
-    directory=None,
-    predictor=DefaultTrainer,
-    trees_metadata=None,
-    save=True,
-    scale=1,
-    geos_exist=True,
-    num_predictions=0,
-):
-    """Prediction produced from a test folder and outputted to predictions folder."""
+    Prediction produced from a test folder and outputted to predictions folder
+    """
 
     test_location = directory + "test"
     pred_dir = directory + "predictions"
@@ -450,11 +563,10 @@ if __name__ == "__main__":
                         1)    # folder, name, validation fold
 
     name = "Paracou2019"
-    train_location = (
-        "/content/drive/Shareddrives/detectree2/data/Paracou/tiles2019/train/")
+    train_location = "/content/drive/Shareddrives/detectree2/data/Paracou/tiles2019/train/"
     dataset_dicts = combine_dicts(train_location, 1)
     trees_metadata = MetadataCatalog.get(name + "_train")
-    # dataset_dicts = get_tree_dicts("./")
+    #dataset_dicts = get_tree_dicts("./")
     for d in dataset_dicts:
         img = cv2.imread(d["file_name"])
         visualizer = Visualizer(img[:, :, ::-1],
@@ -493,6 +605,6 @@ if __name__ == "__main__":
                     eval_period=100,
                     max_iter=3000,
                     out_dir=out_dir)
-    trainer = MyTrainer(cfg)
+    trainer = MyTrainer(cfg, patience=4)
     trainer.resume_or_load(resume=False)
     trainer.train()

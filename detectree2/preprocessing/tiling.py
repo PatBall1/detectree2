@@ -45,7 +45,12 @@ def tile_data(data: DatasetReader,
               tile_width: int = 200,
               tile_height: int = 200,
               dtype_bool: bool = False) -> None:
-    """Tiles othomosaic into managable chunks to make predictions on.
+    """Tiles up orthomosaic for making predictions on.
+
+    Tiles up full othomosaic into managable chunks to make predictions on. Use
+    tile_data_train to generate tiled training data. A bug exists on some input
+    raster types whereby outputed tiles are completely black - the dtype_bool
+    argument should be switched if this is the case.
 
     Args:
         data: Orthomosaic as a rasterio object in a UTM type projection
@@ -64,6 +69,7 @@ def tile_data(data: DatasetReader,
                           tile_width, int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
+
             # Naming conventions
             tilename = Path(data.name).stem
             out_path = out_dir + tilename + "_" + str(minx) + "_" + str(
@@ -168,7 +174,8 @@ def tile_data_train(data: DatasetReader,
                     dtype_bool: bool = False) -> None:
     """Tiles up orthomosaic and corresponding crowns into training tiles.
 
-    A threshold can be used to ensure a good coverage of crowns across a tile.
+    A threshold can be used to ensure a good coverage of crowns across a tile
+    rejecting tiles that do not have sufficient coverage
 
     Args:
         data: Orthomosaic as a rasterio object in a UTM type projection
@@ -224,8 +231,8 @@ def tile_data_train(data: DatasetReader,
                 continue
 
             # Discard tiles that do not have a sufficient coverage of training crowns
-            if (overlapping_crowns.dissolve().area[0] /
-                    geo.area[0]) < threshold:
+            if (overlapping_crowns.dissolve().area[0]
+                    / geo.area[0]) < threshold:
                 continue
 
             # here we are cropping the tiff to the bounding box of the tile we want
@@ -426,21 +433,8 @@ def to_traintest_folders(tiles_folder: str = "./",
     Path(out_folder + "train").mkdir(parents=True, exist_ok=True)
     Path(out_folder + "test").mkdir(parents=True, exist_ok=True)
 
-    # I split differently by just randomly ordering a list and picking the first
-    # fraction of them- I think this is easier and it still works so this comment
-    # section is irrelevant?
-    # # First split between train and test
-    # #split = np.array([4, 1])
-    # split = np.array([(1 - test_frac), test_frac])
-    # summed = np.sum(split)
-    # percs = 100 * split / summed
-    # percs = np.cumsum(percs)
-
     filenames = glob.glob(tiles_folder + "*.png")
     fileroots = [Path(item).stem for item in filenames]
-    # jsonnames = glob.glob(tiles_folder + "*.geojson")
-    # stemname = Path(filenames[0]).stem.split("_", 1)[0]
-    # indices = [item.split("_", 1)[-1].split(".", 1)[0] for item in filenames]
 
     num = list(range(0, len(filenames)))
     random.shuffle(num)
