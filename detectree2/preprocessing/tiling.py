@@ -46,25 +46,25 @@ def tile_data(data: DatasetReader,
               tile_height: int = 200,
               dtype_bool: bool = False) -> None:
     """Tiles up orthomosaic for making predictions on.
-  
+
     Tiles up full othomosaic into managable chunks to make predictions on. Use
     tile_data_train to generate tiled training data. A bug exists on some input
     raster types whereby outputed tiles are completely black - the dtype_bool
     argument should be switched if this is the case.
-    
+
     Args:
         data: Orthomosaic as a rasterio object in a UTM type projection
         buffer: Overlapping buffer of tiles in meters (UTM)
         tile_width: Tile width in meters
         tile_height: Tile height in meters
         dtype_bool: Flag to edit dtype to prevent black tiles
-       
+
     Returns:
         None
     """
     # Should clip data to crowns straight off to speed things up
     os.makedirs(out_dir, exist_ok=True)
-    #out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
+    # out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
                           tile_width, int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,

@@ -84,7 +84,7 @@ def filename_geoinfo(filename: str):
     """
     parts = os.path.basename(filename).split("_")
 
-    parts = [int(part) for part in parts[-6:-1]]
+    parts = [int(part) for part in parts[-6:-1]] # type: ignore
     minx = parts[0]
     miny = parts[1]
     width = parts[2]
@@ -121,11 +121,11 @@ def box_make(minx: int,
 
 def stitch_crowns(folder: str, shift: int = 1):
     """Stitch together predicted crowns
-  """
-    folder = Path(folder)
-    files = folder.glob("*geojson")
+    """
+    crowns_path = Path(folder)
+    files = crowns_path.glob("*geojson")
     _, _, _, _, crs = filename_geoinfo(list(files)[0])
-    files = folder.glob("*geojson")
+    files = crowns_path.glob("*geojson")
     crowns = gpd.GeoDataFrame(columns=["Confidence score", "geometry"],
                               geometry="geometry",
                               crs=from_epsg(crs))    # initiate an empty gpd.GDF
