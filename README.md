@@ -51,7 +51,7 @@ Training crowns are used to teach the network to delineate tree crowns
 
 Here is an example image of the predictions made by Detectree2.
 <p align="center">
-<img width="700" align="center" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/plot_13_285520_583300.jpg > 
+<img width="700" align="center" alt="predictions" src= ./report/figures/prediction_paracou.png > 
 </p>
 
 ## To do
