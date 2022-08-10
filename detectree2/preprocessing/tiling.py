@@ -163,8 +163,7 @@ def tile_data_train(data: DatasetReader,
                     tile_width: int = 200,
                     tile_height: int = 200,
                     crowns: gpd.GeoDataFrame = None,
-                    threshold: float = 0,
-                    record: bool = False,
+                    threshold: float = 0
                     dtype_bool: bool = False) -> None:
     """Tiles up orthomosaic and corresponding crowns into training tiles.
 
@@ -357,8 +356,7 @@ def tile_data_train(data: DatasetReader,
             except ValueError:
                 print("Cannot write empty DataFrame to file.")
                 continue
-    if record == True:
-        record_data(crowns,out_dir,column='status')
+
 
 
 def image_details(fileroot):
