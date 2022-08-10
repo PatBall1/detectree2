@@ -21,8 +21,6 @@ from rasterio.io import DatasetReader
 from rasterio.mask import mask
 from shapely.geometry import box
 
-warnings.filterwarnings('error')
-
 # class img_data(DatasetReader):
 #    """
 #    Class for image data to be processed for tiling
@@ -324,8 +322,8 @@ def tile_data_train(  # noqa: C901
                 # scale to image
                 rgb_rescaled = rgb
 
-            # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
-            # here as a naughty method
+            # save this as png, named with the origin of the specific tile
+            # potentially bad practice
             cv2.imwrite(
                 str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
                 rgb_rescaled,
