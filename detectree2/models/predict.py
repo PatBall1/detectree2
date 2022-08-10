@@ -27,9 +27,9 @@ def polygonFromMask(maskedArr):
         # Valid polygons have >= 6 coordinates (3 points)
         if contour.size >= 6:
             segmentation.append(contour.flatten().tolist())
-    RLEs = mask_util.frPyObjects(segmentation, maskedArr.shape[0],
-                                 maskedArr.shape[1])
-    RLE = mask_util.merge(RLEs)
+    #RLEs = mask_util.frPyObjects(segmentation, maskedArr.shape[0],
+    #                             maskedArr.shape[1])
+    #RLE = mask_util.merge(RLEs)
     # RLE = mask.encode(np.asfortranarray(maskedArr))
     # area = mask_util.area(RLE)
     # [x, y, w, h] = cv2.boundingRect(maskedArr)
