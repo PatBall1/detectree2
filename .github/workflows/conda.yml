@@ -23,10 +23,12 @@ jobs:
     - name: Install dependencies
       run: |
         $CONDA/bin/conda install mamba -n base -c conda-forge
-        $CONDA/bin/mamba env update -f environment.yaml -n base 
+        $CONDA/bin/mamba env create -f environment.yaml 
+        $CONDA/bin/activate detectree2
     - name: Install detectree2 
       run: | 
         which conda
         which pip
+        $CONDA/bin/conda env list
         $CONDA/bin/pip install .
 
