@@ -605,6 +605,6 @@ if __name__ == "__main__":
                     eval_period=100,
                     max_iter=3000,
                     out_dir=out_dir)
-    trainer = MyTrainer(cfg)
+    trainer = MyTrainer(cfg, patience = 4)
     trainer.resume_or_load(resume=False)
     trainer.train()
