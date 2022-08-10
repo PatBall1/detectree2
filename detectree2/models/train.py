@@ -9,11 +9,12 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import cv2
-import detectron2.data.transforms as T    # noqa:N812
+import detectron2.data.transforms as T  # noqa:N812
 import detectron2.utils.comm as comm
 import numpy as np
 import torch
 from detectron2 import model_zoo
+from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
 from detectron2.data import (DatasetCatalog, DatasetMapper, MetadataCatalog,
                              build_detection_test_loader,
@@ -21,10 +22,9 @@ from detectron2.data import (DatasetCatalog, DatasetMapper, MetadataCatalog,
 from detectron2.engine import DefaultTrainer
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator, verify_results
-from detectron2.checkpoint import DetectionCheckpointer
-from detectron2.utils.events import EventStorage, get_event_storage
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 from detectron2.structures import BoxMode
+from detectron2.utils.events import EventStorage, get_event_storage
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
 from IPython.display import display
