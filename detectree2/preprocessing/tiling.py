@@ -67,7 +67,7 @@ def tile_data(data: DatasetReader,
     #out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
                           tile_width, int):
-         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
+        for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
 
             # Naming conventions

@@ -30,6 +30,7 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 from IPython.display import display
 from PIL import Image
 
+
 class LossEvalHook(HookBase):
     """Do inference and get the loss metric.
 
@@ -115,7 +116,6 @@ class LossEvalHook(HookBase):
         return losses
 
     def _get_loss(self, data):
-
         """Calculate loss in train_loop.
 
         Args:
@@ -605,6 +605,6 @@ if __name__ == "__main__":
                     eval_period=100,
                     max_iter=3000,
                     out_dir=out_dir)
-    trainer = MyTrainer(cfg, patience = 4)
+    trainer = MyTrainer(cfg, patience=4)
     trainer.resume_or_load(resume=False)
     trainer.train()
