@@ -1,14 +1,13 @@
-import cv2
-import random
-import os
 import json
-import geopandas as gpd
-import pycocotools.mask as mask_util
+import os
+import random
 from pathlib import Path
-from shapely.geometry import box
-from fiona.crs import from_epsg
-from detectron2.evaluation.coco_evaluation import instances_to_coco_json
+
+import cv2
+import geopandas as gpd
 from detectron2.engine import DefaultPredictor
+from detectron2.evaluation.coco_evaluation import instances_to_coco_json
+from fiona.crs import from_epsg
 from detectree2.models.train import get_filenames
 
 # Code to convert RLE data from the output instances into Polygons, a small about of info is lost but is fine.
@@ -48,7 +47,7 @@ def predict_on_data(
     as jsons
     """
 
-    pred_dir = directory + "predictions"
+    pred_dir = os.path.join(directory, "predictions")
 
     Path(pred_dir).mkdir(parents=True, exist_ok=True)
 
@@ -62,14 +61,12 @@ def predict_on_data(
         img = cv2.imread(d["file_name"])
         outputs = predictor(img)
 
-        ### Creating the file name of the output file
+        # Creating the file name of the output file
         file_name_path = d["file_name"]
-        file_name = os.path.basename(
-            os.path.normpath(file_name_path)
-        )    #Strips off all slashes so just final file name left
+        # Strips off all slashes so just final file name left
+        file_name = os.path.basename(os.path.normpath(file_name_path))
         file_name = file_name.replace("png", "json")
-
-        output_file = pred_dir + "/Prediction_" + file_name
+        output_file = os.path.join(pred_dir, f"Prediction_{file_name}")
         print(output_file)
 
         if save:

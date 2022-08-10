@@ -1,41 +1,36 @@
-import os
+import datetime
 import json
 import logging
-import time
-import datetime
-import cv2
+import os
 import random
-import glob
-import torch
-import numpy as np
-from PIL import Image
+import time
 from pathlib import Path
-from detectron2 import model_zoo
-from detectron2.engine import DefaultPredictor, DefaultTrainer
-from detectron2.config import get_cfg
-from detectron2.utils.visualizer import Visualizer
-from detectron2.utils.visualizer import ColorMode
-from detectron2.utils.logger import log_every_n_seconds, setup_logger
+from typing import Any, Dict, List
+
+import cv2
+import detectron2.data.transforms as T    # noqa:N812
 import detectron2.utils.comm as comm
-from detectron2.structures import BoxMode
+import numpy as np
+import torch
+from detectron2 import model_zoo
+from detectron2.config import get_cfg
+from detectron2.data import (DatasetCatalog, DatasetMapper, MetadataCatalog,
+                             build_detection_test_loader,
+                             build_detection_train_loader)
+from detectron2.engine import DefaultTrainer
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator, verify_results
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.utils.events import EventStorage, get_event_storage
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
-from detectron2.data import (
-    MetadataCatalog,
-    DatasetCatalog,
-    DatasetMapper,
-    build_detection_test_loader,
-    build_detection_train_loader,
-)
-import detectron2.data.transforms as T
-from IPython.display import display, clear_output
-
+from detectron2.structures import BoxMode
+from detectron2.utils.logger import log_every_n_seconds
+from detectron2.utils.visualizer import ColorMode, Visualizer
+from IPython.display import display
+from PIL import Image
 
 class LossEvalHook(HookBase):
-    """Do inference and get the loss metric
+    """Do inference and get the loss metric.
 
     Class to:
     - Do inference of dataset like an Evaluator does
@@ -51,7 +46,8 @@ class LossEvalHook(HookBase):
         patience: number of evaluation periods to wait for improvement
     """
 
-    def __init__(self, eval_period, model, data_loader, patience):
+    def __init__(self, eval_period, model, data_loader):
+        """Inits LossEvalHook."""
         self._model = model
         self._period = eval_period
         self._data_loader = data_loader
@@ -61,7 +57,7 @@ class LossEvalHook(HookBase):
         self.best_iter = 0
 
     def _do_loss_eval(self):
-        """Copying inference_on_dataset from evaluator.py
+        """Copying inference_on_dataset from evaluator.py.
 
         Returns:
             _type_: _description_
@@ -118,7 +114,8 @@ class LossEvalHook(HookBase):
         return losses
 
     def _get_loss(self, data):
-        """Calculate loss in train_loop
+
+        """Calculate loss in train_loop.
 
         Args:
             data (_type_): _description_
@@ -161,10 +158,9 @@ class LossEvalHook(HookBase):
                                        str(index) + '.pth')
 
 
-# comment
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
 class MyTrainer(DefaultTrainer):
-    """_summary_
+    """Summary.
 
     Args:
         DefaultTrainer (_type_): _description_
@@ -243,7 +239,7 @@ class MyTrainer(DefaultTrainer):
         return hooks
 
     def build_train_loader(cls, cfg):
-        """_summary_
+        """Summary.
           Args:
               cfg (_type_): _description_
   
@@ -269,13 +265,13 @@ class MyTrainer(DefaultTrainer):
         )
 
 
-def get_tree_dicts(directory, classes=None):
+def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
     """Get the tree dictionaries.
 
     Args:
         directory: Path to directory
         classes: Signifies which column (if any) corresponds to the class labels
-    
+
     Returns:
         List of dictionaries corresponding to segmentations of trees. Each dictionary includes
         bounding box around tree and points tracing a polygon around a tree.
@@ -288,14 +284,13 @@ def get_tree_dicts(directory, classes=None):
     #
     if classes is not None:
         # list_of_classes = crowns[variable].unique().tolist()
-        # list_of_classes = ['Pradosia_cochlearia','Eperua_falcata','Dicorynia_guianensis','Eschweilera_sagotiana','Eperua_grandiflora','Symphonia_sp.1','Sextonia_rubra','Vouacapoua_americana','Sterculia_pruriens','Tapura_capitulifera','Pouteria_eugeniifolia','Recordoxylon_speciosum','Chrysophyllum_prieurii','Platonia_insignis','Chrysophyllum_pomiferum','Parkia_nitida','Goupia_glabra','Carapa_surinamensis','Licania_alba','Bocoa_prouacensis','Lueheopsis_rugosa']
         list_of_classes = ["CIRAD", "CNES", "INRA"]
         classes = list_of_classes
     else:
         classes = ["tree"]
     # classes = Genus_Species_UniqueList #['tree'] # genus_species list
     dataset_dicts = []
-    #for root, dirs, files in os.walk(train_location):
+    # for root, dirs, files in os.walk(train_location):
     #    for file in files:
     #        if file.endswith(".geojson"):
     #            print(os.path.join(root, file))
@@ -306,8 +301,8 @@ def get_tree_dicts(directory, classes=None):
         json_file = os.path.join(directory, filename)
         with open(json_file) as f:
             img_anns = json.load(f)
-
-        record = {}
+        # Turn off type checking for annotations until we have a better solution
+        record: dict[str, Any] = {}
 
         filename = os.path.join(directory, img_anns["imagePath"])
         # Make sure we have the correct height and width
@@ -317,21 +312,21 @@ def get_tree_dicts(directory, classes=None):
         record["height"] = height
         record["width"] = width
         record["image_id"] = filename[0:400]
-        #print(filename[0:400])
+        record["annotations"] = {}
+        # print(filename[0:400])
 
         objs = []
         for features in img_anns["features"]:
             anno = features["geometry"]
             # pdb.set_trace()
             # GenusSpecies = features['properties']['Genus_Species']
-            # print("##### HERE IS AN ANNO #####", anno)...weirdly sometimes (but not always) have to make 1000 into a np.array
             px = [a[0] for a in anno["coordinates"][0]]
             py = [np.array(height) - a[1] for a in anno["coordinates"][0]]
             # print("### HERE IS PY ###", py)
             poly = [(x, y) for x, y in zip(px, py)]
             poly = [p for x in poly for p in x]
             # print("#### HERE ARE SOME POLYS #####", poly)
-            if classes != ['tree']:
+            if classes != ["tree"]:
                 obj = {
                     "bbox": [np.min(px),
                              np.min(py),
@@ -366,7 +361,9 @@ def get_tree_dicts(directory, classes=None):
     return dataset_dicts
 
 
-def combine_dicts(folder, val_folder, mode="train"):
+def combine_dicts(root_dir: str,
+                  val_dir: int,
+                  mode: str = "train") -> List[Dict]:
     """Join tree dicts from different directories.
 
     Args:
@@ -376,12 +373,12 @@ def combine_dicts(folder, val_folder, mode="train"):
     Returns:
         Concatenated array of dictionaries over all directories
     """
-    train_dirs = [os.path.join(folder, file) for file in os.listdir(folder)]
+    train_dirs = [os.path.join(root_dir, dir) for dir in os.listdir(root_dir)]
     if mode == "train":
         del train_dirs[(val_folder - 1)]
         tree_dicts = []
         for d in train_dirs:
-            tree_dicts = tree_dicts + get_tree_dicts(d)
+            tree_dicts += get_tree_dicts(d)
         return tree_dicts
     else:
         tree_dicts = get_tree_dicts(train_dirs[(val_folder - 1)])
@@ -412,11 +409,11 @@ def register_train_data(train_location, name="tree", val_fold=1):
         DatasetCatalog.register(
             name + "_" + d,
             lambda d=d: combine_dicts(train_location, val_fold, d))
-        MetadataCatalog.get(name + "_" + d).set(thing_classes=['tree'])
+        MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
 
 
 def remove_registered_data(name="tree"):
-    for d in ['train', 'val']:
+    for d in ["train", "val"]:
         DatasetCatalog.remove(name + "_" + d)
         MetadataCatalog.remove(name + "_" + d)
 
@@ -425,7 +422,7 @@ def register_test_data(test_location, name="tree"):
     d = "test"
     DatasetCatalog.register(name + "_" + d,
                             lambda d=d: get_tree_dicts(test_location))
-    MetadataCatalog.get(name + "_" + d).set(thing_classes=['tree'])
+    MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
 
 
 def load_json_arr(json_path):
@@ -502,10 +499,11 @@ def setup_cfg(base_model:
 
 
 def get_filenames(directory):
+    """Get file names if no geojson is present.
+
+    I.e. Allows for predictions where no delinations have been manually produced.
     """
-    Used to get the file names if no geojson is present, i.e allows for predictions
-    where no delinations have been manually produced
-    """
+
     dataset_dicts = []
     for filename in [file for file in os.listdir(directory)]:
         file = {}
@@ -547,27 +545,27 @@ def predictions_on_data(directory=None,
         img = cv2.imread(d["file_name"])
         # cv2_imshow(img)
         outputs = predictor(img)
-        v = Visualizer(img[:, :, ::-1],
-                       metadata=trees_metadata,
-                       scale=scale,
-                       instance_mode=ColorMode.SEGMENTATION
-                      )    # remove the colors of unsegmented pixels
+        v = Visualizer(
+            img[:, :, ::-1],
+            metadata=trees_metadata,
+            scale=scale,
+            instance_mode=ColorMode.SEGMENTATION,
+        )    # remove the colors of unsegmented pixels
         v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
         image = cv2.cvtColor(v.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
         display(Image.fromarray(image))
 
-        ### Creating the file name of the output file
+        # Creating the file name of the output file
         file_name_path = d["file_name"]
-        file_name = os.path.basename(
-            os.path.normpath(file_name_path)
-        )    #Strips off all slashes so just final file name left
+        # Strips off all slashes so just final file name left
+        file_name = os.path.basename(os.path.normpath(file_name_path))
         file_name = file_name.replace("png", "json")
 
         output_file = pred_dir + "/Prediction_" + file_name
         print(output_file)
 
         if save:
-            ## Converting the predictions to json files and saving them in the specfied output file.
+            # Converting the predictions to json files and saving them in the specfied output file.
             evaluations = instances_to_coco_json(outputs["instances"].to("cpu"),
                                                  d["file_name"])
             with open(output_file, "w") as dest:
@@ -597,19 +595,31 @@ if __name__ == "__main__":
     # Set the names of the registered train and test sets
     # pretrained model?
     # trained_model = "/content/drive/Shareddrives/detectree2/models/220629_ParacouSepilokDanum_JB.pth"
-    trains = ("Paracou_train", "Paracou2019_train", "ParacouUAV_train",
-              "Danum_train", "SepilokEast_train", "SepilokWest_train")
-    tests = ("Paracou_val", "Paracou2019_val", "ParacouUAV_val", "Danum_val",
-             "SepilokEast_val", "SepilokWest_val")
+    trains = (
+        "Paracou_train",
+        "Paracou2019_train",
+        "ParacouUAV_train",
+        "Danum_train",
+        "SepilokEast_train",
+        "SepilokWest_train",
+    )
+    tests = (
+        "Paracou_val",
+        "Paracou2019_val",
+        "ParacouUAV_val",
+        "Danum_val",
+        "SepilokEast_val",
+        "SepilokWest_val",
+    )
     out_dir = "/content/drive/Shareddrives/detectree2/220703_train_outputs"
 
+    # update_model arg can be used to load in trained  model
     cfg = setup_cfg(model,
                     trains,
                     tests,
                     eval_period=100,
                     max_iter=3000,
-                    out_dir=out_dir
-                   )    # update_model arg can be used to load in trained  model
-    trainer = MyTrainer(cfg, patience=500)
+                    out_dir=out_dir)
+    trainer = MyTrainer(cfg)
     trainer.resume_or_load(resume=False)
     trainer.train()
