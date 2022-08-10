@@ -163,7 +163,7 @@ def tile_data_train(data: DatasetReader,
                     tile_width: int = 200,
                     tile_height: int = 200,
                     crowns: gpd.GeoDataFrame = None,
-                    threshold: float = 0
+                    threshold: float = 0,
                     dtype_bool: bool = False) -> None:
     """Tiles up orthomosaic and corresponding crowns into training tiles.
 
