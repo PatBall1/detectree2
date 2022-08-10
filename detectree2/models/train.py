@@ -305,7 +305,7 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
         # Turn off type checking for annotations until we have a better solution
         record: dict[str, Any] = {}
 
-        filename = os.path.join(directory, img_anns["imagePath"])
+        filename = img_anns["imagePath"]
         # Make sure we have the correct height and width
         height, width = cv2.imread(filename).shape[:2]
 
