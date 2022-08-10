@@ -47,7 +47,8 @@ def predict_on_data(
 
         if save:
             # Converting the predictions to json files and saving them in the specfied output file.
-            evaluations = instances_to_coco_json(outputs["instances"].to("cpu"), d["file_name"])
+            evaluations = instances_to_coco_json(outputs["instances"].to("cpu"),
+                                                 d["file_name"])
             with open(output_file, "w") as dest:
                 json.dump(evaluations, dest)
 
@@ -56,7 +57,9 @@ def stitch_crowns(folder: str, shift: int = 1):
     """Stitch together predicted crowns."""
     crowns_path = Path(folder)
     files = crowns_path.glob("*geojson")
-    crowns = gpd.GeoDataFrame(columns=["Confidence score", "geometry"], geometry="geometry", crs=from_epsg(32622))
+    crowns = gpd.GeoDataFrame(columns=["Confidence score", "geometry"],
+                              geometry="geometry",
+                              crs=from_epsg(32622))
     for file in files:
         crowns_tile = gpd.read_file(file)
         crowns_tile.crs = "epsg:32622"
