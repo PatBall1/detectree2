@@ -156,7 +156,7 @@ class LossEvalHook(HookBase):
         self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' +
                                        str(index) + '.pth')
 
-
+# comment
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
 class MyTrainer(DefaultTrainer):
     """_summary_
