@@ -44,8 +44,8 @@ The standard workflow includes:
 
 Training crowns are used to teach the network to delineate tree crowns
 <p align="center">
-<img width="500" align="center" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/Workflow_Diagram2_a.png#gh-light-mode-only>
-<img width="500" align="center" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/Workflow_Diagram2_b.png#gh-dark-mode-only> 
+<img width="500" align="center" alt="predictions" src= ./report/figures/Workflow_Diagram2_a.png#gh-light-mode-only>
+<img width="500" align="center" alt="predictions" src= ./report/figures/Workflow_Diagram2_b.png#gh-dark-mode-only> 
 </p>
 
 
@@ -66,19 +66,19 @@ Here is an example image of the predictions made by Detectree2.
 ### Tracking tropical tree growth and mortality
 
 <p align="center">
-<img width="500" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/growth_mortality_bootstrap.png > 
+<img width="500" alt="predicting" src= ./report/figures/growth_mortality_bootstrap.png > 
 </p>
 
 ### Counting urban trees (Buffalo, NY)
 
 <p align="center">
-<img width="700" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/urban.png > 
+<img width="700" alt="predicting" src= ./report/figures/urban.png > 
 </p>
 
 ### Multi-temporal tree crown segmentation
 
 <p align="center">
-<img width="700" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/seg.gif > 
+<img width="700" alt="predicting" src= ./report/figures/seg.gif > 
 </p>
 
 ### Liana detection and infestation mapping
