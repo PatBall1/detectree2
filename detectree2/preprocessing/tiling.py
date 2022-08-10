@@ -194,13 +194,13 @@ def tile_data_train(data: DatasetReader,
     # TODO: Clip data to crowns straight away to speed things up
     out_path = Path(out_dir)
     os.makedirs(out_path, exist_ok=True)
+    tilename = Path(data.name).stem
     # out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
                           tile_width, int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
 
-            tilename = Path(data.name).stem
             out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}"
 
             # new tiling bbox including the buffer
@@ -286,7 +286,7 @@ def tile_data_train(data: DatasetReader,
 
             # Saving the tile as a new tiff, named by the origin of the tile. If tile appears blank in folder can show
             # the image here and may need to fix RGB data or the dtype
-            out_tif = out_path_root.with_suffix('.tif')
+            out_tif = out_path_root.with_suffix(out_path_root.suffix + '.tif')
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
 
@@ -347,14 +347,14 @@ def tile_data_train(data: DatasetReader,
             scalingy = -1 / (data.transform[4])
             moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
 
-            impath = {"imagePath": out_path_root.with_suffix(".png")}
+            impath = {"imagePath": out_path_root.with_suffix(out_path_root.suffix + ".png")}
 
             # Save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
             # If the box selected from the image is outside of the mapped region due to the image being on a slant
             # then the shp file will have no info on the crowns and hence will create an empty gpd Dataframe.
             # this causes an error so skip creating geojson. The training code will also ignore png so no problem.
             try:
-                filename = out_path_root.with_suffix(".geojson")
+                filename = out_path_root.with_suffix(out_path_root.suffix + ".geojson")
                 moved_scaled = overlapping_crowns.set_geometry(moved_scaled)
                 moved_scaled.to_file(
                     driver="GeoJSON",
