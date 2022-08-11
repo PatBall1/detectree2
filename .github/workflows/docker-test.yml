@@ -42,11 +42,6 @@ jobs:
         pip install .
     - name: pytest checks
       run: |
-        # git checkout -b test origin/matt/tests
-        # pwd
-        ls
-        ls detectree2
-        ls detectree2-data
         pytest -rP -v detectree2/tests/integration/demo.py
     - name: mypy checks
       run: |
