@@ -39,7 +39,7 @@ jobs:
         repository: 'detectree2-data'
     - name: pytest checks
       run: |
-        pytest -rP -v detectree2/tests/integration/
+        pytest -rP -v detectree2/tests/integration/demo.py
     - name: mypy checks
       run: |
         which python3
