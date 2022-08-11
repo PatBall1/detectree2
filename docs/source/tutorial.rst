@@ -8,16 +8,18 @@ Training a model
 
 .. code-block:: python
    :caption: call libraries
+
    from detectree2.preprocessing.tiling import tile_data_train
    import rasterio
    import geopandas as gpd
 
 
 
-Set up the paths for the paths to the crown data and corresponding
+Set up the paths for the crown data and corresponding
 
 .. code-block:: python
    :caption: set paths
+   
    # Set up paths
    site_path = "/content/drive/Shareddrives/detectree2/data/Paracou"
    img_path = site_path + "/rgb/2016/Paracou_RGB_2016_10cm.tif"
