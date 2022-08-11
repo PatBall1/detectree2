@@ -39,6 +39,10 @@ jobs:
         repository: 'detectree2-data'
     - name: pytest checks
       run: |
+        pwd
+        ls
+        ls detectree2
+        ls detectree2-data
         pytest -rP -v detectree2/tests/integration/demo.py
     - name: mypy checks
       run: |

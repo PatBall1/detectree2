@@ -579,7 +579,7 @@ if __name__ == "__main__":
         visualizer = Visualizer(img[:, :, ::-1], metadata=trees_metadata, scale=0.5)
         out = visualizer.draw_dataset_dict(d)
         image = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
-        display(Image.fromarray(image))
+        # display(Image.fromarray(image))
     # Set the base (pre-trained) model from the detectron2 model_zoo
     model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
     # Set the names of the registered train and test sets
