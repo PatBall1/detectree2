@@ -74,7 +74,6 @@ class Feature:
             # Want coord tuples for the unmoved crown coordinates so using the lidar copied crown file
             lidar_coords = lidar_json['features'][
                 self.number]['geometry']['coordinates'][0]
-            # print(lidar_coords)
             geo = [{
                 'type': 'Polygon',
                 'coordinates': [self.get_tuple_coords(lidar_coords)]
