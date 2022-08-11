@@ -75,7 +75,39 @@
 <p>Tutorials for preparing data, training models, evaluating model performance and making landscape level predictions</p>
 <section id="training-a-model">
 <h2>Training a model<a class="headerlink" href="#training-a-model" title="Permalink to this heading"></a></h2>
-<p>Set up the paths for the paths to the crown data and corresponding</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">call libraries</span><a class="headerlink" href="#id1" title="Permalink to this code"></a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data_train</span>
+<span class="kn">import</span> <span class="nn">rasterio</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="kn">as</span> <span class="nn">gpd</span>
+</pre></div>
+</div>
+</div>
+<p>Set up the paths for the crown data and corresponding</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">set paths</span><a class="headerlink" href="#id2" title="Permalink to this code"></a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set up paths</span>
+<span class="n">site_path</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/Paracou&quot;</span>
+<span class="n">img_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/rgb/2016/Paracou_RGB_2016_10cm.tif&quot;</span>
+<span class="n">crown_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/crowns/220619_AllSpLabelled.gpkg&quot;</span>
+
+<span class="n">out_dir</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s1">&#39;/tiles/&#39;</span>
+
+<span class="c1"># Read in the tiff file</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+
+<span class="c1"># Read in crowns (then filter by an attribute?)</span>
+<span class="n">crowns</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">crown_path</span><span class="p">)</span>
+<span class="n">crowns</span> <span class="o">=</span> <span class="n">crowns</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+<span class="c1"># Set tiling parameters</span>
+<span class="nb">buffer</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">tile_width</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">tile_height</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.6</span>
+</pre></div>
+</div>
+</div>
 </section>
 </section>
 
