@@ -124,23 +124,16 @@ def feat_threshold_tests(feature_instance, conf_threshold, area_threshold, borde
     if valid_feature and border_filter[0]:
         EB = tile_width * border_filter[1]
         for coords in feature_instance.geometry['coordinates'][0]:
-            if (-EB <= coords[0] <= EB or -EB <= coords[1] <= EB
-                    or TW - EB <= coords[0] <= TW + EB or TW - EB <= coords[1] <= TW + EB):
+            if (-EB <= coords[0] <= EB or -EB <= coords[1] <= EB or TW - EB <= coords[0] <= TW + EB
+                    or TW - EB <= coords[1] <= TW + EB):
                 valid_feature = False
                 break
 
     return valid_feature
 
 
-def initialise_feats(directory,
-                     file,
-                     lidar_filename,
-                     lidar_img,
-                     area_threshold,
-                     conf_threshold,
-                     border_filter,
-                     tile_width,
-                     EPSG):
+def initialise_feats(directory, file, lidar_filename, lidar_img, area_threshold, conf_threshold, border_filter,
+                     tile_width, EPSG):
     """Creates a list of all the features as objects of the class."""
     with open(directory + file) as feat_file:
         feat_json = json.load(feat_file)
@@ -165,8 +158,16 @@ def save_feats(tile_directory, all_feats):
     adjusted_directory = tile_directory + "adjusted/"
     Path(adjusted_directory).mkdir(parents=True, exist_ok=True)
 
-    geofile = {"type": "FeatureCollection", "crs": {"type": "name", "properties": {
-        "name": "urn:ogc:def:crs:EPSG::" + all_feats[0].EPSG}}, "features": []}
+    geofile = {
+        "type": "FeatureCollection",
+        "crs": {
+            "type": "name",
+            "properties": {
+                "name": "urn:ogc:def:crs:EPSG::" + all_feats[0].EPSG
+            }
+        },
+        "features": []
+    }
 
     for feat in all_feats:
         geofile["features"].append({"type": "Feature", "properties": feat.properties, "geometry": feat.geometry})
@@ -239,8 +240,7 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):
         # they are above the required GIoU. Then need the height of the test feature
         # to also be above the threshold to allow it to be considered
         matching_test_feat = all_test_feats[pred_feat.GIoU_other_feat_num]
-        if (pred_feat.number == matching_test_feat.GIoU_other_feat_num
-            and pred_feat.GIoU > min_IoU
+        if (pred_feat.number == matching_test_feat.GIoU_other_feat_num and pred_feat.GIoU > min_IoU
                 and matching_test_feat.number in tall_test_nums):
             tps += 1
             test_feats_tps.append(matching_test_feat.number)
@@ -252,10 +252,7 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):
     return tps, fps, fns
 
 
-def prec_recall(
-        total_tps,
-        total_fps,
-        total_fns):
+def prec_recall(total_tps, total_fps, total_fns):
     """Calculate the precision and recall by standard formulas."""
 
     precision = total_tps / (total_tps + total_fps)
@@ -270,20 +267,18 @@ def f1_cal(precision, recall):
     return (2 * precision * recall) / (precision + recall)
 
 
-def site_f1_score(
-    tile_directory=None,
-    test_directory=None,
-    pred_directory=None,
-    lidar_img=None,
-    IoU_threshold=0,
-    height_threshold=0,
-    area_fraction_limit=0.0005,
-    conf_threshold=0,
-    border_filter=tuple,
-    scaling=list,
-    EPSG=None,
-    save=False
-):
+def site_f1_score(tile_directory=None,
+                  test_directory=None,
+                  pred_directory=None,
+                  lidar_img=None,
+                  IoU_threshold=0,
+                  height_threshold=0,
+                  area_fraction_limit=0.0005,
+                  conf_threshold=0,
+                  border_filter=tuple,
+                  scaling=list,
+                  EPSG=None,
+                  save=False):
     """Calculating all the intersections of shapes in a pair of files and the area of the corresponding polygons.
 
     Args:
@@ -319,13 +314,13 @@ def site_f1_score(
             area_threshold = ((tile_width)**2) * area_fraction_limit
 
             test_lidar = tile_directory + file.replace(".geojson", "_lidar.geojson")
-            all_test_feats = initialise_feats(test_directory, file, test_lidar, lidar_img,
-                                              area_threshold, conf_threshold, border_filter, tile_width, EPSG)
+            all_test_feats = initialise_feats(test_directory, file, test_lidar, lidar_img, area_threshold,
+                                              conf_threshold, border_filter, tile_width, EPSG)
 
             pred_file_path = "Prediction_" + file.replace('.geojson', '_' + EPSG + '.geojson')
             pred_lidar = tile_directory + "reprojected/" + pred_file_path.replace('.geojson', '_lidar.geojson')
-            all_pred_feats = initialise_feats(pred_directory, pred_file_path, pred_lidar, lidar_img,
-                                              area_threshold, conf_threshold, border_filter, tile_width, EPSG)
+            all_pred_feats = initialise_feats(pred_directory, pred_file_path, pred_lidar, lidar_img, area_threshold,
+                                              conf_threshold, border_filter, tile_width, EPSG)
 
             if save:
                 save_feats(tile_directory, all_test_feats)

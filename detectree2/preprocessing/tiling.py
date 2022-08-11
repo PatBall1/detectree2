@@ -242,8 +242,6 @@ def tile_data_train(  # noqa: C901
 
                 # Discard tiles that do not have a sufficient coverage of training crowns
                 if (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
-                    # Warning:
-                    # UserWarning: Geometry is in a geographic CRS. Results from 'area' are likely incorrect. Use 'GeoSeries.to_crs()' to re-project geometries to a projected CRS before this operation.
                     continue
 
             # here we are cropping the tiff to the bounding box of the tile we want
