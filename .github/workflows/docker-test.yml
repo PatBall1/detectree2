@@ -38,7 +38,7 @@ jobs:
         owner: 'ma595'
         repository: 'detectree2-data'
     - name: install detectree2
-      run:
+      run: |
         pip install .
     - name: pytest checks
       run: |
