@@ -39,7 +39,6 @@ jobs:
         repository: 'detectree2-data'
     - name: pytest checks
       run: |
-        # python -m pytest -rP -v detectree2/tests/test_preprocessing.py 
         pytest -rP -v detectree2/tests/integration/
     - name: mypy checks
       run: |
