@@ -23,7 +23,7 @@ jobs:
         python3 --version
         python -m pip install --upgrade pip
         pip3 install flake8 pep8-naming pydocstyle pytest isort
-        pip3 install mypy data-science-types pandas-stubs types-pillow numpy
+        pip3 install mypy data-science-types pandas-stubs types-pillow numpy==1.23.1
         # if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
     - name: Install detectree2 dependencies
       run: |
@@ -34,7 +34,7 @@ jobs:
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
         export C_INCLUDE_PATH=/usr/include/gdal
         pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu \
-        opencv-python wandb numpy==1.23 sphinx
+        opencv-python wandb sphinx
         pip3 install 'git+https://github.com/facebookresearch/detectron2.git'
     - name: Install detectree2
       run: |
