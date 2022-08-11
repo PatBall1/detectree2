@@ -1,19 +1,42 @@
-import json
+# necessary basic libraries
+import pandas as pd
+import numpy as np
+import cv2
 import os
+import json
 from pathlib import Path
 
-import cv2
+# geospatial libraries
+import png
+import glob
+import rasterio
+import geopandas
+from geopandas.tools import sjoin
+from rasterio.plot import show
+from rasterio.mask import mask
+from shapely.geometry import box
+import geopandas as gpd
+from fiona.crs import from_epsg
+
+# import more geospatial libraries
+import pycrs
+import descartes
+import rasterio
+from rasterio.transform import from_origin
+import rasterio.features
 import pycocotools.mask as mask_util
+import fiona
+from shapely.geometry import shape, mapping, box
+from shapely.geometry.multipolygon import MultiPolygon
 
 
-def polygon_from_mask(masked_arr):
-    """Convert RLE data from the output instances into Polygons.
-
-    Leads to a small about of data loss but does not affect performance?
+def polygonFromMask(maskedArr):
+    """
+    Code to convert RLE data from the output instances into Polygons, a small about of info is lost but is fine.
     https://github.com/hazirbas/coco-json-converter/blob/master/generate_coco_json.py <-- found here
     """
 
-    contours, _ = cv2.findContours(masked_arr, cv2.RETR_TREE,
+    contours, _ = cv2.findContours(maskedArr, cv2.RETR_TREE,
                                    cv2.CHAIN_APPROX_SIMPLE)
 
     segmentation = []
@@ -21,27 +44,28 @@ def polygon_from_mask(masked_arr):
         # Valid polygons have >= 6 coordinates (3 points)
         if contour.size >= 6:
             segmentation.append(contour.flatten().tolist())
-    # rles = mask_util.frPyObjects(segmentation, masked_arr.shape[0], masked_arr.shape[1])
-    # RLE = mask_util.merge(RLEs) # not used
-    # RLE = mask.encode(np.asfortranarray(masked_arr))
-    # area = mask_util.area(RLE) # not used
-    [x, y, w, h] = cv2.boundingRect(masked_arr)
+    RLEs = mask_util.frPyObjects(segmentation, maskedArr.shape[0],
+                                 maskedArr.shape[1])
+    RLE = mask_util.merge(RLEs)
+    # RLE = mask.encode(np.asfortranarray(maskedArr))
+    area = mask_util.area(RLE)
+    [x, y, w, h] = cv2.boundingRect(maskedArr)
 
-    return segmentation[0]    # , [x, y, w, h], area
+    return segmentation[0]    #, [x, y, w, h], area
 
 
-def reproject_to_geojson(directory=None, EPSG="26917"):    # noqa:N803
-    """Converts a json to a geojson so it can overlay with crowns.
-
-    Reproject the crowns to overlay with the cropped crowns and cropped pngs.
-    Another copy is produced to overlay with pngs.
+# Reprojecting the crowns to overlay with the cropped crowns and the cropped png
+def reproject_to_geojson(directory=None, EPSG="26917"):
+    """
+    Takes a json and changes it to a geojson so it can overlay with crowns
+    Another copy is produced to overlay with PNGs
     """
 
     entries = os.listdir(directory)
 
     for file in entries:
         if ".json" in file:
-            # create a geofile for each tile --> the EPSG value might need to be changed.
+            #create a geofile for each tile --> the EPSG value might need to be changed.
             geofile = {
                 "type": "FeatureCollection",
                 "crs": {
@@ -65,6 +89,7 @@ def reproject_to_geojson(directory=None, EPSG="26917"):    # noqa:N803
             # load the json file we need to convert into a geojson
             with open(directory + img_dict["filename"]) as prediction_file:
                 datajson = json.load(prediction_file)
+            #print(datajson)
 
             img_dict["width"] = datajson[0]["segmentation"]["size"][0]
             img_dict["height"] = datajson[0]["segmentation"]["size"][1]
@@ -72,7 +97,7 @@ def reproject_to_geojson(directory=None, EPSG="26917"):    # noqa:N803
 
             # json file is formated as a list of segmentation polygons so cycle through each one
             for crown_data in datajson:
-                # just a check that the crown image is correct
+                #just a check that the crown image is correct
                 if img_dict["minx"] + '_' + img_dict["miny"] in crown_data[
                         "image_id"]:
                     crown = crown_data["segmentation"]
@@ -81,7 +106,7 @@ def reproject_to_geojson(directory=None, EPSG="26917"):    # noqa:N803
                     # changing the coords from RLE format so can be read as numbers, here the numbers are
                     # integers so a bit of info on position is lost
                     mask_of_coords = mask_util.decode(crown)
-                    crown_coords = polygon_from_mask(mask_of_coords)
+                    crown_coords = polygonFromMask(mask_of_coords)
                     rescaled_coords = []
 
                     # coords from json are in a list of [x1, y1, x2, y2,... ] so convert them to [[x1, y1], ...]
@@ -117,14 +142,13 @@ def reproject_to_geojson(directory=None, EPSG="26917"):    # noqa:N803
                 json.dump(geofile, dest)
 
 
+# Reprojects the coordinates back so the crowns can be overlaid with the original tif file of the entire region
 def reproject_to_geojson_spatially(data,
                                    output_fold=None,
                                    pred_fold=None,
-                                   EPSG="26917"):    # noqa:N803
-    """Reprojects the coordinates back so the crowns can be overlaid with the original tif file of the entire region.
-
-    Takes a json and changes it to a geojson so it can overlay with crowns.
-    Another copy is produced to overlay with PNGs.
+                                   EPSG="26917"):
+    """
+    Takes a json and changes it to a geojson so it can overlay with crowns of the original tif
     """
 
     Path(output_fold).mkdir(parents=True, exist_ok=True)
@@ -136,7 +160,7 @@ def reproject_to_geojson_spatially(data,
 
     for file in entries:
         if ".json" in file:
-            # create a geofile for each tile --> the EPSG value might need to be changed.
+            #create a geofile for each tile --> the EPSG value might need to be changed.
             geofile = {
                 "type": "FeatureCollection",
                 "crs": {
@@ -177,7 +201,7 @@ def reproject_to_geojson_spatially(data,
 
             # json file is formated as a list of segmentation polygons so cycle through each one
             for crown_data in datajson:
-                # just a check that the crown image is correct
+                #just a check that the crown image is correct
                 if str(minx) + '_' + str(miny) in crown_data["image_id"]:
                     crown = crown_data["segmentation"]
                     confidence_score = crown_data['score']
@@ -185,7 +209,7 @@ def reproject_to_geojson_spatially(data,
                     # changing the coords from RLE format so can be read as numbers, here the numbers are
                     # integers so a bit of info on position is lost
                     mask_of_coords = mask_util.decode(crown)
-                    crown_coords = polygon_from_mask(mask_of_coords)
+                    crown_coords = polygonFromMask(mask_of_coords)
                     moved_coords = []
 
                     # coords from json are in a list of [x1, y1, x2, y2,... ] so convert them to [[x1, y1], ...]
@@ -197,9 +221,8 @@ def reproject_to_geojson_spatially(data,
                         # print("ycoord:", y_coord)
                         # print("height:", height)
 
-                        # rescaling the coords depending on where the tile is in the original image, note the
-                        # correction factors have been manually added as outputs did not line up with predictions
-                        # from training script
+                        # rescaling the coords depending on where the tile is in the original image, note the correction
+                        # factors have been manually added as outputs did not line up with predictions from training script
                         if minx == data.bounds[0] and miny == data.bounds[1]:
                             # print("Bottom Corner")
                             x_coord = (x_coord) * scalingx + minx
@@ -207,18 +230,18 @@ def reproject_to_geojson_spatially(data,
                         elif minx == data.bounds[0]:
                             # print("Left Edge")
                             x_coord = (x_coord) * scalingx + minx
-                            y_coord = (height
-                                       - y_coord) * scalingy - buffer + miny
+                            y_coord = (height -
+                                       y_coord) * scalingy - buffer + miny
                         elif miny == data.bounds[1]:
                             # print("Bottom Edge")
                             x_coord = (x_coord) * scalingx - buffer + minx
-                            y_coord = (height
-                                       - y_coord) * scalingy - buffer + miny
+                            y_coord = (height -
+                                       y_coord) * scalingy - buffer + miny
                         else:
                             # print("Anywhere else")
                             x_coord = (x_coord) * scalingx - buffer + minx
-                            y_coord = (height
-                                       - y_coord) * scalingy - buffer + miny
+                            y_coord = (height -
+                                       y_coord) * scalingy - buffer + miny
 
                         moved_coords.append([x_coord, y_coord])
 

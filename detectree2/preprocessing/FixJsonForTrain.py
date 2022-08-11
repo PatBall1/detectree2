@@ -1,15 +1,15 @@
-import glob
-import json
-import os
+import pandas as pd
+import numpy as np
+import cv2
 import random
+import matplotlib.pyplot as plt
+from PIL import Image
+import os
+import numpy as np
+import json
 import re
 import time
-
-import cv2
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from PIL import Image
+import glob
 
 entries = os.listdir(
     "/content/drive/MyDrive/forestseg/paracou_data/Panayiotis_Outputs/ForTrainingSegmentation/train"

@@ -38,7 +38,7 @@ Detectree2, based on the [Detectron2](https://github.com/facebookresearch/detect
 
 The standard workflow includes:
 1) Tile the orthomosaics and crown data (for training, validation and testing)
-2) Train (and tune) a model on the training tiles
+2) Train (and tune) a model a model on the training tiles
 3) Evaluate the model performance by predicting on the test tiles and comparing to manual crowns for the tiles
 4) Using the trained model to predict the crowns over the entire region of interest
 
