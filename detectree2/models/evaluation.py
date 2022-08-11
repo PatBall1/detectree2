@@ -63,11 +63,9 @@ class Feature:
         self.crown_area = polygon.area
 
     def tree_height(self):
-        """Crops the lidar tif to the features and calculates height.
-
-        Calculates the 95thpercentile height greatest height to account for
-        error at the top end. If no lidar file is inputted than the height is
-        given as 0
+        """Crops the lidar tif to the features and calculates the 95% greatest height to account for error at top end.
+        
+        If no lidar file is inputted than the height is given as 0.
         """
         if self.lidar_img is None:
             self.height = 0
@@ -103,7 +101,7 @@ class Feature:
 
 # Regular functions now
 def get_tile_width(file):
-    """Splitting up the file name to get width and buffer then adding to get overall width."""
+    """Split up the file name to get width and buffer then adding to get overall width."""
     filename = file.replace(".geojson", "")
     filename_split = filename.split("_")
 

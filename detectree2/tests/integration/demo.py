@@ -1,16 +1,9 @@
 import os
 import unittest
 
-import cv2
 import geopandas as gpd
 import pytest
 import rasterio
-from detectron2 import model_zoo
-from detectron2.config import get_cfg
-from detectron2.data import DatasetCatalog, MetadataCatalog
-from detectron2.engine import DefaultPredictor
-from detectron2.structures import BoxMode
-from detectron2.utils.visualizer import Visualizer
 
 
 class TestCase(unittest.TestCase):
@@ -56,7 +49,7 @@ class TestCase(unittest.TestCase):
     def test_train(self):
         """Integration test: Training on Paracou dataset for a single step.
 
-            Run on CPU.  
+        Runs on CPU.
         """
         from detectree2.models.train import (MyTrainer, register_train_data,
                                              setup_cfg)

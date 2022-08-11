@@ -24,7 +24,7 @@ def predict_on_data(
 ):
     """Make predictions on tiled data.
 
-    Predicts crowns for all png images present in a directory and outputs masks as jsons
+    Predicts crowns for all png images present in a directory and outputs masks as jsons.
     """
 
     pred_dir = os.path.join(directory, "predictions")

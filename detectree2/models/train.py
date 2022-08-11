@@ -510,16 +510,14 @@ def setup_cfg(
     return cfg
 
 
-def predictions_on_data(
-    directory=None,
-    predictor=DefaultTrainer,
-    trees_metadata=None,
-    save=True,
-    scale=1,
-    geos_exist=True,
-    num_predictions=0,
-):
-    """Prediction produced on a test folder."""
+def predictions_on_data(directory=None,
+                        predictor=DefaultTrainer,
+                        trees_metadata=None,
+                        save=True,
+                        scale=1,
+                        geos_exist=True,
+                        num_predictions=0):
+    """Prediction produced from a test folder and outputted to predictions folder."""
 
     test_location = directory + "/test"
     pred_dir = test_location + "/predictions"
@@ -548,7 +546,7 @@ def predictions_on_data(
             instance_mode=ColorMode.SEGMENTATION,
         )  # remove the colors of unsegmented pixels
         v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-        image = cv2.cvtColor(v.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
+        # image = cv2.cvtColor(v.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
         # display(Image.fromarray(image))
 
         # Creating the file name of the output file

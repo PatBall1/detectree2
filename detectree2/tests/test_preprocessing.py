@@ -2,7 +2,6 @@ import os
 import unittest
 
 import geopandas as gpd
-import pytest
 import rasterio
 
 
