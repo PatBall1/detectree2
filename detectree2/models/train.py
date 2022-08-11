@@ -37,8 +37,8 @@ from detectron2.utils.events import get_event_storage  # noqa:F401
 from detectron2.utils.events import EventStorage
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
-from IPython.display import display
-from PIL import Image
+# from IPython.display import display
+# from PIL import Image
 
 
 class LossEvalHook(HookBase):
@@ -548,7 +548,7 @@ def predictions_on_data(
         )  # remove the colors of unsegmented pixels
         v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
         image = cv2.cvtColor(v.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
-        display(Image.fromarray(image))
+        # display(Image.fromarray(image))
 
         # Creating the file name of the output file
         file_name_path = d["file_name"]
