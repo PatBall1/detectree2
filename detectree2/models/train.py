@@ -37,6 +37,7 @@ from detectron2.utils.events import get_event_storage  # noqa:F401
 from detectron2.utils.events import EventStorage
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
+
 # from IPython.display import display
 # from PIL import Image
 

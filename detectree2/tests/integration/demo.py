@@ -68,9 +68,9 @@ class TestCase(unittest.TestCase):
         trains = ('Paracou_train',)
         tests = ('Paracou_val',)
         out_dir = os.path.join(root_path, "paracou-out/train_outputs")
-        cfg = setup_cfg(model, trains, tests, eval_period=1, max_iter=1, out_dir=out_dir)
+        cfg = setup_cfg(model, trains, tests, ims_per_batch=1, eval_period=1, max_iter=1, out_dir=out_dir)
         cfg.MODEL.DEVICE = 'cpu'
-        trainer = MyTrainer(cfg, patience=4)
+        trainer = MyTrainer(cfg, patience=1)
         trainer.resume_or_load(resume=False)
         trainer.train()
 
