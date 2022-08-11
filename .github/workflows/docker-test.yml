@@ -15,7 +15,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-20.04
-    container: ma595/detectree-cpu-all:latest
+    container:  ma595/detectree-cpu-20.04:latest
     steps:
     - uses: actions/checkout@v3
     # - name: Set up Python 3.8
@@ -37,9 +37,14 @@ jobs:
       with:
         owner: 'ma595'
         repository: 'detectree2-data'
+    - name: install detectree2
+      run:
+        pwd
+        pip install .
     - name: pytest checks
       run: |
-        pwd
+        # git checkout -b test origin/matt/tests
+        # pwd
         ls
         ls detectree2
         ls detectree2-data
