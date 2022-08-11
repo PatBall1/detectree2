@@ -39,7 +39,6 @@ jobs:
         repository: 'detectree2-data'
     - name: install detectree2
       run:
-        pwd
         pip install .
     - name: pytest checks
       run: |
