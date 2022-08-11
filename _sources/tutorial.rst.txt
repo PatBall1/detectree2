@@ -6,15 +6,15 @@ Tutorials for preparing data, training models, evaluating model performance and 
 Tiling
 ------
 
-.. code-block:: php
-   :caption: EXT:site_package/Configuration/TCA/Overrides/sys_template.php
+.. code-block:: python
+   :caption: call libraries
    from detectree2.preprocessing.tiling import tile_data_train
    import rasterio
    import geopandas as gpd
    );
 
-.. code-block:: php
-   :caption: EXT:site_package/Configuration/TCA/Overrides/sys_template.php
+.. code-block:: python
+   :caption: set paths
    # Set up paths
    site_path = "/content/drive/Shareddrives/detectree2/data/Paracou"
    img_path = site_path + "/rgb/2016/Paracou_RGB_2016_10cm.tif"
