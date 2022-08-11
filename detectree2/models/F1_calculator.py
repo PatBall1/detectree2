@@ -1,36 +1,33 @@
-import json
+##Necessary imports
 import os
-from pathlib import Path
-
 import numpy as np
+import json
+from shapely.geometry import shape, Polygon
 import rasterio
 import rasterio.drivers
 from rasterio.mask import mask
-from shapely.geometry import Polygon, shape
+from pathlib import Path
 
 # Initialising the parent class so any attributes or functions that are common to both
 # features should be placed in here
 
 
 class Feature:
-    """Feature class to store.
-
-    Longer class information.
-    """
 
     def __init__(self, filename, directory, number, feature, lidar_filename,
-                 lidar_img, EPSG):    # noqa:N803
-        """Initialise a crown feature with all the required attributes.
-
-        Args:
-            filename: name of the file within the directory in questions
-            directory: the path to the file folder
-            number: a label added to each crown to allow for identifcation
-            feature: dictionary containing all the information about a crown
-            lidar_filename: the full path to the crown file that overlays with the lidar data
-            lidar_img: path to the lidar image of an entire region
-            EPSG: area code of tree location
+                 lidar_img, EPSG):
         """
+    Initialise a crown feature with all the required attributes
+
+    Args:
+        filename: name of the file within the directory in questions
+        directory: the path to the file folder
+        number: a label added to each crown to allow for identifcation
+        feature: dictionary containing all the information about a crown
+        lidar_filename: the full path to the crown file that overlays with the lidar data
+        lidar_img: path to the lidar image of an entire region
+        EPSG: area code of tree location
+    """
         self.filename = filename
         self.directory = directory
         self.number = number
@@ -41,11 +38,13 @@ class Feature:
         self.lidar_filename = lidar_filename
         self.lidar_img = lidar_img
         self.GIoU_other_feat_num = -1
-        self.poly_area()
-        self.tree_height()
+        self.PolyArea()
+        self.TreeHeight()
 
     def get_tuple_coords(self, coords):
-        """Converts coordinates' data structure from a list of lists to a list of tuples."""
+        """
+    Changes the coordinates from a list of lists to a list of tuples
+    """
         coord_tuples = []
 
         for entry in coords:
@@ -53,19 +52,18 @@ class Feature:
 
         return coord_tuples
 
-    def poly_area(self):
-        """Calculates the area of the feature from scaled geojson."""
+    def PolyArea(self):
+        "Calculates the area of the feature from scaled geojson"
         polygon = Polygon(self.get_tuple_coords(
             self.geometry['coordinates'][0]))
-
         self.crown_area = polygon.area
 
-    def tree_height(self):
-        """Crops the lidar tif to the features and then calculates the 95% greatest height to account for error at the top end.
-
-        If no lidar file is inputted than the height is given as 0
+    def TreeHeight(self):
         """
-        if self.lidar_img is None:
+    Crops the lidar tif to the features and then calculcates the 95% greatest height to account for error at the top end.
+    If no lidar file is inputted than the height is given as 0.
+    """
+        if self.lidar_img == None:
             self.height = 0
         else:
             with open(self.lidar_filename) as lidar_file:
@@ -79,26 +77,32 @@ class Feature:
                 'coordinates': [self.get_tuple_coords(lidar_coords)]
             }]
 
-            with rasterio.open(self.lidar_img) as src:
-                out_image, out_transform = mask(src, geo, crop=True)
-            out_meta = src.meta.copy()    # noqa:F841
+            # if the shape is too small it cannot be rastered and hence an error arises
+            try:
+                with rasterio.open(self.lidar_img) as src:
+                    out_image, out_transform = mask(src, geo, crop=True)
+                out_meta = src.meta.copy()
+                # remove all the values that are nodata values and recorded as negatives
+                fixed_array = (out_image[out_image > 0])
 
-            # remove all the values that are nodata values and recorded as negatives
-            fixed_array = (out_image[out_image > 0])
+                # the lidar data can have missed out areas or have noise meaning the array is empty
+                # hence we will give this feature height 0 so it is still used in calculating F1
+                # scores in general but ignored if any height restriction is used
+                if len(fixed_array) != 0:
+                    sorted_array = np.sort(fixed_array)
+                    self.height = sorted_array[int(len(sorted_array) * 0.95)]
+                else:
+                    self.height = 0
 
-            # the lidar data can have missed out areas or have noise meaning the array is empty
-            # hence we will give this feature height 0 so it is still used in calculating F1
-            # scores in general but ignored if any height restriction is used
-            if len(fixed_array) != 0:
-                sorted_array = np.sort(fixed_array)
-                self.height = sorted_array[int(len(sorted_array) * 0.95)]
-            else:
+            except Exception:
                 self.height = 0
 
 
 # Regular functions now
 def get_tile_width(file):
-    """Splitting up the file name to get width and buffer then adding to get overall width."""
+    """
+  Splitting up the file name to get width and buffer then adding to get overall width
+  """
     filename = file.replace(".geojson", "")
     filename_split = filename.split("_")
 
@@ -108,14 +112,16 @@ def get_tile_width(file):
 
 def feat_threshold_tests(feature_instance, conf_threshold, area_threshold,
                          boarder_filter, tile_width):
-    """Tests completed to see if a feature should be considered valid.
-
-    Checks if the feature is above the confidence threshold if there is a confidence score available (only applies in
-    predicted crown case).  Filters out features with areas too small which are often crowns that are from an adjacent
-    tile that have a bit spilt over.  Removes features within a boarder of the edge, boarder size is given by
-    boarder_filter proportion of the tile width.
-
     """
+  Tests completed to see if a feature should be considered valid:
+
+  Checks if the feature is above the confidence threshold if there is a confidence score
+    available (only applies in predicted crown case). 
+  Filters out features with areas too small which are often crowns that are from an 
+    adjacent tile that have a bit spilt over.
+  Removes features within a boarder of the edge, boarder size is given by boarder_filter
+    proportion of the tile width
+  """
     valid_feature = True
 
     if "Confidence score" in feature_instance.properties:
@@ -141,7 +147,10 @@ def feat_threshold_tests(feature_instance, conf_threshold, area_threshold,
 
 def initialise_feats(directory, file, lidar_filename, lidar_img, area_threshold,
                      conf_threshold, boarder_filter, tile_width, EPSG):
-    """Creates a list of all the features as objects of the class."""
+    """
+  Creates a list of all the features as objects of the class.
+
+  """
     with open(directory + file) as feat_file:
         feat_json = json.load(feat_file)
     feats = feat_json["features"]
@@ -163,7 +172,9 @@ def initialise_feats(directory, file, lidar_filename, lidar_img, area_threshold,
 
 
 def save_feats(tile_directory, all_feats):
-    """Collating all the information for the features back into a geojson to save."""
+    """
+  Collating all the information for the features back into a geojson to save
+  """
     adjusted_directory = tile_directory + "adjusted/"
     Path(adjusted_directory).mkdir(parents=True, exist_ok=True)
 
@@ -192,7 +203,10 @@ def save_feats(tile_directory, all_feats):
 
 
 def find_intersections(all_test_feats, all_pred_feats):
-    """Finds the greatest intersection between predicted and manual crowns and then updates objects."""
+    """
+  Finds the greatest intersection between the predicted and manual crowns and then
+  updates the objects respectively
+  """
 
     for pred_feat in all_pred_feats:
         for test_feat in all_test_feats:
@@ -218,7 +232,9 @@ def find_intersections(all_test_feats, all_pred_feats):
 
 
 def feats_tall_enough(all_feats, min_height):
-    """Stores the numbers of all the features above the minimun height."""
+    """
+  Stores the numbers of all the features above the minimun height
+  """
     tall_feat = []
 
     for feat in all_feats:
@@ -229,10 +245,10 @@ def feats_tall_enough(all_feats, min_height):
 
 
 def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):
-    """Determines number of true postives, false positives and false negatives.
-
-    Store the numbers of all test features which have true positives arise.
     """
+  Works out how many true postives, false positives and false negatives we have.
+  """
+    # Store the numbers of all test features which have true positives arise
     test_feats_tps = []
 
     tps = 0
@@ -269,7 +285,7 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):
 
 
 def prec_recall_func(total_tps, total_fps, total_fns):
-    """Calculate the precision and recall by standard formulas."""
+    "Calculate the precision and recall by standard formulas"
 
     precision = total_tps / (total_tps + total_fps)
     recall = total_tps / (total_tps + total_fns)
@@ -278,12 +294,12 @@ def prec_recall_func(total_tps, total_fps, total_fns):
 
 
 def f1_cal(precision, recall):
-    """Calculating the F1 score."""
+    "Calculating the F1 score"
 
     return (2 * precision * recall) / (precision + recall)
 
 
-def site_f1_score(tile_directory=None,
+def site_F1_score(tile_directory=None,
                   test_directory=None,
                   pred_directory=None,
                   lidar_img=None,
@@ -295,25 +311,25 @@ def site_f1_score(tile_directory=None,
                   scaling=list,
                   EPSG=None,
                   save=False):
-    """Calculating all the intersections of shapes in a pair of files and the area of the corresponding polygons.
-
+    """
+    Calculating all the intersections of shapes in a pair of files and the area of the corresponding polygons
+    
     Args:
-        tile_directory: path to the folder containing all of the tiles
-        test_directory: path to the folder containing just the test files
-        pred_directory: path to the folder containing the predictions and the reprojections
-        lidar_img: path to the lidar image of an entire region
-        IoU_threshold: minimum value of IoU such that the intersection can be considered a true positive
-        height_threshold: minimum height of the features to be considered
-        area_fraction_limit: proportion of the tile for which crowns with areas less than this will be ignored
-        conf_threshold: minimun confidence of a predicted feature so that it is considered
-        boarder_filter: bool of whether to remove boarder crowns, proportion of boarder to be used
-        in relation to tile size
-        scaling: x and y scaling used when tiling the image
-        EPSG: area code of tree location
-        save: bool to tell program whether the filtered crowns should be saved
+      tile_directory: path to the folder containing all of the tiles
+      test_directory: path to the folder containing just the test files
+      pred_directory: path to the folder containing the predictions and the reprojections
+      lidar_img: path to the lidar image of an entire region
+      IoU_threshold: minimum value of IoU such that the intersection can be considered a true positive
+      height_threshold: minimum height of the features to be considered
+      area_fraction_limit: proportion of the tile for which crowns with areas less than this will be ignored
+      conf_threshold: minimun confidence of a predicted feature so that it is considered
+      boarder_filter: (bool of whether to remove boarder crowns, proportion of boarder to be used in relation to tile size)
+      scaling: x and y scaling used when tiling the image
+      EPSG: area code of tree location
+      save: bool to tell program whether the filtered crowns should be saved
     """
 
-    if EPSG is None:
+    if EPSG == None:
         raise ValueError('Set the EPSG value')
 
     test_entries = os.listdir(test_directory)
@@ -364,8 +380,7 @@ def site_f1_score(tile_directory=None,
 
     try:
         prec, rec = prec_recall_func(total_tps, total_fps, total_fns)
-        # not used!
-        f1_score = f1_cal(prec, rec)    # noqa: F841
+        f1_score = f1_cal(prec, rec)
         print(f1_score)
-    except ZeroDivisionError:
+    except:
         print("ZeroDivisionError: Height threshold is too large.")
