@@ -4,10 +4,9 @@ import argparse
 import logging
 import pathlib
 
-from tqdm.autonotebook import tqdm
-
 from src.constants import DATA_PATH
 from src.data.gdrive import DriveAPI
+from tqdm.autonotebook import tqdm
 
 DEFAULT_SAVE_PATH = DATA_PATH / "gdrive"
 
@@ -116,8 +115,7 @@ if __name__ == "__main__":
         description="Google Drive TIF download script")
     parser.add_argument(
         "gdrive_folder_name",
-        help=
-        "The name of the gdrive folder from which to download the TIF files from.",
+        help="The name of the gdrive folder from which to download the TIF files from.",
         type=str,
     )
     parser.add_argument(
@@ -130,8 +128,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-r",
         "--recursive",
-        help=
-        "If True, copy content of gdrive folder recursively. Defaults to True.",
+        help="If True, copy content of gdrive folder recursively. Defaults to True.",
         type=bool,
         default=True,
         nargs="?",    # Argument is optional
