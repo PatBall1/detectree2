@@ -3,7 +3,7 @@ Tutorial
 
 Tutorials for preparing data, training models, evaluating model performance and making landscape level predictions
 
-Tiling
+Training a model
 ------
 
 .. code-block:: python
@@ -11,7 +11,10 @@ Tiling
    from detectree2.preprocessing.tiling import tile_data_train
    import rasterio
    import geopandas as gpd
-   );
+
+
+
+Set up the paths for the paths to the crown data and corresponding
 
 .. code-block:: python
    :caption: set paths
@@ -34,4 +37,3 @@ Tiling
    tile_width = 40
    tile_height = 40
    threshold = 0.6
-   );
