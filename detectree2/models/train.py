@@ -572,7 +572,23 @@ def predictions_on_data(directory=None,
                                                  d["file_name"])
             with open(output_file, "w") as dest:
                 json.dump(evaluations, dest)
+def read_data(out_dir):
+    """
+    Function that can read the class.txt file and return list of classes.
+    """
+    list = []
+    out_tif = out_dir + 'classes.txt'
+    # open file and read the content in a list
+    
+    with open(out_tif, 'r') as fp:
+        for line in fp:
+            # remove linebreak from a current name
+            # linebreak is the last character of each line
+            x = line[:-1]
 
+            # add current item to the list
+            list.append(x)
+    return(list)
 
 if __name__ == "__main__":
     train_location = "/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/"
