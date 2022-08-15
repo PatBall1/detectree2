@@ -8,7 +8,7 @@ A tutorial for:
 3. evaluating model performance
 4. making landscape level predictions
 
-Before getting started ensure detectron2 is installed either through
+Before getting started ensure detectree2 is installed either through
 
 .. code-block:: console
 
@@ -27,7 +27,6 @@ corresponding tree crown polgons that are readable by Geopandas
 results, manual crowns should be supplied as dense clusters rather than
 sparsely scattered across in the landscape
 
- 
 
 If you would just like to make predictions on an orthomosaic with a pre-trained
 model from the ``model_garden``, skip to part 4.
@@ -40,18 +39,18 @@ An example of the recommended file structure when training a new model is as fol
 
 .. code-block:: bash
 
-   ├──Danum                                       (site directory)
-   │  ├── rgb
-   │  │   └── Dan_2014_RGB_project_to_CHM.tif     (RGB orthomosaic in local UTM CRS)
-   │  └── crowns
-   │      └── Danum.gpkg                          (Crown polygons readable by geopandas e.g. Geopackage, shapefile)
-   │
-   └──Paracou                                     (site directory)
-      ├── rgb                                     
-      │   ├── Paracou_RGB_2016_10cm.tif           (RGB orthomosaic in local UTM CRS)
-      │   └── Paracou_RGB_2019.tif                (RGB orthomosaic in local UTM CRS)
-      └── crowns
-          └── UpdatedCrowns8.gpkg                 (Crown polygons readable by geopandas e.g. Geopackage, shapefile)
+   ├── Danum                                       (site directory)
+   │   ├── rgb
+   │   │   └── Dan_2014_RGB_project_to_CHM.tif     (RGB orthomosaic in local UTM CRS)
+   │   └── crowns
+   │       └── Danum.gpkg                          (Crown polygons readable by geopandas e.g. Geopackage, shapefile)
+   │ 
+   └── Paracou                                     (site directory)
+       ├── rgb                                     
+       │   ├── Paracou_RGB_2016_10cm.tif           (RGB orthomosaic in local UTM CRS)
+       │   └── Paracou_RGB_2019.tif                (RGB orthomosaic in local UTM CRS)
+       └── crowns
+           └── UpdatedCrowns8.gpkg                 (Crown polygons readable by geopandas e.g. Geopackage, shapefile)
 
 Here we have two site available to train on. Multiple site directories can be 
 included in the training and testing phase but only a single site directory is 
@@ -100,7 +99,6 @@ The tile size will depend on:
    threshold = 0.6
 
 
-
 Next we tile the data
 
 .. code-block:: python
@@ -122,13 +120,23 @@ Are data is now tiled and partitioned for training and model evaluation
 
 .. code-block:: bash
    
-   <new_file_structure>
-
+   └── Danum                                       (site directory)
+       ├── rgb
+       │   └── Dan_2014_RGB_project_to_CHM.tif     (RGB orthomosaic in local UTM CRS)
+       ├── crowns
+       │   └── Danum.gpkg
+       └── tiles                                   (tile directory)
+           ├── train
+           │   ├── fold_1                          (train fold folder)
+           │   ├── fold_2                          (train fold folder)
+           │   └── ...
+           └── test                                (test data folder)
+ 
 
 2. Training a model
 -------------------
 
-Resigister the training data. It is possiblet to set a validationfold for model
+Register the training data. It is possible to set a validation fold for model
 evaluation
 
 .. code-block:: python

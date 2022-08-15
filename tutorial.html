@@ -82,7 +82,7 @@
 <li><p>evaluating model performance</p></li>
 <li><p>making landscape level predictions</p></li>
 </ol>
-<p>Before getting started ensure detectron2 is installed either through</p>
+<p>Before getting started ensure detectree2 is installed either through</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">(.venv) $</span>pip install detectree2
 </pre></div>
 </div>
@@ -100,18 +100,18 @@ model from the <code class="docutils literal notranslate"><span class="pre">mode
 <section id="preparing-data">
 <h2>1. Preparing data<a class="headerlink" href="#preparing-data" title="Permalink to this heading"></a></h2>
 <p>An example of the recommended file structure when training a new model is as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>├──Danum                                       <span class="o">(</span>site directory<span class="o">)</span>
-│  ├── rgb
-│  │   └── Dan_2014_RGB_project_to_CHM.tif     <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
-│  └── crowns
-│      └── Danum.gpkg                          <span class="o">(</span>Crown polygons readable by geopandas e.g. Geopackage, shapefile<span class="o">)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>├── Danum                                       <span class="o">(</span>site directory<span class="o">)</span>
+│   ├── rgb
+│   │   └── Dan_2014_RGB_project_to_CHM.tif     <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
+│   └── crowns
+│       └── Danum.gpkg                          <span class="o">(</span>Crown polygons readable by geopandas e.g. Geopackage, shapefile<span class="o">)</span>
 │
-└──Paracou                                     <span class="o">(</span>site directory<span class="o">)</span>
-   ├── rgb
-   │   ├── Paracou_RGB_2016_10cm.tif           <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
-   │   └── Paracou_RGB_2019.tif                <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
-   └── crowns
-       └── UpdatedCrowns8.gpkg                 <span class="o">(</span>Crown polygons readable by geopandas e.g. Geopackage, shapefile<span class="o">)</span>
+└── Paracou                                     <span class="o">(</span>site directory<span class="o">)</span>
+    ├── rgb
+    │   ├── Paracou_RGB_2016_10cm.tif           <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
+    │   └── Paracou_RGB_2019.tif                <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
+    └── crowns
+        └── UpdatedCrowns8.gpkg                 <span class="o">(</span>Crown polygons readable by geopandas e.g. Geopackage, shapefile<span class="o">)</span>
 </pre></div>
 </div>
 <p>Here we have two site available to train on. Multiple site directories can be
@@ -167,13 +167,23 @@ spatial separation</p>
 </pre></div>
 </div>
 <p>Are data is now tiled and partitioned for training and model evaluation</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&lt;new_file_structure&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>└── Danum                                       <span class="o">(</span>site directory<span class="o">)</span>
+    ├── rgb
+    │   └── Dan_2014_RGB_project_to_CHM.tif     <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
+    ├── crowns
+    │   └── Danum.gpkg
+    └── tiles                                   <span class="o">(</span>tile directory<span class="o">)</span>
+        ├── train
+        │   ├── fold_1                          <span class="o">(</span>train fold folder<span class="o">)</span>
+        │   ├── fold_2                          <span class="o">(</span>train fold folder<span class="o">)</span>
+        │   └── ...
+        └── <span class="nb">test</span>                                <span class="o">(</span><span class="nb">test</span> data folder<span class="o">)</span>
 </pre></div>
 </div>
 </section>
 <section id="training-a-model">
 <h2>2. Training a model<a class="headerlink" href="#training-a-model" title="Permalink to this heading"></a></h2>
-<p>Resigister the training data. It is possiblet to set a validationfold for model
+<p>Register the training data. It is possible to set a validation fold for model
 evaluation</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_location</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/&quot;</span>
 <span class="n">register_train_data</span><span class="p">(</span><span class="n">train_location</span><span class="p">,</span> <span class="s2">&quot;Paracou&quot;</span><span class="p">,</span> <span class="n">val_fold</span><span class="p">)</span>
