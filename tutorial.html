@@ -82,7 +82,7 @@
 <li><p>evaluating model performance</p></li>
 <li><p>making landscape level predictions</p></li>
 </ol>
-<p>Before getting started ensure <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> is installed either through</p>
+<p>Before getting started ensure detectron2 is installed either through</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">(.venv) $</span>pip install detectree2
 </pre></div>
 </div>
@@ -90,11 +90,11 @@
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">(.venv) $</span>conda install detectree2 -c conda-forge
 </pre></div>
 </div>
-<p>To train a model you will need an orthomosaic (as <code class="docutils literal notranslate"><span class="pre">&lt;orthmosaic.tif</span></code>) and
-corresponding tree crown polgons that are readable by Geopandas (e.g.</p>
-<blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">&lt;crowns_polygon&gt;.gpkg</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;crowns_polygon&gt;.shp</span></code>). For the best results,</p>
-</div></blockquote>
+<p>To train a model you will need an orthomosaic (as <code class="docutils literal notranslate"><span class="pre">&lt;orthmosaic.tif</span></code>) and</p>
+<p>corresponding tree crown polgons that are readable by Geopandas
+(e.g. <code class="docutils literal notranslate"><span class="pre">&lt;crowns_polygon&gt;.gpkg</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;crowns_polygon&gt;.shp</span></code>). For the best
+results, manual crowns should be supplied as dense clusters rather than
+sparsely scattered across in the landscape</p>
 <p>If you would just like to make predictions on an orthomosaic with a pre-trained
 model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code>, skip to part 4.</p>
 <section id="preparing-data">
