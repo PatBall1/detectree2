@@ -1,3 +1,4 @@
+from http.client import REQUEST_URI_TOO_LONG
 import json
 import os
 import random
@@ -8,7 +9,7 @@ import geopandas as gpd
 from detectron2.engine import DefaultPredictor
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 from fiona.crs import from_epsg
-from shapely.geometry import box
+from shapely.geometry import box, shape
 
 from detectree2.models.train import get_filenames
 
@@ -143,6 +144,46 @@ def stitch_crowns(folder: str, shift: int = 1):
         crowns = crowns.append(crowns_tile)
         # print(crowns)
     return crowns
+
+
+def calc_iou(shape1, shape2):
+    """Calculate the IoU of two shapes
+    """
+    iou = shape1.intersection(shape2).area / shape1.union(shape2).area
+    return iou
+
+def clean_crowns(crowns: gpd.GeoDataFrame):
+    """Clean overlapping crowns
+  
+    Outputs can contain highly overlapping crowns including in the buffer region.
+    This function removes crowns with a high degree of overlap with others but a 
+    lower Confidence Score.
+    """
+    crowns_out = gpd.GeoDataFrame()
+    for index, row in crowns.iterrows():  #iterate over each crown
+        if index % 1000 == 0:
+            print(str(index) + " / " + str(len(crowns)) + " cleaned") 
+        if crowns.intersects(shape(row.geometry)).sum() == 1: # if there is not a crown interesects with the row (other than itself)
+            crowns_out = crowns_out.append(row) # retain it
+        else:
+            intersecting = crowns.loc[crowns.intersects(shape(row.geometry))] # Find those crowns that intersect with it
+            intersecting = intersecting.reset_index().drop("index", axis=1)
+            iou = []
+            for index1, row1 in intersecting.iterrows(): # iterate over those intersecting crowns
+                #print(row1.geometry)
+                iou.append(calc_iou(row.geometry, row1.geometry)) # Calculate the IoU with each of those crowns
+            #print(iou)
+            intersecting['iou'] = iou
+            matches = intersecting[intersecting['iou'] > 0.75]  # Remove those crowns with a poor match
+            matches = matches.sort_values('Confidence score', ascending=False).reset_index().drop('index', axis=1)
+            match = matches.loc[[0]]  # Of the remaining crowns select the crown with the highest confidence
+            if match['iou'][0] < 1:   # If the most confident is not the initial crown
+                continue
+            else:
+                match = match.drop('iou', axis=1)
+                #print(index)
+                crowns_out = crowns_out.append(match)
+    return crowns_out.reset_index()
 
 
 if __name__ == "__main__":
