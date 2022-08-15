@@ -27,6 +27,7 @@ corresponding tree crown polgons that are readable by Geopandas
 results, manual crowns should be supplied as dense clusters rather than
 sparsely scattered across in the landscape
 
+
 If you would just like to make predictions on an orthomosaic with a pre-trained
 model from the ``model_garden``, skip to part 4.
 
