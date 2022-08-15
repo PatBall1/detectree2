@@ -42,7 +42,6 @@ jobs:
         export C_INCLUDE_PATH=/usr/include/gdal
         pip3 install .
     - name: flake8 checks
-      continue-on-error: true
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 detectree2 --count --select=E9,F63,F7,F82 --show-source --statistics
