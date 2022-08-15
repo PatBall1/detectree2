@@ -8,7 +8,7 @@ A tutorial for:
 3. evaluating model performance
 4. making landscape level predictions
 
-Before getting started ensure ``detectron2`` is installed either through
+Before getting started ensure detectron2 is installed either through
 
 .. code-block:: console
 
@@ -21,8 +21,12 @@ or
    (.venv) $conda install detectree2 -c conda-forge
 
 To train a model you will need an orthomosaic (as ``<orthmosaic.tif``) and
-corresponding tree crown polgons that are readable by Geopandas (e.g.
- ``<crowns_polygon>.gpkg``, ``<crowns_polygon>.shp``). For the best results,
+
+corresponding tree crown polgons that are readable by Geopandas
+(e.g. ``<crowns_polygon>.gpkg``, ``<crowns_polygon>.shp``). For the best
+results, manual crowns should be supplied as dense clusters rather than
+sparsely scattered across in the landscape
+
  
 
 If you would just like to make predictions on an orthomosaic with a pre-trained
