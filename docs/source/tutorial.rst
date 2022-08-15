@@ -132,10 +132,10 @@ Are data is now tiled and partitioned for training and model evaluation
            └── test                                (test data folder)
  
 
-1. Training a model
+2. Training a model
 -------------------
 
-Resigister the training data. It is possiblet to set a validationfold for model
+Register the training data. It is possible to set a validation fold for model
 evaluation
 
 .. code-block:: python
