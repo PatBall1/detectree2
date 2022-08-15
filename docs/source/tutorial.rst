@@ -8,7 +8,7 @@ A tutorial for:
 3. evaluating model performance
 4. making landscape level predictions
 
-Before getting started ensure ``detectron2`` is installed either through
+Before getting started ensure detectree2 is installed either through
 
 .. code-block:: console
 
