@@ -1,7 +1,7 @@
-from http.client import REQUEST_URI_TOO_LONG
 import json
 import os
 import random
+from http.client import REQUEST_URI_TOO_LONG
 from pathlib import Path
 
 import cv2
