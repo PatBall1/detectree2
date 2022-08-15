@@ -56,9 +56,8 @@ def tile_data(
 ) -> None:
     """Tiles up orthomosaic for making predictions on.
 
-    Tiles up full othomosaic into managable chunks to make predictions on. Use
-    tile_data_train to generate tiled training data. A bug exists on some input
-    raster types whereby outputed tiles are completely black - the dtype_bool
+    Tiles up full othomosaic into managable chunks to make predictions on. Use tile_data_train to generate tiled
+    training data. A bug exists on some input raster types whereby outputed tiles are completely black - the dtype_bool
     argument should be switched if this is the case.
 
     Args:
@@ -182,8 +181,8 @@ def tile_data_train(  # noqa: C901
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns into training tiles.
 
-    A threshold can be used to ensure a good coverage of crowns across a tile -
-    tiles that do not have sufficient coverage are rejected
+    A threshold can be used to ensure a good coverage of crowns across a tile.  tiles that do not have sufficient
+    coverage are rejected.
 
     Args:
         data: Orthomosaic as a rasterio object in a UTM type projection
