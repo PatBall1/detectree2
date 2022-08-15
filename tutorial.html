@@ -41,7 +41,10 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#training-a-model">Training a model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#preparing-data">1. Preparing data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#training-a-model">2. Training a model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluating-model-performance">3. Evaluating model performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#generating-landscape-predictions">4. Generating landscape predictions</a></li>
 </ul>
 </li>
 </ul>
@@ -72,21 +75,59 @@
              
   <section id="tutorial">
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this heading"></a></h1>
-<p>Tutorials for preparing data, training models, evaluating model performance and making landscape level predictions</p>
-<section id="training-a-model">
-<h2>Training a model<a class="headerlink" href="#training-a-model" title="Permalink to this heading"></a></h2>
-<div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">call libraries</span><a class="headerlink" href="#id1" title="Permalink to this code"></a></div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data_train</span>
+<p>A tutorial for:</p>
+<ol class="arabic simple">
+<li><p>preparing data</p></li>
+<li><p>training models</p></li>
+<li><p>evaluating model performance</p></li>
+<li><p>making landscape level predictions</p></li>
+</ol>
+<p>Before getting started ensure <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> is installed either through</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">(.venv) $</span>pip install detectree2
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">(.venv) $</span>conda install detectree2 -c conda-forge
+</pre></div>
+</div>
+<p>To train a model you will need an orthomosaic (as <code class="docutils literal notranslate"><span class="pre">&lt;orthmosaic.tif</span></code>) and
+corresponding tree crown polgons that are readable by Geopandas (e.g.</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">&lt;crowns_polygon&gt;.gpkg</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;crowns_polygon&gt;.shp</span></code>). For the best results,</p>
+</div></blockquote>
+<p>If you would just like to make predictions on an orthomosaic with a pre-trained
+model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code>, skip to part 4.</p>
+<section id="preparing-data">
+<h2>1. Preparing data<a class="headerlink" href="#preparing-data" title="Permalink to this heading"></a></h2>
+<p>An example of the recommended file structure when training a new model is as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>├──Danum                                       <span class="o">(</span>site directory<span class="o">)</span>
+│  ├── rgb
+│  │   └── Dan_2014_RGB_project_to_CHM.tif     <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
+│  └── crowns
+│      └── Danum.gpkg                          <span class="o">(</span>Crown polygons readable by geopandas e.g. Geopackage, shapefile<span class="o">)</span>
+│
+└──Paracou                                     <span class="o">(</span>site directory<span class="o">)</span>
+   ├── rgb
+   │   ├── Paracou_RGB_2016_10cm.tif           <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
+   │   └── Paracou_RGB_2019.tif                <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
+   └── crowns
+       └── UpdatedCrowns8.gpkg                 <span class="o">(</span>Crown polygons readable by geopandas e.g. Geopackage, shapefile<span class="o">)</span>
+</pre></div>
+</div>
+<p>Here we have two site available to train on. Multiple site directories can be
+included in the training and testing phase but only a single site directory is
+required.
+If available, several RGB orthomosaics can be included in a single site
+directory (see e.g <code class="docutils literal notranslate"><span class="pre">Paracou</span> <span class="pre">-&gt;</span> <span class="pre">RGB</span></code>).</p>
+<p>We will call functions to from <code class="docutils literal notranslate"><span class="pre">detectree2</span></code>’s’ tiling and training modules.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data_train</span><span class="p">,</span> <span class="n">to_traintest_folders</span>
+<span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">register_train_data</span><span class="p">,</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
 <span class="kn">import</span> <span class="nn">rasterio</span>
 <span class="kn">import</span> <span class="nn">geopandas</span> <span class="kn">as</span> <span class="nn">gpd</span>
 </pre></div>
 </div>
-</div>
-<p>Set up the paths for the crown data and corresponding</p>
-<div class="literal-block-wrapper docutils container" id="id2">
-<div class="code-block-caption"><span class="caption-text">set paths</span><a class="headerlink" href="#id2" title="Permalink to this code"></a></div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set up paths</span>
+<p>Set up the paths for the orthomosaic and corresponding manual crown data.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set up input paths</span>
 <span class="n">site_path</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/Paracou&quot;</span>
 <span class="n">img_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/rgb/2016/Paracou_RGB_2016_10cm.tif&quot;</span>
 <span class="n">crown_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/crowns/220619_AllSpLabelled.gpkg&quot;</span>
@@ -99,15 +140,66 @@
 <span class="c1"># Read in crowns (then filter by an attribute?)</span>
 <span class="n">crowns</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">crown_path</span><span class="p">)</span>
 <span class="n">crowns</span> <span class="o">=</span> <span class="n">crowns</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-
-<span class="c1"># Set tiling parameters</span>
+</pre></div>
+</div>
+<p>Set up the tiling parameters.</p>
+<p>The tile size will depend on:
+- The resolution of your imagery</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set tiling parameters</span>
 <span class="nb">buffer</span> <span class="o">=</span> <span class="mi">30</span>
 <span class="n">tile_width</span> <span class="o">=</span> <span class="mi">40</span>
 <span class="n">tile_height</span> <span class="o">=</span> <span class="mi">40</span>
 <span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.6</span>
 </pre></div>
 </div>
+<p>Next we tile the data</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tile_data_train</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">crowns</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
+</pre></div>
 </div>
+<dl class="simple">
+<dt>Send geojsons to train folder (with sub-folders for k-fold cross validation)</dt><dd><p>and test folder.</p>
+</dd>
+</dl>
+<p>The approximate proportion of data to reserve for testing.
+Automatically removes training tiles that overlap with test tiles, ensuring
+spatial separation</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">to_traintest_folders</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">test_frac</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Are data is now tiled and partitioned for training and model evaluation</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&lt;new_file_structure&gt;
+</pre></div>
+</div>
+</section>
+<section id="training-a-model">
+<h2>2. Training a model<a class="headerlink" href="#training-a-model" title="Permalink to this heading"></a></h2>
+<p>Resigister the training data. It is possiblet to set a validationfold for model
+evaluation</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_location</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/&quot;</span>
+<span class="n">register_train_data</span><span class="p">(</span><span class="n">train_location</span><span class="p">,</span> <span class="s2">&quot;Paracou&quot;</span><span class="p">,</span> <span class="n">val_fold</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Supply the <code class="docutils literal notranslate"><span class="pre">base_model</span></code> from Detectron2’s  <code class="docutils literal notranslate"><span class="pre">model_zoo</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the base (pre-trained) model from the detectron2 model_zoo</span>
+<span class="n">base_model</span> <span class="o">=</span> <span class="s2">&quot;COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml&quot;</span>
+
+<span class="c1"># trained_model = &quot;/content/drive/Shareddrives/detectree2/models/220629_ParacouSepilokDanum_JB.pth&quot;</span>
+<span class="n">trains</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Paracou_train&quot;</span><span class="p">,</span> <span class="s2">&quot;Paracou2019_train&quot;</span><span class="p">,</span> <span class="s2">&quot;ParacouUAV_train&quot;</span><span class="p">,</span> <span class="s2">&quot;Danum_train&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokEast_train&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokWest_train&quot;</span><span class="p">)</span>
+<span class="n">tests</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Paracou_val&quot;</span><span class="p">,</span> <span class="s2">&quot;Paracou2019_val&quot;</span><span class="p">,</span> <span class="s2">&quot;ParacouUAV_val&quot;</span><span class="p">,</span> <span class="s2">&quot;Danum_val&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokEast_val&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokWest_val&quot;</span><span class="p">)</span>
+
+<span class="c1">#trains = (&quot;Paracou_train&quot;, &quot;Paracou2019_train&quot;)</span>
+<span class="c1">#tests = (&quot;Paracou_val&quot;, &quot;Paracou2019_val&quot;)</span>
+<span class="n">out_dir</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/220809_train_outputs&quot;</span>
+
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">workers</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">eval_period</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="n">out_dir</span><span class="p">)</span> <span class="c1"># update_model arg can be used to load in trained  model</span>
+</pre></div>
+</div>
+</section>
+<section id="evaluating-model-performance">
+<h2>3. Evaluating model performance<a class="headerlink" href="#evaluating-model-performance" title="Permalink to this heading"></a></h2>
+</section>
+<section id="generating-landscape-predictions">
+<h2>4. Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Permalink to this heading"></a></h2>
 </section>
 </section>
 
