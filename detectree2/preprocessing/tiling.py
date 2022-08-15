@@ -174,8 +174,8 @@ def tile_data_train(data: DatasetReader,
                     dtype_bool: bool = False) -> None:
     """Tiles up orthomosaic and corresponding crowns into training tiles.
 
-    A threshold can be used to ensure a good coverage of crowns across a tile
-    rejecting tiles that do not have sufficient coverage
+    A threshold can be used to ensure a good coverage of crowns across a tile -
+    tiles that do not have sufficient coverage are rejected
 
     Args:
         data: Orthomosaic as a rasterio object in a UTM type projection
@@ -192,6 +192,7 @@ def tile_data_train(data: DatasetReader,
     """
 
     # TODO: Clip data to crowns straight away to speed things up
+    # TODO: Tighten up epsg handling
     out_path = Path(out_dir)
     os.makedirs(out_path, exist_ok=True)
     tilename = Path(data.name).stem
@@ -248,9 +249,9 @@ def tile_data_train(data: DatasetReader,
             sumzero = zero_mask.sum()
             sumnan = nan_mask.sum()
             totalpix = out_img.shape[1] * out_img.shape[2]
-            if sumzero > 0.25 * totalpix:
+            if sumzero > 0.25 * totalpix: # reject tiles with many 0 cells
                 continue
-            elif sumnan > 0.25 * totalpix:
+            elif sumnan > 0.25 * totalpix: # reject tiles with many NaN cells
                 continue
 
             # out_img = out_img.astype("uint8")
@@ -302,7 +303,7 @@ def tile_data_train(data: DatasetReader,
             b = arr[2]
 
             # stack up the bands in an order appropriate for saving with cv2, then rescale to the correct 0-255 range
-            # for cv2. BGR for cv2
+            # for cv2. BGR ordering is correct for cv2 (and detectron2)
             rgb = np.dstack((b, g, r))
 
             if np.max(g) > 255:
