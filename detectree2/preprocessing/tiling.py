@@ -390,10 +390,10 @@ def image_details(fileroot):
         Box structure
     """
     image_info = fileroot.split("_")
-    minx = int(image_info[-4])
-    miny = int(image_info[-3])
-    tile_width = int(image_info[-2])
-    buffer = int(image_info[-1])
+    minx = int(image_info[-5])
+    miny = int(image_info[-4])
+    tile_width = int(image_info[-3])
+    buffer = int(image_info[-2])
 
     xbox_coords = (minx - buffer, minx + tile_width + buffer)
     ybox_coords = (miny - buffer, miny + tile_width + buffer)
