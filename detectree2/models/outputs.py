@@ -36,7 +36,10 @@ def polygon_from_mask(masked_arr):
     # area = mask_util.area(RLE) # not used
     [x, y, w, h] = cv2.boundingRect(masked_arr)
 
-    return segmentation[0]    # , [x, y, w, h], area
+    if len(segmentation) > 0:
+        return segmentation[0] # , [x, y, w, h], area
+    else:
+        return 0
 
 
 def to_eval_geojson(directory=None):    # noqa:N803
@@ -93,6 +96,8 @@ def to_eval_geojson(directory=None):    # noqa:N803
                     # integers so a bit of info on position is lost
                     mask_of_coords = mask_util.decode(crown)
                     crown_coords = polygon_from_mask(mask_of_coords)
+                    if crown_coords == 0:
+                        continue
                     rescaled_coords = []
 
                     # coords from json are in a list of [x1, y1, x2, y2,... ] so convert them to [[x1, y1], ...]
@@ -199,6 +204,8 @@ def project_to_geojson(
                     # integers so a bit of info on position is lost
                     mask_of_coords = mask_util.decode(crown)
                     crown_coords = polygon_from_mask(mask_of_coords)
+                    if crown_coords == 0:
+                        continue
                     moved_coords = []
 
                     # coords from json are in a list of [x1, y1, x2, y2,... ] so convert them to [[x1, y1], ...]
@@ -318,6 +325,8 @@ def stitch_crowns(folder: str, shift: int = 1):
         # print(crowns_tile)
         crowns = crowns.append(crowns_tile)
         # print(crowns)
+    crowns = crowns.drop("index_right", axis=1).reset_index().drop("index", axis=1)
+    #crowns = crowns.drop("index", axis=1)
     return crowns
 
 
