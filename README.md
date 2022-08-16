@@ -3,7 +3,10 @@
  [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
  <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
-<sub>Code developed by Seb Hickman, James Ball, Thomas Koay, Panagiotis Ioannou and James Hinton in the [Forest Ecology and Conservation Group](https://coomeslab.org/) at the University of Cambridge.
+Python package for automatic tree crown delineation based on Mask R-CNN. Pre-trained models can be picked in the `model_garden`.
+A tutorial on how to prepare data, train models and make predictions is available [here](https://patball1.github.io/detectree2/tutorial.html).
+
+<sub>Code developed by Seb Hickman, James Ball, Thomas Koay, Panagiotis Ioannou, James Hinton and Matthew Archer in the [Forest Ecology and Conservation Group](https://coomeslab.org/) at the University of Cambridge.
 The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge [Conservation Research Institute](https://www.conservation.cam.ac.uk/).
 Original MRes project repo at https://github.com/shmh40/detectreeRGB.</sub>
 
@@ -18,7 +21,7 @@ Sebastian H M Hickman, James G C Ball, Tobias D Jackson, Xian Jing Koay, James H
 - Python 3.8+
 - [gdal](https://gdal.org/download.html) geospatial libraries
 - [PyTorch ≥ 1.8 and torchvision](https://pytorch.org/get-started/previous-versions/) versions that match
-
+- For training models GPU access (with CUDA) is recommended
 
 e.g.
 ```pip3 install torch torchvision torchaudio```
@@ -26,11 +29,15 @@ e.g.
 
 ## Installation
 
-To install run:
+### pip
 
 ```pip install git+https://github.com/PatBall1/detectree2.git```
 
 Currently works on Google Colab (Pro version recommended). May struggle on clusters if geospatial libraries are not configured.
+
+### conda
+
+```conda install detectree2 -c conda-forge```
 
 ## Getting started
 
@@ -44,14 +51,14 @@ The standard workflow includes:
 
 Training crowns are used to teach the network to delineate tree crowns
 <p align="center">
-<img width="500" align="center" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/Workflow_Diagram2_a.png#gh-light-mode-only>
-<img width="500" align="center" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/Workflow_Diagram2_b.png#gh-dark-mode-only> 
+<img width="500" align="center" alt="predictions" src= ./report/figures/Workflow_Diagram2_a.png#gh-light-mode-only>
+<img width="500" align="center" alt="predictions" src= ./report/figures/Workflow_Diagram2_b.png#gh-dark-mode-only> 
 </p>
 
 
 Here is an example image of the predictions made by Detectree2.
 <p align="center">
-<img width="700" align="center" alt="predictions" src= https://github.com/patball1/detectree2/blob/master/report/figures/plot_13_285520_583300.jpg > 
+<img width="700" align="center" alt="predictions" src= ./report/figures/prediction_paracou.png > 
 </p>
 
 ## To do
@@ -66,24 +73,32 @@ Here is an example image of the predictions made by Detectree2.
 ### Tracking tropical tree growth and mortality
 
 <p align="center">
-<img width="500" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/growth_mortality_bootstrap.png > 
+<img width="500" alt="predicting" src= ./report/figures/growth_mortality_bootstrap.png > 
 </p>
 
 ### Counting urban trees (Buffalo, NY)
 
 <p align="center">
-<img width="700" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/urban.png > 
+<img width="700" alt="predicting" src= ./report/figures/urban.png > 
 </p>
 
 ### Multi-temporal tree crown segmentation
 
 <p align="center">
-<img width="700" alt="predicting" src= https://github.com/patball1/detectree2/blob/master/report/figures/seg.gif > 
+<img width="700" alt="predicting" src= ./report/figures/seg.gif > 
 </p>
 
 ### Liana detection and infestation mapping
 
+*In development*
+
+<p align="center">
+<img width="700" alt="predicting" src= ./report/figures/Lianas_detect.jpg > 
+</p>
+
 ### Tree species identification and mapping
+
+*In development*
 
 ## Project Organization
 ```
