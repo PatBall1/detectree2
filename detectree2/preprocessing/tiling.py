@@ -181,7 +181,7 @@ def tile_data_train(  # noqa: C901
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns into training tiles.
 
-    A threshold can be used to ensure a good coverage of crowns across a tile.  tiles that do not have sufficient
+    A threshold can be used to ensure a good coverage of crowns across a tile. Tiles that do not have sufficient
     coverage are rejected.
 
     Args:
