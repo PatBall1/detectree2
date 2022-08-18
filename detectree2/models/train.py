@@ -157,7 +157,8 @@ class LossEvalHook(HookBase):
     def after_train(self):
         # Select the model with the best AP50
         index = self.trainer.APs.index(max(self.trainer.APs)) + 1
-        self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + "/model_" + str(index) + ".pth")
+        time.sleep(10)
+        self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' + str(index) + '.pth')
 
 
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
