@@ -133,8 +133,8 @@ def to_eval_geojson(directory=None):  # noqa:N803
 def project_to_geojson(data, output_fold=None, pred_fold=None):  # noqa:N803
     """Projects json predictions back in geographic space.
 
-    Takes a json and changes it to a geojson so it can overlay with
-    orthomosaic. Another copy is produced to overlay with PNGs.
+    Takes a json and changes it to a geojson so it can overlay with orthomosaic. Another copy is produced to overlay
+    with PNGs.
     """
 
     Path(output_fold).mkdir(parents=True, exist_ok=True)

@@ -267,18 +267,9 @@ def f1_cal(precision, recall):
     return (2 * precision * recall) / (precision + recall)
 
 
-def site_f1_score(tile_directory=None,
-                  test_directory=None,
-                  pred_directory=None,
-                  lidar_img=None,
-                  IoU_threshold=0,
-                  height_threshold=0,
-                  area_fraction_limit=0.0005,
-                  conf_threshold=0,
-                  border_filter=tuple,
-                  scaling=list,
-                  EPSG=None,
-                  save=False):
+def site_f1_score(tile_directory=None, test_directory=None, pred_directory=None, lidar_img=None, IoU_threshold=0,
+                  height_threshold=0, area_fraction_limit=0.0005, conf_threshold=0, border_filter=tuple, scaling=list,
+                  EPSG=None, save=False):
     """Calculating all the intersections of shapes in a pair of files and the area of the corresponding polygons.
 
     Args:
