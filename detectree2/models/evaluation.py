@@ -117,14 +117,14 @@ def get_tile_width(file):
 
 
 def feat_threshold_tests(feature_instance, conf_threshold, area_threshold,
-                         boarder_filter, tile_width):
+                         border_filter, tile_width):
     """Tests completed to see if a feature should be considered valid.
 
     Checks if the feature is above the confidence threshold if there is a 
     confidence score available (only applies in predicted crown case).  Filters
     out features with areas too small which are often crowns that are from an 
-    adjacent tile that have a bit spilt over. Removes features within a boarder
-    of the edge, boarder size is given by boarder_filter proportion of the tile
+    adjacent tile that have a bit spilt over. Removes features within a border
+    of the edge, border size is given by border_filter proportion of the tile
     width.
 
     """
@@ -139,8 +139,8 @@ def feat_threshold_tests(feature_instance, conf_threshold, area_threshold,
 
     # variables stand for tile width and edge buffer
     TW = tile_width
-    if valid_feature and boarder_filter[0]:
-        EB = tile_width * boarder_filter[1]
+    if valid_feature and border_filter[0]:
+        EB = tile_width * border_filter[1]
         for coords in feature_instance.geometry['coordinates'][0]:
             if (-EB <= coords[0] <= EB or -EB <= coords[1] <= EB
                     or TW - EB <= coords[0] <= TW + EB
@@ -158,7 +158,7 @@ def initialise_feats(
     lidar_img,
     area_threshold,
     conf_threshold,
-    boarder_filter,
+    border_filter,
     tile_width,
     EPSG
 ):
@@ -174,7 +174,7 @@ def initialise_feats(
                            lidar_img, EPSG)
 
         if feat_threshold_tests(feat_obj, conf_threshold, area_threshold,
-                                boarder_filter, tile_width):
+                                border_filter, tile_width):
             all_feats.append(feat_obj)
             count += 1
         else:
@@ -314,7 +314,7 @@ def site_f1_score(tile_directory=None,
                   height_threshold=0,
                   area_fraction_limit=0.0005,
                   conf_threshold=0,
-                  boarder_filter=tuple,
+                  border_filter=tuple,
                   scaling=list,
                   EPSG=None,
                   save=False):
@@ -330,7 +330,7 @@ def site_f1_score(tile_directory=None,
         height_threshold: minimum height of the features to be considered
         area_fraction_limit: proportion of the tile for which crowns with areas less than this will be ignored
         conf_threshold: minimun confidence of a predicted feature so that it is considered
-        boarder_filter: bool of whether to remove boarder crowns, proportion of boarder to be used
+        border_filter: bool of whether to remove border crowns, proportion of border to be used
         in relation to tile size
         scaling: x and y scaling used when tiling the image
         EPSG: area code of tree location
@@ -357,7 +357,7 @@ def site_f1_score(tile_directory=None,
                                                        "_lidar.geojson")
             all_test_feats = initialise_feats(test_directory, file, test_lidar,
                                               lidar_img, area_threshold,
-                                              conf_threshold, boarder_filter,
+                                              conf_threshold, border_filter,
                                               tile_width, EPSG)
 
             pred_file_path = "Prediction_" + file.replace(
@@ -367,7 +367,7 @@ def site_f1_score(tile_directory=None,
             all_pred_feats = initialise_feats(pred_directory, pred_file_path,
                                               pred_lidar, lidar_img,
                                               area_threshold, conf_threshold,
-                                              boarder_filter, tile_width, EPSG)
+                                              border_filter, tile_width, EPSG)
 
             if save:
                 save_feats(tile_directory, all_test_feats)
@@ -390,7 +390,8 @@ def site_f1_score(tile_directory=None,
         prec, rec = prec_recall_func(total_tps, total_fps, total_fns)
         # not used!
         f1_score = f1_cal(prec, rec)    # noqa: F841
-        print(f1_score)
+        print("Precision  ", "Recall  ", "F1")
+        print(prec, rec, f1_score)
     except ZeroDivisionError:
         print("ZeroDivisionError: Height threshold is too large.")
 

@@ -175,8 +175,9 @@ class MyTrainer(DefaultTrainer):
         _type_: _description_
     """
 
-    def __init__(self, cfg, patience):
+    def __init__(self, cfg, patience, resize):
         self.patience = patience
+        self.resize = resize
         super().__init__(cfg)
 
     def train(self):
@@ -226,8 +227,8 @@ class MyTrainer(DefaultTrainer):
     @classmethod
     def build_evaluator(cls, cfg, dataset_name, output_folder=None):
         if output_folder is None:
-            os.makedirs("eval_2", exist_ok=True)
-            output_folder = "eval_2"
+            os.makedirs("eval", exist_ok=True)
+            output_folder = "eval"
         return COCOEvaluator(dataset_name, cfg, True, output_folder)
 
     def build_hooks(self):
@@ -244,33 +245,38 @@ class MyTrainer(DefaultTrainer):
         )
         return hooks
 
-    def build_train_loader(cls, cfg):
+    def build_train_loader(self, cls, cfg):
         """Summary.
           Args:
               cfg (_type_): _description_
 
           Returns:
               _type_: _description_
-          """
+        """
+        augmentations=[
+            T.RandomBrightness(0.8, 1.8),
+            T.RandomContrast(0.6, 1.3),
+            T.RandomSaturation(0.8, 1.4),
+            T.RandomRotation(angle=[90, 90], expand=False),
+            T.RandomLighting(0.7),
+            T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
+            T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
+        ]
+        if self.resize:
+            augmentations.append(T.Resize((1000, 1000)))
+        elif self.resize == "random":
+            augmentations.append(T.Resize((1000, 1000)))
+            augmentations.append(T.ResizeScale(800/1000, 1333/800, 1000, 1000))
         return build_detection_train_loader(
             cfg,
             mapper=DatasetMapper(
                 cfg,
                 is_train=True,
-                augmentations=[
-                    T.Resize((800, 800)),    # is this necessary/helpful?
-                    # T.ResizeScale
-                    T.RandomBrightness(0.8, 1.8),
-                    T.RandomContrast(0.6, 1.3),
-                    T.RandomSaturation(0.8, 1.4),
-                    T.RandomRotation(angle=[90, 90], expand=False),
-                    T.RandomLighting(0.7),
-                    T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
-                    T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
-                ],
+                augmentations=augmentations,
             ),
         )
 
+    
 
 def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
     """Get the tree dictionaries.
@@ -535,7 +541,7 @@ def predictions_on_data(directory=None,
     """
 
     test_location = directory + "test"
-    pred_dir = directory + "predictions"
+    pred_dir = test_location + "predictions"
 
     Path(pred_dir).mkdir(parents=True, exist_ok=True)
 

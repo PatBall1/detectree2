@@ -19,7 +19,9 @@ from detectree2.models.train import get_filenames
 def predict_on_data(
     directory: str = "./",
     predictor=DefaultPredictor,
+    eval = False,
     save: bool = True,
+    num_predictions=0)
 ):
     """Make predictions on tiled data.
 
@@ -31,7 +33,10 @@ def predict_on_data(
 
     Path(pred_dir).mkdir(parents=True, exist_ok=True)
 
-    dataset_dicts = get_filenames(directory)
+    if eval:
+        dataset_dicts = get_tree_dicts(test_location)
+    else:
+        dataset_dicts = get_filenames(test_location)
 
     # Works out if all items in folder should be predicted on
 

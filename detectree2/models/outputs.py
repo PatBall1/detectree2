@@ -128,7 +128,7 @@ def to_eval_geojson(directory=None):    # noqa:N803
             print(geofile)
 
             output_geo_file = directory + img_dict["filename"].replace(
-                '.json', "_" + epsg + '.geojson')
+                '.json', "_" + '.geojson')
             print(output_geo_file)
             with open(output_geo_file, "w") as dest:
                 json.dump(geofile, dest)
