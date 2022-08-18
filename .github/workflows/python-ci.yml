@@ -40,6 +40,7 @@ jobs:
       run: |
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
         export C_INCLUDE_PATH=/usr/include/gdal
+        pip3 install GDAL==3.3.2
         pip3 install .
     - name: flake8 checks
       run: |
