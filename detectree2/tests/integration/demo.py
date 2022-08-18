@@ -54,7 +54,7 @@ class TestCase(unittest.TestCase):
         from detectree2.models.train import (MyTrainer, register_train_data,
                                              setup_cfg)
         val_fold = 1
-        root_path = 'detectree2-data'
+        root_path = os.path.abspath("detectree2-data")
         train_location = os.path.join(root_path, 'paracou-out/train_test_tiles/train/')
         register_train_data(train_location, "Paracou", val_fold)
         model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
