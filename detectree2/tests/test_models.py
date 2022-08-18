@@ -27,27 +27,27 @@ class TestCase(unittest.TestCase):
     #     depends=["tests/test_preprocessing::test_tiling", "tests/test_preprocessing::test_to_traintest_folders"],
     #     scope='session'
     # )
-    def test_train(self):
-        """Integration test: Training on Paracou dataset for a single step.
+    # def test_train(self):
+    #     """Integration test: Training on Paracou dataset for a single step.
 
-        Run on CPU.
-        """
-        from detectree2.models.train import (MyTrainer, register_train_data,
-                                             setup_cfg)
-        val_fold = 1
-        site_path = os.path.abspath("detectree2-data")
-        train_location = os.path.join(site_path, 'paracou-out/ref/train_test_tiles/train/')
-        register_train_data(train_location, "Paracou", val_fold)
-        # 10.5281/zenodo.5515408
-        model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
-        trains = ('Paracou_train',)
-        tests = ('Paracou_val',)
-        out_dir = os.path.join(site_path, "paracou-out/train_outputs")
-        cfg = setup_cfg(model, trains, tests, warm_iter=1, workers=1, eval_period=10, max_iter=1, out_dir=out_dir)
-        cfg.MODEL.DEVICE = 'cpu'
-        trainer = MyTrainer(cfg, patience=10)
-        trainer.resume_or_load(resume=False)
-        trainer.train()
+    #     Run on CPU.
+    #     """
+    #     from detectree2.models.train import (MyTrainer, register_train_data,
+    #                                          setup_cfg)
+    #     val_fold = 1
+    #     site_path = os.path.abspath("detectree2-data")
+    #     train_location = os.path.join(site_path, 'paracou-out/ref/train_test_tiles/train/')
+    #     register_train_data(train_location, "Paracou", val_fold)
+    #     # 10.5281/zenodo.5515408
+    #     model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
+    #     trains = ('Paracou_train',)
+    #     tests = ('Paracou_val',)
+    #     out_dir = os.path.join(site_path, "paracou-out/train_outputs")
+    #     cfg = setup_cfg(model, trains, tests, warm_iter=1, workers=1, eval_period=10, max_iter=1, out_dir=out_dir)
+    #     cfg.MODEL.DEVICE = 'cpu'
+    #     trainer = MyTrainer(cfg, patience=10)
+    #     trainer.resume_or_load(resume=False)
+    #     trainer.train()
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)

@@ -61,7 +61,7 @@ class TestCase(unittest.TestCase):
         # model = "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_1x.yaml"
         trains = ('Paracou_train',)
         tests = ('Paracou_val',)
-        out_dir = os.path.join(root_path, "paracou-out/train_outputs")
+        out_dir = os.path.join(root_path, "paracou-out/train_outputs-1")
         cfg = setup_cfg(model, trains, tests, ims_per_batch=1, eval_period=10, max_iter=1, out_dir=out_dir)
         cfg.MODEL.DEVICE = 'cpu'
         trainer = MyTrainer(cfg, patience=10)
