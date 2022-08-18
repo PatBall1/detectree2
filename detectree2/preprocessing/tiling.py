@@ -44,9 +44,13 @@ def tile_data(data: DatasetReader,
               buffer: int = 30,
               tile_width: int = 200,
               tile_height: int = 200,
-              dtype_bool: bool = False
-              ) -> None:
-    """Tiles othomosaic into managable chunks to make predictions on.
+              dtype_bool: bool = False) -> None:
+    """Tiles up orthomosaic for making predictions on.
+
+    Tiles up full othomosaic into managable chunks to make predictions on. Use
+    tile_data_train to generate tiled training data. A bug exists on some input
+    raster types whereby outputed tiles are completely black - the dtype_bool
+    argument should be switched if this is the case.
 
     Args:
         data: Orthomosaic as a rasterio object in a UTM type projection
@@ -61,10 +65,11 @@ def tile_data(data: DatasetReader,
     # Should clip data to crowns straight off to speed things up
     os.makedirs(out_dir, exist_ok=True)
     # out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
-    for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width,
-                          int):
+    for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
+                          tile_width, int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
+
             # Naming conventions
             tilename = Path(data.name).stem
             out_path = out_dir + tilename + "_" + str(minx) + "_" + str(
@@ -81,7 +86,9 @@ def tile_data(data: DatasetReader,
             # bbox_central = box(minx, miny, minx + tile_width, miny + tile_height)
 
             # turn the bounding boxes into geopandas DataFrames
-            geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=from_epsg(4326))
+            geo = gpd.GeoDataFrame({"geometry": bbox},
+                                   index=[0],
+                                   crs=from_epsg(4326))
             # geo_central = gpd.GeoDataFrame(
             #    {"geometry": bbox_central}, index=[0], crs=from_epsg(4326)
             # )  # 3182
@@ -167,7 +174,8 @@ def tile_data_train(data: DatasetReader,
                     dtype_bool: bool = False) -> None:
     """Tiles up orthomosaic and corresponding crowns into training tiles.
 
-    A threshold can be used to ensure a good coverage of crowns across a tile.
+    A threshold can be used to ensure a good coverage of crowns across a tile -
+    tiles that do not have sufficient coverage are rejected
 
     Args:
         data: Orthomosaic as a rasterio object in a UTM type projection
@@ -184,15 +192,16 @@ def tile_data_train(data: DatasetReader,
     """
 
     # TODO: Clip data to crowns straight away to speed things up
+    # TODO: Tighten up epsg handling
     out_path = Path(out_dir)
     os.makedirs(out_path, exist_ok=True)
+    tilename = Path(data.name).stem
     # out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
-    for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width,
-                          int):
+    for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
+                          tile_width, int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
 
-            tilename = Path(data.name).stem
             out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}"
 
             # new tiling bbox including the buffer
@@ -207,7 +216,9 @@ def tile_data_train(data: DatasetReader,
             # bbox_central = box(minx, miny, minx + tile_width, miny + tile_height)
 
             # turn the bounding boxes into geopandas DataFrames
-            geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=from_epsg(4326))
+            geo = gpd.GeoDataFrame({"geometry": bbox},
+                                   index=[0],
+                                   crs=from_epsg(4326))
             # geo_central = gpd.GeoDataFrame(
             #    {"geometry": bbox_central}, index=[0], crs=from_epsg(4326)
             # )  # 3182
@@ -221,7 +232,8 @@ def tile_data_train(data: DatasetReader,
                 continue
 
             # Discard tiles that do not have a sufficient coverage of training crowns
-            if (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
+            if (overlapping_crowns.dissolve().area[0]
+                    / geo.area[0]) < threshold:
                 continue
 
             # here we are cropping the tiff to the bounding box of the tile we want
@@ -237,9 +249,9 @@ def tile_data_train(data: DatasetReader,
             sumzero = zero_mask.sum()
             sumnan = nan_mask.sum()
             totalpix = out_img.shape[1] * out_img.shape[2]
-            if sumzero > 0.25 * totalpix:
+            if sumzero > 0.25 * totalpix: # reject tiles with many 0 cells
                 continue
-            elif sumnan > 0.25 * totalpix:
+            elif sumnan > 0.25 * totalpix: # reject tiles with many NaN cells
                 continue
 
             # out_img = out_img.astype("uint8")
@@ -275,7 +287,7 @@ def tile_data_train(data: DatasetReader,
 
             # Saving the tile as a new tiff, named by the origin of the tile. If tile appears blank in folder can show
             # the image here and may need to fix RGB data or the dtype
-            out_tif = out_path_root.with_suffix('.tif')
+            out_tif = out_path_root.with_suffix(out_path_root.suffix + '.tif')
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
 
@@ -291,7 +303,7 @@ def tile_data_train(data: DatasetReader,
             b = arr[2]
 
             # stack up the bands in an order appropriate for saving with cv2, then rescale to the correct 0-255 range
-            # for cv2. BGR for cv2
+            # for cv2. BGR ordering is correct for cv2 (and detectron2)
             rgb = np.dstack((b, g, r))
 
             if np.max(g) > 255:
@@ -303,7 +315,7 @@ def tile_data_train(data: DatasetReader,
             # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
             # here as a naughty method
             cv2.imwrite(
-                out_path_root.with_suffix(".png"),
+                str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
                 rgb_rescaled,
             )
 
@@ -328,21 +340,22 @@ def tile_data_train(data: DatasetReader,
                 moved = overlapping_crowns.translate(-minx, -miny + buffer)
             else:
                 # print("We are in the middle!")
-                moved = overlapping_crowns.translate(-minx + buffer, -miny + buffer)
+                moved = overlapping_crowns.translate(-minx + buffer,
+                                                     -miny + buffer)
 
             # scale to deal with the resolution
             scalingx = 1 / (data.transform[0])
             scalingy = -1 / (data.transform[4])
             moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
 
-            impath = {"imagePath": out_path_root.with_suffix(".png")}
+            impath = {"imagePath": out_path_root.with_suffix(out_path_root.suffix + ".png").as_posix()}
 
             # Save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
             # If the box selected from the image is outside of the mapped region due to the image being on a slant
             # then the shp file will have no info on the crowns and hence will create an empty gpd Dataframe.
             # this causes an error so skip creating geojson. The training code will also ignore png so no problem.
             try:
-                filename = out_path_root.with_suffix(".geojson")
+                filename = out_path_root.with_suffix(out_path_root.suffix + ".geojson")
                 moved_scaled = overlapping_crowns.set_geometry(moved_scaled)
                 moved_scaled.to_file(
                     driver="GeoJSON",
@@ -421,21 +434,8 @@ def to_traintest_folders(tiles_folder: str = "./",
     Path(out_folder + "train").mkdir(parents=True, exist_ok=True)
     Path(out_folder + "test").mkdir(parents=True, exist_ok=True)
 
-    # I split differently by just randomly ordering a list and picking the first
-    # fraction of them- I think this is easier and it still works so this comment
-    # section is irrelevant?
-    # # First split between train and test
-    # #split = np.array([4, 1])
-    # split = np.array([(1 - test_frac), test_frac])
-    # summed = np.sum(split)
-    # percs = 100 * split / summed
-    # percs = np.cumsum(percs)
-
     filenames = glob.glob(tiles_folder + "*.png")
     fileroots = [Path(item).stem for item in filenames]
-    # jsonnames = glob.glob(tiles_folder + "*.geojson")
-    # stemname = Path(filenames[0]).stem.split("_", 1)[0]
-    # indices = [item.split("_", 1)[-1].split(".", 1)[0] for item in filenames]
 
     num = list(range(0, len(filenames)))
     random.shuffle(num)
@@ -463,8 +463,8 @@ def to_traintest_folders(tiles_folder: str = "./",
     ind_split = np.array_split(fileroots, folds)
 
     for i in range(0, folds):
-        Path(out_folder + "/train/fold_" + str(i + 1) + "/").mkdir(parents=True,
-                                                                   exist_ok=True)
+        Path(out_folder + "/train/fold_" + str(i + 1) + "/").mkdir(
+            parents=True, exist_ok=True)
         for name in ind_split[i]:
             shutil.move(
                 out_folder + "train/" + name + ".geojson",
