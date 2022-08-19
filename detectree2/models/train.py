@@ -35,7 +35,6 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 from IPython.display import display
 from PIL import Image
 
-
 class LossEvalHook(HookBase):
     """Do inference and get the loss metric.
 
@@ -175,9 +174,9 @@ class MyTrainer(DefaultTrainer):
         _type_: _description_
     """
 
-    def __init__(self, cfg, patience, resize):
+    def __init__(self, cfg, patience):
         self.patience = patience
-        self.resize = resize
+        #self.resize = resize
         super().__init__(cfg)
 
     def train(self):
@@ -245,7 +244,7 @@ class MyTrainer(DefaultTrainer):
         )
         return hooks
 
-    def build_train_loader(self, cls, cfg):
+    def build_train_loader(cls, cfg):
         """Summary.
           Args:
               cfg (_type_): _description_
@@ -262,9 +261,11 @@ class MyTrainer(DefaultTrainer):
             T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
             T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
         ]
-        if self.resize:
+        augmentations.append(T.Resize((1000, 1000)))
+        
+        if cfg.RESIZE:
             augmentations.append(T.Resize((1000, 1000)))
-        elif self.resize == "random":
+        elif cfg.RESIZE == "random":
             augmentations.append(T.Resize((1000, 1000)))
             augmentations.append(T.ResizeScale(800/1000, 1333/800, 1000, 1000))
         return build_detection_train_loader(
@@ -274,9 +275,7 @@ class MyTrainer(DefaultTrainer):
                 is_train=True,
                 augmentations=augmentations,
             ),
-        )
-
-    
+        ) 
 
 def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
     """Get the tree dictionaries.
@@ -481,7 +480,8 @@ def setup_cfg(base_model:
               max_iter=1000,
               num_classes=1,
               eval_period=100,
-              out_dir="/content/drive/Shareddrives/detectree2/train_outputs"):
+              out_dir="/content/drive/Shareddrives/detectree2/train_outputs",
+              resize=True,):
     """Set up config object.
 
     Args:
@@ -527,7 +527,9 @@ def setup_cfg(base_model:
     cfg.SOLVER.MAX_ITER = max_iter
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes
     cfg.TEST.EVAL_PERIOD = eval_period
+    cfg.RESIZE = resize
     return cfg
+
 
 
 def predictions_on_data(directory=None,
