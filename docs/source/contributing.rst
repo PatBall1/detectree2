@@ -1,5 +1,5 @@
 ******************
-WIP - Contributing guide
+Contributing guide
 ******************
 
 
@@ -136,9 +136,7 @@ Git Rebase/Merge during PR
 
 It is strongly recommended to sync master with the feature branch during the submission of a PR. One can either merge master or rebase on master to sync changes. Either is fine in practice, but for large projects, with many contributors it is considered good practice to ``rebase`` to keep the history linear.
 
-However, I would *strongly recommend* to ``squash and merge`` the commits when committing a PR (this is done using the github UI). This combines all of the commits into one commit in the base branch. Therefore we we do not need to worry about the effects of merging in other branches on the project history. 
-
-It is possible to make this the default behaviour in the repository settings. 
+However, I would *strongly recommend* to ``squash and merge`` the commits when committing a PR (this is done using the github UI). This combines all of the commits into one commit in the base branch. Therefore we we do not need to worry about the effects of merging in other branches on the project history.  It is possible to make this the default behaviour in the repository settings. 
 
 If for any reason you do not want to squash and merge the commits (i.e. to keep the PR history in tact), I would strongly recommend rebasing. 
 
@@ -154,59 +152,45 @@ TIP: Many of the recommendations above can be made default in Github's settings:
 
 
 
-Current repository setup (TO CHANGE)
-------------------------------------
+Current repository setup
+------------------------
 
-Most of the below can be seen in the .github/workflows/*.yaml files. Refer to these files, if there is anything unclear about style. The code checks are triggered automatically on pushing to PR branch. This is steered using github actions with settings for each component in setup.cfg. 
+Most of the below can be seen in the .github/workflows/*.yaml files. Refer to these files, if there is anything unclear about style. The code checks are triggered automatically on contributing to a PR branch. This is steered using github actions (\*.yml files) with settings for each component in setup.cfg. 
 
 
 Style
 -----
-Detectree2 currently utilises the following tools for code checks:
+Detectree2 currently utilises the following tools for code checks. It is recommended to run these locally before pushing code. 
 
 - ``autopep8``: Ensure consistent formatting of Python files 
 - ``mypy``: Validate Python type hints 
 - ``flake8``: Multiple checks for - linting - syntax errors or anti-patterns - (lack of) executable flags on files - docstring validation - function complexity
 - ``isort``: Checks that imports are correctly sorted
 
+Other noteworthy style choices:
 - Line length = 120 characters
-- Google docstrings
-- Function signatures span 
+- Google style docstrings
+- Function signatures and comments span 120 character length
 
 Flake8
 ------
 Flake8 includes linting, syntax errors, and mccabe function complexity analysis. 
 
-Flake8 errors have been purposely ignored in several places using ``noqa: <CODE>`` annotations to allow flake8 CI to pass. This is not a permanent fix and the errors should eventually be addressed. For example: ``noqa: E501`` ensures that line lengths beyond (120 characters) are ignored by the linter and ``noqa: 901`` ignores the Mccabe complexity measure. 
+The are several instances where Flake8 errors have been purposely ignored using ``noqa: <CODE>`` annotations to allow flake8 CI to pass. This is not a permanent fix and the errors should eventually be addressed. For example: ``noqa: E501`` ensures that line lengths beyond (120 characters) are ignored by the linter and ``noqa: 901`` ignores the Mccabe complexity measure on the tiling::tile_data_train function. 
 
-These can also be set globally in setup.cfg, but the fewer the better. It is also possible to set `continue-on-error` in the flake8 workflow or `--exit-zero` flake8 argument. In practice it was found that users tended to ignore flake8 errors as a result of these two options, so the ``noqa`` solution is preferred. 
+These can also be set globally in setup.cfg, but fewer the better. It is also possible to set `continue-on-error` in the flake8 workflow or `--exit-zero` flake8 argument to allow other checks to continue. In practice it was found that users tended to ignore flake8 errors as a result of these two options, so the ``noqa`` solution is preferred. 
 
-
-
-docstrings
+Docstrings
 ----------
 We adopt google docstrings:
 
-Other dependencies include ``flake8-docstrings``, ``pydocstyle``, 
-
-The python code is 
+Other dependencies include ``flake8-docstrings``, (unused``pydocstyle``), 
 
 Static typing
 -------------
 Static typing is written for compatibility with python3.7 and above. This could be updated as the project moves towards more modern python3. More settings in ``setup.cfg``. 
 
-Workflows
----------
-Currently there are three files:
 
-- ``pythonapp.yml``
-- ``dockertest.yml``
-- ``documentation.yml``
-
-``dockertest.yml`` is an attempt to utilise docker to speed up deployment of detectree2. The dockerfiles are in ``ma595/detectree2-docker``, which uses ``ma595/detectree2-data`` to store the data required for the workflow.
-
-
-TODO: Harmonise all files into one. There is no good reason to separate this functionality.
 
 Automatic Documentation
 -----------------------
@@ -214,33 +198,46 @@ Documentation is generated automatically using Sphinx and github actions (point 
 
 Documentation can be generated locally to test rendering. It is better to develop locally rather than rely on the CI and hosted docs as a check, as it can take quite some time to build using the workflow. 
 
-The Documentation
+To generate locally it is necessary to install the following dependencies (either in pip or conda):
 
+pip install sphinx sphinx_rtd_theme
+
+Then generate api documentation, and build the html.
+
+sphinx-apidoc -o ./docs/source/ detectree2/
+sphinx-build -b html docs/source/ docs/build/html
+
+Then using your favourite browser open docs/build/html/index.html
 
 Tests
 -----
-Test-driven development
+Test-driven development stipulates that tests should be written as new features are introduced to the code. 
 
-TIPS: Always write tests for newly introduced logic when contributing code,
-TODO: Prevent merge unless all tests are passing
+As of August 2022, an integration test has been written which demos the tiling, and training steps. A few unit tests have been implemented, the most interesting computes the area intersection over union (with dummy .geojson data containing square shapes with known areas). The test is still incomplete because much of the code in evaluation.py and F1_calculator is not sufficiently modular - a major refactor is required. 
 
+TIP: Always write tests for newly introduced logic when contributing code.
 
-Submitting a PR
----------------
-
-Collaborator vs Contributor privileges 
-
-Fork repo etc. 
-
-Squash commits on merge. 
 
 Continuous integration
 ----------------------
 
-Setting up github actions
+Currently there are three files:
 
-TODO:
-Add GPU testing to workflow. 
+- ``pythonapp.yml``: All style CI - builds the code on Ubuntu-20.04
+- ``dockertest.yml``: All style CI - uses docker image for dependencies and installs detectree2 using pip.
+- ``documentation.yml``: Generates documentation and hosts on github pages. Builds code first for sphinx-apidoc. 
+
+``dockertest.yml`` is an attempt to utilise docker to speed up deployment of detectree2. It pulls the docker image: ``ma595 / detectree-cpu-20.04:latest`` (Python3.8) and installs detectree2 on top. A more up to date docker container, utilising python3.10 and ubuntu 22.04 has been successfully built but has yet to be integrated into the workflow, the file can be found in `ma595/detectree2-docker/Dockerfile-22.04`
+
+The dockerfiles are in ``ma595/detectree2-docker``, which uses ``ma595/detectree2-data`` to store the data required for the workflow.
+
+
+TODO: 
+- Harmonise all files into one. There is no good reason to separate this functionality.
+- Add GPU testing to workflow (currently unsupported on Github, but we can use CSD3's A100 resources).
+- Prevent merge unless all tests are passing
+- Build docker image as part of an action and push to dockerhub (or use github's docker features)
+- Check 22.04 docker image
 
 
 Building Detectree2 using Pip
