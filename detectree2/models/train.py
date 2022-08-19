@@ -261,8 +261,7 @@ class MyTrainer(DefaultTrainer):
             T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
             T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
         ]
-        augmentations.append(T.Resize((1000, 1000)))
-        
+                
         if cfg.RESIZE:
             augmentations.append(T.Resize((1000, 1000)))
         elif cfg.RESIZE == "random":
