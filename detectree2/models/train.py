@@ -32,238 +32,372 @@ from PIL import Image
 
 
 class LossEvalHook(HookBase):
-    """Do inference and get the loss metric.
-
+  """Do inference and get the loss metric
     Class to:
     - Do inference of dataset like an Evaluator does
     - Get the loss metric like the trainer does
     https://github.com/facebookresearch/detectron2/blob/master/detectron2/evaluation/evaluator.py
     https://github.com/facebookresearch/detectron2/blob/master/detectron2/engine/train_loop.py
     See https://gist.github.com/ortegatron/c0dad15e49c2b74de8bb09a5615d9f6b
-
     Attributes:
         model:
-        period:
-        data_loader:
-        patience: number of evaluation periods to wait for improvement
+        period
+        data loader
+    """
+  """The algorithm of early-stopping is from <deep learning> of Goodfellow section 7.8.
+    The main calculation of early_stopping is in after_step and 
+    then the best weight recorded is loaded in the current model
     """
 
-    def __init__(self, eval_period, model, data_loader, patience):
-        """Inits LossEvalHook."""
-        self._model = model
-        self._period = eval_period
-        self._data_loader = data_loader
-        self.patience = patience
-        self.iter = 0
-        self.max_ap = 0
-        self.best_iter = 0
 
-    def _do_loss_eval(self):
-        """Copying inference_on_dataset from evaluator.py.
+  def __init__(self, eval_period, model, data_loader, patience, out_dir):
+    self._model = model
+    self._period = eval_period
+    self._data_loader = data_loader
+    self.patience = patience
+    self.iter = 0
+    self.max_value = 0
+    self.best_iter = 0
+    #self.checkpointer = DetectionCheckpointer(self._model, save_dir=out_dir)
 
-        Returns:
-            _type_: _description_
-        """
-        total = len(self._data_loader)
-        num_warmup = min(5, total - 1)
+  def _do_loss_eval(self):
+    total = len(self._data_loader)
+    num_warmup = min(5, total - 1)
 
+    start_time = time.perf_counter()
+    total_compute_time = 0
+    losses = []
+    for idx, inputs in enumerate(self._data_loader):
+      if idx == num_warmup:
         start_time = time.perf_counter()
         total_compute_time = 0
-        losses = []
-        for idx, inputs in enumerate(self._data_loader):
-            if idx == num_warmup:
-                start_time = time.perf_counter()
-                total_compute_time = 0
-            start_compute_time = time.perf_counter()
-            if torch.cuda.is_available():
-                torch.cuda.synchronize()
-            total_compute_time += time.perf_counter() - start_compute_time
-            iters_after_start = idx + 1 - num_warmup * int(idx >= num_warmup)
-            seconds_per_img = total_compute_time / iters_after_start
-            if idx >= num_warmup * 2 or seconds_per_img > 5:
-                total_seconds_per_img = (time.perf_counter()
-                                         - start_time) / iters_after_start
-                eta = datetime.timedelta(seconds=int(total_seconds_per_img
-                                                     * (total - idx - 1)))
-                log_every_n_seconds(
-                    logging.INFO,
-                    "Loss on Validation  done {}/{}. {:.4f} s / img. ETA={}".
-                    format(idx + 1, total, seconds_per_img, str(eta)),
-                    n=5,
-                )
-            loss_batch = self._get_loss(inputs)
-            losses.append(loss_batch)
-        mean_loss = np.mean(losses)
-        # print(self.trainer.cfg.DATASETS.TEST)
-        # Combine the AP50s of the different datasets
-        if len(self.trainer.cfg.DATASETS.TEST) > 1:
-            APs = []
-            for dataset in self.trainer.cfg.DATASETS.TEST:
-                APs.append(
-                    self.trainer.test(
-                        self.trainer.cfg,
-                        self.trainer.model)[dataset]['segm']['AP50'])
-            AP = sum(APs) / len(APs)
-        else:
-            AP = self.trainer.test(self.trainer.cfg,
-                                   self.trainer.model)['segm']['AP50']
-        print("Av. AP50 =", AP)
-        self.trainer.APs.append(AP)
-        self.trainer.storage.put_scalar("validation_loss", mean_loss)
-        self.trainer.storage.put_scalar("validation_ap", AP)
-        comm.synchronize()
+      start_compute_time = time.perf_counter()
+      if torch.cuda.is_available():
+        torch.cuda.synchronize()
+      total_compute_time += time.perf_counter() - start_compute_time
+      iters_after_start = idx + 1 - num_warmup * int(idx >= num_warmup)
+      seconds_per_img = total_compute_time / iters_after_start
+      if idx >= num_warmup * 2 or seconds_per_img > 5:
+        total_seconds_per_img = (time.perf_counter() -
+                                 start_time) / iters_after_start
+        eta = datetime.timedelta(seconds=int(total_seconds_per_img *
+                                             (total - idx - 1)))
+        log_every_n_seconds(
+            logging.INFO,
+            "Loss on Validation  done {}/{}. {:.4f} s / img. ETA={}".format(
+                idx + 1, total, seconds_per_img, str(eta)),
+            n=5,
+        )
+      loss_batch = self._get_loss(inputs)
+      losses.append(loss_batch)
+    mean_loss = np.mean(losses)
+    self.trainer.storage.put_scalar("validation_loss", mean_loss, smoothing_hint = False)
+    
+    comm.synchronize()
 
-        return losses
-
-    def _get_loss(self, data):
-        """Calculate loss in train_loop.
-
+    #return losses
+  def _get_loss(self, data):
+    """How loss is calculated on train_loop
         Args:
             data (_type_): _description_
-
         Returns:
             _type_: _description_
         """
-        metrics_dict = self._model(data)
-        metrics_dict = {
-            k:
-            v.detach().cpu().item() if isinstance(v, torch.Tensor) else float(v)
-            for k, v in metrics_dict.items()
-        }
-        total_losses_reduced = sum(loss for loss in metrics_dict.values())
-        return total_losses_reduced
+    #
+    metrics_dict = self._model(data)
+    metrics_dict = {
+        k: v.detach().cpu().item() if isinstance(v, torch.Tensor) else float(v)
+        for k, v in metrics_dict.items()
+    }
+    total_losses_reduced = sum(loss for loss in metrics_dict.values())
+    return total_losses_reduced
 
-    def after_step(self):
-        next_iter = self.trainer.iter + 1
-        is_final = next_iter == self.trainer.max_iter
-        if is_final or (self._period > 0 and next_iter % self._period == 0):
-            self._do_loss_eval()
-            if self.max_ap < self.trainer.APs[-1]:
-                self.iter = 0
-                self.max_ap = self.trainer.APs[-1]
-                self.trainer.checkpointer.save('model_'
-                                               + str(len(self.trainer.APs)))
-                self.best_iter = self.trainer.iter
-            else:
-                self.iter += 1
-        if self.iter == self.patience:
-            self.trainer.early_stop = True
-            print("Early stopping occurs in iter {}, max ap is {}".format(
-                self.best_iter, self.max_ap))
-        self.trainer.storage.put_scalars(timetest=12)
 
-    def after_train(self):
-        # Select the model with the best AP50
-        index = self.trainer.APs.index(max(self.trainer.APs)) + 1
-        self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_'
-                                       + str(index) + '.pth')
+  '''early stop see <deep learning> of goodfellow'''
+  def after_step(self):
+    next_iter = self.trainer.iter + 1
+    is_final = next_iter == self.trainer.max_iter
+    if is_final or (self._period > 0 and next_iter % self._period == 0):
+      if len(self.trainer.cfg.DATASETS.TEST) > 1:
+          APs = []
+          for dataset in self.trainer.cfg.DATASETS.TEST:
+            APs.append(
+                self.trainer.test(
+                    self.trainer.cfg,
+                    self.trainer.model)[dataset]['segm']['AP50'])
+          AP = sum(APs) / len(APs)
+      else:
+          AP = self.trainer.test(self.trainer.cfg, self.trainer.model)['segm']['AP50']
+      print("Av. AP50 =", AP)
+      self.trainer.values.append(AP)
+      self.trainer.storage.put_scalar("validation_AP", AP, smoothing_hint = False)
+      if self.trainer.metrix == 'AP50':
+        if len(self.trainer.cfg.DATASETS.TEST) > 1:
+          APs = []
+          for dataset in self.trainer.cfg.DATASETS.TRAIN:
+            APs.append(
+                self.trainer.test_train(
+                    self.trainer.cfg,
+                    self.trainer.model)[dataset]['segm']['AP50'])
+          AP = sum(APs) / len(APs)
+        else:
+          AP = self.trainer.test(self.trainer.cfg, self.trainer.model)['segm']['AP50']
+        self.trainer.storage.put_scalar("training_AP", AP, smoothing_hint = False)
+      if self.trainer.metrix == 'loss':
+        self._do_loss_eval()
+      else:
+        if len(self.trainer.cfg.DATASETS.TEST) > 1:
+          APs = []
+          for dataset in self.trainer.cfg.DATASETS.TRAIN:
+            APs.append(
+                self.trainer.test_train(
+                    self.trainer.cfg,
+                    self.trainer.model)[dataset]['segm']['AP50'])
+          AP = sum(APs) / len(APs)
+        else:
+          AP = self.trainer.test(self.trainer.cfg, self.trainer.model)['segm']['AP50']
+        self.trainer.storage.put_scalar("training_AP", AP, smoothing_hint = False)
+        loss = self._do_loss_eval()
+      if self.max_value < self.trainer.values[-1]:
+        self.iter = 0
+        self.max_value = self.trainer.values[-1]
+        #self.checkpointer.save('model_' + str(len(self.trainer.values)))
+        torch.save(self._model.state_dict(), self.trainer.cfg.OUTPUT_DIR + '/Model_' + str(len(self.trainer.values)) + '.pth')
+        self.best_iter = self.trainer.iter
+      else:
+        self.iter += 1
+    if self.iter == self.patience:
+      self.trainer.early_stop = True
+      print("Early stopping occurs in iter {}, max ap is {}".format(self.best_iter, self.max_value))
+    self.trainer.storage.put_scalars(timetest=12)  
 
+  def after_train(self):
+    print('train done !!!')
+    if len(self.trainer.values) != 0:
+      index = self.trainer.values.index(max(self.trainer.values)) + 1
+      print(self.trainer.early_stop,"best model is", index)
+      trainer.cfg.MODEL.WEIGHTS = self.trainer.cfg.OUTPUT_DIR + '/Model_' + str(index) + '.pth'
+    else:
+      print('train fails')
 
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
 class MyTrainer(DefaultTrainer):
-    """Summary.
-
+  """_summary_
     Args:
         DefaultTrainer (_type_): _description_
-
     Returns:
         _type_: _description_
     """
+  # add a judge on if early-stopping in train function
+  # train is inherited from TrainerBase https://detectron2.readthedocs.io/en/latest/_modules/detectron2/engine/train_loop.html
+  def __init__(self, cfg, patience = 5, training_metrix = 'loss'):
+    self.patience = patience
+    self.metrix = training_metrix
+    super().__init__(cfg)
+  def train(self):
+    """
+    Run training.
 
-    def __init__(self, cfg, patience):
-        self.patience = patience
-        super().__init__(cfg)
+    Returns:
+        OrderedDict of results, if evaluation is enabled. Otherwise None.
+    """
+    """
+    Args:
+        start_iter, max_iter (int): See docs above
+    """
+    start_iter = self.start_iter
+    max_iter = self.max_iter
+    logger = logging.getLogger(__name__)
+    logger.info("Starting training from iteration {}".format(start_iter))
 
-    def train(self):
-        """Run training.
+    self.iter = self.start_iter = start_iter
+    self.max_iter = max_iter
+    self.early_stop = False
+    self.values = []
+    self.reweight = False ### used to decide when to increase the weight of classification loss
 
+    with EventStorage(start_iter) as self.storage:
+        try:
+            self.before_train()
+            for self.iter in range(start_iter, max_iter):
+                self.before_step()
+                self.run_step()
+                self.after_step()
+                if self.early_stop:
+                  break
+            # self.iter == max_iter can be used by `after_train` to
+            # tell whether the training successfully finished or failed
+            # due to exceptions.
+            self.iter += 1
+        except Exception:
+            logger.exception("Exception during training:")
+            raise
+        finally:
+            self.after_train()
+    if len(self.cfg.TEST.EXPECTED_RESULTS) and comm.is_main_process():
+        assert hasattr(
+            self, "_last_eval_results"
+        ), "No evaluation results obtained during training!"
+        verify_results(self.cfg, self._last_eval_results)
+        return self._last_eval_results
+
+  def run_step(self):
+    self._trainer.iter = self.iter
+    """
+    Implement the standard training logic described above.
+    """
+    assert self._trainer.model.training, "[SimpleTrainer] model was changed to eval mode!"
+    start = time.perf_counter()
+    """
+    If you want to do something with the data, you can wrap the dataloader.
+    """
+    data = next(self._trainer._data_loader_iter)
+    data_time = time.perf_counter() - start
+
+    """
+    If you want to do something with the losses, you can wrap the model.
+    """
+    loss_dict = self._trainer.model(data)
+    if isinstance(loss_dict, torch.Tensor):
+        losses = loss_dict
+        loss_dict = {"total_loss": loss_dict}
+    else:
+        # loss_dict['cls'] = torch.tensor(0)
+        # loss_dict['loss_rpn_cls'] = torch.tensor(0)
+        # if self.iter > 1000:
+        #   self.reweight = True
+        # if self.reweight:
+        #   loss_dict['loss_mask'] *= 4
+        loss_dict['loss_mask'] *= 2
+        losses = sum(loss_dict.values())
+
+    """
+    If you need to accumulate gradients or do something similar, you can
+    wrap the optimizer with your custom `zero_grad()` method.
+    """
+    self.optimizer.zero_grad()
+    losses.backward()
+
+    self._trainer._write_metrics(loss_dict, data_time)
+
+    """
+    If you need gradient clipping/scaling or other processing, you can
+    wrap the optimizer with your custom `step()` method. But it is
+    suboptimal as explained in https://arxiv.org/abs/2006.15704 Sec 3.2.4
+    """
+    self._trainer.optimizer.step()
+
+
+  @classmethod
+  def build_evaluator(cls, cfg, dataset_name, output_folder=None):
+    if output_folder is None:
+      os.makedirs("eval_2", exist_ok=True)
+      output_folder = "eval_2"
+    return COCOEvaluator(dataset_name, cfg, output_dir = output_folder)
+
+
+  def build_hooks(self):
+    hooks = super().build_hooks()
+    hooks.insert(
+        -1,
+        LossEvalHook(
+            self.cfg.TEST.EVAL_PERIOD,
+            self.model,
+            build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST[0],
+            DatasetMapper(self.cfg, True)),
+            self.patience,
+            self.cfg.OUTPUT_DIR,
+        ),
+    )
+    return hooks
+
+  def build_train_loader(cls, cfg):
+    """_summary_
         Args:
-            start_iter, max_iter (int): See docs above
-
+            cfg (_type_): _description_
         Returns:
-            OrderedDict of results, if evaluation is enabled. Otherwise None.
+            _type_: _description_
         """
-
-        start_iter = self.start_iter
-        max_iter = self.max_iter
-        logger = logging.getLogger(__name__)
-        logger.info("Starting training from iteration {}".format(start_iter))
-
-        self.iter = self.start_iter = start_iter
-        self.max_iter = max_iter
-        self.early_stop = False
-        self.APs = []
-
-        with EventStorage(start_iter) as self.storage:
-            try:
-                self.before_train()
-                for self.iter in range(start_iter, max_iter):
-                    self.before_step()
-                    self.run_step()
-                    self.after_step()
-                    if self.early_stop:
-                        break
-                # self.iter == max_iter can be used by `after_train` to
-                # tell whether the training successfully finished or failed
-                # due to exceptions.
-                self.iter += 1
-            except Exception:
-                logger.exception("Exception during training:")
-                raise
-            finally:
-                self.after_train()
-        if len(self.cfg.TEST.EXPECTED_RESULTS) and comm.is_main_process():
-            assert hasattr(self, "_last_eval_results"
-                           ), "No evaluation results obtained during training!"
-            verify_results(self.cfg, self._last_eval_results)
-            return self._last_eval_results
-
-    @classmethod
-    def build_evaluator(cls, cfg, dataset_name, output_folder=None):
-        if output_folder is None:
-            os.makedirs("eval_2", exist_ok=True)
-            output_folder = "eval_2"
-        return COCOEvaluator(dataset_name, cfg, True, output_folder)
-
-    def build_hooks(self):
-        hooks = super().build_hooks()
-        hooks.insert(
-            -1,
-            LossEvalHook(
-                self.cfg.TEST.EVAL_PERIOD,
-                self.model,
-                build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST,
-                                            DatasetMapper(self.cfg, True)),
-                self.patience,
-            ),
-        )
-        return hooks
-
-    def build_train_loader(cls, cfg):
-        """Summary.
-          Args:
-              cfg (_type_): _description_
-
-          Returns:
-              _type_: _description_
-          """
-        return build_detection_train_loader(
+    for i, datas in enumerate(DatasetCatalog.get(cfg.DATASETS.TRAIN[0])):
+      location = datas['file_name']
+      size = cv2.imread(location).shape[0]
+      break
+    return build_detection_train_loader(
+        cfg,
+        mapper=DatasetMapper(
             cfg,
-            mapper=DatasetMapper(
-                cfg,
-                is_train=True,
-                augmentations=[
-                    T.Resize((800, 800)),    # is this necessary/helpful?
-                    T.RandomBrightness(0.8, 1.8),
-                    T.RandomContrast(0.6, 1.3),
-                    T.RandomSaturation(0.8, 1.4),
-                    T.RandomRotation(angle=[90, 90], expand=False),
-                    T.RandomLighting(0.7),
-                    T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
-                    T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
-                ],
-            ),
-        )
+            is_train=True,
+            augmentations=[
+                #T.Resize((800, 800)),
+                #T.Resize((random_size, random_size)),
+                T.ResizeScale(0.6, 1.4, size, size),
+                #T.RandomCrop('relative',(0.5,0.5)),
+                T.RandomBrightness(0.8, 1.8),
+                T.RandomContrast(0.6, 1.3),
+                T.RandomSaturation(0.8, 1.4),
+                T.RandomRotation(angle=[90, 90], expand=False),
+                T.RandomLighting(0.7),
+                T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
+                T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
+            ],
+        ),
+    )
+
+  @classmethod
+  def test_train(cls, cfg, model, evaluators=None):
+      """
+      Evaluate the given model. The given model is expected to already contain
+      weights to evaluate.
+
+      Args:
+          cfg (CfgNode):
+          model (nn.Module):
+          evaluators (list[DatasetEvaluator] or None): if None, will call
+              :meth:`build_evaluator`. Otherwise, must have the same length as
+              ``cfg.DATASETS.TEST``.
+
+      Returns:
+          dict: a dict of result metrics
+      """
+      logger = logging.getLogger(__name__)
+      if isinstance(evaluators, DatasetEvaluator):
+          evaluators = [evaluators]
+      if evaluators is not None:
+          assert len(cfg.DATASETS.TRAIN) == len(evaluators), "{} != {}".format(
+              len(cfg.DATASETS.TRAIN), len(evaluators)
+          )
+
+      results = OrderedDict()
+      for idx, dataset_name in enumerate(cfg.DATASETS.TRAIN):
+          data_loader = cls.build_test_loader(cfg, dataset_name)
+          # When evaluators are passed in as arguments,
+          # implicitly assume that evaluators can be created before data_loader.
+          if evaluators is not None:
+              evaluator = evaluators[idx]
+          else:
+              try:
+                  evaluator = cls.build_evaluator(cfg, dataset_name)
+              except NotImplementedError:
+                  logger.warn(
+                      "No evaluator found. Use `DefaultTrainer.test(evaluators=)`, "
+                      "or implement its `build_evaluator` method."
+                  )
+                  results[dataset_name] = {}
+                  continue
+          results_i = inference_on_dataset(model, data_loader, evaluator)
+          results[dataset_name] = results_i
+          if comm.is_main_process():
+              assert isinstance(
+                  results_i, dict
+              ), "Evaluator must return a dict on the main process. Got {} instead.".format(
+                  results_i
+              )
+              logger.info("Evaluation results for {} in csv format:".format(dataset_name))
+              print_csv_format(results_i)
+
+      if len(results) == 1:
+          results = list(results.values())[0]
+      return results
 
 
 def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
