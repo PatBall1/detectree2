@@ -22,6 +22,6 @@ setup(
         "fiona",
         "pycrs",
         "descartes",
-        "detectron2@git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13",
+        "detectron2@git+https://github.com/facebookresearch/detectron2.git",
     ],
 )

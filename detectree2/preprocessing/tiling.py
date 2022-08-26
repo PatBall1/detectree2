@@ -440,7 +440,10 @@ def to_traintest_folders(tiles_folder: str = "./",
     Returns:
         None
     """
-
+    if Path(out_folder + "train").exists() and Path(out_folder + "train").is_dir():
+        shutil.rmtree(Path(out_folder + "train"))
+    if Path(out_folder + "test").exists() and Path(out_folder + "test").is_dir():
+        shutil.rmtree(Path(out_folder + "test"))   
     Path(out_folder + "train").mkdir(parents=True, exist_ok=True)
     Path(out_folder + "test").mkdir(parents=True, exist_ok=True)
 
