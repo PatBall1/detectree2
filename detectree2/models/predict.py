@@ -21,7 +21,7 @@ def predict_on_data(
     predictor=DefaultPredictor,
     eval = False,
     save: bool = True,
-    num_predictions=0)
+    num_predictions=0
 ):
     """Make predictions on tiled data.
 
