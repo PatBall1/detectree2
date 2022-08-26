@@ -541,8 +541,8 @@ def predictions_on_data(directory=None,
     """Prediction produced on a test folder
     """
 
-    test_location = directory + "test"
-    pred_dir = test_location + "predictions"
+    test_location = directory + "/test"
+    pred_dir = test_location + "/predictions"
 
     Path(pred_dir).mkdir(parents=True, exist_ok=True)
 
