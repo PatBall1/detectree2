@@ -354,7 +354,7 @@ def site_f1_score(tile_directory=None,
             area_threshold = ((tile_width)**2) * area_fraction_limit
 
             test_lidar = tile_directory + file.replace(".geojson",
-                                                       "_lidar.geojson")
+                                                       "_eval.geojson")
             all_test_feats = initialise_feats(test_directory, file, test_lidar,
                                               lidar_img, area_threshold,
                                               conf_threshold, border_filter,
@@ -362,7 +362,7 @@ def site_f1_score(tile_directory=None,
 
             pred_file_path = "Prediction_" + file
             pred_lidar = tile_directory + "reprojected/" + pred_file_path.replace(
-                '.geojson', '_lidar.geojson')
+                '.geojson', '_eval.geojson')
             all_pred_feats = initialise_feats(pred_directory, pred_file_path,
                                               pred_lidar, lidar_img,
                                               area_threshold, conf_threshold,
