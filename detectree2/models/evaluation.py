@@ -310,7 +310,7 @@ def site_f1_score(tile_directory=None,
                   test_directory=None,
                   pred_directory=None,
                   lidar_img=None,
-                  IoU_threshold=0,
+                  IoU_threshold=0.5,
                   height_threshold=0,
                   area_fraction_limit=0.0005,
                   conf_threshold=0,
@@ -353,8 +353,7 @@ def site_f1_score(tile_directory=None,
             tile_width = get_tile_width(file) * scaling[0]
             area_threshold = ((tile_width)**2) * area_fraction_limit
 
-            test_lidar = tile_directory + file.replace(".geojson",
-                                                       "_eval.geojson")
+            test_lidar = tile_directory + file
             all_test_feats = initialise_feats(test_directory, file, test_lidar,
                                               lidar_img, area_threshold,
                                               conf_threshold, border_filter,

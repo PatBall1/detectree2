@@ -77,7 +77,7 @@ def to_eval_geojson(directory=None):    # noqa:N803
             }
 
             # load the json file we need to convert into a geojson
-            with open(directory + img_dict["filename"]) as prediction_file:
+            with open(directory + "/" + img_dict["filename"]) as prediction_file:
                 datajson = json.load(prediction_file)
 
             img_dict["width"] = datajson[0]["segmentation"]["size"][0]
