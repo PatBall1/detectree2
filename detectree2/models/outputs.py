@@ -127,7 +127,7 @@ def to_eval_geojson(directory=None):    # noqa:N803
             # error appears.
             print(geofile)
 
-            output_geo_file = directory + img_dict["filename"].replace(
+            output_geo_file = directory + "/" + img_dict["filename"].replace(
                 '.json', '_eval.geojson')
             print(output_geo_file)
             with open(output_geo_file, "w") as dest:

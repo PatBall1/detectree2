@@ -359,7 +359,8 @@ def site_f1_score(tile_directory=None,
                                               conf_threshold, border_filter,
                                               tile_width, EPSG)
 
-            pred_file_path = "Prediction_" + file
+            pred_file_path = "Prediction_" + file.replace(
+                '.geojson', '_eval.geojson')
             pred_lidar = tile_directory + "reprojected/" + pred_file_path.replace(
                 '.geojson', '_eval.geojson')
             all_pred_feats = initialise_feats(pred_directory, pred_file_path,
