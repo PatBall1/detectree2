@@ -189,7 +189,7 @@ def project_to_geojson(
             # print("Img dict:", img_dict)
 
             # load the json file we need to convert into a geojson
-            with open(pred_fold + img_dict["filename"]) as prediction_file:
+            with open(pred_fold + _ + img_dict["filename"]) as prediction_file:
                 datajson = json.load(prediction_file)
             # print("data_json:",datajson)
 
@@ -256,8 +256,8 @@ def project_to_geojson(
             # Check final form is correct - compare to a known geojson file if error appears.
             # print("geofile",geofile)
 
-            output_geo_file = output_fold + img_dict["filename"].replace(
-                ".json", "_" + ".geojson")
+            output_geo_file = output_fold + "/" + img_dict["filename"].replace(
+                ".json", ".geojson")
             # print("output location:", output_geo_file)
             with open(output_geo_file, "w") as dest:
                 json.dump(geofile, dest)
