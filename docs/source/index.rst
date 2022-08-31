@@ -26,14 +26,16 @@ at the University of Cambridge.  The Forest Ecology and Conservation Group is le
 Original MRes project repo at https://github.com/shmh40/detectreeRGB.
 
 .. toctree::
+   :numbered:
    :maxdepth: 2
    :caption: Contents:
 
    installation
    tutorial
    contributing
-   _notebooks/contributing_guide
-   _notebooks/trainingJB
+   using-git
+   .. _notebooks/contributing_guide
+   .. _notebooks/trainingJB
 
 
 
