@@ -239,32 +239,32 @@ class MyTrainer(DefaultTrainer):
         )
         return hooks
 
-    def build_train_loader(self, cls, cfg):
-        """Summary.
+def build_train_loader(cls, cfg):
+    """Summary.
 
-        Args:
-            cfg (_type_): _description_
+    Args:
+        cfg (_type_): _description_
 
-        Returns:
-            _type_: _description_
-        """
-        return build_detection_train_loader(
+    Returns:
+        _type_: _description_
+    """
+    return build_detection_train_loader(
+        cfg,
+        mapper=DatasetMapper(
             cfg,
-            mapper=DatasetMapper(
-                cfg,
-                is_train=True,
-                augmentations=[
-                    T.Resize((800, 800)),    # is this necessary/helpful?
-                    T.RandomBrightness(0.8, 1.8),
-                    T.RandomContrast(0.6, 1.3),
-                    T.RandomSaturation(0.8, 1.4),
-                    T.RandomRotation(angle=[90, 90], expand=False),
-                    T.RandomLighting(0.7),
-                    T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
-                    T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
-                ],
-            ),
-        )
+            is_train=True,
+            augmentations=[
+                T.Resize((800, 800)),    # is this necessary/helpful?
+                T.RandomBrightness(0.8, 1.8),
+                T.RandomContrast(0.6, 1.3),
+                T.RandomSaturation(0.8, 1.4),
+                T.RandomRotation(angle=[90, 90], expand=False),
+                T.RandomLighting(0.7),
+                T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
+                T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
+            ],
+        ),
+    )
 
 
 def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
