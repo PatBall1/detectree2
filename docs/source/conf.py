@@ -34,9 +34,12 @@ release = '0.0.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.autosectionlabel', # cannot get this to work
+              'sphinx.ext.todo',
               'nbsphinx'  # enables *.ipynb to be rendered in the docs as pages / notebooks
               ]
-
+autosectionlabel_prefix_document = True
+todo_include_todos = True
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
