@@ -189,7 +189,7 @@ def project_to_geojson(
             # print("Img dict:", img_dict)
 
             # load the json file we need to convert into a geojson
-            with open(pred_fold + _ + img_dict["filename"]) as prediction_file:
+            with open(pred_fold + "/" + img_dict["filename"]) as prediction_file:
                 datajson = json.load(prediction_file)
             # print("data_json:",datajson)
 

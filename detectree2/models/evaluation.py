@@ -163,7 +163,7 @@ def initialise_feats(
     EPSG
 ):
     """Creates a list of all the features as objects of the class."""
-    with open(directory + file) as feat_file:
+    with open(directory + "/" + file) as feat_file:
         feat_json = json.load(feat_file)
     feats = feat_json["features"]
 
@@ -353,16 +353,14 @@ def site_f1_score(tile_directory=None,
             tile_width = get_tile_width(file) * scaling[0]
             area_threshold = ((tile_width)**2) * area_fraction_limit
 
-            test_lidar = tile_directory + file
+            test_lidar = tile_directory + "/" + file
             all_test_feats = initialise_feats(test_directory, file, test_lidar,
                                               lidar_img, area_threshold,
                                               conf_threshold, border_filter,
                                               tile_width, EPSG)
 
-            pred_file_path = "Prediction_" + file.replace(
-                '.geojson', '_eval.geojson')
-            pred_lidar = tile_directory + "/" + pred_file_path.replace(
-                '_eval.geojson', '.geojson')
+            pred_file_path = "Prediction_" + file
+            pred_lidar = tile_directory + "/predictions/" + pred_file_path
             all_pred_feats = initialise_feats(pred_directory, pred_file_path,
                                               pred_lidar, lidar_img,
                                               area_threshold, conf_threshold,
