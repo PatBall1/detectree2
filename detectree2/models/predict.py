@@ -10,7 +10,7 @@ import cv2
 from detectron2.engine import DefaultPredictor
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 
-from detectree2.models.train import get_filenames
+from detectree2.models.train import get_filenames, get_tree_dicts
 
 # Code to convert RLE data from the output instances into Polygons, a small about of info is lost but is fine.
 # https://github.com/hazirbas/coco-json-converter/blob/master/generate_coco_json.py <-- found here
@@ -34,13 +34,15 @@ def predict_on_data(
     Path(pred_dir).mkdir(parents=True, exist_ok=True)
 
     if eval:
-        dataset_dicts = get_tree_dicts(test_location)
+        dataset_dicts = get_tree_dicts(directory)
     else:
-        dataset_dicts = get_filenames(test_location)
+        dataset_dicts = get_filenames(directory)
 
     # Works out if all items in folder should be predicted on
-
-    num_to_pred = len(dataset_dicts)
+    if num_predictions == 0:
+        num_to_pred = len(dataset_dicts)
+    else:
+        num_to_pred = num_predictions
 
     for d in random.sample(dataset_dicts, num_to_pred):
         img = cv2.imread(d["file_name"])
