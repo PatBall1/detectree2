@@ -35,6 +35,7 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 from IPython.display import display
 from PIL import Image
 
+
 class LossEvalHook(HookBase):
     """Do inference and get the loss metric.
 
