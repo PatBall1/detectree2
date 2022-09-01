@@ -390,15 +390,13 @@ def combine_dicts(root_dir: str,
         tree_dicts = []
         for d in train_dirs:
             tree_dicts += get_tree_dicts(d)
-        return tree_dicts
     elif mode == "val":
         tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)])
-        return tree_dicts
     elif mode == "full":
         tree_dicts = []
         for d in train_dirs:
             tree_dicts += get_tree_dicts(d)
-        return tree_dicts
+    return tree_dicts
 
 
 def get_filenames(directory: str):
