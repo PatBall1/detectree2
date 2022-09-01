@@ -22,8 +22,9 @@ jobs:
         pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu \
         opencv-python wandb numpy==1.23 sphinx
         python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
+        pip install --upgrade Pygments
         pip install . 
-        pip install sphinx_rtd_theme nbsphinx
+        pip install sphinx_rtd_theme nbsphinx 
         sphinx-apidoc -f -o ./docs/source/ detectree2/
         sphinx-build -b html docs/source/ docs/build/html
     # - name: Build HTML
