@@ -1,10 +1,10 @@
-==================
+******************
 Contributing guide
-==================
+******************
 
 .. contents::
 
-
+==========================
 Contributing to Detectree2
 ==========================
 
@@ -32,7 +32,8 @@ Bug reports are important in helping identify things that aren't working in dete
 Detectree2 Github tips
 ----------------------
 
-There are many excellent resources for learning Git: 
+There are many excellent resources for learning Git. See :doc:`using-git`, for a brief overview of Git and Github. For tips relating to detectree2 see `detectree2 tips`_. 
+
 
 * `<https://github.com/JamesFergusson/Introduction-to-Research-Computing/blob/master/05_BestPractice_GIT.md>`_
 * `<https://www.bristol.ac.uk/acrc/research-software-engineering/training/>`_
@@ -43,42 +44,51 @@ There are many excellent resources for learning Git:
  
 
 
-Git Rebase/Merge during PR
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Tips for creating a detectree2 PR
+----------------------------------
+.. _detectree2 tips:
 
-It is strongly recommended to sync master with the feature branch during the submission of a PR. One can either         ``merge`` master or ``rebase`` on master to sync changes. Either is fine in practice, but for large projects, with many contributors it is considered good practice to ``rebase`` to keep the history linear.
+First consult :doc:`using-git` or any of the above resources if you are unclear on how to create a good PR. Also see `issue/6 <https://github.com/PatBall1/detectree2/pull/6#issuecomment-1189473815>`_ for some recommendatations on best practices when forking a project. 
 
-However, I would **strongly recommend** the ``squash and merge`` approach when committing a PR to master (this is done using the github UI). This combines all of the commits into one commit in the base branch with an option to edit a commit summary. Therefore we do not need to worry about the effects of merging in other branches on the project history.  It is possible to make this the default behaviour in the repository settings. 
+It is good to keep the PR's feature branch up-to-date with master during the PR submission and review process. One can either ``merge`` master or ``rebase`` on master.  For detectree2 it is **strongly recommended** to ``squash and merge`` when committing a PR to master (this is done using the GitHub UI). It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more consise message of the PR's contributions). Therefore we do not need to worry about the effects of ``merging`` in other branches on the project history and this can be done as many times as desired. 
 
-If for any reason you do not want to squash and merge the commits (i.e. to keep the PR's commit history in tact), I would suggest rebasing. 
+TIP: It is possible to make this the default behaviour in the repository settings. 
+
+If for any reason you do not want to ``squash and merge`` the commits (i.e. to keep the PR's commit history in tact), I would suggest rebasing. Rebasing is more involved than merging but leads to a linear history. 
 
 TIP: Try to avoid merging the PR to a `dev` branch. This is considered bad practice since when it comes to merge to master the eventual `PR` can be large and difficult to understand. PRs should have a single focus. 
 
 TIP: Delete the branch after merging to master. 
 
-TIP: Many of the recommendations above can be made default in Github's settings:
+TIP: Always nominate a collaborator to review the PR before merging. 
+
+TIP: Do not merge unless all tests are passing. 
+
 
 .. todo::
-    * Prohibit commits direct to master.
-    * Automatically squash on merge.
-    * Prevent merge unless all tests are passing. 
-    * Only allow a merge if approved by assigned Reviewers. 
+    * Many of the recommendations above can be made default in Github's settings:
+        * Prohibit commits direct to master.
+        * Automatically squash on merge.
+        * Prevent merge unless all tests are passing. 
+        * Only allow a merge if approved by assigned Reviewers. 
+    * Change ``master`` to ``main``. GitHub provides a step-by-step walkthrough.
 
-
-
+===============================
 Detectree2 setup for developers
 ===============================
 
-For projects with many contributors it is good to adhere to a programming style and testing framework. Settings for detectree2 are given in `setup.cfg`, in the project root. 
+For projects with many contributors it is good practice to adhere to a programming style and testing framework. The programming style is enforced with a combination of the autoformatter ``autopep8`` and a `style guide`. Settings for detectree2's programming style components are given in `setup.cfg`, in the project root. The actual style guide is found in the `programming style`_ section.
 
-We adopt `GitHub actions` to deploy our software development workflows `detectree2/actions <https://github.com/PatBall1/detectree2/actions>`_, workflows are steered automatically using github actions in `.github/workflows <https://github.com/PatBall1/detectree2/tree/master/.github/workflows>`_ directory, a good example is: `python-app.yaml <https://github.com/PatBall1/detectree2/tree/master/.github/workflows/python-app.yml>`_.  The code checks are triggered automatically on pushing to a branch. The workflows detail the required dependencies for developing and testing detectree2, and should be consulted if anything in the following section is unclear. 
+We adopt `GitHub actions` to deploy software development workflows `detectree2/actions <https://github.com/PatBall1/detectree2/actions>`_, workflows are steered automatically using github actions in `.github/workflows <https://github.com/PatBall1/detectree2/tree/master/.github/workflows>`_ directory, a good example is: `python-app.yaml <https://github.com/PatBall1/detectree2/tree/master/.github/workflows/python-app.yml>`_.  The code checks are triggered automatically on pushing to a branch. The workflows detail the required dependencies for developing and testing detectree2, and should be consulted if anything in the following section is unclear. 
 
 For reference, the relevant ``detectree2`` subprojects are:
 
-* `detectree2-docker GitHub repo <https://github.com/ma595/detectree2-docker>`_
-* `detectree2-data GitHub repo <https://github.com/ma595/detectree2-data>`_
-* `anaconda distribution <https://anaconda.org/ma595/detectree2>`_
+* `detectree2-docker GitHub repo <https://github.com/ma595/detectree2-docker>`_ For docker containers used in CI. 
+* `detectree2-data GitHub repo <https://github.com/ma595/detectree2-data>`_ For example data used in CI. 
+* `anaconda distribution <https://anaconda.org/ma595/detectree2>`_ detectree2 conda package. 
 
+.. todo::
+    * Publish model on model_zoo 
 
 Setting up development environment
 ----------------------------------
@@ -92,56 +102,112 @@ Using conda or pip (below we show pip)::
 
 Programming style
 -----------------
+.. _programming style:
 
-Detectree2 currently utilises the following tools for code style checks. It is recommended to run these locally before pushing code as the CI will not pass unless each test is successful. To see up-to-date exact commands, consult the relevant workflow. Note that different versions of python (+packages) may give different errors, so correcting errors may take a few attempts. 
+Detectree2 currently utilises the following tools check code style and consistency. It is recommended to run these locally before pushing code as the CI will not pass unless each test is successful. To see up-to-date commands, consult the relevant workflow. Note that different versions of python (+packages) may give different errors to the CI, so correcting errors may take a few attempts. 
 
-- ``autopep8``: Ensure consistent formatting of Python files 
-- ``mypy``: Validate Python type hints 
 - ``flake8``: Multiple checks for - linting - syntax errors or anti-patterns - (lack of) executable flags on files - docstring validation - function complexity
+- ``mypy``: Validate Python type hints 
 - ``isort``: Checks that imports are correctly sorted
+- ``autopep8``: Ensure consistent formatting of Python files 
 
-Other style choices:
+A number of other style choices have been enforced across the project:
 
 * Line length = 120 characters
 * Google style docstrings
-* Function signatures and comments span 120 character length
+* Function signatures and comments span entire line length (120 characters). Avoid one line per function argument both in the function signature and when calling the function (i.e. avoid ``Black`` style). This is more in line with the "official" approach. 
+* Indent width = 4 spaces per tab.
 
-Flake8
-^^^^^^
+WARNING: ``Flake8`` will **not** detect infringements in the function signature style (and other aspects) if it still adheres to the PEP8 standard, and ``autopep8`` will not enforce it. The reviewers must ensure that the standards above are maintained, and update the style guide accordingly.
+
+We therefore opt for a less strict autoformatter in favour of a style-guide. Strict autoformatters ensure consistency, but at the detriment to readability. 
+
+As an aside: The difference between the strict autoformatter ``black`` and the style we adopt here is demonstrated for function arguments with the example below. Both examples are PEP8 compliant and will pass ``flake8`` linting checks. The former is better for diffs and typing clarity, whereas the latter is fewer lines. 
+
+.. code-block:: python3
+    # black: 
+    def tile_data(
+        data: DatasetReader,
+        out_dir: str,
+        buffer: int = 30,
+        tile_width: int = 200,
+        tile_height: int = 200,
+        dtype_bool: bool = False
+    ) -> None:
+
+    
+    # our `style-guide`
+
+    def tile_data(data: DatasetReader, out_dir: str, buffer: int = 30, tile_width: int = 200, tile_height: int = 200,
+                  dtype_bool: bool = False) -> None:
+
+    
+.. todo::
+    * Extend style-guide. 
+    * Function arguments on individual lines may be preferred to make diffs slightly clearer. But I recommend writing a comprehensive style-guide (by extending the above) rather than using a strict autoformatter like black. 
+
+
+Linting
+------
 Flake8 includes linting, syntax errors, and McCabe function complexity analysis. 
 
-The are several instances where Flake8 errors have been purposely ignored using ``noqa: <CODE>`` annotations to allow flake8 CI to pass. This is not a permanent fix and the errors should eventually be addressed. For example: ``noqa: E501`` ensures that line lengths beyond (120 characters) are ignored by the linter and ``noqa: 901`` ignores the McCabe complexity measure. 
+The are several instances where Flake8 errors have been purposely ignored in Detectree2 using ``noqa: <CODE>`` annotations to allow flake8 CI to pass. This is not a permanent fix and the errors should eventually be addressed. For example: ``noqa: E501`` ensures that line lengths beyond (120 characters) are ignored by the linter and ``noqa: 901`` ignores the McCabe complexity measure. 
 
 These can also be set globally in setup.cfg, but fewer the better. It is also possible to set ``continue-on-error`` in the flake8 workflow or ``--exit-zero`` flake8 argument to allow other checks to continue. In practice it was found that developers tend to ignore flake8 errors as a result of these two options, so the ``noqa`` solution is preferred. 
 
 McCabe function complexity analysis is useful for detecting over-complex code (as determined by the amount of branching - `if`, `else` statements). A value of 10 is set as default. 
 
 Docstrings
-^^^^^^^^^^
+----------
 
 We adopt google docstrings (`<https://google.github.io/styleguide/pyguide.html>`_)
 
 Other dependencies include ``flake8-docstrings``, 
 
 .. todo::
-
     * Remove ``pydocstyle``
+
+Autoformatters
+--------------
+We adopt ``Autopep8`` for this project, but others are listed for completion. 
 
 Autopep8
 ^^^^^^^^
+Autopep8 is an autoformatter (like black) with enforces the ``PEP8`` style guide. Autopep8 is a loose formatter, which will fix PEP8 errors but will not make the code uniform. It relies a little more on the programmer, whereas ``black``, which also produces PEP8 compatible code, is far more opinionated in its approach.::
 
-Autopep8 is an autoformatter (like black) with enforces the ``pep8`` standard. 
+    pip install --upgrade autopep8 # if not already installed
+    autopep8 --in-place --aggressive --aggressive <filename>
 
+It is possible to configure vscode to autoformat with ``autopep8`` on save if desired. 
+
+.. todo::
+    * Consider configuring YAPF with pep8 settings to create unformity for project contributors.
+
+Black
+^^^^^
+Black is a good alternative and is easier to make work in large teams, however it is considered a little too opinionated in its approach. 
+
+YAPF
+^^^^
+From the `YAPF docs <https://github.com/google/yapf>`_:
+    Most of the current formatters for Python --- e.g., autopep8, and pep8ify --- are made to remove lint errors from code. This has some obvious limitations. For instance, code that conforms to the PEP 8 guidelines may not be reformatted. But it doesn't mean that the code looks good.
+
+YAPF is highly customisable and shares a similar philosophy to ``black``. It is possible to customise behaviour of any autoformatter like ``autopep8`` or ``black`` with  project modifications. 
 
 Static typing
-^^^^^^^^^^^^^
+-------------
 
-Static typing is written for compatibility with python3.7 and above. The mypy syntax could be updated as the project moves towards more modern python3. `mypy` will attempt to type check all third-party libraries which might not be desirable. However, it is possible to install stubs for third-party libraries (i.e. ``pandas``, ``openCV``) if type-checking is desired, but it is easier to suppress all missing import errors libraries by adding  ``ignore_missing_imports = True`` in ``setup.cfg``.
+From the `Mypy docs <http://mypy-lang.org/>`_:
 
+    Mypy is an optional static type checker for Python that aims to combine the benefits of dynamic (or 'duck') typing and static typing. Mypy combines the expressive power and convenience of Python with a powerful type system and compile-time type checking.
+
+The `mypy` syntax adopted in Detectree2 supports python3.7 and above, but could be updated as the project moves towards more modern python3 (I see no reason not to adopt python 3.10). `mypy` will attempt to type check all third-party libraries - which might not be desirable. It is possible to install stubs for third-party libraries (i.e. ``pandas``, ``openCV``) if type-checking is desired, but it is easier to suppress all missing import errors libraries by adding  ``ignore_missing_imports = True`` in ``setup.cfg``.
+
+======================
 Continuous integration
 ======================
 
-The idea of Continuous integration (CI) is to frequently commit code to a shared repo. This has the effect of detecting errors sooner thereby reducing the amount of code a developer needs to debug when finding an error. Frequent updates also make it easier to merge changes from different members of the software development team. This is especially powerful when paired with the ability to build and test the code. Testing can include code linters, unit and integration tests. 
+The idea of Continuous integration (CI) is to frequently commit code to a shared repo. This has the effect of detecting errors sooner thereby reducing the amount of code a developer needs to debug when finding an error. Frequent updates also make it easier to merge changes from different members of the software development team. This is especially powerful when paired automated code building and testing. Testing can include code linters, as well as unit and integration tests. 
 
 Building and testing code requires a server. CI using GitHub actions offers workflows that can build the repository code and run tests. We can run on GitHub's own virtual machines (using GitHub-hosted runners), or on machines that we host ourselves (or on compute clusters). The latter is desirable as GitHub does not currently support access to GPU resources.
 
@@ -167,9 +233,10 @@ All dockerfiles are in `github:ma595/detectree2-docker <https://github.com/ma595
     - Style check documentation.
 
 
-
+=======================
 Automatic Documentation
 =======================
+
 Documentation is generated automatically using Sphinx and GitHub actions in `documentation.yaml <https://github.com/PatBall1/detectree2/blob/master/.github/workflows/documentation.yaml>`_. 
 
 Documentation can be generated locally to test rendering. It is better to develop locally rather than rely on the CI and hosted docs as a check, as it can take quite some time to build using the workflow. 
@@ -183,12 +250,13 @@ Then generate api documentation, and build the html.::
     sphinx-apidoc -o ./docs/source/ detectree2/
     sphinx-build -b html docs/source/ docs/build/html
 
-Then using your favourite browser open docs/build/html/index.html
+Then using your favourite browser open docs/build/html/index.html. It's often necessary to delete the build output to remove old html.
 
 .. todo::
 
     * Style checks on documentation. 
 
+=====
 Tests
 =====
 
@@ -209,13 +277,13 @@ TIP: Always write tests for newly introduced logic when contributing code.
 
     * Write more unit tests for existing code. 
 
-
+===================
 Building Detectree2 
 ===================
 
 GDAL complexities
 -----------------
-GDAL presents a number of complexities. We must point to the location of the preinstalled GDAL headers, and the GDAL version must match the pip package version. https://github.com/OSGeo/gdal/issues/2293
+GDAL presents a number of complexities. The issue is covered in `gdal/issue <https://github.com/PatBall1/detectree2/issues/1>`_ We must point to the location of the preinstalled GDAL headers, and the GDAL version must match the pip package version. https://github.com/OSGeo/gdal/issues/2293
 For instance, on my cluster::
 
     gdal-config -v  # gives 3.0.4
@@ -313,7 +381,7 @@ The downside of this approach is that it takes much longer to install compared t
     * It is possible to combine Conda and Poetry, where Conda is used for packages like GDAL / detectron2 / openCV. 
 
 Distributing detectree2 using Conda
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------------
 
 In the `matt/conda <https://github.com/PatBall1/detectree2/tree/matt/conda>`_ branch, the `conda/meta.yaml <https://github.com/PatBall1/detectree2/blob/matt/conda/conda/meta.yaml>`_ packages detectree2. An initial attempt can be found here: `ma595/detectree2 <https://anaconda.org/ma595/detectree2>`_. To install, do the following::
 
@@ -331,11 +399,13 @@ Then upload to anaconda::
 .. todo::
     * Automate distribution of package to `anaconda <https://anaconda.org/ma595/detectree2>`_ using workflow. 
 
+==============================
 Python development environment
-------------------------------
+==============================
 
 .. todo::
-    * Setting up visual studio. ``dev-environment.yaml`` file? 
+    * Setting up visual studio. 
+    * Create ``dev-environment.yaml`` file.
 
 
 
