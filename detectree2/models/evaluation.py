@@ -186,7 +186,7 @@ def initialise_feats(
 def save_feats(tile_directory, all_feats):
     """Collating all the information for the features back into a geojson
     to save."""
-    adjusted_directory = tile_directory + "adjusted/"
+    adjusted_directory = tile_directory + "/adjusted/"
     Path(adjusted_directory).mkdir(parents=True, exist_ok=True)
 
     geofile = {
