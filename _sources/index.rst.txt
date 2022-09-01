@@ -21,6 +21,7 @@ ecological applications.  Here is an example image of the predictions made by Ma
    :alt: Prediction
    :align: center
 
+
 Code developed by Seb Hickman, James Ball, Thomas Koay, Panagiotis Ioannou and James Hinton in the `Forest Ecology and Conservation Group <https://coomeslab.org/>`_ 
 at the University of Cambridge.  The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge `Conservation Research Institute <https://www.conservation.cam.ac.uk/>`_.
 Original MRes project repo at https://github.com/shmh40/detectreeRGB.

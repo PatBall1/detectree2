@@ -4,14 +4,6 @@ detectree2.preprocessing package
 Submodules
 ----------
 
-detectree2.preprocessing.FixJsonForTrain module
------------------------------------------------
-
-.. automodule:: detectree2.preprocessing.FixJsonForTrain
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 detectree2.preprocessing.crowns module
 --------------------------------------
 
