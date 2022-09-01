@@ -16,10 +16,11 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Usage" href="usage.html" /> 
+    <link rel="next" title="1. Installation" href="installation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,8 +40,9 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">2. Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">3. Contributing guide</a></li>
 </ul>
 
         </div>
@@ -67,7 +69,31 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="detectree2">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="detectree2">
 <h1>Detectree2<a class="headerlink" href="#detectree2" title="Permalink to this heading"></a></h1>
 <p><a class="reference external" href="https://github.com/PatBall1/detectree2">Detectree2</a>, based on the <a class="reference external" href="https://github.com/facebookresearch/detectron2">Detectron2</a>
 Mask R-CNN architecture, locates trees in aerial images.
@@ -80,15 +106,22 @@ Original MRes project repo at <a class="reference external" href="https://github
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">2. Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#preparing-data">2.1. Preparing data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#training-a-model">2.2. Training a model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#evaluating-model-performance">2.3. Evaluating model performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#generating-landscape-predictions">2.4. Generating landscape predictions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#preparing-data">1. Preparing data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#training-a-model">2. Training a model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#evaluating-model-performance">3. Evaluating model performance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#generating-landscape-predictions">4. Generating landscape predictions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">3. Contributing guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#contributing-to-detectree2">3.1. Contributing to Detectree2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#detectree2-setup-for-developers">3.2. Detectree2 setup for developers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#continuous-integration">3.3. Continuous integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#automatic-documentation">3.4. Automatic Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#tests">3.5. Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#building-detectree2">3.6. Building Detectree2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#python-development-environment">3.7. Python development environment</a></li>
 </ul>
 </li>
 </ul>
@@ -107,7 +140,7 @@ Original MRes project repo at <a class="reference external" href="https://github
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="usage.html" class="btn btn-neutral float-right" title="Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="1. Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

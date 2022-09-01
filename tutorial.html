@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tutorial &mdash; detectree2 0.0.1 documentation</title>
+  <title>2. Tutorial &mdash; detectree2 0.0.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -16,10 +16,12 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Usage" href="usage.html" /> 
+    <link rel="next" title="3. Contributing guide" href="contributing.html" />
+    <link rel="prev" title="1. Installation" href="installation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,14 +41,15 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#preparing-data">1. Preparing data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#training-a-model">2. Training a model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#evaluating-model-performance">3. Evaluating model performance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#generating-landscape-predictions">4. Generating landscape predictions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">2. Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#preparing-data">2.1. Preparing data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#training-a-model">2.2. Training a model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluating-model-performance">2.3. Evaluating model performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#generating-landscape-predictions">2.4. Generating landscape predictions</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">3. Contributing guide</a></li>
 </ul>
 
         </div>
@@ -63,7 +66,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Tutorial</li>
+      <li><span class="section-number">2. </span>Tutorial</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/tutorial.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -73,8 +76,32 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="tutorial">
-<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this heading"></a></h1>
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="tutorial">
+<h1><span class="section-number">2. </span>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this heading"></a></h1>
 <p>A tutorial for:</p>
 <ol class="arabic simple">
 <li><p>preparing data</p></li>
@@ -83,11 +110,11 @@
 <li><p>making landscape level predictions</p></li>
 </ol>
 <p>Before getting started ensure detectree2 is installed either through</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">(.venv) $</span>pip install detectree2
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$</span>pip install detectree2
 </pre></div>
 </div>
 <p>or</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">(.venv) $</span>conda install detectree2 -c conda-forge
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$</span>conda install detectree2 -c conda-forge
 </pre></div>
 </div>
 <p>To train a model you will need an orthomosaic (as <code class="docutils literal notranslate"><span class="pre">&lt;orthmosaic.tif</span></code>) and</p>
@@ -98,18 +125,18 @@ sparsely scattered across in the landscape</p>
 <p>If you would just like to make predictions on an orthomosaic with a pre-trained
 model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code>, skip to part 4.</p>
 <section id="preparing-data">
-<h2>1. Preparing data<a class="headerlink" href="#preparing-data" title="Permalink to this heading"></a></h2>
+<h2><span class="section-number">2.1. </span>Preparing data<a class="headerlink" href="#preparing-data" title="Permalink to this heading"></a></h2>
 <p>An example of the recommended file structure when training a new model is as follows:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>├── Danum                                       <span class="o">(</span>site directory<span class="o">)</span>
 │   ├── rgb
-│   │   └── Dan_2014_RGB_project_to_CHM.tif     <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
+│   │   └── Dan_2014_RGB_project_to_CHM.tif     <span class="o">(</span>RGB orthomosaic <span class="k">in</span> <span class="nb">local</span> UTM CRS<span class="o">)</span>
 │   └── crowns
 │       └── Danum.gpkg                          <span class="o">(</span>Crown polygons readable by geopandas e.g. Geopackage, shapefile<span class="o">)</span>
 │
 └── Paracou                                     <span class="o">(</span>site directory<span class="o">)</span>
     ├── rgb
-    │   ├── Paracou_RGB_2016_10cm.tif           <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
-    │   └── Paracou_RGB_2019.tif                <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
+    │   ├── Paracou_RGB_2016_10cm.tif           <span class="o">(</span>RGB orthomosaic <span class="k">in</span> <span class="nb">local</span> UTM CRS<span class="o">)</span>
+    │   └── Paracou_RGB_2019.tif                <span class="o">(</span>RGB orthomosaic <span class="k">in</span> <span class="nb">local</span> UTM CRS<span class="o">)</span>
     └── crowns
         └── UpdatedCrowns8.gpkg                 <span class="o">(</span>Crown polygons readable by geopandas e.g. Geopackage, shapefile<span class="o">)</span>
 </pre></div>
@@ -123,7 +150,7 @@ directory (see e.g <code class="docutils literal notranslate"><span class="pre">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data_train</span><span class="p">,</span> <span class="n">to_traintest_folders</span>
 <span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">register_train_data</span><span class="p">,</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
 <span class="kn">import</span> <span class="nn">rasterio</span>
-<span class="kn">import</span> <span class="nn">geopandas</span> <span class="kn">as</span> <span class="nn">gpd</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 </pre></div>
 </div>
 <p>Set up the paths for the orthomosaic and corresponding manual crown data.</p>
@@ -146,14 +173,14 @@ directory (see e.g <code class="docutils literal notranslate"><span class="pre">
 <p>The tile size will depend on:
 - The resolution of your imagery</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set tiling parameters</span>
-<span class="nb">buffer</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">buffer</span> <span class="o">=</span> <span class="mi">30</span>
 <span class="n">tile_width</span> <span class="o">=</span> <span class="mi">40</span>
 <span class="n">tile_height</span> <span class="o">=</span> <span class="mi">40</span>
 <span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.6</span>
 </pre></div>
 </div>
 <p>Next we tile the data</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tile_data_train</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">crowns</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tile_data_train</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">crowns</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="simple">
@@ -169,7 +196,7 @@ spatial separation</p>
 <p>Are data is now tiled and partitioned for training and model evaluation</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>└── Danum                                       <span class="o">(</span>site directory<span class="o">)</span>
     ├── rgb
-    │   └── Dan_2014_RGB_project_to_CHM.tif     <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
+    │   └── Dan_2014_RGB_project_to_CHM.tif     <span class="o">(</span>RGB orthomosaic <span class="k">in</span> <span class="nb">local</span> UTM CRS<span class="o">)</span>
     ├── crowns
     │   └── Danum.gpkg
     └── tiles                                   <span class="o">(</span>tile directory<span class="o">)</span>
@@ -182,7 +209,7 @@ spatial separation</p>
 </div>
 </section>
 <section id="training-a-model">
-<h2>2. Training a model<a class="headerlink" href="#training-a-model" title="Permalink to this heading"></a></h2>
+<h2><span class="section-number">2.2. </span>Training a model<a class="headerlink" href="#training-a-model" title="Permalink to this heading"></a></h2>
 <p>Register the training data. It is possible to set a validation fold for model
 evaluation</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_location</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/&quot;</span>
@@ -206,10 +233,10 @@ evaluation</p>
 </div>
 </section>
 <section id="evaluating-model-performance">
-<h2>3. Evaluating model performance<a class="headerlink" href="#evaluating-model-performance" title="Permalink to this heading"></a></h2>
+<h2><span class="section-number">2.3. </span>Evaluating model performance<a class="headerlink" href="#evaluating-model-performance" title="Permalink to this heading"></a></h2>
 </section>
 <section id="generating-landscape-predictions">
-<h2>4. Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Permalink to this heading"></a></h2>
+<h2><span class="section-number">2.4. </span>Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Permalink to this heading"></a></h2>
 </section>
 </section>
 
@@ -217,7 +244,8 @@ evaluation</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="usage.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral float-left" title="1. Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="contributing.html" class="btn btn-neutral float-right" title="3. Contributing guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
