@@ -1,3 +1,9 @@
+"""Tiling orthomosaic and crown data
+
+These functions tile orthomosaics and crown data for training and evaluation
+of models and making landscape predictions.
+"""
+
 import glob
 import json
 import os
@@ -64,6 +70,7 @@ def tile_data(data: DatasetReader,
     """
     # Should clip data to crowns straight off to speed things up
     os.makedirs(out_dir, exist_ok=True)
+    crs = data.crs.data["init"].split(":")[1]
     # out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
                           tile_width, int):
@@ -73,7 +80,7 @@ def tile_data(data: DatasetReader,
             # Naming conventions
             tilename = Path(data.name).stem
             out_path = out_dir + tilename + "_" + str(minx) + "_" + str(
-                miny) + "_" + str(tile_width) + "_" + str(buffer)
+                miny) + "_" + str(tile_width) + "_" + str(buffer) + "_" + crs
             # new tiling bbox including the buffer
             bbox = box(
                 minx - buffer,
@@ -88,7 +95,7 @@ def tile_data(data: DatasetReader,
             # turn the bounding boxes into geopandas DataFrames
             geo = gpd.GeoDataFrame({"geometry": bbox},
                                    index=[0],
-                                   crs=from_epsg(4326))
+                                   crs=data.crs)
             # geo_central = gpd.GeoDataFrame(
             #    {"geometry": bbox_central}, index=[0], crs=from_epsg(4326)
             # )  # 3182
@@ -196,13 +203,14 @@ def tile_data_train(data: DatasetReader,
     out_path = Path(out_dir)
     os.makedirs(out_path, exist_ok=True)
     tilename = Path(data.name).stem
+    crs = data.crs.data["init"].split(":")[1]
     # out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
                           tile_width, int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
 
-            out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}"
+            out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
 
             # new tiling bbox including the buffer
             bbox = box(
@@ -218,7 +226,7 @@ def tile_data_train(data: DatasetReader,
             # turn the bounding boxes into geopandas DataFrames
             geo = gpd.GeoDataFrame({"geometry": bbox},
                                    index=[0],
-                                   crs=from_epsg(4326))
+                                   crs=data.crs)
             # geo_central = gpd.GeoDataFrame(
             #    {"geometry": bbox_central}, index=[0], crs=from_epsg(4326)
             # )  # 3182
@@ -249,9 +257,9 @@ def tile_data_train(data: DatasetReader,
             sumzero = zero_mask.sum()
             sumnan = nan_mask.sum()
             totalpix = out_img.shape[1] * out_img.shape[2]
-            if sumzero > 0.25 * totalpix: # reject tiles with many 0 cells
+            if sumzero > 0.25 * totalpix:  # reject tiles with many 0 cells
                 continue
-            elif sumnan > 0.25 * totalpix: # reject tiles with many NaN cells
+            elif sumnan > 0.25 * totalpix:  # reject tiles with many NaN cells
                 continue
 
             # out_img = out_img.astype("uint8")
@@ -372,7 +380,8 @@ def tile_data_train(data: DatasetReader,
 
 
 def image_details(fileroot):
-    """Take a filename and split it up to get the coordinates, tile width and the buffer and then output box structure.
+    """Take a filename and split it up to get the coordinates, tile width and
+    the buffer and then output box structure.
 
     Args:
         fileroot: image filename without file extension
@@ -381,10 +390,10 @@ def image_details(fileroot):
         Box structure
     """
     image_info = fileroot.split("_")
-    minx = int(image_info[-4])
-    miny = int(image_info[-3])
-    tile_width = int(image_info[-2])
-    buffer = int(image_info[-1])
+    minx = int(image_info[-5])
+    miny = int(image_info[-4])
+    tile_width = int(image_info[-3])
+    buffer = int(image_info[-2])
 
     xbox_coords = (minx - buffer, minx + tile_width + buffer)
     ybox_coords = (miny - buffer, miny + tile_width + buffer)
@@ -419,7 +428,8 @@ def to_traintest_folders(tiles_folder: str = "./",
                          out_folder: str = "./data/",
                          test_frac: float = 0.2,
                          folds: int = 1):
-    """Send tiles to training (+validation) and test dir and automatically make sure no overlap.
+    """Send tiles to training (+validation) and test dir and automatically
+    making sure no overlap between test tiles and train tiles.
 
     Args:
         tiles_folder:
@@ -430,7 +440,10 @@ def to_traintest_folders(tiles_folder: str = "./",
     Returns:
         None
     """
-
+    if Path(out_folder + "train").exists() and Path(out_folder + "train").is_dir():
+        shutil.rmtree(Path(out_folder + "train"))
+    if Path(out_folder + "test").exists() and Path(out_folder + "test").is_dir():
+        shutil.rmtree(Path(out_folder + "test"))   
     Path(out_folder + "train").mkdir(parents=True, exist_ok=True)
     Path(out_folder + "test").mkdir(parents=True, exist_ok=True)
 
@@ -496,7 +509,6 @@ if __name__ == "__main__":
     buffer = 20
     tile_width = 200
     tile_height = 200
-    # resolution = 0.6 # in metres per pixel - @James Ball can you get this from the tiff?
 
     tile_data_train(data, out_dir, buffer, tile_width, tile_height, crowns)
     to_traintest_folders(folds=5)

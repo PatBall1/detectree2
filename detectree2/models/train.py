@@ -1,3 +1,8 @@
+"""Train a model.
+
+Classes and functions to train a model based on othomosaics and corresponding
+manual crown data.
+"""
 import datetime
 import glob
 import json
@@ -172,6 +177,7 @@ class MyTrainer(DefaultTrainer):
 
     def __init__(self, cfg, patience):
         self.patience = patience
+        #self.resize = resize
         super().__init__(cfg)
 
     def train(self):
@@ -221,8 +227,8 @@ class MyTrainer(DefaultTrainer):
     @classmethod
     def build_evaluator(cls, cfg, dataset_name, output_folder=None):
         if output_folder is None:
-            os.makedirs("eval_2", exist_ok=True)
-            output_folder = "eval_2"
+            os.makedirs("eval", exist_ok=True)
+            output_folder = "eval"
         return COCOEvaluator(dataset_name, cfg, True, output_folder)
 
     def build_hooks(self):
@@ -242,28 +248,33 @@ class MyTrainer(DefaultTrainer):
 
 def build_train_loader(cls, cfg):
     """Summary.
+        Args:
+            cfg (_type_): _description_
 
-    Args:
-        cfg (_type_): _description_
-
-    Returns:
-        _type_: _description_
+        Returns:
+            _type_: _description_
     """
+    augmentations = [
+        T.RandomBrightness(0.8, 1.8),
+        T.RandomContrast(0.6, 1.3),
+        T.RandomSaturation(0.8, 1.4),
+        T.RandomRotation(angle=[90, 90], expand=False),
+        T.RandomLighting(0.7),
+        T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
+        T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
+    ]
+
+    if cfg.RESIZE:
+        augmentations.append(T.Resize((1000, 1000)))
+    elif cfg.RESIZE == "random":
+        augmentations.append(T.Resize((1000, 1000)))
+        augmentations.append(T.ResizeScale(800 / 1000, 1333 / 800, 1000, 1000))
     return build_detection_train_loader(
         cfg,
         mapper=DatasetMapper(
             cfg,
             is_train=True,
-            augmentations=[
-                T.Resize((800, 800)),    # is this necessary/helpful?
-                T.RandomBrightness(0.8, 1.8),
-                T.RandomContrast(0.6, 1.3),
-                T.RandomSaturation(0.8, 1.4),
-                T.RandomRotation(angle=[90, 90], expand=False),
-                T.RandomLighting(0.7),
-                T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
-                T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
-            ],
+            augmentations=augmentations,
         ),
     )
 
@@ -382,10 +393,13 @@ def combine_dicts(root_dir: str,
         tree_dicts = []
         for d in train_dirs:
             tree_dicts += get_tree_dicts(d)
-        return tree_dicts
-    else:
+    elif mode == "val":
         tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)])
-        return tree_dicts
+    elif mode == "full":
+        tree_dicts = []
+        for d in train_dirs:
+            tree_dicts += get_tree_dicts(d)
+    return tree_dicts
 
 
 def get_filenames(directory: str):
@@ -407,12 +421,26 @@ def get_filenames(directory: str):
     return dataset_dicts
 
 
-def register_train_data(train_location, name="tree", val_fold=1):
-    for d in ["train", "val"]:
+def register_train_data(train_location, name: str = "tree", val_fold=None):
+    """Register data for training and (optionally) validation
+
+    Args:
+        train_location: directory containing training folds
+        name: string to name data
+        val_fold: fold assigned for validation and tuning. If not given,
+        will take place on all folds.
+    """
+    if val_fold is not None:
+        for d in ["train", "val"]:
+            DatasetCatalog.register(
+                name + "_" + d,
+                lambda d=d: combine_dicts(train_location, val_fold, d))
+            MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
+    else:
         DatasetCatalog.register(
-            name + "_" + d,
-            lambda d=d: combine_dicts(train_location, val_fold, d))
-        MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
+            name + "_" + "full",
+            lambda d=d: combine_dicts(train_location, 0, "full"))
+        MetadataCatalog.get(name + "_" + "full").set(thing_classes=["tree"])
 
 
 def remove_registered_data(name="tree"):
@@ -452,14 +480,15 @@ def setup_cfg(base_model:
               max_iter=1000,
               num_classes=1,
               eval_period=100,
-              out_dir="/content/drive/Shareddrives/detectree2/train_outputs"):
-    """Set up config object
+              out_dir="/content/drive/Shareddrives/detectree2/train_outputs",
+              resize=True,):
+    """Set up config object.
 
     Args:
-        base_model:
-        trains:
-        tests:
-        update_model:
+        base_model: base pre-trained model from detectron2 model_zoo
+        trains: names of registered data to use for training
+        tests: names of registered data to use for evaluating models
+        update_model: updated pre-trained model from detectree2 model_garden
         workers:
         ims_per_batch:
         gamma:
@@ -478,13 +507,13 @@ def setup_cfg(base_model:
     cfg.DATASETS.TRAIN = trains
     cfg.DATASETS.TEST = tests
     cfg.DATALOADER.NUM_WORKERS = workers
-    #cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
+    cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
     cfg.SOLVER.GAMMA = gamma
     cfg.MODEL.BACKBONE.FREEZE_AT = backbone_freeze
     cfg.SOLVER.WARMUP_ITERS = warm_iter
     cfg.SOLVER.MOMENTUM = momentum
-    #cfg.MODEL.RPN.BATCH_SIZE_PER_IMAGE = batch_size_per_im
-    #cfg.SOLVER.WEIGHT_DECAY = 0.001
+    cfg.MODEL.RPN.BATCH_SIZE_PER_IMAGE = batch_size_per_im
+    cfg.SOLVER.WEIGHT_DECAY = 0.001
     cfg.SOLVER.BASE_LR = base_lr
     cfg.OUTPUT_DIR = out_dir
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
@@ -498,6 +527,7 @@ def setup_cfg(base_model:
     cfg.SOLVER.MAX_ITER = max_iter
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes
     cfg.TEST.EVAL_PERIOD = eval_period
+    cfg.RESIZE = resize
     return cfg
 
 
@@ -508,12 +538,11 @@ def predictions_on_data(directory=None,
                         scale=1,
                         geos_exist=True,
                         num_predictions=0):
-    """
-    Prediction produced from a test folder and outputted to predictions folder
+    """Prediction produced on a test folder
     """
 
-    test_location = directory + "test"
-    pred_dir = directory + "predictions"
+    test_location = directory + "/test"
+    pred_dir = test_location + "/predictions"
 
     Path(pred_dir).mkdir(parents=True, exist_ok=True)
 
