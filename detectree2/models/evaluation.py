@@ -68,7 +68,7 @@ class Feature:
     def tree_height(self):
         """Crops the lidar tif to the features and calculates height
 
-        Calculates the 95thpercentile height greatest height to account for
+        Calculates the 95th percentile height greatest height to account for
         error at the top end. If no lidar file is inputted than the height is
         given as 0
         """
@@ -353,13 +353,13 @@ def site_f1_score(tile_directory=None,
             tile_width = get_tile_width(file) * scaling[0]
             area_threshold = ((tile_width)**2) * area_fraction_limit
 
-            test_lidar = tile_directory + "/" + file
+            test_lidar = tile_directory + "/" + file.replace(".geojson", "_geo.geojson")
             all_test_feats = initialise_feats(test_directory, file, test_lidar,
                                               lidar_img, area_threshold,
                                               conf_threshold, border_filter,
                                               tile_width, EPSG)
 
-            pred_file_path = "Prediction_" + file
+            pred_file_path = "Prediction_" + file.replace(".geojson", "_eval.geojson")
             pred_lidar = tile_directory + "/predictions/" + pred_file_path
             all_pred_feats = initialise_feats(pred_directory, pred_file_path,
                                               pred_lidar, lidar_img,

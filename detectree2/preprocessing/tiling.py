@@ -219,19 +219,11 @@ def tile_data_train(data: DatasetReader,
                 minx + tile_width + buffer,
                 miny + tile_height + buffer,
             )
-            # define the bounding box of the tile, excluding the buffer (hence selecting
-            # just the central part of the tile)
-            # bbox_central = box(minx, miny, minx + tile_width, miny + tile_height)
 
             # turn the bounding boxes into geopandas DataFrames
             geo = gpd.GeoDataFrame({"geometry": bbox},
                                    index=[0],
                                    crs=data.crs)
-            # geo_central = gpd.GeoDataFrame(
-            #    {"geometry": bbox_central}, index=[0], crs=from_epsg(4326)
-            # )  # 3182
-            # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
-            # overlapping_crowns = sjoin(crowns, geo, predicate="within", how="inner")
 
             overlapping_crowns = gpd.clip(crowns, geo)
 
@@ -262,21 +254,6 @@ def tile_data_train(data: DatasetReader,
             elif sumnan > 0.25 * totalpix:  # reject tiles with many NaN cells
                 continue
 
-            # out_img = out_img.astype("uint8")
-            # Or to really narrow down the crop onto the crown area
-            # newbox = overlapping_crowns.total_bounds
-            # newbox = gpd.GeoDataFrame(
-            #    {"geometry": box(newbox[0], newbox[1], newbox[2], newbox[3])},
-            #    index=[0],
-            #    crs=from_epsg(4326),
-            # )
-            # newbox = getFeatures(newbox)
-
-            # out_img, out_transform = mask(data, shapes=newbox, crop=True)
-
-            # This can be useful when reprojecting later as know the crs format to put it into
-            # epsg_code = int(data.crs.data["init"][5:])
-            # print(epsg_code)
 
             # copy the metadata then update it, the "nodata" and "dtype" where important as made larger
             # tifs have outputted tiles which were not just black
@@ -376,6 +353,23 @@ def tile_data_train(data: DatasetReader,
                     json.dump(shp, f)
             except ValueError:
                 print("Cannot write empty DataFrame to file.")
+                continue
+            # Repeat and want to save crowns before being moved as overlap with lidar data to get the heights
+            # can try clean up the code here as lots of reprojecting and resaving but just going to get to 
+            # work for now
+            try:
+                filename_unmoved = out_path + "_geo.geojson"
+                overlapping_crowns.to_file(
+                    driver="GeoJSON",
+                    filename=filename_unmoved,
+                )
+                with open(filename_unmoved, "r") as f:
+                    shp = json.load(f)
+                    shp.update(impath)
+                with open(filename_unmoved, "w") as f:
+                    json.dump(shp, f)
+            except:
+                print("ValueError: Cannot write empty DataFrame to file.")
                 continue
 
 
