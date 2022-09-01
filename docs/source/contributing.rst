@@ -224,7 +224,7 @@ All dockerfiles are in `github:ma595/detectree2-docker <https://github.com/ma595
 
 .. todo::
 
-    - Harmonise documentation.yml and python-app.yml into single file where appropriate. There is no good reason to separate.
+    - Harmonise sphinx.yml and python-app.yml into single file where appropriate. There is no good reason to separate.
     - Add GPU testing to workflow (currently unsupported on Github, but we can use CSD3's A100 resources).
     - Prevent merge unless all tests are passing
     - Build docker image as part of an action and push to dockerhub (or use github's docker features)
