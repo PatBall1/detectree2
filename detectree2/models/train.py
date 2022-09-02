@@ -91,20 +91,12 @@ class LossEvalHook(HookBase):
             iters_after_start = idx + 1 - num_warmup * int(idx >= num_warmup)
             seconds_per_img = total_compute_time / iters_after_start
             if idx >= num_warmup * 2 or seconds_per_img > 5:
-<<<<<<< HEAD
-                total_seconds_per_img = (time.perf_counter() -
-                                         start_time) / iters_after_start
-                eta = datetime.timedelta(seconds=int(total_seconds_per_img *
-                                                     (total - idx - 1)))
-=======
                 total_seconds_per_img = (time.perf_counter() - start_time) / iters_after_start
                 eta = datetime.timedelta(seconds=int(total_seconds_per_img * (total - idx - 1)))
->>>>>>> 2de5d10 (apply black and implement pre-commit hooks)
                 log_every_n_seconds(
                     logging.INFO,
-                    "Loss on Validation  done {}/{}. {:.4f} s / img. ETA={}".format(
-                        idx + 1, total, seconds_per_img, str(eta)
-                    ),
+                    "Loss on Validation  done {}/{}. {:.4f} s / img. ETA={}".format(idx + 1, total, seconds_per_img,
+                                                                                    str(eta)),
                     n=5,
                 )
             loss_batch = self._get_loss(inputs)
@@ -138,13 +130,8 @@ class LossEvalHook(HookBase):
         """
         metrics_dict = self._model(data)
         metrics_dict = {
-<<<<<<< HEAD
-            k: v.detach().cpu().item()
-            if isinstance(v, torch.Tensor) else float(v)
-            for k, v in metrics_dict.items()
-=======
             k: v.detach().cpu().item() if isinstance(v, torch.Tensor) else float(v) for k, v in metrics_dict.items()
->>>>>>> 2de5d10 (apply black and implement pre-commit hooks)
+            for k, v in metrics_dict.items()
         }
         total_losses_reduced = sum(loss for loss in metrics_dict.values())
         return total_losses_reduced
@@ -157,12 +144,7 @@ class LossEvalHook(HookBase):
             if self.max_ap < self.trainer.APs[-1]:
                 self.iter = 0
                 self.max_ap = self.trainer.APs[-1]
-<<<<<<< HEAD
-                self.trainer.checkpointer.save('model_' +
-                                               str(len(self.trainer.APs)))
-=======
                 self.trainer.checkpointer.save("model_" + str(len(self.trainer.APs)))
->>>>>>> 2de5d10 (apply black and implement pre-commit hooks)
                 self.best_iter = self.trainer.iter
             else:
                 self.iter += 1
@@ -174,12 +156,7 @@ class LossEvalHook(HookBase):
     def after_train(self):
         # Select the model with the best AP50
         index = self.trainer.APs.index(max(self.trainer.APs)) + 1
-<<<<<<< HEAD
-        self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR +
-                                       '/model_' + str(index) + '.pth')
-=======
         self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + "/model_" + str(index) + ".pth")
->>>>>>> 2de5d10 (apply black and implement pre-commit hooks)
 
 
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
@@ -357,21 +334,10 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
             # print("#### HERE ARE SOME POLYS #####", poly)
             if classes != ["tree"]:
                 obj = {
-<<<<<<< HEAD
-                    "bbox": [np.min(px),
-                             np.min(py),
-                             np.max(px),
-                             np.max(py)],
-                    "bbox_mode": BoxMode.XYXY_ABS,
-                    "segmentation": [poly],
-                    "category_id":
-                    classes.index(features["properties"]["PlotOrg"]),  # id
-=======
                     "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
                     "bbox_mode": BoxMode.XYXY_ABS,
                     "segmentation": [poly],
                     "category_id": classes.index(features["properties"]["PlotOrg"]),  # id
->>>>>>> 2de5d10 (apply black and implement pre-commit hooks)
                     # "category_id": 0,  #id
                     "iscrowd": 0,
                 }
@@ -475,13 +441,9 @@ def load_json_arr(json_path):
 
 def setup_cfg(
     base_model: str = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
-<<<<<<< HEAD
+
     trains=("trees_train", ),
     tests=("trees_val", ),
-=======
-    trains=("trees_train",),
-    tests=("trees_val",),
->>>>>>> 2de5d10 (apply black and implement pre-commit hooks)
     update_model=None,
     workers=2,
     ims_per_batch=2,
@@ -497,11 +459,7 @@ def setup_cfg(
     out_dir="/content/drive/Shareddrives/detectree2/train_outputs",
     resize=True,
 ):
-<<<<<<< HEAD
-    """Set up config object.
-=======
     """Set up config object # noqa: D417.
->>>>>>> 2de5d10 (apply black and implement pre-commit hooks)
 
     Args:
         base_model: base pre-trained model from detectron2 model_zoo
@@ -602,24 +560,14 @@ def predictions_on_data(
 
         if save:
             # Converting the predictions to json files and saving them in the specfied output file.
-<<<<<<< HEAD
-            evaluations = instances_to_coco_json(
-                outputs["instances"].to("cpu"), d["file_name"])
-=======
             evaluations = instances_to_coco_json(outputs["instances"].to("cpu"), d["file_name"])
->>>>>>> 2de5d10 (apply black and implement pre-commit hooks)
             with open(output_file, "w") as dest:
                 json.dump(evaluations, dest)
 
 
 if __name__ == "__main__":
     train_location = "/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/"
-<<<<<<< HEAD
-    register_train_data(train_location, "Paracou",
-                        1)  # folder, name, validation fold
-=======
     register_train_data(train_location, "Paracou", 1)  # folder, name, validation fold
->>>>>>> 2de5d10 (apply black and implement pre-commit hooks)
 
     name = "Paracou2019"
     train_location = "/content/drive/Shareddrives/detectree2/data/Paracou/tiles2019/train/"
