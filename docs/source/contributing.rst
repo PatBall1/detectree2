@@ -50,11 +50,14 @@ Tips for creating a detectree2 PR
 
 First consult :doc:`using-git` or any of the above resources if you are unclear on how to create a good PR. Also see `issue/6 <https://github.com/PatBall1/detectree2/pull/6#issuecomment-1189473815>`_ for some recommendatations on best practices when forking a project. 
 
-It is good to keep the PR's feature branch up-to-date with master during the PR submission and review process. One can either ``merge`` master or ``rebase`` on master.  For detectree2 it is **strongly recommended** to ``squash and merge`` when committing a PR to master (this is done using the GitHub UI). It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more consise message of the PR's contributions). Therefore we do not need to worry about the effects of ``merging`` in other branches on the project history and this can be done as many times as desired. 
+It is good to keep the PR's feature branch up-to-date with master during the PR submission and review process. One can either ``merge`` master or ``rebase`` on master.  For detectree2 it is recommended to ``squash and merge`` when committing a PR to master (this is done using the GitHub UI). It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more consise message of the PR's contributions). It keeps the commit history more concise and means we do not need to worry about the effects of ``merging`` in other branches on the project history. 
+
 
 TIP: It is possible to make this the default behaviour in the repository settings. 
 
 If for any reason you do not want to ``squash and merge`` the commits (i.e. to keep the PR's commit history in tact), I would suggest rebasing. Rebasing is more involved than merging but leads to a linear history. 
+
+TIP: If following this approach, make sure to use pre-commit hooks to improve quality of individual commits. 
 
 TIP: Try to avoid merging the PR to a `dev` branch. This is considered bad practice since when it comes to merge to master the eventual `PR` can be large and difficult to understand. PRs should have a single focus. 
 
@@ -77,7 +80,9 @@ TIP: Do not merge unless all tests are passing.
 Detectree2 setup for developers
 ===============================
 
-For projects with many contributors it is good practice to adhere to a programming style and testing framework. The programming style is enforced with a combination of the autoformatter ``autopep8`` and a `style guide`. Settings for detectree2's programming style components are given in `setup.cfg`, in the project root. The actual style guide is found in the `programming style`_ section.
+For projects with many contributors it is good practice to adhere to a programming style and testing framework. The programming style is enforced with a combination of pre-commit hooks and CI checks. Settings for detectree2's programming style components are given in `setup.cfg`, in the project root. 
+
+.. The actual style guide is found in the `programming style`_ section.
 
 We adopt `GitHub actions` to deploy software development workflows `detectree2/actions <https://github.com/PatBall1/detectree2/actions>`_, workflows are steered automatically using github actions in `.github/workflows <https://github.com/PatBall1/detectree2/tree/master/.github/workflows>`_ directory, a good example is: `python-app.yaml <https://github.com/PatBall1/detectree2/tree/master/.github/workflows/python-app.yml>`_.  The code checks are triggered automatically on pushing to a branch. The workflows detail the required dependencies for developing and testing detectree2, and should be consulted if anything in the following section is unclear. 
 
@@ -104,25 +109,36 @@ Programming style
 -----------------
 .. _programming style:
 
-Detectree2 currently utilises the following tools check code style and consistency. It is recommended to run these locally before pushing code as the CI will not pass unless each test is successful. To see up-to-date commands, consult the relevant workflow. Note that different versions of python (+packages) may give different errors to the CI, so correcting errors may take a few attempts. 
+Detectree2 currently utilises the following tools to check code style and consistency.  
+
+It is recommended to set up pre-commit hooks. To run pre-commit hooks do::
+
+    pip install pre-commit
+    pre-commit install
+    pre-commit run --all-files # it is a good idea to do this over all files not just the files that have changed
+    # or git add; git commit -m "your message"
+
+With checks configured in the `.pre-commit-config.yaml` file in the project root. This generally has the effect of improving the quality of individual commits without needing to rely too much on server side checks for code quality.
+
+As an alternative to running pre-commit hooks, one can still run the checks manually but the programmer must be careful that all checks pass - the CI will not permit a commit unless all tests are successful. To see up-to-date commands, consult the relevant workflow. Note that different versions of python (+packages) may give different errors to the CI, so correcting errors may take a few attempts. 
+
 
 - ``flake8``: Multiple checks for - linting - syntax errors or anti-patterns - (lack of) executable flags on files - docstring validation - function complexity
 - ``mypy``: Validate Python type hints 
 - ``isort``: Checks that imports are correctly sorted
-- ``autopep8``: Ensure consistent formatting of Python files 
+- ``black``: Ensure consistent formatting of Python files 
 
 A number of other style choices have been enforced across the project:
 
 * Line length = 120 characters
 * Google style docstrings
-* Function signatures and comments span entire line length (120 characters). Avoid one line per function argument both in the function signature and when calling the function (i.e. avoid ``Black`` style). This is more in line with the "official" approach. 
 * Indent width = 4 spaces per tab.
 
-WARNING: ``Flake8`` will **not** detect infringements in the function signature style (and other aspects) if it still adheres to the PEP8 standard, and ``autopep8`` will not enforce it. The reviewers must ensure that the standards above are maintained, and update the style guide accordingly.
+.. WARNING: ``Flake8`` will **not** detect infringements in the function signature style (and other aspects) if it still adheres to the PEP8 standard, and ``autopep8`` will not enforce it. The reviewers must ensure that the standards above are maintained, and update the style guide accordingly.
 
-We therefore opt for a less strict autoformatter in favour of a style-guide. Strict autoformatters ensure consistency, but at the detriment to readability. 
+.. We therefore opt for a less strict autoformatter in favour of a style-guide. Strict autoformatters ensure consistency, but at the detriment to readability. 
 
-As an aside: The difference between the strict autoformatter ``black`` and the style we adopt here is demonstrated for function arguments with the example below. Both examples are PEP8 compliant and will pass ``flake8`` linting checks. The former is better for diffs and typing clarity, whereas the latter is fewer lines. 
+.. As an aside: The difference between the strict autoformatter ``black`` and the style we adopt here is demonstrated for function arguments with the example below. Both examples are PEP8 compliant and will pass ``flake8`` linting checks. The former is better for diffs and typing clarity, whereas the latter is fewer lines. 
 
 .. code-block:: python3
     # black: 
@@ -136,14 +152,16 @@ As an aside: The difference between the strict autoformatter ``black`` and the s
     ) -> None:
 
     
-    # our `style-guide`
+    # Python's official `style`
 
     def tile_data(data: DatasetReader, out_dir: str, buffer: int = 30, tile_width: int = 200, tile_height: int = 200,
                   dtype_bool: bool = False) -> None:
 
     
 .. todo::
-    * Extend style-guide. 
+    * Convert setup.cfg to pyproject.toml (if using black - does not support setup.cfg)
+    * Consider using style-guide instead of black (i.e. autopep8) - black ensures consistency at the detriment of readability. 
+    * Add dev-requirements file. ``flake8``, ``flake8-docstrings``, ``mypy``, ``black``, ``isort``. 
     * Function arguments on individual lines may be preferred to make diffs slightly clearer. But I recommend writing a comprehensive style-guide (by extending the above) rather than using a strict autoformatter like black. 
 
 
@@ -169,11 +187,12 @@ Other dependencies include ``flake8-docstrings``,
 
 Autoformatters
 --------------
-We adopt ``Autopep8`` for this project, but others are listed for completion. 
+We adopt ``black`` for this project, but others are listed for completion. 
+
 
 Autopep8
 ^^^^^^^^
-Autopep8 is an autoformatter (like black) with enforces the ``PEP8`` style guide. Autopep8 is a loose formatter, which will fix PEP8 errors but will not make the code uniform. It relies a little more on the programmer, whereas ``black``, which also produces PEP8 compatible code, is far more opinionated in its approach.::
+Autopep8 is an autoformatter (like Black) with enforces the ``PEP8`` style guide. Autopep8 is a loose formatter, which will fix PEP8 errors but will not make the code uniform. It relies a little more on the programmer, whereas ``black``, which also produces PEP8 compatible code, is more opinionated in its approach.::
 
     pip install --upgrade autopep8 # if not already installed
     autopep8 --in-place --aggressive --aggressive <filename>
@@ -183,9 +202,6 @@ It is possible to configure vscode to autoformat with ``autopep8`` on save if de
 .. todo::
     * Consider configuring YAPF with pep8 settings to create unformity for project contributors.
 
-Black
-^^^^^
-Black is a good alternative and is easier to make work in large teams, however it is considered a little too opinionated in its approach. 
 
 YAPF
 ^^^^
@@ -200,6 +216,8 @@ Static typing
 From the `Mypy docs <http://mypy-lang.org/>`_:
 
     Mypy is an optional static type checker for Python that aims to combine the benefits of dynamic (or 'duck') typing and static typing. Mypy combines the expressive power and convenience of Python with a powerful type system and compile-time type checking.
+
+The general idea is to add typing to functions that are most frequently used. It is not necessary to apply across the entire codebase.
 
 The `mypy` syntax adopted in Detectree2 supports python3.7 and above, but could be updated as the project moves towards more modern python3 (I see no reason not to adopt python 3.10). `mypy` will attempt to type check all third-party libraries - which might not be desirable. It is possible to install stubs for third-party libraries (i.e. ``pandas``, ``openCV``) if type-checking is desired, but it is easier to suppress all missing import errors libraries by adding  ``ignore_missing_imports = True`` in ``setup.cfg``.
 
