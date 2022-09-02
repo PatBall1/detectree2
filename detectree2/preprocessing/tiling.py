@@ -358,7 +358,7 @@ def tile_data_train(data: DatasetReader,
             # can try clean up the code here as lots of reprojecting and resaving but just going to get to 
             # work for now
             try:
-                filename_unmoved = out_path + "_geo.geojson"
+                filename_unmoved = out_path_root.with_suffix(out_path_root.suffix + "_geo.geojson")
                 overlapping_crowns.to_file(
                     driver="GeoJSON",
                     filename=filename_unmoved,
