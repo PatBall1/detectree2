@@ -78,12 +78,10 @@ class Feature:
             # Want coord tuples for the unmoved crown coordinates so using the
             # lidar copied crown file
             lidar_coords = lidar_json["features"][self.number]["geometry"]["coordinates"][0]
-            geo = [
-                {
-                    "type": "Polygon",
-                    "coordinates": [self.get_tuple_coords(lidar_coords)],
-                }
-            ]
+            geo = [{
+                "type": "Polygon",
+                "coordinates": [self.get_tuple_coords(lidar_coords)],
+            }]
 
             with rasterio.open(self.lidar_img) as src:
                 out_image, out_transform = mask(src, geo, crop=True)
@@ -136,12 +134,8 @@ def feat_threshold_tests(feature_instance, conf_threshold, area_threshold, borde
     if valid_feature and border_filter[0]:
         EB = tile_width * border_filter[1]
         for coords in feature_instance.geometry["coordinates"][0]:
-            if (
-                -EB <= coords[0] <= EB
-                or -EB <= coords[1] <= EB
-                or TW - EB <= coords[0] <= TW + EB
-                or TW - EB <= coords[1] <= TW + EB
-            ):
+            if (-EB <= coords[0] <= EB or -EB <= coords[1] <= EB or TW - EB <= coords[0] <= TW + EB
+                    or TW - EB <= coords[1] <= TW + EB):
                 valid_feature = False
                 break
 
@@ -188,19 +182,19 @@ def save_feats(tile_directory, all_feats):
         "type": "FeatureCollection",
         "crs": {
             "type": "name",
-            "properties": {"name": "urn:ogc:def:crs:EPSG::" + all_feats[0].EPSG},
+            "properties": {
+                "name": "urn:ogc:def:crs:EPSG::" + all_feats[0].EPSG
+            },
         },
         "features": [],
     }
 
     for feat in all_feats:
-        geofile["features"].append(
-            {
-                "type": "Feature",
-                "properties": feat.properties,
-                "geometry": feat.geometry,
-            }
-        )
+        geofile["features"].append({
+            "type": "Feature",
+            "properties": feat.properties,
+            "geometry": feat.geometry,
+        })
 
     output_geo_file = adjusted_directory + feat.filename.replace(".geojson", "_adjusted.geojson")
     with open(output_geo_file, "w") as dest:
@@ -270,11 +264,8 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):
         # they are above the required GIoU. Then need the height of the test feature
         # to also be above the threshold to allow it to be considered
         matching_test_feat = all_test_feats[pred_feat.GIoU_other_feat_num]
-        if (
-            pred_feat.number == matching_test_feat.GIoU_other_feat_num
-            and pred_feat.GIoU > min_IoU
-            and matching_test_feat.number in tall_test_nums
-        ):
+        if (pred_feat.number == matching_test_feat.GIoU_other_feat_num and pred_feat.GIoU > min_IoU
+                and matching_test_feat.number in tall_test_nums):
             tps += 1
             test_feats_tps.append(matching_test_feat.number)
         else:
@@ -346,7 +337,7 @@ def site_f1_score(
 
             # work out the area threshold to ignore these crowns in the tiles
             tile_width = get_tile_width(file) * scaling[0]
-            area_threshold = ((tile_width) ** 2) * area_fraction_limit
+            area_threshold = ((tile_width)**2) * area_fraction_limit
 
             test_lidar = tile_directory + "/" + file
             all_test_feats = initialise_feats(

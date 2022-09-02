@@ -79,20 +79,8 @@ def tile_data(
 
             # Naming conventions
             tilename = Path(data.name).stem
-            out_path = (
-                out_dir
-                + tilename
-                + "_"
-                + str(minx)
-                + "_"
-                + str(miny)
-                + "_"
-                + str(tile_width)
-                + "_"
-                + str(buffer)
-                + "_"
-                + crs
-            )
+            out_path = out_dir + tilename + "_" + str(minx) + "_" + str(miny) + "_" + str(tile_width) + "_" + \
+                str(buffer) + "_" + crs
             # new tiling bbox including the buffer
             bbox = box(
                 minx - buffer,
@@ -131,15 +119,13 @@ def tile_data(
                 continue
 
             out_meta = data.meta.copy()
-            out_meta.update(
-                {
-                    "driver": "GTiff",
-                    "height": out_img.shape[1],
-                    "width": out_img.shape[2],
-                    "transform": out_transform,
-                    "nodata": None,
-                }
-            )
+            out_meta.update({
+                "driver": "GTiff",
+                "height": out_img.shape[1],
+                "width": out_img.shape[2],
+                "transform": out_transform,
+                "nodata": None,
+            })
             # dtype needs to be unchanged for some data and set to uint8 for others
             if dtype_bool:
                 out_meta.update({"dtype": "uint8"})
@@ -290,15 +276,13 @@ def tile_data_train(
             # copy the metadata then update it, the "nodata" and "dtype" where important as made larger
             # tifs have outputted tiles which were not just black
             out_meta = data.meta.copy()
-            out_meta.update(
-                {
-                    "driver": "GTiff",
-                    "height": out_img.shape[1],
-                    "width": out_img.shape[2],
-                    "transform": out_transform,
-                    "nodata": None,
-                }
-            )
+            out_meta.update({
+                "driver": "GTiff",
+                "height": out_img.shape[1],
+                "width": out_img.shape[2],
+                "transform": out_transform,
+                "nodata": None,
+            })
 
             # dtype needs to be unchanged for some data and set to uint8 for others
             if dtype_bool:

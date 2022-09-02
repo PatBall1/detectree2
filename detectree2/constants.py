@@ -25,9 +25,8 @@ SCRATCH_PATH = Path("/work/scratch-nopw/patball")
 # PLANET_API_KEY = os.getenv("PLANET_API_KEY")
 
 # ---------------- LOGGING CONSTANTS ----------------
-DEFAULT_FORMATTER = logging.Formatter(
-    ("%(asctime)s %(levelname)s: %(message)s " "[in %(funcName)s at %(pathname)s:%(lineno)d]")
-)
+DEFAULT_FORMATTER = logging.Formatter(("%(asctime)s %(levelname)s: %(message)s "
+                                       "[in %(funcName)s at %(pathname)s:%(lineno)d]"))
 DEFAULT_LOG_FILE = LOG_PATH / "default_log.log"
 DEFAULT_LOG_LEVEL = logging.DEBUG  # verbose logging per default
 

@@ -402,16 +402,12 @@ class DriveAPI:
         """
         query_str = self._metadata_to_query_string(file_metadata, trashed_ok)
         print(query_str)
-        return (
-            self.service.files()
-            .list(
-                q=query_str,
-                supportsAllDrives=all_drives,
-                includeItemsFromAllDrives=all_drives,
-                pageSize=1000,
-            )
-            .execute()["files"]
-        )
+        return (self.service.files().list(
+            q=query_str,
+            supportsAllDrives=all_drives,
+            includeItemsFromAllDrives=all_drives,
+            pageSize=1000,
+        ).execute()["files"])
 
     def exists(
         self,

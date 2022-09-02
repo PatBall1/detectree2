@@ -68,7 +68,9 @@ def to_eval_geojson(directory=None):  # noqa:N803
                 "type": "FeatureCollection",
                 "crs": {
                     "type": "name",
-                    "properties": {"name": "urn:ogc:def:crs:EPSG::" + epsg},
+                    "properties": {
+                        "name": "urn:ogc:def:crs:EPSG::" + epsg
+                    },
                 },
                 "features": [],
             }
@@ -107,16 +109,16 @@ def to_eval_geojson(directory=None):  # noqa:N803
                         else:
                             rescaled_coords.append([x_coord, -y_coord + int(img_dict["height"])])
 
-                    geofile["features"].append(
-                        {
-                            "type": "Feature",
-                            "properties": {"Confidence score": confidence_score},
-                            "geometry": {
-                                "type": "Polygon",
-                                "coordinates": [rescaled_coords],
-                            },
-                        }
-                    )
+                    geofile["features"].append({
+                        "type": "Feature",
+                        "properties": {
+                            "Confidence score": confidence_score
+                        },
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [rescaled_coords],
+                        },
+                    })
 
             # Check final form is correct - compare to a known geojson file if
             # error appears.
@@ -163,7 +165,9 @@ def project_to_geojson(data, output_fold=None, pred_fold=None):  # noqa:N803
                 "type": "FeatureCollection",
                 "crs": {
                     "type": "name",
-                    "properties": {"name": "urn:ogc:def:crs:EPSG::" + epsg},
+                    "properties": {
+                        "name": "urn:ogc:def:crs:EPSG::" + epsg
+                    },
                 },
                 "features": [],
             }
@@ -222,16 +226,16 @@ def project_to_geojson(data, output_fold=None, pred_fold=None):  # noqa:N803
 
                         moved_coords.append([x_coord, y_coord])
 
-                    geofile["features"].append(
-                        {
-                            "type": "Feature",
-                            "properties": {"Confidence score": confidence_score},
-                            "geometry": {
-                                "type": "Polygon",
-                                "coordinates": [moved_coords],
-                            },
-                        }
-                    )
+                    geofile["features"].append({
+                        "type": "Feature",
+                        "properties": {
+                            "Confidence score": confidence_score
+                        },
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [moved_coords],
+                        },
+                    })
 
             # Check final form is correct - compare to a known geojson file if error appears.
             # print("geofile",geofile)
@@ -328,8 +332,8 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
             intersecting = intersecting.reset_index().drop("index", axis=1)
             iou = []
             for (
-                index1,
-                row1,
+                    index1,
+                    row1,
             ) in intersecting.iterrows():  # iterate over those intersecting crowns
                 # print(row1.geometry)
                 iou.append(calc_iou(row.geometry, row1.geometry))  # Calculate the IoU with each of those crowns

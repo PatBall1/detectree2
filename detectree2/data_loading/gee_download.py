@@ -12,11 +12,11 @@ DEFAULT_SAVE_PATH = DATA_PATH / "gdrive"
 
 
 def download_files(
-    folder_id: str,
-    save_path: str,
-    recursive: bool = True,
-    overwrite: bool = False,
-    logger: logging.Logger = logging.getLogger(),
+        folder_id: str,
+        save_path: str,
+        recursive: bool = True,
+        overwrite: bool = False,
+        logger: logging.Logger = logging.getLogger(),
 ) -> None:
     """
     Download all .tif files in a given directory. Can work recursively.
@@ -132,7 +132,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "-o",
         "--overwrite",
-        help=("If True, existing files are downloaded again and overwritten. " "Defaults to False."),
+        help=("If True, existing files are downloaded again and overwritten. "
+              "Defaults to False."),
         type=bool,
         default=False,
         nargs="?",  # Argument is optional
