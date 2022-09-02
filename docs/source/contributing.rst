@@ -124,7 +124,7 @@ It is recommended to set up pre-commit hooks. To run pre-commit hooks do::
 
 With checks configured in the `.pre-commit-config.yaml` file in the project root. This generally has the effect of improving the quality of individual commits without needing to rely too much on server side checks for code quality.
 
-As an alternative to running pre-commit hooks, one can still run the checks manually but the programmer must be careful that all checks pass - the CI will not permit a commit unless all tests are successful. To see up-to-date commands, consult the relevant workflow. Note that different versions of python (+packages) may give different errors to the CI, so correcting errors may take a few attempts. 
+As an alternative to running pre-commit hooks, one can still run the checks manually but the programmer must be careful that all checks pass - the CI will not permit a commit unless all tests are successful. To see up-to-date commands, consult the relevant workflow. Note that different versions of python (+packages) may give different errors to the CI, so correcting errors may take a few attempts. There may also be discrepancies between the client pre-commit hooks and server CI checks. It is best to update the pre-commit hooks if possible in this case. 
 
 
 - ``black``: Ensure consistent formatting of Python files 
