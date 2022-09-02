@@ -1,5 +1,37 @@
+-   repo: https://github.com/psf/black
+    rev: '22.3.0'
+    hooks:
+    - id: black
+      language_version: python3.9
+      entry: black --line-length=120 detectree2/
+
 -   repo: https://github.com/pycqa/flake8
     rev: ''  # pick a git hash / tag to point to
     hooks:
-    -   id: flake8
-        additional_dependencies: [flake8-docstrings]
+    - id: flake8 
+      # args duplicated from setup.cfg as pre-commit flake8 is buggy using --config=setup.cfg
+      # perhaps .flake8 works? 
+      args: 
+        - "--ignore=D100, D101, D102, D103, D104, D202, D212, W503, N803, N806"
+        - "--max-line-length=120"
+        - "--docstring-convention=google"
+        - "--exclude=detectree2/data_loading/*,detectree2/models/train_tune.py"
+        # - "--config=setup.cfg"
+
+      additional_dependencies: [flake8-docstrings]
+
+-   repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+    - id: isort
+      name: isort (python)
+      args: ['--profile = black']
+ 
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v0.971'
+    hooks:
+    - id: mypy
+      entry: mypy detectree2/
+      args: ['--config=setup.cfg']
+      language_version: python3.9
+      pass_filenames: false

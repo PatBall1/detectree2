@@ -26,14 +26,14 @@ SCRATCH_PATH = Path("/work/scratch-nopw/patball")
 
 # ---------------- LOGGING CONSTANTS ----------------
 DEFAULT_FORMATTER = logging.Formatter(
-    ("%(asctime)s %(levelname)s: %(message)s "
-     "[in %(funcName)s at %(pathname)s:%(lineno)d]"))
+    ("%(asctime)s %(levelname)s: %(message)s " "[in %(funcName)s at %(pathname)s:%(lineno)d]")
+)
 DEFAULT_LOG_FILE = LOG_PATH / "default_log.log"
-DEFAULT_LOG_LEVEL = logging.DEBUG    # verbose logging per default
+DEFAULT_LOG_LEVEL = logging.DEBUG  # verbose logging per default
 
 # ---------------- PROJECT CONSTANTS ----------------
 # Coordinate reference systems (crs)
-WGS84 = "EPSG:4326"    # WGS84 standard crs (latitude, longitude)
+WGS84 = "EPSG:4326"  # WGS84 standard crs (latitude, longitude)
 
 # ---------------- DATABASE CONSTANTS ----------------
 DB_HOST = os.getenv("DB_HOST")
