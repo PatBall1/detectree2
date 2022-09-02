@@ -20,6 +20,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="4. Git/Github" href="using-git.html" />
     <link rel="prev" title="2. Tutorial" href="tutorial.html" /> 
 </head>
 
@@ -81,6 +82,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#python-development-environment">3.7. Python development environment</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">4. Git/Github</a></li>
 </ul>
 
         </div>
@@ -201,7 +203,7 @@
 </section>
 <section id="detectree2-github-tips">
 <h3><a class="toc-backref" href="#id23"><span class="section-number">3.1.4. </span>Detectree2 Github tips</a><a class="headerlink" href="#detectree2-github-tips" title="Permalink to this heading"></a></h3>
-<p>There are many excellent resources for learning Git. See <span class="xref std std-doc">using-git</span>, for a brief overview of Git and Github. For tips relating to detectree2 see <a class="reference internal" href="#detectree2-tips">detectree2 tips</a>.</p>
+<p>There are many excellent resources for learning Git. See <a class="reference internal" href="using-git.html"><span class="doc">Git/Github</span></a>, for a brief overview of Git and Github. For tips relating to detectree2 see <a class="reference internal" href="#detectree2-tips">detectree2 tips</a>.</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/JamesFergusson/Introduction-to-Research-Computing/blob/master/05_BestPractice_GIT.md">https://github.com/JamesFergusson/Introduction-to-Research-Computing/blob/master/05_BestPractice_GIT.md</a></p></li>
 <li><dl class="simple">
@@ -217,7 +219,7 @@
 </section>
 <section id="tips-for-creating-a-detectree2-pr">
 <h3><a class="toc-backref" href="#id24"><span class="section-number">3.1.5. </span>Tips for creating a detectree2 PR</a><a class="headerlink" href="#tips-for-creating-a-detectree2-pr" title="Permalink to this heading"></a></h3>
-<p id="detectree2-tips">First consult <span class="xref std std-doc">using-git</span> or any of the above resources if you are unclear on how to create a good PR. Also see <a class="reference external" href="https://github.com/PatBall1/detectree2/pull/6#issuecomment-1189473815">issue/6</a> for some recommendatations on best practices when forking a project.</p>
+<p id="detectree2-tips">First consult <a class="reference internal" href="using-git.html"><span class="doc">Git/Github</span></a> or any of the above resources if you are unclear on how to create a good PR. Also see <a class="reference external" href="https://github.com/PatBall1/detectree2/pull/6#issuecomment-1189473815">issue/6</a> for some recommendatations on best practices when forking a project.</p>
 <p>It is good to keep the PR’s feature branch up-to-date with master during the PR submission and review process. One can either <code class="docutils literal notranslate"><span class="pre">merge</span></code> master or <code class="docutils literal notranslate"><span class="pre">rebase</span></code> on master.  For detectree2 it is <strong>strongly recommended</strong> to <code class="docutils literal notranslate"><span class="pre">squash</span> <span class="pre">and</span> <span class="pre">merge</span></code> when committing a PR to master (this is done using the GitHub UI). It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more consise message of the PR’s contributions). Therefore we do not need to worry about the effects of <code class="docutils literal notranslate"><span class="pre">merging</span></code> in other branches on the project history and this can be done as many times as desired.</p>
 <p>TIP: It is possible to make this the default behaviour in the repository settings.</p>
 <p>If for any reason you do not want to <code class="docutils literal notranslate"><span class="pre">squash</span> <span class="pre">and</span> <span class="pre">merge</span></code> the commits (i.e. to keep the PR’s commit history in tact), I would suggest rebasing. Rebasing is more involved than merging but leads to a linear history.</p>
@@ -291,6 +293,23 @@
 <p>WARNING: <code class="docutils literal notranslate"><span class="pre">Flake8</span></code> will <strong>not</strong> detect infringements in the function signature style (and other aspects) if it still adheres to the PEP8 standard, and <code class="docutils literal notranslate"><span class="pre">autopep8</span></code> will not enforce it. The reviewers must ensure that the standards above are maintained, and update the style guide accordingly.</p>
 <p>We therefore opt for a less strict autoformatter in favour of a style-guide. Strict autoformatters ensure consistency, but at the detriment to readability.</p>
 <p>As an aside: The difference between the strict autoformatter <code class="docutils literal notranslate"><span class="pre">black</span></code> and the style we adopt here is demonstrated for function arguments with the example below. Both examples are PEP8 compliant and will pass <code class="docutils literal notranslate"><span class="pre">flake8</span></code> linting checks. The former is better for diffs and typing clarity, whereas the latter is fewer lines.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># black:</span>
+<span class="k">def</span> <span class="nf">tile_data</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">DatasetReader</span><span class="p">,</span>
+    <span class="n">out_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">buffer</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+    <span class="n">tile_width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+    <span class="n">tile_height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+    <span class="n">dtype_bool</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+
+<span class="c1"># our `style-guide`</span>
+
+<span class="k">def</span> <span class="nf">tile_data</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">DatasetReader</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">buffer</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+              <span class="n">dtype_bool</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</pre></div>
+</div>
 <div class="admonition-todo admonition" id="id6">
 <p class="admonition-title">Todo</p>
 <ul class="simple">
@@ -560,6 +579,7 @@ We can also point to a specific working commit:</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="tutorial.html" class="btn btn-neutral float-left" title="2. Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="using-git.html" class="btn btn-neutral float-right" title="4. Git/Github" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
