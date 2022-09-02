@@ -118,15 +118,19 @@ It is recommended to set up pre-commit hooks. To run pre-commit hooks do::
     pre-commit run --all-files # it is a good idea to do this over all files not just the files that have changed
     # or git add; git commit -m "your message"
 
+    # if it is desirable to avoid pre-commit hooks:
+
+    git commit -m "your message" --no-verify
+
 With checks configured in the `.pre-commit-config.yaml` file in the project root. This generally has the effect of improving the quality of individual commits without needing to rely too much on server side checks for code quality.
 
 As an alternative to running pre-commit hooks, one can still run the checks manually but the programmer must be careful that all checks pass - the CI will not permit a commit unless all tests are successful. To see up-to-date commands, consult the relevant workflow. Note that different versions of python (+packages) may give different errors to the CI, so correcting errors may take a few attempts. 
 
 
+- ``black``: Ensure consistent formatting of Python files 
 - ``flake8``: Multiple checks for - linting - syntax errors or anti-patterns - (lack of) executable flags on files - docstring validation - function complexity
 - ``mypy``: Validate Python type hints 
 - ``isort``: Checks that imports are correctly sorted
-- ``black``: Ensure consistent formatting of Python files 
 
 A number of other style choices have been enforced across the project:
 
