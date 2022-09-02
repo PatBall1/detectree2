@@ -125,6 +125,7 @@ We therefore opt for a less strict autoformatter in favour of a style-guide. Str
 As an aside: The difference between the strict autoformatter ``black`` and the style we adopt here is demonstrated for function arguments with the example below. Both examples are PEP8 compliant and will pass ``flake8`` linting checks. The former is better for diffs and typing clarity, whereas the latter is fewer lines. 
 
 .. code-block:: python3
+
     # black: 
     def tile_data(
         data: DatasetReader,
