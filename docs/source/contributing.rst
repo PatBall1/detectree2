@@ -131,7 +131,7 @@ With checks configured in the `.pre-commit-config.yaml` file in the project root
 As an alternative to running pre-commit hooks, one can still run the checks manually but the programmer must be careful that all checks pass - the CI will not permit a commit unless all tests are successful. To see up-to-date commands, consult the relevant workflow. Note that different versions of python (+packages) may give different errors to the CI, so correcting errors may take a few attempts. There may also be discrepancies between the client pre-commit hooks and server CI checks. It is best to update the pre-commit hooks if possible in this case. 
 
 
-- ``black``: Ensure consistent formatting of Python files 
+- ``yapf``: Ensure consistent formatting of Python files 
 - ``flake8``: Multiple checks for - linting - syntax errors or anti-patterns - (lack of) executable flags on files - docstring validation - function complexity
 - ``mypy``: Validate Python type hints 
 - ``isort``: Checks that imports are correctly sorted
@@ -146,10 +146,10 @@ A number of other style choices have been enforced across the project:
 
 .. We therefore opt for a less strict autoformatter in favour of a style-guide. Strict autoformatters ensure consistency, but at the detriment to readability. 
 
-.. As an aside: The difference between the strict autoformatter ``black`` and the style we adopt here is demonstrated for function arguments with the example below. Both examples are PEP8 compliant and will pass ``flake8`` linting checks. The former is better for diffs and typing clarity, whereas the latter is fewer lines. 
+As an aside: The difference between the strict autoformatter ``yapf`` and the official demonstrated for function arguments with the example below. Both examples are PEP8 compliant and will pass ``flake8`` linting checks. The former is better for diffs and typing clarity, whereas the latter has fewer lines. 
 
 .. code-block:: python3
-    # black: 
+    # black or yapf: 
     def tile_data(
         data: DatasetReader,
         out_dir: str,
@@ -195,7 +195,22 @@ Other dependencies include ``flake8-docstrings``,
 
 Autoformatters
 --------------
-We adopt ``black`` for this project, but others are listed for completion. 
+We adopt ``yapf`` for this project, but others are listed for completion. 
+
+YAPF
+^^^^
+From the `YAPF docs <https://github.com/google/yapf>`_:
+    Most of the current formatters for Python --- e.g., autopep8, and pep8ify --- are made to remove lint errors from code. This has some obvious limitations. For instance, code that conforms to the PEP 8 guidelines may not be reformatted. But it doesn't mean that the code looks good.
+
+YAPF is highly customisable and shares a similar philosophy to ``black``. It is possible to customise behaviour of any autoformatter like ``autopep8`` or ``black`` with  project modifications. 
+
+Black
+^^^^^
+
+From the `Black docs <>`:
+    Black is the uncompromising Python code formatter. By using it, you agree to cede control over minutiae of hand-formatting. In return, Black gives you speed, determinism, and freedom from pycodestyle nagging about formatting. You will save time and mental energy for more important matters.
+
+It favours consistency, meaning it is guaranteed to give the same results across the team - a style guide is not needed. 
 
 
 Autopep8
@@ -211,12 +226,6 @@ It is possible to configure vscode to autoformat with ``autopep8`` on save if de
     * Consider configuring YAPF with pep8 settings to create unformity for project contributors.
 
 
-YAPF
-^^^^
-From the `YAPF docs <https://github.com/google/yapf>`_:
-    Most of the current formatters for Python --- e.g., autopep8, and pep8ify --- are made to remove lint errors from code. This has some obvious limitations. For instance, code that conforms to the PEP 8 guidelines may not be reformatted. But it doesn't mean that the code looks good.
-
-YAPF is highly customisable and shares a similar philosophy to ``black``. It is possible to customise behaviour of any autoformatter like ``autopep8`` or ``black`` with  project modifications. 
 
 Static typing
 -------------
