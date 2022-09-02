@@ -16,6 +16,7 @@
         - "--max-line-length=120"
         - "--docstring-convention=google"
         - "--exclude=detectree2/data_loading/*,detectree2/models/train_tune.py"
+        - "--max-complexity=10"
         # - "--config=setup.cfg"
 
       additional_dependencies: [flake8-docstrings]

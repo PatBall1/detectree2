@@ -169,7 +169,7 @@ def tile_data(
             )
 
 
-def tile_data_train(
+def tile_data_train(  # noqa: C901
     data: DatasetReader,
     out_dir: str,
     buffer: int = 30,
