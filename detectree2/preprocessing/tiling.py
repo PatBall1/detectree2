@@ -290,7 +290,9 @@ def tile_data_train(data: DatasetReader,
             # stack up the bands in an order appropriate for saving with cv2, then rescale to the correct 0-255 range
             # for cv2. BGR ordering is correct for cv2 (and detectron2)
             rgb = np.dstack((b, g, r))
-
+            
+            # Some rasters need to have values rescaled to 0-255
+            # TODO: more robust check
             if np.max(g) > 255:
                 rgb_rescaled = 255 * rgb / 65535
             else:
@@ -368,8 +370,8 @@ def tile_data_train(data: DatasetReader,
                     shp.update(impath)
                 with open(filename_unmoved, "w") as f:
                     json.dump(shp, f)
-            except:
-                print("ValueError: Cannot write empty DataFrame to file.")
+            except ValueError:
+                print("Cannot write empty DataFrame to file.")
                 continue
 
 
