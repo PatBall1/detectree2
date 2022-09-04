@@ -71,14 +71,13 @@ def tile_data(data: DatasetReader,
     # Should clip data to crowns straight off to speed things up
     os.makedirs(out_dir, exist_ok=True)
     crs = data.crs.data["init"].split(":")[1]
+    tilename = Path(data.name).stem
     # out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
                           tile_width, int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
-
             # Naming conventions
-            tilename = Path(data.name).stem
             out_path = out_dir + tilename + "_" + str(minx) + "_" + str(
                 miny) + "_" + str(tile_width) + "_" + str(buffer) + "_" + crs
             # new tiling bbox including the buffer
@@ -204,6 +203,7 @@ def tile_data_train(data: DatasetReader,
     os.makedirs(out_path, exist_ok=True)
     tilename = Path(data.name).stem
     crs = data.crs.data["init"].split(":")[1]
+    geo = "geo"
     # out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
                           tile_width, int):
@@ -211,7 +211,6 @@ def tile_data_train(data: DatasetReader,
                               tile_height, int):
 
             out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
-
             # new tiling bbox including the buffer
             bbox = box(
                 minx - buffer,
@@ -249,9 +248,9 @@ def tile_data_train(data: DatasetReader,
             sumzero = zero_mask.sum()
             sumnan = nan_mask.sum()
             totalpix = out_img.shape[1] * out_img.shape[2]
-            if sumzero > 0.25 * totalpix:  # reject tiles with many 0 cells
+            if sumzero > 0.15 * totalpix:  # reject tiles with many 0 cells
                 continue
-            elif sumnan > 0.25 * totalpix:  # reject tiles with many NaN cells
+            elif sumnan > 0.15 * totalpix:  # reject tiles with many NaN cells
                 continue
 
 
@@ -359,8 +358,10 @@ def tile_data_train(data: DatasetReader,
             # Repeat and want to save crowns before being moved as overlap with lidar data to get the heights
             # can try clean up the code here as lots of reprojecting and resaving but just going to get to 
             # work for now
+            out_path_geo = str(out_path_root) + "_geo"
+            out_path_geo = Path(out_path_geo)
             try:
-                filename_unmoved = out_path_root.with_suffix(out_path_root.suffix + "_geo.geojson")
+                filename_unmoved = out_path_geo.with_suffix(out_path_geo.suffix + ".geojson")
                 overlapping_crowns.to_file(
                     driver="GeoJSON",
                     filename=filename_unmoved,
