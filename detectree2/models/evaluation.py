@@ -68,8 +68,8 @@ class Feature:
     def tree_height(self):
         """Crops the lidar tif to the features and calculates height
 
-        Calculates the 95th percentile height greatest height to account for
-        error at the top end. If no lidar file is inputted than the height is
+        Calculates the median height to account for
+        error at the boundaries. If no lidar file is inputted than the height is
         given as 0
         """
         if self.lidar_img is None:
@@ -100,7 +100,7 @@ class Feature:
             # if any height restriction is used
             if len(fixed_array) != 0:
                 sorted_array = np.sort(fixed_array)
-                self.height = sorted_array[int(len(sorted_array) * 0.95)]
+                self.height = sorted_array[int(len(sorted_array) * 0.5)]
             else:
                 self.height = 0
 

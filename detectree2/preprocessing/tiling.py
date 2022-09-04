@@ -177,6 +177,7 @@ def tile_data_train(data: DatasetReader,
                     tile_height: int = 200,
                     crowns: gpd.GeoDataFrame = None,
                     threshold: float = 0,
+                    nan_threshold: float = 0.1,
                     dtype_bool: bool = False) -> None:
     """Tiles up orthomosaic and corresponding crowns into training tiles.
 
@@ -248,9 +249,9 @@ def tile_data_train(data: DatasetReader,
             sumzero = zero_mask.sum()
             sumnan = nan_mask.sum()
             totalpix = out_img.shape[1] * out_img.shape[2]
-            if sumzero > 0.15 * totalpix:  # reject tiles with many 0 cells
+            if sumzero > nan_threshold * totalpix:  # reject tiles with many 0 cells
                 continue
-            elif sumnan > 0.15 * totalpix:  # reject tiles with many NaN cells
+            elif sumnan > nan_threshold * totalpix:  # reject tiles with many NaN cells
                 continue
 
 
