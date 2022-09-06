@@ -191,6 +191,7 @@ def tile_data_train(data: DatasetReader,
         tile_height: Tile height in meters
         crowns: Crown polygons as a geopandas dataframe
         threshold: Min proportion of the tile covered by crowns to be accepted {0,1}
+        nan_theshold: Max proportion of tile covered by nans
         dtype_bool: Flag to edit dtype to prevent black tiles
 
     Returns:

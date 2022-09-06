@@ -240,18 +240,18 @@ def find_intersections(all_test_feats, all_pred_feats):
                     pred_feat.GIoU_other_feat_num = test_feat.number
 
 
-def feats_tall_enough(all_feats, min_height):
+def feats_tall_enough(all_feats, min_height, max_height):
     """Stores the numbers of all the features above the minimun height."""
     tall_feat = []
 
     for feat in all_feats:
-        if feat.height >= min_height:
+        if feat.height >= min_height and feat.height < max_height:
             tall_feat.append(feat.number)
 
     return tall_feat
 
 
-def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):
+def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height, max_height):
     """Determines number of true postives, false positives and false negatives.
 
     Store the numbers of all test features which have true positives arise.
@@ -261,8 +261,8 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):
     tps = 0
     fps = 0
 
-    tall_test_nums = feats_tall_enough(all_test_feats, min_height)
-    tall_pred_nums = feats_tall_enough(all_pred_feats, min_height)
+    tall_test_nums = feats_tall_enough(all_test_feats, min_height, max_height)
+    tall_pred_nums = feats_tall_enough(all_pred_feats, min_height, max_height)
 
     for pred_feat in all_pred_feats:
         # if the pred feat is not all enough then skip it
@@ -311,7 +311,8 @@ def site_f1_score(tile_directory=None,
                   pred_directory=None,
                   lidar_img=None,
                   IoU_threshold=0.5,
-                  height_threshold=0,
+                  min_height=0,
+                  max_height=100,
                   area_fraction_limit=0.0005,
                   conf_threshold=0,
                   border_filter=tuple,
@@ -327,7 +328,8 @@ def site_f1_score(tile_directory=None,
         pred_directory: path to the folder containing the predictions and the reprojections
         lidar_img: path to the lidar image of an entire region
         IoU_threshold: minimum value of IoU such that the intersection can be considered a true positive
-        height_threshold: minimum height of the features to be considered
+        min_height: minimum height of the features to be considered
+        max_height: minimum height of the features to be considered
         area_fraction_limit: proportion of the tile for which crowns with areas less than this will be ignored
         conf_threshold: minimun confidence of a predicted feature so that it is considered
         border_filter: bool of whether to remove border crowns, proportion of border to be used
@@ -372,7 +374,7 @@ def site_f1_score(tile_directory=None,
 
             find_intersections(all_test_feats, all_pred_feats)
             tps, fps, fns = positives_test(all_test_feats, all_pred_feats,
-                                           IoU_threshold, height_threshold)
+                                           IoU_threshold, min_height, max_height)
 
             print("tps:", tps)
             print("fps:", fps)
