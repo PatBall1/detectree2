@@ -205,7 +205,6 @@ def tile_data_train(data: DatasetReader,
     os.makedirs(out_path, exist_ok=True)
     tilename = Path(data.name).stem
     crs = data.crs.data["init"].split(":")[1]
-    geo = "geo"
     # out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
                           tile_width, int):

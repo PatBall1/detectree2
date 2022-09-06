@@ -130,8 +130,8 @@ def feat_threshold_tests(feature_instance, conf_threshold, area_threshold,
     """
     valid_feature = True
 
-    if "Confidence score" in feature_instance.properties:
-        if feature_instance.properties["Confidence score"] < conf_threshold:
+    if "Confidence_score" in feature_instance.properties:
+        if feature_instance.properties["Confidence_score"] < conf_threshold:
             valid_feature = False
 
     if feature_instance.crown_area < area_threshold:
@@ -245,6 +245,7 @@ def feats_tall_enough(all_feats, min_height, max_height):
     tall_feat = []
 
     for feat in all_feats:
+        #print(feat.height)
         if feat.height >= min_height and feat.height < max_height:
             tall_feat.append(feat.number)
 
