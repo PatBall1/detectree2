@@ -373,7 +373,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
     return crowns_out.reset_index()
 
 
-def clean_predictions(directory):
+def clean_predictions(directory, iou_threshold=0.7):
     pred_fold = directory
     entries = os.listdir(pred_fold)
     
@@ -405,7 +405,7 @@ def clean_predictions(directory):
                 crowns = crowns.append(gpd.GeoDataFrame({'Confidence_score': shape['score'],'geometry': [Polygon(rescaled_coords)]}, geometry=[Polygon(rescaled_coords)]))
     
             crowns = crowns.reset_index().drop('index', axis=1)
-            crowns, indices = clean_outputs(crowns)
+            crowns, indices = clean_outputs(crowns, iou_threshold)
             datajson_reduced = [datajson[i] for i in indices]
             print("data_json:", len(datajson), " ", len(datajson_reduced))
             with open(file, "w") as dest:
