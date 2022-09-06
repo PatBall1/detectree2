@@ -379,14 +379,8 @@ def clean_predictions(directory, iou_threshold=0.7):
     
     for file in entries:
         if ".json" in file:
-            # create a dictionary for each file to store data used multiple times
-            img_dict = {}
-            img_dict["filename"] = file
-            print(img_dict["filename"])
-            file_mins = file.replace(".json", "")
-            # print("Img dict:", img_dict)
-            # load the json file we need to convert into a geojson
-            with open(pred_fold + "/" + img_dict["filename"]) as prediction_file:
+            print(file)
+            with open(pred_fold + "/" + file) as prediction_file:
                 datajson = json.load(prediction_file)
             
             crowns = gpd.GeoDataFrame()
@@ -408,7 +402,7 @@ def clean_predictions(directory, iou_threshold=0.7):
             crowns, indices = clean_outputs(crowns, iou_threshold)
             datajson_reduced = [datajson[i] for i in indices]
             print("data_json:", len(datajson), " ", len(datajson_reduced))
-            with open(file, "w") as dest:
+            with open(pred_fold + "/" + file, "w") as dest:
                 json.dump(datajson_reduced, dest)
 
 def clean_outputs(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
