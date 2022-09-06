@@ -393,8 +393,8 @@ def clean_predictions(directory, iou_threshold=0.7):
     
             for shape in datajson:
                 crown_coords = polygon_from_mask(mask_util.decode(shape["segmentation"]))
-                #if crown_coords == 0:
-                #    continue
+                if crown_coords == 0:
+                    continue
                 rescaled_coords = []
                 # coords from json are in a list of [x1, y1, x2, y2,... ] so convert them to [[x1, y1], ...]
                 # format and at the same time rescale them so they are in the correct position for QGIS
