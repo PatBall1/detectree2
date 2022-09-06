@@ -12,7 +12,7 @@ import cv2
 import geopandas as gpd
 import pycocotools.mask as mask_util
 from fiona.crs import from_epsg
-from shapely.geometry import box, shape
+from shapely.geometry import box, shape, Polygon
 
 
 def polygon_from_mask(masked_arr):
