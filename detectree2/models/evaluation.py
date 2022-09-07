@@ -112,7 +112,8 @@ def get_tile_width(file):
     filename = file.replace(".geojson", "")
     filename_split = filename.split("_")
 
-    tile_width = (2 * int(filename_split[-1]) + int(filename_split[-2]))
+    tile_width = (2 * int(filename_split[-2]) + int(filename_split[-3]))
+    print(tile_width)
     return tile_width
 
 
@@ -227,7 +228,9 @@ def find_intersections(all_test_feats, all_pred_feats):
                     continue
 
                 # calculate the IoU
-                union_area = pred_feat.crown_area + test_feat.crown_area - intersection
+                #union_area = pred_feat.crown_area + test_feat.crown_area - intersection
+                union_area = (shape(pred_feat.geometry).union(
+                        shape(test_feat.geometry))).area
                 IoU = intersection / union_area
 
                 # update the objects so they only store greatest intersection value
@@ -240,8 +243,8 @@ def find_intersections(all_test_feats, all_pred_feats):
                     pred_feat.GIoU_other_feat_num = test_feat.number
 
 
-def feats_tall_enough(all_feats, min_height, max_height):
-    """Stores the numbers of all the features above the minimun height."""
+def feats_height_filt(all_feats, min_height, max_height):
+    """Stores the numbers of all the features between min and max height."""
     tall_feat = []
 
     for feat in all_feats:
@@ -262,8 +265,8 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height, max_heig
     tps = 0
     fps = 0
 
-    tall_test_nums = feats_tall_enough(all_test_feats, min_height, max_height)
-    tall_pred_nums = feats_tall_enough(all_pred_feats, min_height, max_height)
+    tall_test_nums = feats_height_filt(all_test_feats, min_height, max_height)
+    tall_pred_nums = feats_height_filt(all_pred_feats, min_height, max_height)
 
     for pred_feat in all_pred_feats:
         # if the pred feat is not all enough then skip it
@@ -394,6 +397,7 @@ def site_f1_score(tile_directory=None,
         print(prec, rec, f1_score)
     except ZeroDivisionError:
         print("ZeroDivisionError: Height threshold is too large.")
+    return prec, rec, f1_score
 
 
 if __name__ == "__main__":
