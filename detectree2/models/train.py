@@ -177,7 +177,7 @@ class LossEvalHook(HookBase):
     if len(self.trainer.values) != 0:
       index = self.trainer.values.index(max(self.trainer.values)) + 1
       print(self.trainer.early_stop,"best model is", index)
-      trainer.cfg.MODEL.WEIGHTS = self.trainer.cfg.OUTPUT_DIR + '/Model_' + str(index) + '.pth'
+      self.trainer.cfg.MODEL.WEIGHTS = self.trainer.cfg.OUTPUT_DIR + '/Model_' + str(index) + '.pth'
     else:
       print('train fails')
 
