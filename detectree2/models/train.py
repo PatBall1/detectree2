@@ -120,11 +120,11 @@ class LossEvalHook(HookBase):
     if is_final or (self._period > 0 and next_iter % self._period == 0):
       if len(self.trainer.cfg.DATASETS.TEST) > 1:
           APs = []
-          for dataset in self.trainer.cfg.DATASETS.TEST:
-            APs.append(
-                self.trainer.test(
+          AP_datasets = self.trainer.test(
                     self.trainer.cfg,
-                    self.trainer.model)[dataset]['segm']['AP50'])
+                    self.trainer.model)
+          for dataset in self.trainer.cfg.DATASETS.TEST:
+            APs.append(AP_datasets[dataset]['segm']['AP50'])
           AP = sum(APs) / len(APs)
       else:
           AP = self.trainer.test(self.trainer.cfg, self.trainer.model)['segm']['AP50']
@@ -134,25 +134,25 @@ class LossEvalHook(HookBase):
       if self.trainer.metrix == 'AP50':
         if len(self.trainer.cfg.DATASETS.TEST) > 1:
           APs = []
-          for dataset in self.trainer.cfg.DATASETS.TRAIN:
-            APs.append(
-                self.trainer.test_train(
+          AP_datasets = self.trainer.test_train(
                     self.trainer.cfg,
-                    self.trainer.model)[dataset]['segm']['AP50'])
+                    self.trainer.model)
+          for dataset in self.trainer.cfg.DATASETS.TEST:
+            APs.append(AP_datasets[dataset]['segm']['AP50'])
           AP = sum(APs) / len(APs)
         else:
-          AP = self.trainer.test(self.trainer.cfg, self.trainer.model)['segm']['AP50']
+          AP = self.trainer.test_train(self.trainer.cfg, self.trainer.model)['segm']['AP50']
         self.trainer.storage.put_scalar("training_AP", AP, smoothing_hint = False)
-      if self.trainer.metrix == 'loss':
+      elif self.trainer.metrix == 'loss':
         self._do_loss_eval()
       else:
         if len(self.trainer.cfg.DATASETS.TEST) > 1:
           APs = []
-          for dataset in self.trainer.cfg.DATASETS.TRAIN:
-            APs.append(
-                self.trainer.test_train(
+          AP_datasets = self.trainer.test_train(
                     self.trainer.cfg,
-                    self.trainer.model)[dataset]['segm']['AP50'])
+                    self.trainer.model)
+          for dataset in self.trainer.cfg.DATASETS.TRAIN:
+            APs.append(AP_datasets[dataset]['segm']['AP50'])
           AP = sum(APs) / len(APs)
         else:
           AP = self.trainer.test(self.trainer.cfg, self.trainer.model)['segm']['AP50']
@@ -241,6 +241,7 @@ class MyTrainer(DefaultTrainer):
         verify_results(self.cfg, self._last_eval_results)
         return self._last_eval_results
 
+
   def run_step(self):
     self._trainer.iter = self.iter
     """
@@ -268,7 +269,7 @@ class MyTrainer(DefaultTrainer):
         #   self.reweight = True
         # if self.reweight:
         #   loss_dict['loss_mask'] *= 4
-        loss_dict['loss_mask'] *= 2
+        loss_dict['loss_mask'] *= 0.8
         losses = sum(loss_dict.values())
 
     """
@@ -287,18 +288,53 @@ class MyTrainer(DefaultTrainer):
     """
     self._trainer.optimizer.step()
 
-
-  @classmethod
-  def build_evaluator(cls, cfg, dataset_name, output_folder=None):
-    if output_folder is None:
-      os.makedirs("eval_2", exist_ok=True)
-      output_folder = "eval_2"
-    return COCOEvaluator(dataset_name, cfg, output_dir = output_folder)
-
-
+  
   def build_hooks(self):
-    hooks = super().build_hooks()
-    hooks.insert(
+    """
+    Build a list of default hooks, including timing, evaluation,
+    checkpointing, lr scheduling, precise BN, writing events.
+    Returns:
+        list[HookBase]:
+    """
+    cfg = self.cfg.clone()
+    cfg.defrost()
+    cfg.DATALOADER.NUM_WORKERS = 0  # save some memory and time for PreciseBN
+
+    ret = [
+        hooks.IterationTimer(),
+        hooks.LRScheduler(),
+        hooks.PreciseBN(
+            # Run at the same freq as (but before) evaluation.
+            cfg.TEST.EVAL_PERIOD,
+            self.model,
+            # Build a new data loader to not affect training
+            self.build_train_loader(cfg),
+            cfg.TEST.PRECISE_BN.NUM_ITER,
+        )
+        if cfg.TEST.PRECISE_BN.ENABLED and get_bn_modules(self.model)
+        else None,
+    ]
+
+    # Do PreciseBN before checkpointer, because it updates the model and need to
+    # be saved by checkpointer.
+    # This is not always the best: if checkpointing has a different frequency,
+    # some checkpoints may have more precise statistics than others.
+    if comm.is_main_process():
+        ret.append(hooks.PeriodicCheckpointer(self.checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD))
+
+    # def test_and_save_results():
+    #     self._last_eval_results = self.test(self.cfg, self.model)
+    #     return self._last_eval_results
+
+    # # Do evaluation after checkpointer, because then if it fails,
+    # # we can use the saved checkpoint to debug.
+    # ret.append(hooks.EvalHook(cfg.TEST.EVAL_PERIOD, test_and_save_results))
+
+    if comm.is_main_process():
+        # Here the default print/log frequency of each writer is used.
+        # run writers in the end, so that evaluation metrics are written
+        ret.append(hooks.PeriodicWriter(self.build_writers(), period=20))
+    ret.insert(
         -1,
         LossEvalHook(
             self.cfg.TEST.EVAL_PERIOD,
@@ -309,7 +345,16 @@ class MyTrainer(DefaultTrainer):
             self.cfg.OUTPUT_DIR,
         ),
     )
-    return hooks
+    return ret
+
+
+  @classmethod
+  def build_evaluator(cls, cfg, dataset_name, output_folder=None):
+    if output_folder is None:
+      os.makedirs("eval_2", exist_ok=True)
+      output_folder = "eval_2"
+    return COCOEvaluator(dataset_name, cfg, output_dir = output_folder)
+
 
   def build_train_loader(cls, cfg):
     """_summary_
@@ -568,70 +613,50 @@ def load_json_arr(json_path):
     return lines
 
 
-def setup_cfg(base_model:
-              str = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
-              trains=("trees_train",),
-              tests=("trees_val",),
-              update_model=None,
-              workers=2,
-              ims_per_batch=2,
-              gamma=0.1,
-              backbone_freeze=3,
-              warm_iter=120,
-              momentum=0.9,
-              batch_size_per_im=1024,
-              base_lr=0.001,
-              max_iter=1000,
-              num_classes=1,
-              eval_period=100,
-              out_dir="/content/drive/Shareddrives/detectree2/train_outputs"):
-    """Set up config object
-
-    Args:
-        base_model:
-        trains:
-        tests:
-        update_model:
-        workers:
-        ims_per_batch:
-        gamma:
-        backbone_freeze:
-        warm_iter:
-        momentum:
-        batch_size_per_im:
-        base_lr:
-        max_iter:
-        num_classes:
-        eval_period:
-        out_dir:
-    """
-    cfg = get_cfg()
-    cfg.merge_from_file(model_zoo.get_config_file(base_model))
-    cfg.DATASETS.TRAIN = trains
-    cfg.DATASETS.TEST = tests
-    cfg.DATALOADER.NUM_WORKERS = workers
-    #cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
-    cfg.SOLVER.GAMMA = gamma
-    cfg.MODEL.BACKBONE.FREEZE_AT = backbone_freeze
-    cfg.SOLVER.WARMUP_ITERS = warm_iter
-    cfg.SOLVER.MOMENTUM = momentum
-    #cfg.MODEL.RPN.BATCH_SIZE_PER_IMAGE = batch_size_per_im
-    #cfg.SOLVER.WEIGHT_DECAY = 0.001
-    cfg.SOLVER.BASE_LR = base_lr
-    cfg.OUTPUT_DIR = out_dir
-    os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
-    if update_model is not None:
-        cfg.MODEL.WEIGHTS = update_model
-    else:
-        cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
-
-    cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
-    cfg.SOLVER.BASE_LR = base_lr
-    cfg.SOLVER.MAX_ITER = max_iter
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes
-    cfg.TEST.EVAL_PERIOD = eval_period
-    return cfg
-
+def setup_cfg(
+    base_model="COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
+    trains=("trees_train",),
+    tests=("trees_val",),
+    update_model=None,
+    workers=2,
+    ims_per_batch=1,
+    base_lr=0.0003,
+    max_iter=1000,
+    num_classes=1,
+    eval_period=100,
+    out_dir="/content/drive/Shareddrives/detectree2/train_outputs"):
+  """
+  To set up config object
+  """
+  cfg = get_cfg()
+  cfg.merge_from_file(model_zoo.get_config_file(base_model))
+  cfg.DATASETS.TRAIN = trains 
+  cfg.DATASETS.TEST = tests
+  cfg.DATALOADER.NUM_WORKERS = workers
+  cfg.OUTPUT_DIR = out_dir
+  cfg.SOLVER.IMS_PER_BATCH = 2
+  cfg.SOLVER.GAMMA = 0.1
+  cfg.MODEL.BACKBONE.FREEZE_AT = 3
+  cfg.SOLVER.WARMUP_ITERS = 120
+  cfg.SOLVER.MOMENTUM = 0.9
+  cfg.MODEL.RPN.BATCH_SIZE_PER_IMAGE = 128
+  cfg.SOLVER.WEIGHT_DECAY = 0
+  cfg.SOLVER.BASE_LR = 0.001
+  cfg.betas = (0.9, 0.999)
+  os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
+  if update_model is not None:
+    cfg.MODEL.WEIGHTS = update_model # DOESN'T WORK
+  else:
+    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
+  
+  cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
+  cfg.SOLVER.BASE_LR = base_lr
+  cfg.SOLVER.MAX_ITER = max_iter
+  cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes
+  cfg.TEST.EVAL_PERIOD = eval_period
+  cfg.MODEL.BACKBONE.FREEZE_AT = 2
+  cfg.MODEL.ROI_BOX_HEAD.BBOX_REG_LOSS_TYPE = 'diou'
+  return cfg
 
 def predictions_on_data(directory=None,
                         predictor=DefaultTrainer,
