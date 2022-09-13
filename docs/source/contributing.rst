@@ -48,16 +48,56 @@ Tips for creating a detectree2 PR
 ----------------------------------
 .. _detectree2 tips:
 
-First consult :doc:`using-git` or any of the above resources if you are unclear on how to create a good PR. Also see `issue/6 <https://github.com/PatBall1/detectree2/pull/6#issuecomment-1189473815>`_ for some recommendatations on best practices when forking a project. 
+First consult :doc:`using-git` or any of the above resources if you are unclear on how to create a good PR. The process usually begins with forking the project. Also see `issue/6 <https://github.com/PatBall1/detectree2/pull/6#issuecomment-1189473815>`_ for some recommendatations on best practices when forking a project. 
 
-It is good to keep the PR's feature branch up-to-date with master during the PR submission and review process. One can either ``merge`` master or ``rebase`` on master.  For detectree2 it is recommended to ``squash and merge`` when committing a PR to master (this is done using the GitHub UI). It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more consise message of the PR's contributions). It keeps the commit history more concise and means we do not need to worry about the effects of ``merging`` in other branches on the project history. 
+Once a PR has been created, it is good practice to keep the PR's feature branch up-to-date with `upstream <https://github.com/PatBall1/detectree2>`_ master during the PR submission and review process.
+This can be done simply with the ``Sync fork`` link on github which can synchronise `upstream master` to any remote branch, and then pull the changes using the command line to continue developing locally. This is the simplest way to keep the PR branch updated. 
 
 
-TIP: It is possible to make this the default behaviour in the repository settings. 
+It's also possible to do all this all locally using Git. I.e. In your local clone do the following::
 
-If for any reason you do not want to ``squash and merge`` the commits (i.e. to keep the PR's commit history in tact), I would suggest rebasing. Rebasing is more involved than merging but leads to a linear history. 
+    git remote add upstream https://github.com/PatBall1/detectree2
+    git fetch upstream
+    git checkout master # if not already there
+    git rebase upstream/master # or merge
+    git checkout <feature-branch>
+    git rebase master # or merge
+    # now push to your remote repo
+    git push -f origin <feature-branch>
+
+This process can be abbreviated to a one-liner. 
+
+.. Which updates the local ``master`` branch and syncs to your remote fork's ``master``.  It is good practice to have the fork's master mirror the upstream master.
+
+TIP: This process may need to be done multiple times during a PR.
+
+..  Once master is updated one can either ``merge`` master or ``rebase`` on master. This can be done using the command line during a PR or at the end using the github UI. 
+ 
+At the end of the PR we can use GitHub's UI to commit. The available options are explained here: `Pull request merges <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges>`_.
+
+Using GitHub's UI to commit PR
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+For detectree2 development it is recommended to ``squash and merge`` when committing a PR to master (this is done using the GitHub UI). It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more concise message of the PR's contributions). It keeps the commit history simpler and means we do not need to worry about the effects of ``merging`` in other branches on the project history. 
+
+There are a few downsides to ``squash and merge``. Squashing loses useful information, i.e. ``git blame`` cannot tell you which precise commit message corresponds to a particular line. (A general guide is that if a PR consists of logically separate parts then it makes sense to retain the commit history. But one could argue that the logically separate parts should in fact be separate PRs anyway). A further downside is that it is not possible to contribute to the head branch of a PR after you have squashed and merged the PR. 
+
+Alternatively, you can select the ``rebase and merge`` option - in this case all commits from the head branch are added onto the base branch individually without a merge commit. If you have conflicts and you still wish to rebase and merge, these need to be resolved locally using the command line as described `here <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges>`_ and the next section.
+
+TIP: It is possible to make ``squash and merge`` the default behaviour in the repository settings. 
+
+Using command line to rebase
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+If you still want to rebase the commits but can't rebase and merge automatically on GitHub.com you must:
+    - Rebase the PR branch onto master locally on the command line
+    - Resolve any merge conflicts on the command line
+    - Force push to the PR branch
+     
+There is plenty of useful information on this online in the `official docs <https://git-scm.com/docs/git-rebase>`_ and this `stackoverflow <https://stackoverflow.com/questions/7929369/how-to-rebase-local-branch-onto-remote-master>`_ post. This makes the GitHub UI process trivial and one can select ``Rebase and merge``. Rebasing is more involved than merging but leads to a linear history.
 
 TIP: If following this approach, make sure to use pre-commit hooks to improve quality of individual commits. 
+
+General tips
+^^^^^^^^^^^^
 
 TIP: Try to avoid merging the PR to a `dev` branch. This is considered bad practice since when it comes to merge to master the eventual `PR` can be large and difficult to understand. PRs should have a single focus. 
 
@@ -109,9 +149,25 @@ Programming style
 -----------------
 .. _programming style:
 
-Detectree2 currently utilises the following tools to check code style and consistency.  
+Detectree2 currently utilises the following tools to check code style and consistency. 
 
-It is recommended to set up pre-commit hooks. To run pre-commit hooks do::
+- ``yapf``: Autoformatter ensures consistent formatting of Python files.
+- ``flake8``: Multiple checks for - linting - syntax errors or anti-patterns - (lack of) executable flags on files - docstring validation - function complexity.
+- ``mypy``: Validate Python type hints.
+- ``isort``: Checks that imports are correctly sorted.
+
+A number of other style choices have been enforced across the project:
+
+* Line length = 120 characters
+* Google style docstrings
+* Indent width = 4 spaces per tab.
+
+
+This style is enforced both locally (using pre-commit hooks) and remotely (using github workflows). It is possible to use remote checks only, but it is often faster to check locally first than to wait for the github workflow to execute. 
+
+Pre-commit hooks
+^^^^^^^^^^^^^^^^
+To set up pre-commit hooks do::
 
     pip install pre-commit
     pre-commit install
@@ -128,45 +184,18 @@ If it is desirable to avoid pre-commit hooks::
 
 With checks configured in the `.pre-commit-config.yaml` file in the project root. Note that a commit will not be made unless the tests pass. This generally has the effect of improving the quality of individual commits without needing to rely too much on server side checks for code quality.
 
-As an alternative to running pre-commit hooks, one can still run the checks manually but the programmer must be careful that all checks pass - the CI will not permit a commit unless all tests are successful. To see up-to-date commands, consult the relevant workflow. Note that different versions of python (+packages) may give different errors to the CI, so correcting errors may take a few attempts. There may also be discrepancies between the client pre-commit hooks and server CI checks. It is best to update the pre-commit hooks if possible in this case. 
+
+As an alternative to running pre-commit hooks, one can still run the checks manually but the programmer must be careful that all checks pass. If everything is setup correctly, the CI should not permit a commit to ``master`` unless all tests are successful. To see up-to-date commands, consult the relevant workflow. Note that different versions of python (+packages) may give different errors to the CI, so correcting errors may take a few attempts. There may also be discrepancies between the client pre-commit hooks and server CI checks. It is best to update the pre-commit hooks if possible in this case. 
 
 
-- ``yapf``: Ensure consistent formatting of Python files 
-- ``flake8``: Multiple checks for - linting - syntax errors or anti-patterns - (lack of) executable flags on files - docstring validation - function complexity
-- ``mypy``: Validate Python type hints 
-- ``isort``: Checks that imports are correctly sorted
-
-A number of other style choices have been enforced across the project:
-
-* Line length = 120 characters
-* Google style docstrings
-* Indent width = 4 spaces per tab.
 
 .. WARNING: ``Flake8`` will **not** detect infringements in the function signature style (and other aspects) if it still adheres to the PEP8 standard, and ``autopep8`` will not enforce it. The reviewers must ensure that the standards above are maintained, and update the style guide accordingly.
 
 .. We therefore opt for a less strict autoformatter in favour of a style-guide. Strict autoformatters ensure consistency, but at the detriment to readability. 
 
-As an aside: The difference between the strict autoformatter ``yapf`` and the official demonstrated for function arguments with the example below. Both examples are PEP8 compliant and will pass ``flake8`` linting checks. The former is better for diffs and typing clarity, whereas the latter has fewer lines. 
-
-.. code-block:: python3
-    # black or yapf: 
-    def tile_data(
-        data: DatasetReader,
-        out_dir: str,
-        buffer: int = 30,
-        tile_width: int = 200,
-        tile_height: int = 200,
-        dtype_bool: bool = False
-    ) -> None:
-
-    
-    # Python's official `style`
-
-    def tile_data(data: DatasetReader, out_dir: str, buffer: int = 30, tile_width: int = 200, tile_height: int = 200,
-                  dtype_bool: bool = False) -> None:
-
     
 .. todo::
+    * Prevent commits unless all tests pass.
     * Convert setup.cfg to pyproject.toml (if using black - does not support setup.cfg)
     * Consider using style-guide instead of black (i.e. autopep8) - black ensures consistency at the detriment of readability. 
     * Add dev-requirements file. ``flake8``, ``flake8-docstrings``, ``mypy``, ``black``, ``isort``. 
@@ -174,14 +203,14 @@ As an aside: The difference between the strict autoformatter ``yapf`` and the of
 
 
 Linting
-------
+-------
 Flake8 includes linting, syntax errors, and McCabe function complexity analysis. 
 
 The are several instances where Flake8 errors have been purposely ignored in Detectree2 using ``noqa: <CODE>`` annotations to allow flake8 CI to pass. This is not a permanent fix and the errors should eventually be addressed. For example: ``noqa: E501`` ensures that line lengths beyond (120 characters) are ignored by the linter and ``noqa: 901`` ignores the McCabe complexity measure. 
 
 These can also be set globally in setup.cfg, but fewer the better. It is also possible to set ``continue-on-error`` in the flake8 workflow or ``--exit-zero`` flake8 argument to allow other checks to continue. In practice it was found that developers tend to ignore flake8 errors as a result of these two options, so the ``noqa`` solution is preferred. 
 
-McCabe function complexity analysis is useful for detecting over-complex code (as determined by the amount of branching - `if`, `else` statements). A value of 10 is set as default. 
+McCabe function complexity analysis is useful for detecting over-complex code (as determined by the amount of branching - `if`, `else` statements). A value of 10 is set as default. This is perhaps overkill and may be removed. 
 
 Docstrings
 ----------
@@ -225,6 +254,28 @@ It is possible to configure vscode to autoformat with ``autopep8`` on save if de
 .. todo::
     * Consider configuring YAPF with pep8 settings to create unformity for project contributors.
 
+
+Formatting aside
+^^^^^^^^^^^^^^^^
+The difference between the strict autoformatter ``yapf`` and the official demonstrated for function arguments with the example below. Both examples are PEP8 compliant and will pass ``flake8`` linting checks. The former is better for diffs and typing clarity, whereas the latter has fewer lines. 
+
+.. code-block:: python3
+
+    # black or yapf:
+    def tile_data(
+        data: DatasetReader,
+        out_dir: str,
+        buffer: int = 30,
+        tile_width: int = 200,
+        tile_height: int = 200,
+        dtype_bool: bool = False
+    ) -> None:
+
+    
+    # Python's official `style`
+
+    def tile_data(data: DatasetReader, out_dir: str, buffer: int = 30, tile_width: int = 200, tile_height: int = 200,
+                  dtype_bool: bool = False) -> None:
 
 
 Static typing
@@ -302,7 +353,7 @@ Test-driven development stipulates that tests should be written as new features 
     # pytest should be run from the project root: 
     pytest . 
 
-As of August 2022, an integration test has been written which demos the tiling, and training steps. The integration test will run the training on the CPU only. It is possible to use other 
+As of August 2022, an integration test has been written which demos the tiling, and training steps. The integration test will run the training on the CPU only. It is possible to run tests on other systems using GitHub, but this will take more work. 
 
 A few unit tests have been implemented, the most interesting computes the area intersection over union (with dummy .geojson data containing square shapes with known areas). The test is still incomplete because much of the code in evaluation.py and F1_calculator is not sufficiently modular - a major refactor is required. 
 
@@ -360,12 +411,12 @@ then::
 .. todo:: 
 
     * Pin torch and torchvision versions in setup.py
-    https://detectron2.readthedocs.io/en/latest/tutorials/install.html
-    http://www.tekroi.in/detectron2/projects/DensePose/setup.py
-    https://stackoverflow.com/questions/66738473/installing-pytorch-with-cuda-in-setup-py
+    * https://detectron2.readthedocs.io/en/latest/tutorials/install.html
+    * http://www.tekroi.in/detectron2/projects/DensePose/setup.py
+    * https://stackoverflow.com/questions/66738473/installing-pytorch-with-cuda-in-setup-py
 
 Fixing detectron2 version
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^
 We can fix the version of ``detectron2`` by pointing to the pre-built wheel using pip::
 
     python -m pip install detectron2==0.6 -f \ https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html
