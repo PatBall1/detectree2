@@ -574,13 +574,13 @@ def site_f1_score2(tile_directory=None,
             #area_threshold = get_tile_width(file)
 
             test_file = tile_directory + "/" + file.replace(".geojson", "_geo.geojson")
-            all_test_feats = initialise_feats(test_directory, test_file,
+            all_test_feats = initialise_feats2(test_directory, test_file,
                                               lidar_img, area_threshold,
                                               conf_threshold, border_filter,
                                               tile_width, EPSG)
 
             pred_file = "Prediction_" + file
-                        all_pred_feats = initialise_feats(pred_directory, pred_file,
+                        all_pred_feats = initialise_feats2(pred_directory, pred_file,
                                               lidar_img, area_threshold,
                                               conf_threshold, border_filter,
                                               tile_width, EPSG)
