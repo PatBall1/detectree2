@@ -161,13 +161,8 @@ class GeoFeature:
         if self.lidar_img is None:
             self.height = 0
         else:
-            with open(self.filename) as file:
-                geojson = json.load(file)
 
-            # Want coord tuples for the unmoved crown coordinates so using the
-            # lidar copied crown file
-            coords = geojson['features'][
-                self.number]['geometry']['coordinates'][0]
+            coords = self.geometry['coordinates'][0]
             geo = [{
                 'type': 'Polygon',
                 'coordinates': [self.get_tuple_coords(coords)]
@@ -288,7 +283,7 @@ def initialise_feats2(
     conf_threshold,
     border_filter,
     tile_width,
-    EPSG
+    epsg
 ):
     """Creates a list of all the features as objects of the class."""
     with open(directory + "/" + file) as feat_file:
@@ -298,8 +293,7 @@ def initialise_feats2(
     all_feats = []
     count = 0
     for feat in feats:
-        feat_obj = Feature(file, directory, count, feat,,
-                           lidar_img, EPSG)
+        feat_obj = GeoFeature(file, directory, count, feat, lidar_img, epsg)
 
         if feat_threshold_tests(feat_obj, conf_threshold, area_threshold,
                                 border_filter, tile_width):
@@ -537,12 +531,9 @@ def site_f1_score2(tile_directory=None,
                   IoU_threshold=0.5,
                   min_height=0,
                   max_height=100,
-                  #area_fraction_limit=0.0005,
                   area_threshold=25,
                   conf_threshold=0,
                   border_filter=tuple,
-                  #scaling=list,
-                  EPSG=None,
                   save=False):
     """Calculating all the intersections of shapes in a pair of files and the
     area of the corresponding polygons.
@@ -560,12 +551,8 @@ def site_f1_score2(tile_directory=None,
         border_filter: bool of whether to remove border crowns, proportion of border to be used
         in relation to tile size
         scaling: x and y scaling used when tiling the image
-        EPSG: area code of tree location
         save: bool to tell program whether the filtered crowns should be saved
     """
-
-    if EPSG is None:
-        raise ValueError('Set the EPSG value')
 
     test_entries = os.listdir(test_directory)
     total_tps = 0
@@ -583,8 +570,8 @@ def site_f1_score2(tile_directory=None,
             tile_width = get_tile_width(file)
             epsg = get_epsg(file)
 
-            test_file = tile_directory + "/" + file.replace(".geojson", "_geo.geojson")
-            all_test_feats = initialise_feats2(test_directory, test_file,
+            test_file = file.replace(".geojson", "_geo.geojson")
+            all_test_feats = initialise_feats2(tile_directory, test_file,
                                               lidar_img, area_threshold,
                                               conf_threshold, border_filter,
                                               tile_width, epsg)
