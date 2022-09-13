@@ -37,8 +37,10 @@ There are many excellent resources for learning Git. See :doc:`using-git`, for a
 
 * `<https://github.com/JamesFergusson/Introduction-to-Research-Computing/blob/master/05_BestPractice_GIT.md>`_
 * `<https://www.bristol.ac.uk/acrc/research-software-engineering/training/>`_
-   * `<https://chryswoods.com/introducing_git/>`_
-   * `<https://chryswoods.com/git_collaboration/>`_
+  
+  * `<https://chryswoods.com/introducing_git/>`_
+  * `<https://chryswoods.com/git_collaboration/>`_
+  
 * `<https://ohshitgit.com/>`_
 
  
@@ -90,9 +92,10 @@ TIP: It is possible to make ``squash and merge`` the default behaviour in the re
 Using command line to rebase
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 If you still want to rebase the commits but can't ``rebase and merge`` automatically on GitHub.com you must:
-    - Rebase the PR branch onto master locally on the command line
-    - Resolve any merge conflicts on the command line
-    - Force push to the PR branch
+
+  - Rebase the PR branch onto master locally on the command line
+  - Resolve any merge conflicts on the command line
+  - Force push to the PR branch
      
 There is plenty of useful information on this online in the `official docs <https://git-scm.com/docs/git-rebase>`_ and this `stackoverflow <https://stackoverflow.com/questions/7929369/how-to-rebase-local-branch-onto-remote-master>`_ post. This makes the GitHub UI process trivial and one can select ``rebase and merge``. Rebasing is more involved than merging but leads to a linear history.
 
@@ -112,6 +115,7 @@ TIP: Do not merge unless all tests are passing.
 
 .. todo::
     * Many of the recommendations above can be made default in Github's settings:
+     
         * Prohibit commits direct to master.
         * Automatically squash on merge.
         * Prevent merge unless all tests are passing. 
@@ -130,9 +134,9 @@ We adopt `GitHub actions` to deploy software development workflows `detectree2/a
 
 For reference, the relevant ``detectree2`` subprojects are:
 
-* `detectree2-docker GitHub repo <https://github.com/ma595/detectree2-docker>`_ For docker containers used in CI. 
-* `detectree2-data GitHub repo <https://github.com/ma595/detectree2-data>`_ For example data used in CI. 
-* `anaconda distribution <https://anaconda.org/ma595/detectree2>`_ detectree2 conda package. 
+    * `detectree2-docker GitHub repo <https://github.com/ma595/detectree2-docker>`_ For docker containers used in CI. 
+    * `detectree2-data GitHub repo <https://github.com/ma595/detectree2-data>`_ For example data used in CI. 
+    * `anaconda distribution <https://anaconda.org/ma595/detectree2>`_ detectree2 conda package. 
 
 .. todo::
     * Publish model on model_zoo 
@@ -231,6 +235,7 @@ We adopt ``yapf`` for this project, but others are listed for completion.
 YAPF
 ^^^^
 From the `YAPF docs <https://github.com/google/yapf>`_:
+
     Most of the current formatters for Python --- e.g., autopep8, and pep8ify --- are made to remove lint errors from code. This has some obvious limitations. For instance, code that conforms to the PEP 8 guidelines may not be reformatted. But it doesn't mean that the code looks good.
 
 YAPF is highly customisable and shares a similar philosophy to ``black``. It is possible to customise behaviour of any autoformatter like ``autopep8`` or ``black`` with  project modifications. 
@@ -238,7 +243,8 @@ YAPF is highly customisable and shares a similar philosophy to ``black``. It is 
 Black
 ^^^^^
 
-From the `Black docs <>`:
+From the `Black docs <https://black.readthedocs.io/en/stable/>`_:
+
     Black is the uncompromising Python code formatter. By using it, you agree to cede control over minutiae of hand-formatting. In return, Black gives you speed, determinism, and freedom from pycodestyle nagging about formatting. You will save time and mental energy for more important matters.
 
 It favours consistency, meaning it is guaranteed to give the same results across the team - a style guide is not needed. 
