@@ -48,7 +48,9 @@ Tips for creating a detectree2 PR
 ----------------------------------
 .. _detectree2 tips:
 
-First consult :doc:`using-git` or any of the above resources if you are unclear on how to create a good PR. The process usually begins with forking the project. Also see `issue/6 <https://github.com/PatBall1/detectree2/pull/6#issuecomment-1189473815>`_ for some recommendatations on best practices when forking a project. 
+This guide assumes that most developers do not have permission to contribute to the repo directly and therefore need to fork the project. 
+
+First consult :doc:`using-git` or any of the above resources if you are unclear on how to create a good PR. See `issue/6 <https://github.com/PatBall1/detectree2/pull/6#issuecomment-1189473815>`_ for some recommendatations on best practices when forking a project. 
 
 Once a PR has been created, it is good practice to keep the PR's feature branch up-to-date with `upstream <https://github.com/PatBall1/detectree2>`_ master during the PR submission and review process.
 This can be done simply with the ``Sync fork`` link on github which can synchronise `upstream master` to any remote branch, and then pull the changes using the command line to continue developing locally. This is the simplest way to keep the PR branch updated. 
@@ -59,13 +61,13 @@ It's also possible to do all this all locally using Git. I.e. In your local clon
     git remote add upstream https://github.com/PatBall1/detectree2
     git fetch upstream
     git checkout master # if not already there
-    git rebase upstream/master # or merge
+    git rebase upstream/master # or git merge upstream/master
     git checkout <feature-branch>
-    git rebase master # or merge
+    git rebase master # or git merge master
     # now push to your remote repo
     git push -f origin <feature-branch>
 
-This process can be abbreviated to a one-liner. 
+This process can be abbreviated to a couple of commands for advanced Git users. 
 
 .. Which updates the local ``master`` branch and syncs to your remote fork's ``master``.  It is good practice to have the fork's master mirror the upstream master.
 
@@ -77,7 +79,7 @@ At the end of the PR we can use GitHub's UI to commit. The available options are
 
 Using GitHub's UI to commit PR
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-For detectree2 development it is recommended to ``squash and merge`` when committing a PR to master (this is done using the GitHub UI). It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more concise message of the PR's contributions). It keeps the commit history simpler and means we do not need to worry about the effects of ``merging`` in other branches on the project history. 
+For detectree2 development it is recommended to ``squash and merge`` when committing a PR to master (this is done using the GitHub UI). It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more concise message of the PR's contributions). If following this approach we can commit without concern about the state of the project history. 
 
 There are a few downsides to ``squash and merge``. Squashing loses useful information, i.e. ``git blame`` cannot tell you which precise commit message corresponds to a particular line. (A general guide is that if a PR consists of logically separate parts then it makes sense to retain the commit history. But one could argue that the logically separate parts should in fact be separate PRs anyway). A further downside is that it is not possible to contribute to the head branch of a PR after you have squashed and merged the PR. 
 
@@ -87,12 +89,12 @@ TIP: It is possible to make ``squash and merge`` the default behaviour in the re
 
 Using command line to rebase
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you still want to rebase the commits but can't rebase and merge automatically on GitHub.com you must:
+If you still want to rebase the commits but can't ``rebase and merge`` automatically on GitHub.com you must:
     - Rebase the PR branch onto master locally on the command line
     - Resolve any merge conflicts on the command line
     - Force push to the PR branch
      
-There is plenty of useful information on this online in the `official docs <https://git-scm.com/docs/git-rebase>`_ and this `stackoverflow <https://stackoverflow.com/questions/7929369/how-to-rebase-local-branch-onto-remote-master>`_ post. This makes the GitHub UI process trivial and one can select ``Rebase and merge``. Rebasing is more involved than merging but leads to a linear history.
+There is plenty of useful information on this online in the `official docs <https://git-scm.com/docs/git-rebase>`_ and this `stackoverflow <https://stackoverflow.com/questions/7929369/how-to-rebase-local-branch-onto-remote-master>`_ post. This makes the GitHub UI process trivial and one can select ``rebase and merge``. Rebasing is more involved than merging but leads to a linear history.
 
 TIP: If following this approach, make sure to use pre-commit hooks to improve quality of individual commits. 
 
