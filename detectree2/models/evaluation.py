@@ -199,8 +199,17 @@ def get_tile_width(file):
     filename_split = filename.split("_")
 
     tile_width = (2 * int(filename_split[-2]) + int(filename_split[-3]))
-    print(tile_width)
+    #print(tile_width)
     return tile_width
+
+def get_epsg(file):
+    """Splitting up the file name to get EPSG"""
+    filename = file.replace(".geojson", "")
+    filename_split = filename.split("_")
+
+    epsg = filename_split[-1]
+    print(epsg)
+    return epsg
 
 
 def feat_threshold_tests(feature_instance, conf_threshold, area_threshold,
@@ -571,19 +580,20 @@ def site_f1_score2(tile_directory=None,
             #tile_width = get_tile_width(file) * scaling[0]
             #area_threshold = ((tile_width)**2) * area_fraction_limit
 
-            #area_threshold = get_tile_width(file)
+            tile_width = get_tile_width(file)
+            epsg = get_epsg(file)
 
             test_file = tile_directory + "/" + file.replace(".geojson", "_geo.geojson")
             all_test_feats = initialise_feats2(test_directory, test_file,
                                               lidar_img, area_threshold,
                                               conf_threshold, border_filter,
-                                              tile_width, EPSG)
+                                              tile_width, epsg)
 
             pred_file = "Prediction_" + file
-                        all_pred_feats = initialise_feats2(pred_directory, pred_file,
-                                              lidar_img, area_threshold,
-                                              conf_threshold, border_filter,
-                                              tile_width, EPSG)
+            all_pred_feats = initialise_feats2(pred_directory, pred_file,
+                                  lidar_img, area_threshold,
+                                  conf_threshold, border_filter,
+                                  tile_width, epsg)
 
             if save:
                 save_feats(tile_directory, all_test_feats)
