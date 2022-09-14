@@ -50,7 +50,7 @@ Tips for creating a detectree2 PR
 ----------------------------------
 .. _detectree2 tips:
 
-This guide assumes that most developers do not have permission to contribute to the repo directly and therefore need to fork the project. 
+This guide assumes that most developers do not have permission to contribute to the repo directly and therefore need to fork the project. For users with privileges to contribute to detectree2 directly the concepts are the same, but a PR can be initiated from a feature branch within the detectree2 project directly (rather than the fork).
 
 First consult :doc:`using-git` or any of the above resources if you are unclear on how to create a good PR. See `issue/6 <https://github.com/PatBall1/detectree2/pull/6#issuecomment-1189473815>`_ for some recommendatations on best practices when forking a project. 
 
@@ -58,7 +58,7 @@ Once a PR has been created, it is good practice to keep the PR's feature branch 
 This can be done simply with the ``Sync fork`` link on github which can synchronise `upstream master` to any remote branch, and then pull the changes using the command line to continue developing locally. This is the simplest way to keep the PR branch updated. 
 
 
-It's also possible to do all this all locally using Git. I.e. In your local clone do the following::
+It's also possible to do all this locally using Git. I.e. In your local clone do the following::
 
     git remote add upstream https://github.com/PatBall1/detectree2
     git fetch upstream
@@ -81,13 +81,13 @@ At the end of the PR we can use GitHub's UI to commit. The available options are
 
 Using GitHub's UI to commit PR
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-For detectree2 development it is recommended to ``squash and merge`` when committing a PR to master (this is done using the GitHub UI). It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more concise message of the PR's contributions). If following this approach we can commit without concern about the state of the project history. 
+For detectree2 you can ``squash and merge`` when committing a PR to master (this is done using the GitHub UI) but one should proceed with caution. It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more concise message of the PR's contributions). If following this approach one could argue that we have a clean history but often it can lead to large commits that are difficult to read. 
 
-There are a few downsides to ``squash and merge``. Squashing loses useful information, i.e. ``git blame`` cannot tell you which precise commit message corresponds to a particular line. (A general guide is that if a PR consists of logically separate parts then it makes sense to retain the commit history. But one could argue that the logically separate parts should in fact be separate PRs anyway). A further downside is that it is not possible to contribute to the head branch of a PR after you have squashed and merged the PR. 
+Squashing also loses useful information, i.e. ``git blame`` cannot tell you which precise commit message corresponds to a particular line. (A general guide is that if a PR consists of logically separate parts then it makes sense to retain the commit history. But one could argue that the logically separate parts should in fact be separate PRs anyway). A further downside is that it is not possible to contribute to the head branch of a PR after you have squashed and merged the PR. Squashing can be done in Git without needing to rely on github's ``squash and merge`` button which eradicates all history. So commits like 'WIP', 'fix typo' can be removed manually and still keep the project history in tact. 
 
 Alternatively, you can select the ``rebase and merge`` option - in this case all commits from the head branch are added onto the base branch individually without a merge commit. If you have conflicts and you still wish to rebase and merge, these need to be resolved locally using the command line as described `here <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges>`_ and the next section.
 
-TIP: It is possible to make ``squash and merge`` the default behaviour in the repository settings. 
+.. TIP: It is possible to make ``squash and merge`` the default behaviour in the repository settings. 
 
 Using command line to rebase
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
