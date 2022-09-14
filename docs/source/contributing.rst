@@ -67,13 +67,15 @@ It's also possible to do all this locally using Git. I.e. In your local clone do
     git checkout <feature-branch>
     git rebase master # or git merge master
     # now push to your remote repo
-    git push -f origin <feature-branch>
+    git push --force-with-lease origin <feature-branch>
 
-This process can be abbreviated to a couple of commands for advanced Git users. 
+
+
+This process can be abbreviated to a couple of commands for advanced Git users. We can modify commits using ``git rebase -i`` (interactive rebase) to clean up the commit history. We can squash commits, remove unnecessary commits or edit commits. 
 
 .. Which updates the local ``master`` branch and syncs to your remote fork's ``master``.  It is good practice to have the fork's master mirror the upstream master.
 
-TIP: This process may need to be done multiple times during a PR.
+TIP: The process of rebasing on ``master`` may need to be done multiple times during a PR.
 
 ..  Once master is updated one can either ``merge`` master or ``rebase`` on master. This can be done using the command line during a PR or at the end using the github UI. 
  
@@ -81,7 +83,7 @@ At the end of the PR we can use GitHub's UI to commit. The available options are
 
 Using GitHub's UI to commit PR
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-For detectree2 you can ``squash and merge`` when committing a PR to master (this is done using the GitHub UI) but one should proceed with caution. It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more concise message of the PR's contributions). If following this approach one could argue that we have a clean history but often it can lead to large commits that are difficult to read. 
+For detectree2 you can ``squash and merge`` when committing a PR to master (this is done using the GitHub UI) but one should proceed with caution. It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more concise message of the PR's contributions). One could argue that this leads to a clean history but often it can result in large commits that are difficult to read. My advice is to ensure that PRs have a single focus. 
 
 Squashing also loses useful information, i.e. ``git blame`` cannot tell you which precise commit message corresponds to a particular line. (A general guide is that if a PR consists of logically separate parts then it makes sense to retain the commit history. But one could argue that the logically separate parts should in fact be separate PRs anyway). A further downside is that it is not possible to contribute to the head branch of a PR after you have squashed and merged the PR. Squashing can be done in Git without needing to rely on github's ``squash and merge`` button which eradicates all history. So commits like 'WIP', 'fix typo' can be removed manually and still keep the project history in tact. 
 
@@ -91,7 +93,7 @@ Alternatively, you can select the ``rebase and merge`` option - in this case all
 
 Using command line to rebase
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you still want to rebase the commits but can't ``rebase and merge`` automatically on GitHub.com you must:
+If you want to rebase the commits but can't ``rebase and merge`` automatically on GitHub.com you must:
 
   - Rebase the PR branch onto master locally on the command line
   - Resolve any merge conflicts on the command line
@@ -173,7 +175,7 @@ This style is enforced both locally (using pre-commit hooks) and remotely (using
 
 Pre-commit hooks
 ^^^^^^^^^^^^^^^^
-To set up pre-commit hooks do::
+Pre-commit hooks ensure that each commit passes a minimum set of style checks. To set up pre-commit hooks do::
 
     pip install pre-commit
     pre-commit install
