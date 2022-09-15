@@ -93,7 +93,9 @@ The github UI will give the ``squash and merge`` option when committing a PR to 
 
 Alternatively, you can select the ``rebase and merge`` option - in this case all commits from the head branch are added onto the base branch individually without a merge commit. If you have conflicts and you still wish to rebase and merge, these need to be resolved locally using the command line as described `here <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges>`_ and the next section. My advice is to ensure that PRs have a single focus and to reduce unnecessary style commits with pre-commit hooks. ``git rebase -i`` is an extremely useful command that every developer should be aware of to neaten history when ready to merge. 
 
-For Detectree2, it's up to you which approach to take. Given that the project is quite small and there are few contributors I'd advise improving commit quality (with help from pre-commit hooks and interactive rebases). Squashing is generally fine (and the easier approach of the two), but try to avoid doing it all the time.  
+Finally, GitHub provides the option to ``Create a merge commit`` which simply merges branch into main. I would advise against this as it creates complicated git histories that are difficult to read. 
+
+For Detectree2, it's up to you which approach to take. Given that the project is quite small and there are few contributors I'd suggest using pre-commit hooks and interactive rebases to improve commit quality in favour of squashing. Squashing is also generally fine (and the easier approach of the two), but try to avoid doing it all the time.  
 
 .. TIP: It is possible to make ``squash and merge`` the default behaviour in the repository settings. 
 
