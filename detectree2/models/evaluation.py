@@ -64,7 +64,7 @@ class Feature:
 
     def tree_height(self):
         """Crops the lidar tif to the features and calculates the 95% greatest height to account for error at top end.
-        
+
         If no lidar file is inputted than the height is given as 0.
         """
         if self.lidar_img is None:
@@ -285,7 +285,7 @@ def prec_recall(total_tps: int, total_fps: int, total_fns: int):
 
 
 def f1_cal(precision, recall):
-    """Calculating the F1 score."""
+    """Calculate the F1 score."""
 
     return (2 * precision * recall) / (precision + recall)
 

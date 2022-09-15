@@ -5,6 +5,8 @@ import geopandas as gpd
 import pytest
 import rasterio
 
+from detectree2.models.train import MyTrainer, register_train_data, setup_cfg
+
 
 class TestCase(unittest.TestCase):
 
@@ -30,8 +32,6 @@ class TestCase(unittest.TestCase):
         from detectree2.preprocessing.tiling import tile_data_train
         tile_data_train(data, out_dir, buffer, tile_width, tile_height, crowns, threshold)
 
-        return True
-
     @pytest.mark.dependency(depends=["TestCase::test_tiling"])
     def test_to_traintest_folders(self):
         root_path = 'detectree2-data'
@@ -43,24 +43,21 @@ class TestCase(unittest.TestCase):
 
         to_traintest_folders(tiles_path, out_path, test_frac, folds, seed=1)
 
-        return True
-
     @pytest.mark.dependency(depends=["TestCase::test_to_traintest_folders"])
     def test_train(self):
         """Integration test: Training on Paracou dataset for a single step.
 
         Runs on CPU.
         """
-        from detectree2.models.train import (MyTrainer, register_train_data,
-                                             setup_cfg)
+
         val_fold = 1
         root_path = os.path.abspath("detectree2-data")
         train_location = os.path.join(root_path, 'paracou-out/train_test_tiles/train/')
         register_train_data(train_location, "Paracou", val_fold)
         model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
         # model = "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_1x.yaml"
-        trains = ('Paracou_train',)
-        tests = ('Paracou_val',)
+        trains = ('Paracou_train', )
+        tests = ('Paracou_val', )
         out_dir = os.path.join(root_path, "paracou-out/train_outputs-1")
         cfg = setup_cfg(model, trains, tests, ims_per_batch=1, eval_period=10, max_iter=1, out_dir=out_dir)
         cfg.MODEL.DEVICE = 'cpu'

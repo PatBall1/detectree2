@@ -42,6 +42,7 @@ jobs:
         pip install .
     - name: pytest checks
       run: |
+        pip install pytest-order
         pytest -rP -v detectree2/tests/integration/demo.py
     - name: mypy checks
       run: |

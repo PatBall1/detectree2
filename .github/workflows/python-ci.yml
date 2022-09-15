@@ -1,12 +1,8 @@
-<<<<<<< HEAD:.github/workflows/python-ci.yml
-name: Detectree CI
-=======
 name: Detectree2 CI
 
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
->>>>>>> 820b7d8 (remove comment):.github/workflows/pythonapp.yml
 
 on:
   push:
@@ -58,6 +54,7 @@ jobs:
         flake8 detectree2 --count --max-complexity=10 --statistics
     - name: pytest checks
       run: |
+        pip install pytest-order
         pytest
     - name: mypy checks
       run: |

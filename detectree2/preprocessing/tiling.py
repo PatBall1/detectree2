@@ -4,7 +4,6 @@ These functions tile orthomosaics and crown data for training and evaluation
 of models and making landscape predictions.
 """
 
-import glob
 import json
 import os
 import random

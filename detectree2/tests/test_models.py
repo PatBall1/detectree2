@@ -17,7 +17,7 @@ class TestCase(unittest.TestCase):
         cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"))
         cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
         cfg.MODEL.WEIGHTS = "detectron2://COCO-Detection/faster_rcnn_R_101_FPN_3x/137851257/model_final_f6e8b1.pkl"
-        cfg.MODEL.WEIGHTS = 'https://dl.fbaipublicfiles.com/detectron2/COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x/138205316/model_final_a3ec72.pkl'   # noqa: E501
+        cfg.MODEL.WEIGHTS = 'https://dl.fbaipublicfiles.com/detectron2/COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x/138205316/model_final_a3ec72.pkl'  # noqa: E501
         predictor = DefaultPredictor(cfg)
         outputs = predictor(im)
         print(outputs)
@@ -36,7 +36,7 @@ class TestCase(unittest.TestCase):
     #                                          setup_cfg)
     #     val_fold = 1
     #     site_path = os.path.abspath("detectree2-data")
-    #     train_location = os.path.join(site_path, 'paracou-out/ref/train_test_tiles/train/')
+    #     train_location = os.path.join(site_path, 'ref-out/paracou/train_test_tiles/train/')
     #     register_train_data(train_location, "Paracou", val_fold)
     #     # 10.5281/zenodo.5515408
     #     model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
