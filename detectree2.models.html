@@ -111,8 +111,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="detectree2.models.evaluation.Feature.get_tuple_coords">
 <span class="sig-name descname"><span class="pre">get_tuple_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.evaluation.Feature.get_tuple_coords" title="Permalink to this definition"></a></dt>
-<dd><p>Converts coordinates’ data structure from a list of lists to a list
-of tuples.</p>
+<dd><p>Converts coordinates’ data structure from a list of lists to a list of tuples.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -124,7 +123,7 @@ of tuples.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="detectree2.models.evaluation.Feature.tree_height">
 <span class="sig-name descname"><span class="pre">tree_height</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.evaluation.Feature.tree_height" title="Permalink to this definition"></a></dt>
-<dd><p>Crops the lidar tif to the features and calculates height</p>
+<dd><p>Crops the lidar tif to the features and calculates height.</p>
 <p>Calculates the 95thpercentile height greatest height to account for
 error at the top end. If no lidar file is inputted than the height is
 given as 0</p>
@@ -142,12 +141,10 @@ given as 0</p>
 <dt class="sig sig-object py" id="detectree2.models.evaluation.feat_threshold_tests">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.evaluation.</span></span><span class="sig-name descname"><span class="pre">feat_threshold_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_instance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">area_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">border_filter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tile_width</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.evaluation.feat_threshold_tests" title="Permalink to this definition"></a></dt>
 <dd><p>Tests completed to see if a feature should be considered valid.</p>
-<p>Checks if the feature is above the confidence threshold if there is a 
-confidence score available (only applies in predicted crown case).  Filters
-out features with areas too small which are often crowns that are from an 
-adjacent tile that have a bit spilt over. Removes features within a border
-of the edge, border size is given by border_filter proportion of the tile
-width.</p>
+<p>Checks if the feature is above the confidence threshold if there is a confidence score available (only applies in
+predicted crown case).  Filters out features with areas too small which are often crowns that are from an
+adjacent tile that have a bit spilt over. Removes features within a border of the edge, border size is given by
+border_filter proportion of the tile width.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -159,15 +156,13 @@ width.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.evaluation.find_intersections">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.evaluation.</span></span><span class="sig-name descname"><span class="pre">find_intersections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_test_feats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_pred_feats</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.evaluation.find_intersections" title="Permalink to this definition"></a></dt>
-<dd><p>Finds the greatest intersection between predicted and manual crowns and
-then updates objects.</p>
+<dd><p>Finds the greatest intersection between predicted and manual crowns and then updates objects.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.evaluation.get_tile_width">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.evaluation.</span></span><span class="sig-name descname"><span class="pre">get_tile_width</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.evaluation.get_tile_width" title="Permalink to this definition"></a></dt>
-<dd><p>Splitting up the file name to get width and buffer then adding to get
-overall width.</p>
+<dd><p>Splitting up the file name to get width and buffer then adding to get overall width.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -192,15 +187,13 @@ overall width.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.evaluation.save_feats">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.evaluation.</span></span><span class="sig-name descname"><span class="pre">save_feats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tile_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_feats</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.evaluation.save_feats" title="Permalink to this definition"></a></dt>
-<dd><p>Collating all the information for the features back into a geojson
-to save.</p>
+<dd><p>Collating all the information for the features back into a geojson to save.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.evaluation.site_f1_score">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.evaluation.</span></span><span class="sig-name descname"><span class="pre">site_f1_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tile_directory=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_directory=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_directory=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lidar_img=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IoU_threshold=0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_threshold=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">area_fraction_limit=0.0005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf_threshold=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">border_filter=&lt;class</span> <span class="pre">'tuple'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling=&lt;class</span> <span class="pre">'list'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EPSG=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save=False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.evaluation.site_f1_score" title="Permalink to this definition"></a></dt>
-<dd><p>Calculating all the intersections of shapes in a pair of files and the
-area of the corresponding polygons.</p>
+<dd><p>Calculating all the intersections of shapes in a pair of files and the area of the corresponding polygons.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>tile_directory: path to the folder containing all of the tiles
 test_directory: path to the folder containing just the test files
@@ -231,34 +224,34 @@ mapping crowns in geographic space.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.box_filter">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">box_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.box_filter" title="Permalink to this definition"></a></dt>
-<dd><p>Create a bounding box from a file name to filter edge crowns</p>
+<dd><p>Create a bounding box from a file name to filter edge crowns.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.box_make">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">box_make</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">minx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">miny</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.box_make" title="Permalink to this definition"></a></dt>
-<dd><p>Generate bounding box from geographic specifications</p>
+<dd><p>Generate bounding box from geographic specifications.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.calc_iou">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">calc_iou</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.calc_iou" title="Permalink to this definition"></a></dt>
-<dd><p>Calculate the IoU of two shapes</p>
+<dd><p>Calculate the IoU of two shapes.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.clean_crowns">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">clean_crowns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crowns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.7</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.clean_crowns" title="Permalink to this definition"></a></dt>
-<dd><p>Clean overlapping crowns</p>
+<dd><p>Clean overlapping crowns.</p>
 <p>Outputs can contain highly overlapping crowns including in the buffer region.
-This function removes crowns with a high degree of overlap with others but a 
+This function removes crowns with a high degree of overlap with others but a
 lower Confidence Score.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.filename_geoinfo">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">filename_geoinfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.filename_geoinfo" title="Permalink to this definition"></a></dt>
-<dd><p>Return geographic info of a tile from its filename</p>
+<dd><p>Return geographic info of a tile from its filename.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -280,7 +273,7 @@ orthomosaic. Another copy is produced to overlay with PNGs.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.stitch_crowns">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">stitch_crowns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.stitch_crowns" title="Permalink to this definition"></a></dt>
-<dd><p>Stitch together predicted crowns</p>
+<dd><p>Stitch together predicted crowns.</p>
 </dd></dl>
 
 <dl class="py function">
