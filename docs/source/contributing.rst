@@ -50,7 +50,7 @@ Tips for creating a detectree2 PR
 ----------------------------------
 .. _detectree2 tips:
 
-This guide assumes that most developers do not have permission to contribute to the repo directly and therefore need to fork the project. For users with privileges to contribute to detectree2 directly the concepts are the same, but a PR can be initiated from a feature branch within the detectree2 project directly (rather than the fork).
+This guide assumes that most developers do not have permission to contribute to the repo directly and therefore need to fork the project. For users with privileges to contribute to detectree2 directly the concepts are the same, but a PR can be initiated from a feature branch within the detectree2 project directly.
 
 First consult :doc:`using-git` or any of the above resources if you are unclear on how to create a good PR. See `issue/6 <https://github.com/PatBall1/detectree2/pull/6#issuecomment-1189473815>`_ for some recommendatations on best practices when forking a project. 
 
@@ -83,17 +83,23 @@ At the end of the PR we can use GitHub's UI to commit. The available options are
 
 Using GitHub's UI to commit PR
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-For detectree2 you can ``squash and merge`` when committing a PR to master (this is done using the GitHub UI) but one should proceed with caution. It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more concise message of the PR's contributions). One could argue that this leads to a clean history but often it can result in large commits that are difficult to read. My advice is to ensure that PRs have a single focus. 
+Whether to squash commits or not is explained well in this article: 
+`<https://blog.mergify.com/what-is-the-difference-between-a-merge-commit-a-squash/>`_ 
 
-Squashing also loses useful information, i.e. ``git blame`` cannot tell you which precise commit message corresponds to a particular line. (A general guide is that if a PR consists of logically separate parts then it makes sense to retain the commit history. But one could argue that the logically separate parts should in fact be separate PRs anyway). A further downside is that it is not possible to contribute to the head branch of a PR after you have squashed and merged the PR. Squashing can be done in Git without needing to rely on github's ``squash and merge`` button which eradicates all history. So commits like 'WIP', 'fix typo' can be removed manually and still keep the project history in tact. 
 
-Alternatively, you can select the ``rebase and merge`` option - in this case all commits from the head branch are added onto the base branch individually without a merge commit. If you have conflicts and you still wish to rebase and merge, these need to be resolved locally using the command line as described `here <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges>`_ and the next section.
+The github UI will give the ``squash and merge`` option when committing a PR to master, but one should proceed with caution. It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more concise message of the PR's contributions). One could argue that this leads to a linear history (i.e. doesn't contain merges) but often it can result in large commits that are difficult to read, so if following this approach try to ensure that PRs have a single focus. Squashing also loses valuable information from individual commits.
+
+.. Squashing also loses useful information, i.e. ``git blame`` cannot tell you which precise commit message corresponds to a particular line. (A general guide is that if a PR consists of logically separate parts then it makes sense to retain the commit history. But one could argue that the logically separate parts should in fact be separate PRs anyway). A further downside is that it is not possible to contribute to the head branch of a PR after you have squashed and merged the PR. Squashing can be done in Git without needing to rely on github's ``squash and merge`` button which eradicates all history. So commits like 'WIP', 'fix typo' can be removed manually and still keep the project history in tact. 
+
+Alternatively, you can select the ``rebase and merge`` option - in this case all commits from the head branch are added onto the base branch individually without a merge commit. If you have conflicts and you still wish to rebase and merge, these need to be resolved locally using the command line as described `here <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges>`_ and the next section. My advice is to ensure that PRs have a single focus and to reduce unnecessary style commits with pre-commit hooks. ``git rebase -i`` is an extremely useful command that every developer should be aware of to neaten history when ready to merge. 
+
+For Detectree2, it's up to you which approach to take. Given that the project is quite small and there are few contributors I'd advise improving commit quality (with help from pre-commit hooks and interactive rebases). Squashing is generally fine, but try to avoid doing it all the time.  
 
 .. TIP: It is possible to make ``squash and merge`` the default behaviour in the repository settings. 
 
 Using command line to rebase
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you want to rebase the commits but can't ``rebase and merge`` automatically on GitHub.com you must:
+If you want to rebase the commits but are unable to ``rebase and merge`` automatically on GitHub.com you must:
 
   - Rebase the PR branch onto master locally on the command line
   - Resolve any merge conflicts on the command line
