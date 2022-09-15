@@ -130,7 +130,7 @@ class LossEvalHook(HookBase):
         """
         metrics_dict = self._model(data)
         metrics_dict = {
-            k: v.detach().cpu().item() if isinstance(v, torch.Tensor) else float(v) for k, v in metrics_dict.items()
+            k: v.detach().cpu().item() if isinstance(v, torch.Tensor) else float(v)
             for k, v in metrics_dict.items()
         }
         total_losses_reduced = sum(loss for loss in metrics_dict.values())
@@ -441,7 +441,6 @@ def load_json_arr(json_path):
 
 def setup_cfg(
     base_model: str = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
-
     trains=("trees_train", ),
     tests=("trees_val", ),
     update_model=None,
