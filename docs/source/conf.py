@@ -13,46 +13,48 @@
 import os
 import sys
 
-import sphinx_rtd_theme
-
-sys.path.insert(0, os.path.abspath('../detectree2'))
-
+sys.path.insert(0, os.path.abspath("../detectree2"))
 
 # -- Project information -----------------------------------------------------
 
-project = 'detectree2'
-copyright = '2022, James Ball'
-author = 'James Ball'
+project = "detectree2"
+copyright = "2022, James Ball"
+author = "James Ball"
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
-
+release = "0.0.1"
 
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc'
-              ]
-
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosectionlabel",  # cannot get this to work
+    "sphinx.ext.todo",  # see contributing guide
+    "nbsphinx",  # enables *.ipynb to be rendered in the docs as pages / notebooks
+]
+autosectionlabel_prefix_document = True
+todo_include_todos = True
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
+html_static_path = ["_static"]
+# html_css_files = ["css/style.css"]
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
