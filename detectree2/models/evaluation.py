@@ -203,8 +203,20 @@ def get_epsg(file):
     filename_split = filename.split("_")
 
     epsg = filename_split[-1]
-    print(epsg)
     return epsg
+
+def get_tile_origin(file):
+    """Splitting up the file name to get tile origin"""
+    filename = file.replace(".geojson", "")
+    filename_split = filename.split("_")
+
+    buffer = int(filename_split[-2])
+    #center = int(filename_split[-3])
+    lon = int(filename_split[-4])
+    lat = (filename_split[-5])
+    
+    origin = [lon - buffer, lat - buffer]
+    return origin
 
 
 def feat_threshold_tests(feature_instance, conf_threshold, area_threshold,
@@ -243,6 +255,44 @@ def feat_threshold_tests(feature_instance, conf_threshold, area_threshold,
 
     return valid_feature
 
+# TODO: fix border threshold for geo
+def feat_threshold_tests2(feature_instance, conf_threshold, area_threshold,
+                         border_filter, tile_width, tile_origin):
+    """Tests completed to see if a feature should be considered valid.
+
+    Checks if the feature is above the confidence threshold if there is a 
+    confidence score available (only applies in predicted crown case).  Filters
+    out features with areas too small which are often crowns that are from an 
+    adjacent tile that have a bit spilt over. Removes features within a border
+    of the edge, border size is given by border_filter proportion of the tile
+    width.
+
+    """
+    valid_feature = True
+
+    if "Confidence_score" in feature_instance.properties:
+        if feature_instance.properties["Confidence_score"] < conf_threshold:
+            valid_feature = False
+
+    if feature_instance.crown_area < area_threshold:
+        valid_feature = False
+
+    # variables stand for tile width and edge buffer
+    TW = tile_width
+    TO = tile_origin
+
+    if valid_feature and border_filter[0]:
+        EB = border_filter[1]
+        # Go through each coordinate pair in feautre
+        for coords in feature_instance.geometry['coordinates'][0]:
+            # if coordinate is out of bounds, skip it
+            if (coords[0] <= TO[0] + EB or coords[1] <= TO[1] + EB
+                    or TO[0] + TW - EB <= coords[0] 
+                    or TO[0] + TW - EB <= coords[1]):
+                valid_feature = False
+                break
+
+    return valid_feature
 
 def initialise_feats(
     directory,
@@ -283,6 +333,7 @@ def initialise_feats2(
     conf_threshold,
     border_filter,
     tile_width,
+    tile_origin,
     epsg
 ):
     """Creates a list of all the features as objects of the class."""
@@ -295,8 +346,8 @@ def initialise_feats2(
     for feat in feats:
         feat_obj = GeoFeature(file, directory, count, feat, lidar_img, epsg)
 
-        if feat_threshold_tests(feat_obj, conf_threshold, area_threshold,
-                                border_filter, tile_width):
+        if feat_threshold_tests2(feat_obj, conf_threshold, area_threshold,
+                                border_filter, tile_width, tile_origin):
             all_feats.append(feat_obj)
             count += 1
         else:
@@ -568,19 +619,20 @@ def site_f1_score2(tile_directory=None,
             #area_threshold = ((tile_width)**2) * area_fraction_limit
 
             tile_width = get_tile_width(file)
+            tile_origin = get_tile_origin(file)
             epsg = get_epsg(file)
 
             test_file = file.replace(".geojson", "_geo.geojson")
             all_test_feats = initialise_feats2(tile_directory, test_file,
                                               lidar_img, area_threshold,
                                               conf_threshold, border_filter,
-                                              tile_width, epsg)
+                                              tile_width, tile_origin, epsg)
 
             pred_file = "Prediction_" + file
             all_pred_feats = initialise_feats2(pred_directory, pred_file,
                                   lidar_img, area_threshold,
                                   conf_threshold, border_filter,
-                                  tile_width, epsg)
+                                  tile_width, tile_origin, epsg)
 
             if save:
                 save_feats(tile_directory, all_test_feats)
