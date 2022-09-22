@@ -27,8 +27,8 @@ def polygon_from_mask(masked_arr):
 
     segmentation = []
     for contour in contours:
-        # Valid polygons have >= 6 coordinates (3 points)
-        if contour.size >= 6:
+        # Valid polygons have >= 6 coordinates (3 points) -  for security
+        if contour.size >= 10:
             segmentation.append(contour.flatten().tolist())
     # rles = mask_util.frPyObjects(segmentation, masked_arr.shape[0], masked_arr.shape[1])
     # RLE = mask_util.merge(RLEs) # not used
