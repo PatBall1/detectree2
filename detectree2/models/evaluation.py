@@ -212,10 +212,10 @@ def get_tile_origin(file):
 
     buffer = int(filename_split[-2])
     #center = int(filename_split[-3])
-    lon = int(filename_split[-4])
-    lat = (filename_split[-5])
+    y0 = int(filename_split[-4])
+    x0 = int(filename_split[-5])
     
-    origin = [lon - buffer, lat - buffer]
+    origin = [x0 - buffer, y0 - buffer]
     return origin
 
 
@@ -286,9 +286,13 @@ def feat_threshold_tests2(feature_instance, conf_threshold, area_threshold,
         # Go through each coordinate pair in feautre
         for coords in feature_instance.geometry['coordinates'][0]:
             # if coordinate is out of bounds, skip it
-            if (coords[0] <= TO[0] + EB or coords[1] <= TO[1] + EB
-                    or TO[0] + TW - EB <= coords[0] 
-                    or TO[0] + TW - EB <= coords[1]):
+            #print(coords[0], TO[0], TW, EB)
+            #print(coords[1], TO[1], TW, EB)
+            if (coords[0] <= TO[0] + EB
+                or coords[1] <= TO[1] + EB
+                or TO[0] + TW - EB <= coords[0] 
+                or TO[1] + TW - EB <= coords[1]
+                ):
                 valid_feature = False
                 break
 
