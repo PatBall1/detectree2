@@ -88,7 +88,8 @@ class Feature:
             }]
 
             with rasterio.open(self.lidar_img) as src:
-                out_image, out_transform = mask(src, geo, crop=True)
+                out_image, out_transform = mask(src, geo, all_touched=True,
+                crop=True)
             out_meta = src.meta.copy()    # noqa:F841
 
             # remove all the values that are nodata values and recorded as negatives
@@ -169,7 +170,8 @@ class GeoFeature:
             }]
 
             with rasterio.open(self.lidar_img) as src:
-                out_image, out_transform = mask(src, geo, crop=True)
+                out_image, out_transform = mask(src, geo, all_touched=True,
+                crop=True)
             out_meta = src.meta.copy()    # noqa:F841
 
             # remove all the values that are nodata values and recorded as negatives
