@@ -157,7 +157,7 @@ class LossEvalHook(HookBase):
     def after_train(self):
         # Select the model with the best AP50
         index = self.trainer.APs.index(max(self.trainer.APs)) + 1
-        time.sleep(10)
+        time.sleep(15)
         self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' + str(index) + '.pth')
 
 
