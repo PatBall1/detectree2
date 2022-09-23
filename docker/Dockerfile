@@ -3,6 +3,10 @@ FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04
 # use 20.04 to fix dependencies issues met with the original 18.04
 # image proposed by detectron2 team
 
+# for creating user with appropriate permissions inside container
+ARG USER_ID
+ARG GROUP_ID
+
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && apt-get install -y \
 	python3-opencv ca-certificates python3-dev git wget sudo ninja-build \
@@ -10,14 +14,24 @@ RUN apt-get update && apt-get install -y \
 # add gdal dependencies 
 RUN ln -sv /usr/bin/python3 /usr/bin/python
 
-# # create a non-root user
+# # create a non-root user (as proposed by detectron2 dockerfile)
 # ARG USER_ID=1000
 # RUN useradd -m --no-log-init --system  --uid ${USER_ID} appuser -g sudo
 # RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 # USER appuser
 # WORKDIR /home/appuser
-
 # ENV PATH="/home/appuser/.local/bin:${PATH}"
+
+# I prefer this method for handling permissions between container
+# and host machine
+# at docker run, add the following parameters:
+# $ docker build -t myimage \
+#   --build-arg USER_ID=$(id -u) \
+#   --build-arg GROUP_ID=$(id -g) .
+RUN addgroup --gid $GROUP_ID user
+RUN adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID user
+USER user
+
 RUN wget https://bootstrap.pypa.io/pip/3.6/get-pip.py && \
 	python3 get-pip.py && \
 	rm get-pip.py
