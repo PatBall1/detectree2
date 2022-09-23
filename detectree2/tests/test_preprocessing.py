@@ -1,6 +1,5 @@
 import os
 import pathlib
-import tempfile
 import unittest
 
 import geopandas as gpd
@@ -32,7 +31,7 @@ class TestCase(unittest.TestCase):
         # img_path = os.path.join(site_path, "raw_images/Paracou_20220426_RGB10cm_mosa_rect_cropsmall.tif")
         # crown_path = os.path.join(site_path, "UpdatedCrowns8.gpkg")
 
-        url = ("https://github.com/ma595/detectree2-data/raw/main/crowns/paracou/UpdatedCrowns8.gpkg")
+        url = ("https://github.com/ma595/detectree2-data/raw/main/crowns/paracou/220619_AllSpLabelled.gpkg")
 
         r = requests.get(url)
         crown_path = os.path.join(site_path, "crowns.gpkg")
