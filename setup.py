@@ -18,7 +18,7 @@ setup(
         "pypng",
         "pygeos",
         "geopandas",
-        "rasterio",
+        "rasterio==1.2.10",
         "fiona",
         "pycrs",
         "descartes",

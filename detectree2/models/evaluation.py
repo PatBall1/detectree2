@@ -63,9 +63,10 @@ class Feature:
         self.crown_area = polygon.area
 
     def tree_height(self):
-        """Crops the lidar tif to the features and calculates the 95% greatest height to account for error at top end.
+        """Crops the lidar tif to the features and calculates height.
 
-        If no lidar file is inputted than the height is given as 0.
+        Calculates the 95th percentile greatest height to account for error at the top end. If no lidar file is
+        inputted than the height is given as 0
         """
         if self.lidar_img is None:
             self.height = 0

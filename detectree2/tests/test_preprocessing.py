@@ -37,8 +37,6 @@ class TestCase(unittest.TestCase):
 
         tile_data_train(data, out_dir, buffer, tile_width, tile_height, crowns, threshold)
 
-        return True
-
     # TODO: install pytest-depends to automatically order
 
     @pytest.mark.order(2)
@@ -68,8 +66,6 @@ class TestCase(unittest.TestCase):
         to_traintest_folders(tiles_path, out_path, test_frac, folds, seed=1)
 
         # TODO: now check that the outputs match to detectree2-data repo reference.
-
-        return True
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
