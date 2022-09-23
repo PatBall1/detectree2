@@ -1,23 +1,44 @@
 import os
 import pathlib
+import tempfile
 import unittest
 
 import geopandas as gpd
 import pytest
 import rasterio
+import requests
 
 
 @pytest.mark.order(1)
 class TestCase(unittest.TestCase):
-    # def test_upper(self):
-    #     self.assertEqual("foo".upper(), "FOO")
+
     @pytest.mark.dependency()
     def test_tiling(self):
-        site_path = os.path.abspath("detectree2-data")
+
+        data_dir = 'test_data'
+        site_path = os.path.abspath(data_dir)
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
         # site_path = "detectree2-data"
-        img_path = os.path.join(site_path, "raw_images/Paracou_20220426_RGB10cm_mosa_rect_cropsmall.tif")
+
+        url = ("https://github.com/ma595/detectree2-data/raw/main/raw_images/"
+               "/Paracou_20220426_RGB10cm_mosa_rect_cropsmall.tif")
+
+        r = requests.get(url)
+        img_path = os.path.join(site_path, 'sample_image_small.tif')
+        with open(img_path, 'wb') as f:
+            f.write(r.content)
+
+        # img_path = os.path.join(site_path, "raw_images/Paracou_20220426_RGB10cm_mosa_rect_cropsmall.tif")
         # crown_path = os.path.join(site_path, "UpdatedCrowns8.gpkg")
-        crown_path = os.path.join(site_path, "crowns/paracou/220619_AllSpLabelled.gpkg")
+
+        url = ("https://github.com/ma595/detectree2-data/raw/main/crowns/paracou/UpdatedCrowns8.gpkg")
+
+        r = requests.get(url)
+        crown_path = os.path.join(site_path, "crowns.gpkg")
+        with open(crown_path, 'wb') as f:
+            f.write(r.content)
+        # crown_path = os.path.join(site_path, "crowns/paracou/220619_AllSpLabelled.gpkg")
 
         # Read in the tiff file
         data = rasterio.open(img_path)
@@ -41,7 +62,7 @@ class TestCase(unittest.TestCase):
 
     @pytest.mark.order(2)
     def test_image_details(self):
-        site_path = os.path.abspath("detectree2-data")
+        site_path = os.path.abspath("test_data")
         out_dir = os.path.join(site_path, "paracou-out/tiles")
 
         # get the first file in the directory
