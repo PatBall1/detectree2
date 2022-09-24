@@ -439,6 +439,9 @@ def to_traintest_folders(tiles_folder: str = "./",
     tiles_dir = Path(tiles_folder)
     out_dir = Path(out_folder)
 
+    if not os.path.exists(tiles_dir):
+        raise IOError
+
     if Path(out_dir / "train").exists() and Path(out_dir / "train").is_dir():
         shutil.rmtree(Path(out_dir / "train"))
     if Path(out_dir / "test").exists() and Path(out_dir / "test").is_dir():

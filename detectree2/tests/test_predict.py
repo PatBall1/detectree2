@@ -3,6 +3,13 @@ import unittest
 
 class TestCase(unittest.TestCase):
 
+    def test_predict(self):
+        """Test prediction function in test_predict.py.
+
+        Download pre-trained model and run inference step on known image used for training.
+        """
+        # TODO: Decide where best to store trained model (could be in detectree2-data repo or currently used Zenodo.)
+
     def test_f1_cal(self):
         from detectree2.models.evaluation import f1_cal
 
