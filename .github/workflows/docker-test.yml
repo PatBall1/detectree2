@@ -40,10 +40,13 @@ jobs:
     - name: install detectree2
       run: |
         pip install .
-    - name: pytest checks
+    - name: integration tests
       run: |
         pip install pytest-order
         pytest -rP -v detectree2/tests/integration/demo.py
+    - name: unit tests
+      run: |
+        pytest detectree2
     - name: mypy checks
       run: |
         which python3
