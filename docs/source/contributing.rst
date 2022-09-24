@@ -194,6 +194,8 @@ Pre-commit hooks ensure that each commit passes a minimum set of style checks. T
     git add -u  # e.g
     git commit -m "your message"
 
+If tests do not pass, correct errors and then do ``git add -u`` again so that changes are staged.
+
 If it is desirable to avoid pre-commit hooks::
 
     git commit -m "your message" --no-verify
