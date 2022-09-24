@@ -221,8 +221,12 @@ def get_tile_origin(file):
     return origin
 
 
-def feat_threshold_tests(feature_instance, conf_threshold, area_threshold,
-                         border_filter, tile_width):
+def feat_threshold_tests(
+    feature_instance,
+    conf_threshold,
+    area_threshold,
+    border_filter,
+    tile_width):
     """Tests completed to see if a feature should be considered valid.
 
     Checks if the feature is above the confidence threshold if there is a 
@@ -257,9 +261,14 @@ def feat_threshold_tests(feature_instance, conf_threshold, area_threshold,
 
     return valid_feature
 
-# TODO: fix border threshold for geo
-def feat_threshold_tests2(feature_instance, conf_threshold, area_threshold,
-                         border_filter, tile_width, tile_origin):
+
+def feat_threshold_tests2(
+    feature_instance,
+    conf_threshold,
+    area_threshold,
+    border_filter,
+    tile_width,
+    tile_origin):
     """Tests completed to see if a feature should be considered valid.
 
     Checks if the feature is above the confidence threshold if there is a 
@@ -488,32 +497,29 @@ def f1_cal(precision, recall):
     return (2 * precision * recall) / (precision + recall)
 
 
-def site_f1_score(tile_directory=None,
-                  test_directory=None,
-                  pred_directory=None,
-                  lidar_img=None,
-                  IoU_threshold=0.5,
-                  min_height=0,
-                  max_height=100,
-                  #area_fraction_limit=0.0005,
-                  area_threshold=25,
-                  conf_threshold=0,
-                  border_filter=tuple,
-                  #scaling=list,
-                  EPSG=None,
-                  save=False):
-    """Calculating all the intersections of shapes in a pair of files and the
-    area of the corresponding polygons.
-
+def site_f1_score(
+    tile_directory=None,
+    test_directory=None,
+    pred_directory=None,
+    lidar_img=None,
+    IoU_threshold=0.5,
+    height_threshold=0,
+    area_fraction_limit=0.0005,
+    conf_threshold=0,
+    border_filter=tuple,
+    scaling=list,
+    EPSG=None,
+    save=False,
+):
+    """Calculating all the intersections of shapes in a pair of files and the area of the corresponding polygons.
     Args:
         tile_directory: path to the folder containing all of the tiles
         test_directory: path to the folder containing just the test files
         pred_directory: path to the folder containing the predictions and the reprojections
         lidar_img: path to the lidar image of an entire region
         IoU_threshold: minimum value of IoU such that the intersection can be considered a true positive
-        min_height: minimum height of the features to be considered
-        max_height: minimum height of the features to be considered
-        area_threshold: min crown area to consider in m^2
+        height_threshold: minimum height of the features to be considered
+        area_fraction_limit: proportion of the tile for which crowns with areas less than this will be ignored
         conf_threshold: minimun confidence of a predicted feature so that it is considered
         border_filter: bool of whether to remove border crowns, proportion of border to be used
         in relation to tile size
@@ -523,7 +529,7 @@ def site_f1_score(tile_directory=None,
     """
 
     if EPSG is None:
-        raise ValueError('Set the EPSG value')
+        raise ValueError("Set the EPSG value")
 
     test_entries = os.listdir(test_directory)
     total_tps = 0
@@ -535,63 +541,74 @@ def site_f1_score(tile_directory=None,
             print(file)
 
             # work out the area threshold to ignore these crowns in the tiles
-            #tile_width = get_tile_width(file) * scaling[0]
-            #area_threshold = ((tile_width)**2) * area_fraction_limit
+            tile_width = get_tile_width(file) * scaling[0]
+            area_threshold = ((tile_width)**2) * area_fraction_limit
 
-            area_threshold = get_tile_width(file)
+            test_lidar = tile_directory + "/" + file
+            all_test_feats = initialise_feats(
+                test_directory,
+                file,
+                test_lidar,
+                lidar_img,
+                area_threshold,
+                conf_threshold,
+                border_filter,
+                tile_width,
+                EPSG,
+            )
 
-            test_lidar = tile_directory + "/" + file.replace(".geojson", "_geo.geojson")
-            all_test_feats = initialise_feats(test_directory, file, test_lidar,
-                                              lidar_img, area_threshold,
-                                              conf_threshold, border_filter,
-                                              tile_width, EPSG)
-
-            pred_file_path = "Prediction_" + file.replace(".geojson", "_eval.geojson")
-            pred_lidar = tile_directory + "/test/predictions/" + pred_file_path.replace("_eval.geojson", ".geojson")
-            all_pred_feats = initialise_feats(pred_directory, pred_file_path,
-                                              pred_lidar, lidar_img,
-                                              area_threshold, conf_threshold,
-                                              border_filter, tile_width, EPSG)
+            pred_file_path = "Prediction_" + file
+            pred_lidar = tile_directory + "/predictions/" + pred_file_path
+            all_pred_feats = initialise_feats(
+                pred_directory,
+                pred_file_path,
+                pred_lidar,
+                lidar_img,
+                area_threshold,
+                conf_threshold,
+                border_filter,
+                tile_width,
+                EPSG,
+            )
 
             if save:
                 save_feats(tile_directory, all_test_feats)
                 save_feats(tile_directory, all_pred_feats)
 
             find_intersections(all_test_feats, all_pred_feats)
-            tps, fps, fns = positives_test(all_test_feats, all_pred_feats,
-                                           IoU_threshold, min_height, max_height)
+            tps, fps, fns = positives_test(all_test_feats, all_pred_feats, IoU_threshold, height_threshold)
 
             print("tps:", tps)
             print("fps:", fps)
             print("fns:", fns)
             print("")
 
-            total_tps += tps
-            total_fps += fps
-            total_fns += fns
+            total_tps = total_tps + tps
+            total_fps = total_fps + fps
+            total_fns = total_fns + fns
 
     try:
         prec, rec = prec_recall_func(total_tps, total_fps, total_fns)
         # not used!
-        f1_score = f1_cal(prec, rec)    # noqa: F841
+        f1_score = f1_cal(prec, rec)  # noqa: F841
         print("Precision  ", "Recall  ", "F1")
         print(prec, rec, f1_score)
     except ZeroDivisionError:
         print("ZeroDivisionError: Height threshold is too large.")
-    return prec, rec, f1_score
 
 
-def site_f1_score2(tile_directory=None,
-                  test_directory=None,
-                  pred_directory=None,
-                  lidar_img=None,
-                  IoU_threshold=0.5,
-                  min_height=0,
-                  max_height=100,
-                  area_threshold=25,
-                  conf_threshold=0,
-                  border_filter=tuple,
-                  save=False):
+def site_f1_score2(
+    tile_directory=None,
+    test_directory=None,
+    pred_directory=None,
+    lidar_img=None,
+    IoU_threshold=0.5,
+    min_height=0,
+    max_height=100,
+    area_threshold=25,
+    conf_threshold=0,
+    border_filter=tuple,
+    save=False):
     """Calculating all the intersections of shapes in a pair of files and the
     area of the corresponding polygons.
 
@@ -605,7 +622,7 @@ def site_f1_score2(tile_directory=None,
         max_height: minimum height of the features to be considered
         area_threshold: min crown area to consider in m^2
         conf_threshold: minimun confidence of a predicted feature so that it is considered
-        border_filter: bool of whether to remove border crowns, proportion of border to be used
+        border_filter: bool to remove border crowns, buffer in from border to be used (in m)
         in relation to tile size
         scaling: x and y scaling used when tiling the image
         save: bool to tell program whether the filtered crowns should be saved
