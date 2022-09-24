@@ -32,8 +32,8 @@ If you would just like to make predictions on an orthomosaic with a pre-trained
 model from the ``model_garden``, skip to part 4.
 
 
-1. Preparing data
------------------
+Preparing data
+--------------
 
 An example of the recommended file structure when training a new model is as follows:
 
@@ -133,8 +133,8 @@ Are data is now tiled and partitioned for training and model evaluation
            └── test                                (test data folder)
  
 
-2. Training a model
--------------------
+Training a model
+----------------
 
 Register the training data. It is possible to set a validation fold for model
 evaluation
@@ -162,9 +162,9 @@ Supply the ``base_model`` from Detectron2's  ``model_zoo``
    
    cfg = setup_cfg(base_model, trains, tests, workers = 4, eval_period=100, max_iter=3000, out_dir=out_dir) # update_model arg can be used to load in trained  model
 
-3. Evaluating model performance
--------------------------------
+Evaluating model performance
+----------------------------
 
 
-4. Generating landscape predictions
------------------------------------
+Generating landscape predictions
+--------------------------------

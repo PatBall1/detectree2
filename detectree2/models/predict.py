@@ -1,9 +1,8 @@
-"""Generate predictions
-"""
+"""Generate predictions."""
 import json
 import os
 import random
-from http.client import REQUEST_URI_TOO_LONG
+from http.client import REQUEST_URI_TOO_LONG  # noqa: F401
 from pathlib import Path
 
 import cv2
@@ -19,14 +18,13 @@ from detectree2.models.train import get_filenames, get_tree_dicts
 def predict_on_data(
     directory: str = "./",
     predictor=DefaultPredictor,
-    eval = False,
+    eval=False,
     save: bool = True,
-    num_predictions=0
+    num_predictions=0,
 ):
     """Make predictions on tiled data.
 
-    Predicts crowns for all png images present in a directory and outputs masks 
-    as jsons
+    Predicts crowns for all png images present in a directory and outputs masks as jsons
     """
 
     pred_dir = os.path.join(directory, "predictions")
@@ -59,8 +57,7 @@ def predict_on_data(
         if save:
             # Converting the predictions to json files and saving them in the
             # specfied output file.
-            evaluations = instances_to_coco_json(outputs["instances"].to("cpu"),
-                                                 d["file_name"])
+            evaluations = instances_to_coco_json(outputs["instances"].to("cpu"), d["file_name"])
             with open(output_file, "w") as dest:
                 json.dump(evaluations, dest)
 
