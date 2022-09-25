@@ -157,6 +157,10 @@ class LossEvalHook(HookBase):
     def after_train(self):
         # Select the model with the best AP50
         index = self.trainer.APs.index(max(self.trainer.APs)) + 1
+        # Error in integration test:
+        # AssertionError: Checkpoint /__w/detectree2/detectree2/detectree2-data/paracou-out/train_outputs-1/model_1.pth
+        # not found!
+        # Therefore sleep is attempt to allow CI to pass, but it often still fails.
         time.sleep(15)
         self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' + str(index) + '.pth')
 
