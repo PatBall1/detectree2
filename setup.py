@@ -29,7 +29,12 @@ setup(
         "pypng",
         "pygeos",
         "geopandas",
+<<<<<<< HEAD
         "rasterio==1.3.2",
+=======
+        "opencv-python",
+        "rasterio==1.2.10",
+>>>>>>> b8a1ce3 (additional dependency)
         "fiona",
         "pycrs",
         "descartes",

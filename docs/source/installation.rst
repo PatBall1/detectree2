@@ -6,7 +6,7 @@ Building Detectree2
 Getting up and running quickly 
 ==============================
 
-To get up and running quickly it is possible to install detectree2 and its dependencies with Conda. Simply do::
+For users wanting to run detectree2 only it is possible to install detectree2 and its dependencies with Conda. Simply do::
 
     conda install -c ma595 detectree2
 
@@ -34,6 +34,8 @@ Then point to preinstalled GDAL header files (not necessary if include directory
 
     export CPLUS_INCLUDE_PATH=/usr/include/gdal
     export C_INCLUDE_PATH=/usr/include/gdal
+
+Depending on the version of setuptools installed, it may be necessary to downgrade to install GDAL. This may in the process break pytorch. 
 
 then::
 
