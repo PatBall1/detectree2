@@ -4,7 +4,7 @@ try:
     import torch  # noqa: F401
 except ImportError:
     raise Exception("""
-You must install PyTorch prior to installing DensePose:
+You must install PyTorch prior to installing Detectree2:
 pip install torch
 
 For more information:
