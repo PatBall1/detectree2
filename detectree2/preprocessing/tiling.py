@@ -4,11 +4,11 @@ These functions tile orthomosaics and crown data for training and evaluation
 of models and making landscape predictions.
 """
 
-import glob
 import json
 import os
 import random
 import shutil
+import warnings
 from pathlib import Path
 
 import cv2
@@ -55,9 +55,8 @@ def tile_data(
 ) -> None:
     """Tiles up orthomosaic for making predictions on.
 
-    Tiles up full othomosaic into managable chunks to make predictions on. Use
-    tile_data_train to generate tiled training data. A bug exists on some input
-    raster types whereby outputed tiles are completely black - the dtype_bool
+    Tiles up full othomosaic into managable chunks to make predictions on. Use tile_data_train to generate tiled
+    training data. A bug exists on some input raster types whereby outputed tiles are completely black - the dtype_bool
     argument should be switched if this is the case.
 
     Args:
@@ -181,8 +180,8 @@ def tile_data_train(  # noqa: C901
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns into training tiles.
 
-    A threshold can be used to ensure a good coverage of crowns across a tile -
-    tiles that do not have sufficient coverage are rejected
+    A threshold can be used to ensure a good coverage of crowns across a tile. Tiles that do not have sufficient
+    coverage are rejected.
 
     Args:
         data: Orthomosaic as a rasterio object in a UTM type projection
@@ -229,15 +228,19 @@ def tile_data_train(  # noqa: C901
             # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
             # overlapping_crowns = sjoin(crowns, geo, predicate="within", how="inner")
 
-            overlapping_crowns = gpd.clip(crowns, geo)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                # Warning:
+                # _crs_mismatch_warn
+                overlapping_crowns = gpd.clip(crowns, geo)
 
-            # Ignore tiles with no crowns
-            if overlapping_crowns.empty:
-                continue
+                # Ignore tiles with no crowns
+                if overlapping_crowns.empty:
+                    continue
 
-            # Discard tiles that do not have a sufficient coverage of training crowns
-            if (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
-                continue
+                # Discard tiles that do not have a sufficient coverage of training crowns
+                if (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
+                    continue
 
             # here we are cropping the tiff to the bounding box of the tile we want
             coords = get_features(geo)
@@ -315,8 +318,8 @@ def tile_data_train(  # noqa: C901
                 # scale to image
                 rgb_rescaled = rgb
 
-            # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
-            # here as a naughty method
+            # save this as png, named with the origin of the specific tile
+            # potentially bad practice
             cv2.imwrite(
                 str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
                 rgb_rescaled,
@@ -417,13 +420,12 @@ def is_overlapping_box(test_boxes_array, train_box):
     return False
 
 
-def to_traintest_folders(
-    tiles_folder: str = "./",
-    out_folder: str = "./data/",
-    test_frac: float = 0.2,
-    folds: int = 1,
-):
-    """Send tiles to training (+val) and test dir and automatically making sure no overlap between test and train tiles.
+def to_traintest_folders(tiles_folder: str = "./",
+                         out_folder: str = "./data/",
+                         test_frac: float = 0.2,
+                         folds: int = 1,
+                         seed: int = None) -> None:
+    """Send tiles to training (+validation) and test dir and automatically make sure no overlap.
 
     Args:
         tiles_folder:
@@ -434,45 +436,58 @@ def to_traintest_folders(
     Returns:
         None
     """
-    if Path(out_folder + "train").exists() and Path(out_folder + "train").is_dir():
-        shutil.rmtree(Path(out_folder + "train"))
-    if Path(out_folder + "test").exists() and Path(out_folder + "test").is_dir():
-        shutil.rmtree(Path(out_folder + "test"))
-    Path(out_folder + "train").mkdir(parents=True, exist_ok=True)
-    Path(out_folder + "test").mkdir(parents=True, exist_ok=True)
+    tiles_dir = Path(tiles_folder)
+    out_dir = Path(out_folder)
 
-    filenames = glob.glob(tiles_folder + "*.png")
-    fileroots = [Path(item).stem for item in filenames]
+    if not os.path.exists(tiles_dir):
+        raise IOError
 
-    num = list(range(0, len(filenames)))
+    if Path(out_dir / "train").exists() and Path(out_dir / "train").is_dir():
+        shutil.rmtree(Path(out_dir / "train"))
+    if Path(out_dir / "test").exists() and Path(out_dir / "test").is_dir():
+        shutil.rmtree(Path(out_dir / "test"))
+    Path(out_dir / "train").mkdir(parents=True, exist_ok=True)
+    Path(out_dir / "test").mkdir(parents=True, exist_ok=True)
+
+    file_names = tiles_dir.glob("*.png")
+    file_roots = [item.stem for item in file_names]
+
+    num = list(range(0, len(file_roots)))
+
+    # this affects the random module module-wide
+    if seed is not None:
+        random.seed(seed)
     random.shuffle(num)
+
     test_boxes = []
 
-    for i in range(0, len(filenames)):
-        if i <= len(filenames) * test_frac:
-            test_boxes.append(image_details(fileroots[num[i]]))
-            shutil.copy(tiles_folder + fileroots[num[i]] + ".geojson", out_folder + "test/")
+    for i in range(0, len(file_roots)):
+        # copy to test
+        if i <= len(file_roots) * test_frac:
+            test_boxes.append(image_details(file_roots[num[i]]))
+            shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(".geojson"), out_dir / "test")
         else:
-            train_box = image_details(fileroots[num[i]])
+            # copy to train
+            train_box = image_details(file_roots[num[i]])
             if not is_overlapping_box(test_boxes, train_box):
-                shutil.copy(tiles_folder + fileroots[num[i]] + ".geojson", out_folder + "train/")
+                shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(".geojson"), out_dir / "train")
 
-    filenames = glob.glob(out_folder + "/train/*.geojson")
-    fileroots = [Path(item).stem for item in filenames]
+    # COMMENT NECESSARY HERE
+    file_names = (out_dir / "train").glob("*.geojson")
+    file_roots = [item.stem for item in file_names]
     # stemname = Path(filenames[0]).stem.split("_", 1)[0]
-
     # indices = [item.split("_", 1)[-1].split(".", 1)[0] for item in filenames]
-    num = list(range(0, len(filenames)))
-    random.shuffle(num)
     # random.shuffle(indices)
-    ind_split = np.array_split(fileroots, folds)
+    num = list(range(0, len(file_roots)))
+    random.shuffle(num)
+    ind_split = np.array_split(file_roots, folds)
 
     for i in range(0, folds):
-        Path(out_folder + "/train/fold_" + str(i + 1) + "/").mkdir(parents=True, exist_ok=True)
+        Path(out_dir / f"train/fold_{i + 1}").mkdir(parents=True, exist_ok=True)
         for name in ind_split[i]:
             shutil.move(
-                out_folder + "train/" + name + ".geojson",
-                out_folder + "train/fold_" + str(i + 1) + "/",
+                out_dir / f"train/{name}.geojson",  # type: ignore
+                out_dir / f"train/fold_{i + 1}/{name}.geojson",
             )
 
 

@@ -37,8 +37,9 @@ from detectron2.utils.events import get_event_storage  # noqa:F401
 from detectron2.utils.events import EventStorage
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
-from IPython.display import display
-from PIL import Image
+
+# from IPython.display import display
+# from PIL import Image
 
 
 class LossEvalHook(HookBase):
@@ -156,7 +157,12 @@ class LossEvalHook(HookBase):
     def after_train(self):
         # Select the model with the best AP50
         index = self.trainer.APs.index(max(self.trainer.APs)) + 1
-        self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + "/model_" + str(index) + ".pth")
+        # Error in demo:
+        # AssertionError: Checkpoint /__w/detectree2/detectree2/detectree2-data/paracou-out/train_outputs-1/model_1.pth
+        # not found!
+        # Therefore sleep is attempt to allow CI to pass, but it often still fails.
+        time.sleep(15)
+        self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' + str(index) + '.pth')
 
 
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
@@ -308,9 +314,11 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
         with open(json_file) as f:
             img_anns = json.load(f)
         # Turn off type checking for annotations until we have a better solution
-        record: dict[str, Any] = {}
+        record: Dict[str, Any] = {}
 
+        # filename = os.path.join(directory, img_anns["imagePath"])
         filename = img_anns["imagePath"]
+
         # Make sure we have the correct height and width
         height, width = cv2.imread(filename).shape[:2]
 
@@ -507,16 +515,14 @@ def setup_cfg(
     return cfg
 
 
-def predictions_on_data(
-    directory=None,
-    predictor=DefaultTrainer,
-    trees_metadata=None,
-    save=True,
-    scale=1,
-    geos_exist=True,
-    num_predictions=0,
-):
-    """Prediction produced on a test folder."""
+def predictions_on_data(directory=None,
+                        predictor=DefaultTrainer,
+                        trees_metadata=None,
+                        save=True,
+                        scale=1,
+                        geos_exist=True,
+                        num_predictions=0):
+    """Prediction produced from a test folder and outputted to predictions folder."""
 
     test_location = directory + "/test"
     pred_dir = test_location + "/predictions"
@@ -545,8 +551,8 @@ def predictions_on_data(
             instance_mode=ColorMode.SEGMENTATION,
         )  # remove the colors of unsegmented pixels
         v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-        image = cv2.cvtColor(v.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
-        display(Image.fromarray(image))
+        # image = cv2.cvtColor(v.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
+        # display(Image.fromarray(image))
 
         # Creating the file name of the output file
         file_name_path = d["file_name"]
@@ -555,7 +561,6 @@ def predictions_on_data(
         file_name = file_name.replace("png", "json")
 
         output_file = pred_dir + "/Prediction_" + file_name
-        print(output_file)
 
         if save:
             # Converting the predictions to json files and saving them in the specfied output file.
@@ -578,7 +583,7 @@ if __name__ == "__main__":
         visualizer = Visualizer(img[:, :, ::-1], metadata=trees_metadata, scale=0.5)
         out = visualizer.draw_dataset_dict(d)
         image = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
-        display(Image.fromarray(image))
+        # display(Image.fromarray(image))
     # Set the base (pre-trained) model from the detectron2 model_zoo
     model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
     # Set the names of the registered train and test sets

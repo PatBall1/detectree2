@@ -65,9 +65,8 @@ class Feature:
     def tree_height(self):
         """Crops the lidar tif to the features and calculates height.
 
-        Calculates the 95thpercentile height greatest height to account for
-        error at the top end. If no lidar file is inputted than the height is
-        given as 0
+        Calculates the 95th percentile greatest height to account for error at the top end. If no lidar file is
+        inputted than the height is given as 0
         """
         if self.lidar_img is None:
             self.height = 0
@@ -103,7 +102,7 @@ class Feature:
 
 # Regular functions now
 def get_tile_width(file):
-    """Splitting up the file name to get width and buffer then adding to get overall width."""
+    """Split up the file name to get width and buffer then adding to get overall width."""
     filename = file.replace(".geojson", "")
     filename_split = filename.split("_")
 
@@ -209,7 +208,7 @@ def find_intersections(all_test_feats, all_pred_feats):
             if shape(test_feat.geometry).intersects(shape(pred_feat.geometry)):
                 try:
                     intersection = (shape(pred_feat.geometry).intersection(shape(test_feat.geometry))).area
-                except Exception:
+                except ValueError:
                     continue
 
                 # calculate the IoU
@@ -227,7 +226,7 @@ def find_intersections(all_test_feats, all_pred_feats):
 
 
 def feats_tall_enough(all_feats, min_height):
-    """Stores the numbers of all the features above the minimun height."""
+    """Stores the numbers of all the features above the minimum height."""
     tall_feat = []
 
     for feat in all_feats:
@@ -237,11 +236,12 @@ def feats_tall_enough(all_feats, min_height):
     return tall_feat
 
 
-def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):
-    """Determines number of true postives, false positives and false negatives.
+def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):  # noqa: N803
+    """Determine number of true postives, false positives and false negatives.
 
     Store the numbers of all test features which have true positives arise.
     """
+
     test_feats_tps = []
 
     tps = 0
@@ -251,7 +251,7 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):
     tall_pred_nums = feats_tall_enough(all_pred_feats, min_height)
 
     for pred_feat in all_pred_feats:
-        # if the pred feat is not all enough then skip it
+        # if the pred feat is not tall enough then skip it
         if pred_feat.number not in tall_pred_nums:
             continue
         # if the number has remained at -1 it means the pred feat does not intersect
@@ -260,7 +260,7 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):
             fps += 1
             continue
 
-        # test to see if the two crowns both overlap with each other the most and if
+        # test to see if the two crowns overlap with each other the most and if
         # they are above the required GIoU. Then need the height of the test feature
         # to also be above the threshold to allow it to be considered
         matching_test_feat = all_test_feats[pred_feat.GIoU_other_feat_num]
@@ -276,7 +276,7 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height):
     return tps, fps, fns
 
 
-def prec_recall_func(total_tps, total_fps, total_fns):
+def prec_recall(total_tps: int, total_fps: int, total_fns: int):
     """Calculate the precision and recall by standard formulas."""
 
     precision = total_tps / (total_tps + total_fps)
@@ -286,7 +286,7 @@ def prec_recall_func(total_tps, total_fps, total_fns):
 
 
 def f1_cal(precision, recall):
-    """Calculating the F1 score."""
+    """Calculate the F1 score."""
 
     return (2 * precision * recall) / (precision + recall)
 
@@ -333,8 +333,6 @@ def site_f1_score(
 
     for file in test_entries:
         if ".geojson" in file:
-            print(file)
-
             # work out the area threshold to ignore these crowns in the tiles
             tile_width = get_tile_width(file) * scaling[0]
             area_threshold = ((tile_width)**2) * area_fraction_limit
@@ -383,8 +381,7 @@ def site_f1_score(
             total_fns = total_fns + fns
 
     try:
-        prec, rec = prec_recall_func(total_tps, total_fps, total_fns)
-        # not used!
+        prec, rec = prec_recall(total_tps, total_fps, total_fns)
         f1_score = f1_cal(prec, rec)  # noqa: F841
         print("Precision  ", "Recall  ", "F1")
         print(prec, rec, f1_score)
