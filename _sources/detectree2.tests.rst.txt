@@ -20,10 +20,26 @@ detectree2.tests.test\_data module
    :undoc-members:
    :show-inheritance:
 
+detectree2.tests.test\_evaluation module
+----------------------------------------
+
+.. automodule:: detectree2.tests.test_evaluation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 detectree2.tests.test\_models module
 ------------------------------------
 
 .. automodule:: detectree2.tests.test_models
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+detectree2.tests.test\_predict module
+-------------------------------------
+
+.. automodule:: detectree2.tests.test_predict
    :members:
    :undoc-members:
    :show-inheritance:

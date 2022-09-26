@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3. Contributing guide &mdash; detectree2 0.0.1 documentation</title>
@@ -77,18 +77,17 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#continuous-integration">3.3. Continuous integration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#automatic-documentation">3.4. Automatic Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#tests">3.5. Tests</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#building-detectree2">3.6. Building Detectree2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gdal-complexities">3.6.1. GDAL complexities</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#using-pip">3.6.2. Using pip</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#fixing-detectron2-version">3.6.2.1. Fixing detectron2 version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#building-detectree2">3.5. Building Detectree2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gdal-complexities">3.5.1. GDAL complexities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-pip">3.5.2. Using pip</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#fixing-detectron2-version">3.5.2.1. Fixing detectron2 version</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#building-detectree2-using-conda">3.6.3. Building Detectree2 using Conda</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#distributing-detectree2-using-conda">3.6.4. Distributing detectree2 using Conda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#building-detectree2-using-conda">3.5.3. Building Detectree2 using Conda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#distributing-detectree2-using-conda">3.5.4. Distributing detectree2 using Conda</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#python-development-environment">3.7. Python development environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#python-development-environment">3.6. Python development environment</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="using-git.html">4. Git/Github</a></li>
@@ -143,86 +142,85 @@
 }
 </style>
 <section id="contributing-guide">
-<h1><a class="toc-backref" href="#id19"><span class="section-number">3. </span>Contributing guide</a><a class="headerlink" href="#contributing-guide" title="Permalink to this heading"></a></h1>
+<h1><a class="toc-backref" href="#id18"><span class="section-number">3. </span>Contributing guide</a><a class="headerlink" href="#contributing-guide" title="Permalink to this heading"></a></h1>
 <div class="contents topic" id="contents">
 <p class="topic-title">Contents</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#contributing-guide" id="id19">Contributing guide</a></p>
+<li><p><a class="reference internal" href="#contributing-guide" id="id18">Contributing guide</a></p>
 <ul>
-<li><p><a class="reference internal" href="#contributing-to-detectree2" id="id20">Contributing to Detectree2</a></p>
+<li><p><a class="reference internal" href="#contributing-to-detectree2" id="id19">Contributing to Detectree2</a></p>
 <ul>
-<li><p><a class="reference internal" href="#code-of-conduct" id="id21">Code of Conduct</a></p></li>
-<li><p><a class="reference internal" href="#getting-started-issues" id="id22">Getting Started - Issues</a></p></li>
-<li><p><a class="reference internal" href="#filing-a-bug-report" id="id23">Filing a bug report</a></p></li>
-<li><p><a class="reference internal" href="#detectree2-github-tips" id="id24">Detectree2 Github tips</a></p></li>
-<li><p><a class="reference internal" href="#tips-for-creating-a-detectree2-pr" id="id25">Tips for creating a detectree2 PR</a></p>
+<li><p><a class="reference internal" href="#code-of-conduct" id="id20">Code of Conduct</a></p></li>
+<li><p><a class="reference internal" href="#getting-started-issues" id="id21">Getting Started - Issues</a></p></li>
+<li><p><a class="reference internal" href="#filing-a-bug-report" id="id22">Filing a bug report</a></p></li>
+<li><p><a class="reference internal" href="#detectree2-github-tips" id="id23">Detectree2 Github tips</a></p></li>
+<li><p><a class="reference internal" href="#tips-for-creating-a-detectree2-pr" id="id24">Tips for creating a detectree2 PR</a></p>
 <ul>
-<li><p><a class="reference internal" href="#using-github-s-ui-to-commit-pr" id="id26">Using GitHub’s UI to commit PR</a></p></li>
-<li><p><a class="reference internal" href="#using-command-line-to-rebase" id="id27">Using command line to rebase</a></p></li>
-<li><p><a class="reference internal" href="#general-tips" id="id28">General tips</a></p></li>
+<li><p><a class="reference internal" href="#using-github-s-ui-to-commit-pr" id="id25">Using GitHub’s UI to commit PR</a></p></li>
+<li><p><a class="reference internal" href="#using-command-line-to-rebase" id="id26">Using command line to rebase</a></p></li>
+<li><p><a class="reference internal" href="#general-tips" id="id27">General tips</a></p></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#detectree2-setup-for-developers" id="id29">Detectree2 setup for developers</a></p>
+<li><p><a class="reference internal" href="#detectree2-setup-for-developers" id="id28">Detectree2 setup for developers</a></p>
 <ul>
-<li><p><a class="reference internal" href="#setting-up-development-environment" id="id30">Setting up development environment</a></p></li>
-<li><p><a class="reference internal" href="#programming-style" id="id31">Programming style</a></p>
+<li><p><a class="reference internal" href="#setting-up-development-environment" id="id29">Setting up development environment</a></p></li>
+<li><p><a class="reference internal" href="#programming-style" id="id30">Programming style</a></p>
 <ul>
-<li><p><a class="reference internal" href="#pre-commit-hooks" id="id32">Pre-commit hooks</a></p></li>
+<li><p><a class="reference internal" href="#pre-commit-hooks" id="id31">Pre-commit hooks</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#linting" id="id33">Linting</a></p></li>
-<li><p><a class="reference internal" href="#docstrings" id="id34">Docstrings</a></p></li>
-<li><p><a class="reference internal" href="#autoformatters" id="id35">Autoformatters</a></p>
+<li><p><a class="reference internal" href="#linting" id="id32">Linting</a></p></li>
+<li><p><a class="reference internal" href="#docstrings" id="id33">Docstrings</a></p></li>
+<li><p><a class="reference internal" href="#autoformatters" id="id34">Autoformatters</a></p>
 <ul>
-<li><p><a class="reference internal" href="#yapf" id="id36">YAPF</a></p></li>
-<li><p><a class="reference internal" href="#black" id="id37">Black</a></p></li>
-<li><p><a class="reference internal" href="#autopep8" id="id38">Autopep8</a></p></li>
-<li><p><a class="reference internal" href="#formatting-aside" id="id39">Formatting aside</a></p></li>
+<li><p><a class="reference internal" href="#yapf" id="id35">YAPF</a></p></li>
+<li><p><a class="reference internal" href="#black" id="id36">Black</a></p></li>
+<li><p><a class="reference internal" href="#autopep8" id="id37">Autopep8</a></p></li>
+<li><p><a class="reference internal" href="#formatting-aside" id="id38">Formatting aside</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#static-typing" id="id40">Static typing</a></p></li>
+<li><p><a class="reference internal" href="#static-typing" id="id39">Static typing</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#continuous-integration" id="id41">Continuous integration</a></p></li>
-<li><p><a class="reference internal" href="#automatic-documentation" id="id42">Automatic Documentation</a></p></li>
-<li><p><a class="reference internal" href="#tests" id="id43">Tests</a></p></li>
-<li><p><a class="reference internal" href="#building-detectree2" id="id44">Building Detectree2</a></p>
+<li><p><a class="reference internal" href="#continuous-integration" id="id40">Continuous integration</a></p></li>
+<li><p><a class="reference internal" href="#automatic-documentation" id="id41">Automatic Documentation</a></p></li>
+<li><p><a class="reference internal" href="#building-detectree2" id="id42">Building Detectree2</a></p>
 <ul>
-<li><p><a class="reference internal" href="#gdal-complexities" id="id45">GDAL complexities</a></p></li>
-<li><p><a class="reference internal" href="#using-pip" id="id46">Using pip</a></p>
+<li><p><a class="reference internal" href="#gdal-complexities" id="id43">GDAL complexities</a></p></li>
+<li><p><a class="reference internal" href="#using-pip" id="id44">Using pip</a></p>
 <ul>
-<li><p><a class="reference internal" href="#fixing-detectron2-version" id="id47">Fixing detectron2 version</a></p></li>
+<li><p><a class="reference internal" href="#fixing-detectron2-version" id="id45">Fixing detectron2 version</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#building-detectree2-using-conda" id="id48">Building Detectree2 using Conda</a></p></li>
-<li><p><a class="reference internal" href="#distributing-detectree2-using-conda" id="id49">Distributing detectree2 using Conda</a></p></li>
+<li><p><a class="reference internal" href="#building-detectree2-using-conda" id="id46">Building Detectree2 using Conda</a></p></li>
+<li><p><a class="reference internal" href="#distributing-detectree2-using-conda" id="id47">Distributing detectree2 using Conda</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#python-development-environment" id="id50">Python development environment</a></p></li>
+<li><p><a class="reference internal" href="#python-development-environment" id="id48">Python development environment</a></p></li>
 </ul>
 </li>
 </ul>
 </div>
 <section id="contributing-to-detectree2">
-<h2><a class="toc-backref" href="#id20"><span class="section-number">3.1. </span>Contributing to Detectree2</a><a class="headerlink" href="#contributing-to-detectree2" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id19"><span class="section-number">3.1. </span>Contributing to Detectree2</a><a class="headerlink" href="#contributing-to-detectree2" title="Permalink to this heading"></a></h2>
 <p>Thanks for taking the time to contribute to detectree2!</p>
 <section id="code-of-conduct">
-<h3><a class="toc-backref" href="#id21"><span class="section-number">3.1.1. </span>Code of Conduct</a><a class="headerlink" href="#code-of-conduct" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id20"><span class="section-number">3.1.1. </span>Code of Conduct</a><a class="headerlink" href="#code-of-conduct" title="Permalink to this heading"></a></h3>
 <p>All contributors are expected to abide by the <a class="reference external" href="https://github.com/PatBall1/detectree2/blob/master/CODE_OF_CONDUCT.md">Code of Conduct</a></p>
 </section>
 <section id="getting-started-issues">
-<h3><a class="toc-backref" href="#id22"><span class="section-number">3.1.2. </span>Getting Started - Issues</a><a class="headerlink" href="#getting-started-issues" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id21"><span class="section-number">3.1.2. </span>Getting Started - Issues</a><a class="headerlink" href="#getting-started-issues" title="Permalink to this heading"></a></h3>
 <p>The “to do” task list for detectree2 starts at the <a class="reference external" href="https://github.com/PatBall1/detectree2/issues">Issues</a> page in Github.</p>
 <p>Note: Before submitting a new issue, you should search the existing issues to make sure that it hasn’t already been reported.</p>
 </section>
 <section id="filing-a-bug-report">
-<h3><a class="toc-backref" href="#id23"><span class="section-number">3.1.3. </span>Filing a bug report</a><a class="headerlink" href="#filing-a-bug-report" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id22"><span class="section-number">3.1.3. </span>Filing a bug report</a><a class="headerlink" href="#filing-a-bug-report" title="Permalink to this heading"></a></h3>
 <p>Bug reports are important in helping identify things that aren’t working in detectree2. Filing a bug report is straightforward: Head to the Issues page, click on the New issue button, and select the Bug Report template to get started.</p>
 </section>
 <section id="detectree2-github-tips">
-<h3><a class="toc-backref" href="#id24"><span class="section-number">3.1.4. </span>Detectree2 Github tips</a><a class="headerlink" href="#detectree2-github-tips" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id23"><span class="section-number">3.1.4. </span>Detectree2 Github tips</a><a class="headerlink" href="#detectree2-github-tips" title="Permalink to this heading"></a></h3>
 <p>There are many excellent resources for learning Git. See <a class="reference internal" href="using-git.html"><span class="doc">Git/Github</span></a>, for a brief overview of Git and Github. For tips relating to detectree2 see <a class="reference internal" href="#detectree2-tips">detectree2 tips</a>.</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/JamesFergusson/Introduction-to-Research-Computing/blob/master/05_BestPractice_GIT.md">https://github.com/JamesFergusson/Introduction-to-Research-Computing/blob/master/05_BestPractice_GIT.md</a></p></li>
@@ -236,7 +234,7 @@
 </ul>
 </section>
 <section id="tips-for-creating-a-detectree2-pr">
-<h3><a class="toc-backref" href="#id25"><span class="section-number">3.1.5. </span>Tips for creating a detectree2 PR</a><a class="headerlink" href="#tips-for-creating-a-detectree2-pr" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id24"><span class="section-number">3.1.5. </span>Tips for creating a detectree2 PR</a><a class="headerlink" href="#tips-for-creating-a-detectree2-pr" title="Permalink to this heading"></a></h3>
 <p id="detectree2-tips">This guide assumes that most developers do not have permission to contribute to the repo directly and therefore need to fork the project. For users with privileges to contribute to detectree2 directly the concepts are the same, but a PR can be initiated from a feature branch within the detectree2 project directly.</p>
 <p>First consult <a class="reference internal" href="using-git.html"><span class="doc">Git/Github</span></a> or any of the above resources if you are unclear on how to create a good PR. See <a class="reference external" href="https://github.com/PatBall1/detectree2/pull/6#issuecomment-1189473815">issue/6</a> for some recommendatations on best practices when forking a project.</p>
 <p>Once a PR has been created, it is good practice to keep the PR’s feature branch up-to-date with <a class="reference external" href="https://github.com/PatBall1/detectree2">upstream</a> master during the PR submission and review process.
@@ -256,7 +254,7 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 <p>TIP: The process of rebasing on <code class="docutils literal notranslate"><span class="pre">master</span></code> may need to be done multiple times during a PR.</p>
 <p>At the end of the PR we can use GitHub’s UI to commit. The available options are explained here: <a class="reference external" href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges">Pull request merges</a>.</p>
 <section id="using-github-s-ui-to-commit-pr">
-<h4><a class="toc-backref" href="#id26"><span class="section-number">3.1.5.1. </span>Using GitHub’s UI to commit PR</a><a class="headerlink" href="#using-github-s-ui-to-commit-pr" title="Permalink to this heading"></a></h4>
+<h4><a class="toc-backref" href="#id25"><span class="section-number">3.1.5.1. </span>Using GitHub’s UI to commit PR</a><a class="headerlink" href="#using-github-s-ui-to-commit-pr" title="Permalink to this heading"></a></h4>
 <p>Whether to squash commits or not is explained well in this article:
 <a class="reference external" href="https://blog.mergify.com/what-is-the-difference-between-a-merge-commit-a-squash/">https://blog.mergify.com/what-is-the-difference-between-a-merge-commit-a-squash/</a></p>
 <p>The github UI will give the <code class="docutils literal notranslate"><span class="pre">squash</span> <span class="pre">and</span> <span class="pre">merge</span></code> option when committing a PR to master, but one should proceed with caution. It squashes all of the commits down to one commit in the base branch with an option to edit a commit summary (please modify the commit summary from the default one provided with a more concise message of the PR’s contributions). One could argue that this leads to a linear history (i.e. doesn’t contain merges) but often it can result in large commits that are difficult to read, so if following this approach try to ensure that PRs have a single focus. Squashing also loses valuable information from individual commits.</p>
@@ -265,7 +263,7 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 <p>For Detectree2, it’s up to you which approach to take. Given that the project is quite small and there are few contributors I’d suggest using pre-commit hooks and interactive rebases to improve commit quality in favour of squashing. Squashing is also generally fine (and the easier approach of the two), but try to avoid doing it all the time.</p>
 </section>
 <section id="using-command-line-to-rebase">
-<h4><a class="toc-backref" href="#id27"><span class="section-number">3.1.5.2. </span>Using command line to rebase</a><a class="headerlink" href="#using-command-line-to-rebase" title="Permalink to this heading"></a></h4>
+<h4><a class="toc-backref" href="#id26"><span class="section-number">3.1.5.2. </span>Using command line to rebase</a><a class="headerlink" href="#using-command-line-to-rebase" title="Permalink to this heading"></a></h4>
 <p>If you want to rebase the commits but are unable to <code class="docutils literal notranslate"><span class="pre">rebase</span> <span class="pre">and</span> <span class="pre">merge</span></code> automatically on GitHub.com you must:</p>
 <blockquote>
 <div><ul class="simple">
@@ -278,7 +276,7 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 <p>TIP: If following this approach, make sure to use pre-commit hooks to improve quality of individual commits.</p>
 </section>
 <section id="general-tips">
-<h4><a class="toc-backref" href="#id28"><span class="section-number">3.1.5.3. </span>General tips</a><a class="headerlink" href="#general-tips" title="Permalink to this heading"></a></h4>
+<h4><a class="toc-backref" href="#id27"><span class="section-number">3.1.5.3. </span>General tips</a><a class="headerlink" href="#general-tips" title="Permalink to this heading"></a></h4>
 <p>TIP: Try to avoid merging the PR to a <cite>dev</cite> branch. This is considered bad practice since when it comes to merge to master the eventual <cite>PR</cite> can be large and difficult to understand. PRs should have a single focus.</p>
 <p>TIP: Delete the branch after merging to master.</p>
 <p>TIP: Always nominate a collaborator to review the PR before merging.</p>
@@ -303,7 +301,7 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 </section>
 </section>
 <section id="detectree2-setup-for-developers">
-<h2><a class="toc-backref" href="#id29"><span class="section-number">3.2. </span>Detectree2 setup for developers</a><a class="headerlink" href="#detectree2-setup-for-developers" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id28"><span class="section-number">3.2. </span>Detectree2 setup for developers</a><a class="headerlink" href="#detectree2-setup-for-developers" title="Permalink to this heading"></a></h2>
 <p>For projects with many contributors it is good practice to adhere to a programming style and testing framework. The programming style is enforced with a combination of pre-commit hooks and CI checks. Settings for detectree2’s programming style components are given in <cite>setup.cfg</cite>, in the project root.</p>
 <p>We adopt <cite>GitHub actions</cite> to deploy software development workflows <a class="reference external" href="https://github.com/PatBall1/detectree2/actions">detectree2/actions</a>, workflows are steered automatically using github actions in <a class="reference external" href="https://github.com/PatBall1/detectree2/tree/master/.github/workflows">.github/workflows</a> directory, a good example is: <a class="reference external" href="https://github.com/PatBall1/detectree2/tree/master/.github/workflows/python-app.yml">python-app.yaml</a>.  The code checks are triggered automatically on pushing to a branch. The workflows detail the required dependencies for developing and testing detectree2, and should be consulted if anything in the following section is unclear.</p>
 <p>For reference, the relevant <code class="docutils literal notranslate"><span class="pre">detectree2</span></code> subprojects are:</p>
@@ -321,7 +319,7 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 </ul>
 </div>
 <section id="setting-up-development-environment">
-<h3><a class="toc-backref" href="#id30"><span class="section-number">3.2.1. </span>Setting up development environment</a><a class="headerlink" href="#setting-up-development-environment" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id29"><span class="section-number">3.2.1. </span>Setting up development environment</a><a class="headerlink" href="#setting-up-development-environment" title="Permalink to this heading"></a></h3>
 <p>Using conda or pip (below we show pip):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">flake8</span> <span class="n">flake8</span><span class="o">-</span><span class="n">docstrings</span> <span class="n">mypy</span> <span class="n">autopep8</span> <span class="n">isort</span>
 </pre></div>
@@ -334,7 +332,7 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 </div>
 </section>
 <section id="programming-style">
-<h3><a class="toc-backref" href="#id31"><span class="section-number">3.2.2. </span>Programming style</a><a class="headerlink" href="#programming-style" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id30"><span class="section-number">3.2.2. </span>Programming style</a><a class="headerlink" href="#programming-style" title="Permalink to this heading"></a></h3>
 <p id="id5">Detectree2 currently utilises the following tools to check code style and consistency.</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">yapf</span></code>: Autoformatter ensures consistent formatting of Python files.</p></li>
@@ -350,7 +348,7 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 </ul>
 <p>This style is enforced both locally (using pre-commit hooks) and remotely (using github workflows). It is possible to use remote checks only, but it is often faster to check locally first than to wait for the github workflow to execute.</p>
 <section id="pre-commit-hooks">
-<h4><a class="toc-backref" href="#id32"><span class="section-number">3.2.2.1. </span>Pre-commit hooks</a><a class="headerlink" href="#pre-commit-hooks" title="Permalink to this heading"></a></h4>
+<h4><a class="toc-backref" href="#id31"><span class="section-number">3.2.2.1. </span>Pre-commit hooks</a><a class="headerlink" href="#pre-commit-hooks" title="Permalink to this heading"></a></h4>
 <p>Pre-commit hooks ensure that each commit passes a minimum set of style checks. To set up pre-commit hooks do:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pre</span><span class="o">-</span><span class="n">commit</span>
 <span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">install</span>
@@ -362,6 +360,7 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 <span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;your message&quot;</span>
 </pre></div>
 </div>
+<p>If tests do not pass, correct errors and then do <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">add</span> <span class="pre">-u</span></code> again so that changes are staged.</p>
 <p>If it is desirable to avoid pre-commit hooks:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;your message&quot;</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">verify</span>
 </pre></div>
@@ -381,14 +380,14 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 </section>
 </section>
 <section id="linting">
-<h3><a class="toc-backref" href="#id33"><span class="section-number">3.2.3. </span>Linting</a><a class="headerlink" href="#linting" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id32"><span class="section-number">3.2.3. </span>Linting</a><a class="headerlink" href="#linting" title="Permalink to this heading"></a></h3>
 <p>Flake8 includes linting, syntax errors, and McCabe function complexity analysis.</p>
 <p>The are several instances where Flake8 errors have been purposely ignored in Detectree2 using <code class="docutils literal notranslate"><span class="pre">noqa:</span> <span class="pre">&lt;CODE&gt;</span></code> annotations to allow flake8 CI to pass. This is not a permanent fix and the errors should eventually be addressed. For example: <code class="docutils literal notranslate"><span class="pre">noqa:</span> <span class="pre">E501</span></code> ensures that line lengths beyond (120 characters) are ignored by the linter and <code class="docutils literal notranslate"><span class="pre">noqa:</span> <span class="pre">901</span></code> ignores the McCabe complexity measure.</p>
 <p>These can also be set globally in setup.cfg, but fewer the better. It is also possible to set <code class="docutils literal notranslate"><span class="pre">continue-on-error</span></code> in the flake8 workflow or <code class="docutils literal notranslate"><span class="pre">--exit-zero</span></code> flake8 argument to allow other checks to continue. In practice it was found that developers tend to ignore flake8 errors as a result of these two options, so the <code class="docutils literal notranslate"><span class="pre">noqa</span></code> solution is preferred.</p>
 <p>McCabe function complexity analysis is useful for detecting over-complex code (as determined by the amount of branching - <cite>if</cite>, <cite>else</cite> statements). A value of 10 is set as default. This is perhaps overkill and may be removed.</p>
 </section>
 <section id="docstrings">
-<h3><a class="toc-backref" href="#id34"><span class="section-number">3.2.4. </span>Docstrings</a><a class="headerlink" href="#docstrings" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id33"><span class="section-number">3.2.4. </span>Docstrings</a><a class="headerlink" href="#docstrings" title="Permalink to this heading"></a></h3>
 <p>We adopt google docstrings (<a class="reference external" href="https://google.github.io/styleguide/pyguide.html">https://google.github.io/styleguide/pyguide.html</a>)</p>
 <p>Other dependencies include <code class="docutils literal notranslate"><span class="pre">flake8-docstrings</span></code>,</p>
 <div class="admonition-todo admonition" id="id7">
@@ -399,10 +398,10 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 </div>
 </section>
 <section id="autoformatters">
-<h3><a class="toc-backref" href="#id35"><span class="section-number">3.2.5. </span>Autoformatters</a><a class="headerlink" href="#autoformatters" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id34"><span class="section-number">3.2.5. </span>Autoformatters</a><a class="headerlink" href="#autoformatters" title="Permalink to this heading"></a></h3>
 <p>We adopt <code class="docutils literal notranslate"><span class="pre">yapf</span></code> for this project, but others are listed for completion.</p>
 <section id="yapf">
-<h4><a class="toc-backref" href="#id36"><span class="section-number">3.2.5.1. </span>YAPF</a><a class="headerlink" href="#yapf" title="Permalink to this heading"></a></h4>
+<h4><a class="toc-backref" href="#id35"><span class="section-number">3.2.5.1. </span>YAPF</a><a class="headerlink" href="#yapf" title="Permalink to this heading"></a></h4>
 <p>From the <a class="reference external" href="https://github.com/google/yapf">YAPF docs</a>:</p>
 <blockquote>
 <div><p>Most of the current formatters for Python — e.g., autopep8, and pep8ify — are made to remove lint errors from code. This has some obvious limitations. For instance, code that conforms to the PEP 8 guidelines may not be reformatted. But it doesn’t mean that the code looks good.</p>
@@ -410,7 +409,7 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 <p>YAPF is highly customisable and shares a similar philosophy to <code class="docutils literal notranslate"><span class="pre">black</span></code>. It is possible to customise behaviour of any autoformatter like <code class="docutils literal notranslate"><span class="pre">autopep8</span></code> or <code class="docutils literal notranslate"><span class="pre">black</span></code> with  project modifications.</p>
 </section>
 <section id="black">
-<h4><a class="toc-backref" href="#id37"><span class="section-number">3.2.5.2. </span>Black</a><a class="headerlink" href="#black" title="Permalink to this heading"></a></h4>
+<h4><a class="toc-backref" href="#id36"><span class="section-number">3.2.5.2. </span>Black</a><a class="headerlink" href="#black" title="Permalink to this heading"></a></h4>
 <p>From the <a class="reference external" href="https://black.readthedocs.io/en/stable/">Black docs</a>:</p>
 <blockquote>
 <div><p>Black is the uncompromising Python code formatter. By using it, you agree to cede control over minutiae of hand-formatting. In return, Black gives you speed, determinism, and freedom from pycodestyle nagging about formatting. You will save time and mental energy for more important matters.</p>
@@ -418,7 +417,7 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 <p>It favours consistency, meaning it is guaranteed to give the same results across the team - a style guide is not needed.</p>
 </section>
 <section id="autopep8">
-<h4><a class="toc-backref" href="#id38"><span class="section-number">3.2.5.3. </span>Autopep8</a><a class="headerlink" href="#autopep8" title="Permalink to this heading"></a></h4>
+<h4><a class="toc-backref" href="#id37"><span class="section-number">3.2.5.3. </span>Autopep8</a><a class="headerlink" href="#autopep8" title="Permalink to this heading"></a></h4>
 <p>Autopep8 is an autoformatter (like Black) with enforces the <code class="docutils literal notranslate"><span class="pre">PEP8</span></code> style guide. Autopep8 is a loose formatter, which will fix PEP8 errors but will not make the code uniform. It relies a little more on the programmer, whereas <code class="docutils literal notranslate"><span class="pre">black</span></code>, which also produces PEP8 compatible code, is more opinionated in its approach.:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">autopep8</span> <span class="c1"># if not already installed</span>
 <span class="n">autopep8</span> <span class="o">--</span><span class="ow">in</span><span class="o">-</span><span class="n">place</span> <span class="o">--</span><span class="n">aggressive</span> <span class="o">--</span><span class="n">aggressive</span> <span class="o">&lt;</span><span class="n">filename</span><span class="o">&gt;</span>
@@ -433,7 +432,7 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 </div>
 </section>
 <section id="formatting-aside">
-<h4><a class="toc-backref" href="#id39"><span class="section-number">3.2.5.4. </span>Formatting aside</a><a class="headerlink" href="#formatting-aside" title="Permalink to this heading"></a></h4>
+<h4><a class="toc-backref" href="#id38"><span class="section-number">3.2.5.4. </span>Formatting aside</a><a class="headerlink" href="#formatting-aside" title="Permalink to this heading"></a></h4>
 <p>The difference between the strict autoformatter <code class="docutils literal notranslate"><span class="pre">yapf</span></code> and the official demonstrated for function arguments with the example below. Both examples are PEP8 compliant and will pass <code class="docutils literal notranslate"><span class="pre">flake8</span></code> linting checks. The former is better for diffs and typing clarity, whereas the latter has fewer lines.</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># black or yapf:</span>
 <span class="k">def</span> <span class="nf">tile_data</span><span class="p">(</span>
@@ -455,7 +454,7 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 </section>
 </section>
 <section id="static-typing">
-<h3><a class="toc-backref" href="#id40"><span class="section-number">3.2.6. </span>Static typing</a><a class="headerlink" href="#static-typing" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id39"><span class="section-number">3.2.6. </span>Static typing</a><a class="headerlink" href="#static-typing" title="Permalink to this heading"></a></h3>
 <p>From the <a class="reference external" href="http://mypy-lang.org/">Mypy docs</a>:</p>
 <blockquote>
 <div><p>Mypy is an optional static type checker for Python that aims to combine the benefits of dynamic (or ‘duck’) typing and static typing. Mypy combines the expressive power and convenience of Python with a powerful type system and compile-time type checking.</p>
@@ -465,7 +464,7 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 </section>
 </section>
 <section id="continuous-integration">
-<h2><a class="toc-backref" href="#id41"><span class="section-number">3.3. </span>Continuous integration</a><a class="headerlink" href="#continuous-integration" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id40"><span class="section-number">3.3. </span>Continuous integration</a><a class="headerlink" href="#continuous-integration" title="Permalink to this heading"></a></h2>
 <p>The idea of Continuous integration (CI) is to frequently commit code to a shared repo. This has the effect of detecting errors sooner thereby reducing the amount of code a developer needs to debug when finding an error. Frequent updates also make it easier to merge changes from different members of the software development team. This is especially powerful when paired automated code building and testing. Testing can include code linters, as well as unit and integration tests.</p>
 <p>Building and testing code requires a server. CI using GitHub actions offers workflows that can build the repository code and run tests. We can run on GitHub’s own virtual machines (using GitHub-hosted runners), or on machines that we host ourselves (or on compute clusters). The latter is desirable as GitHub does not currently support access to GPU resources.</p>
 <p>Currently there are three files that steer workflows. The schedule is set at the top of the file. The workflows are found <a class="reference external" href="https://github.com/PatBall1/detectree2/tree/master/.github/workflows">here</a></p>
@@ -490,7 +489,7 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 </div>
 </section>
 <section id="automatic-documentation">
-<h2><a class="toc-backref" href="#id42"><span class="section-number">3.4. </span>Automatic Documentation</a><a class="headerlink" href="#automatic-documentation" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id41"><span class="section-number">3.4. </span>Automatic Documentation</a><a class="headerlink" href="#automatic-documentation" title="Permalink to this heading"></a></h2>
 <p>Documentation is generated automatically using Sphinx and GitHub actions in <a class="reference external" href="https://github.com/PatBall1/detectree2/blob/master/.github/workflows/documentation.yaml">documentation.yaml</a>.</p>
 <p>Documentation can be generated locally to test rendering. It is better to develop locally rather than rely on the CI and hosted docs as a check, as it can take quite some time to build using the workflow.</p>
 <p>To generate locally it is necessary to install the following dependencies (either in pip or conda):</p>
@@ -510,29 +509,10 @@ This can be done simply with the <code class="docutils literal notranslate"><spa
 </ul>
 </div>
 </section>
-<section id="tests">
-<h2><a class="toc-backref" href="#id43"><span class="section-number">3.5. </span>Tests</a><a class="headerlink" href="#tests" title="Permalink to this heading"></a></h2>
-<p>Test-driven development stipulates that tests should be written as new features are introduced to the code. To run the tests simply do:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># install Pytest if haven&#39;t already done so.</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="n">pytest</span>
-<span class="c1"># pytest should be run from the project root:</span>
-<span class="n">pytest</span> <span class="o">.</span>
-</pre></div>
-</div>
-<p>As of August 2022, an integration test has been written which demos the tiling, and training steps. The integration test will run the training on the CPU only. It is possible to run tests on other systems using GitHub, but this will take more work.</p>
-<p>A few unit tests have been implemented, the most interesting computes the area intersection over union (with dummy .geojson data containing square shapes with known areas). The test is still incomplete because much of the code in evaluation.py and F1_calculator is not sufficiently modular - a major refactor is required.</p>
-<p>TIP: Always write tests for newly introduced logic when contributing code.</p>
-<div class="admonition-todo admonition" id="id12">
-<p class="admonition-title">Todo</p>
-<ul class="simple">
-<li><p>Write more unit tests for existing code.</p></li>
-</ul>
-</div>
-</section>
 <section id="building-detectree2">
-<h2><a class="toc-backref" href="#id44"><span class="section-number">3.6. </span>Building Detectree2</a><a class="headerlink" href="#building-detectree2" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id42"><span class="section-number">3.5. </span>Building Detectree2</a><a class="headerlink" href="#building-detectree2" title="Permalink to this heading"></a></h2>
 <section id="gdal-complexities">
-<h3><a class="toc-backref" href="#id45"><span class="section-number">3.6.1. </span>GDAL complexities</a><a class="headerlink" href="#gdal-complexities" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id43"><span class="section-number">3.5.1. </span>GDAL complexities</a><a class="headerlink" href="#gdal-complexities" title="Permalink to this heading"></a></h3>
 <p>GDAL presents a number of complexities. The issue is covered in <a class="reference external" href="https://github.com/PatBall1/detectree2/issues/1">gdal/issue</a> We must point to the location of the preinstalled GDAL headers, and the GDAL version must match the pip package version. <a class="reference external" href="https://github.com/OSGeo/gdal/issues/2293">https://github.com/OSGeo/gdal/issues/2293</a>
 For instance, on my cluster:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gdal</span><span class="o">-</span><span class="n">config</span> <span class="o">-</span><span class="n">v</span>  <span class="c1"># gives 3.0.4</span>
@@ -545,7 +525,7 @@ For instance, on my cluster:</p>
 </div>
 </section>
 <section id="using-pip">
-<h3><a class="toc-backref" href="#id46"><span class="section-number">3.6.2. </span>Using pip</a><a class="headerlink" href="#using-pip" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id44"><span class="section-number">3.5.2. </span>Using pip</a><a class="headerlink" href="#using-pip" title="Permalink to this heading"></a></h3>
 <p>It is relatively straightforward to install detectree2 on Colab. Simply pip install and all dependencies will be installed automatically.</p>
 <p>On other systems the process is more involved especially if root access is not available. See workflow <a class="reference external" href="https://github.com/PatBall1/detectree2/tree/master/.github/workflows/python-app.yml">python-app.yaml</a> workflow for a working CPU deployment.</p>
 <p>First we need to install <code class="docutils literal notranslate"><span class="pre">pytorch</span></code>, <code class="docutils literal notranslate"><span class="pre">torchvision</span></code> and <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code> (compatible versions <a class="reference external" href="https://pypi.org/project/torchvision/">https://pypi.org/project/torchvision/</a>).</p>
@@ -555,7 +535,7 @@ For instance, on my cluster:</p>
 <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">pip</span>
 <span class="n">pip</span> <span class="n">install</span> <span class="n">wheel</span>
 <span class="n">pip</span> <span class="n">install</span> <span class="n">opencv</span><span class="o">-</span><span class="n">python</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span><span class="o">==</span><span class="mf">1.11.0</span><span class="o">+</span><span class="n">cu113</span> <span class="n">torchvision</span><span class="o">==</span><span class="mf">0.12.0</span><span class="o">+</span><span class="n">cu113</span> <span class="n">torchaudio</span><span class="o">==</span><span class="mf">0.11.0</span> <span class="o">--</span><span class="n">extra</span><span class="o">-</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cu113</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span><span class="o">==</span><span class="mf">1.11</span><span class="o">.</span><span class="mi">0</span><span class="o">+</span><span class="n">cu113</span> <span class="n">torchvision</span><span class="o">==</span><span class="mf">0.12</span><span class="o">.</span><span class="mi">0</span><span class="o">+</span><span class="n">cu113</span> <span class="n">torchaudio</span><span class="o">==</span><span class="mf">0.11</span><span class="o">.</span><span class="mi">0</span> <span class="o">--</span><span class="n">extra</span><span class="o">-</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cu113</span>
 </pre></div>
 </div>
 <p>Then point to preinstalled GDAL header files:</p>
@@ -567,7 +547,7 @@ For instance, on my cluster:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">.</span>  <span class="c1"># (add -e flag to allow editable installs)</span>
 </pre></div>
 </div>
-<div class="admonition-todo admonition" id="id14">
+<div class="admonition-todo admonition" id="id13">
 <p class="admonition-title">Todo</p>
 <ul class="simple">
 <li><p>Pin torch and torchvision versions in setup.py</p></li>
@@ -577,27 +557,27 @@ For instance, on my cluster:</p>
 </ul>
 </div>
 <section id="fixing-detectron2-version">
-<h4><a class="toc-backref" href="#id47"><span class="section-number">3.6.2.1. </span>Fixing detectron2 version</a><a class="headerlink" href="#fixing-detectron2-version" title="Permalink to this heading"></a></h4>
+<h4><a class="toc-backref" href="#id45"><span class="section-number">3.5.2.1. </span>Fixing detectron2 version</a><a class="headerlink" href="#fixing-detectron2-version" title="Permalink to this heading"></a></h4>
 <p>We can fix the version of <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> by pointing to the pre-built wheel using pip:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">detectron2</span><span class="o">==</span><span class="mf">0.6</span> <span class="o">-</span><span class="n">f</span> \ <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">dl</span><span class="o">.</span><span class="n">fbaipublicfiles</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">detectron2</span><span class="o">/</span><span class="n">wheels</span><span class="o">/</span><span class="n">cu113</span><span class="o">/</span><span class="n">torch1</span><span class="mf">.10</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">detectron2</span><span class="o">==</span><span class="mf">0.6</span> <span class="o">-</span><span class="n">f</span> \ <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">dl</span><span class="o">.</span><span class="n">fbaipublicfiles</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">detectron2</span><span class="o">/</span><span class="n">wheels</span><span class="o">/</span><span class="n">cu113</span><span class="o">/</span><span class="n">torch1</span><span class="o">.</span><span class="mi">10</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
 </pre></div>
 </div>
 <p>Or by changing the <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> line in setup.py (which will build the latest version from source):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">detectron2</span><span class="nd">@https</span><span class="p">:</span><span class="o">//</span><span class="n">dl</span><span class="o">.</span><span class="n">fbaipublicfiles</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">detectron2</span><span class="o">/</span><span class="n">wheels</span><span class="o">/</span><span class="n">cu113</span><span class="o">/</span><span class="n">torch1</span><span class="mf">.10</span><span class="o">/</span><span class="n">detectron2</span><span class="o">-</span><span class="mf">0.6</span><span class="o">%</span><span class="mi">2</span><span class="n">Bcu113</span><span class="o">-</span><span class="n">cp38</span><span class="o">-</span><span class="n">cp38</span><span class="o">-</span><span class="n">linux_x86_64</span><span class="o">.</span><span class="n">whl</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">detectron2</span><span class="nd">@https</span><span class="p">:</span><span class="o">//</span><span class="n">dl</span><span class="o">.</span><span class="n">fbaipublicfiles</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">detectron2</span><span class="o">/</span><span class="n">wheels</span><span class="o">/</span><span class="n">cu113</span><span class="o">/</span><span class="n">torch1</span><span class="o">.</span><span class="mi">10</span><span class="o">/</span><span class="n">detectron2</span><span class="o">-</span><span class="mf">0.6</span><span class="o">%</span><span class="mi">2</span><span class="n">Bcu113</span><span class="o">-</span><span class="n">cp38</span><span class="o">-</span><span class="n">cp38</span><span class="o">-</span><span class="n">linux_x86_64</span><span class="o">.</span><span class="n">whl</span>
 </pre></div>
 </div>
 <p>It may be preferable to do this as errors have a tendency to be introduced into the <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> codebase and may take a day or two to fix.
 We can also point to a specific working commit:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">facebookresearch</span><span class="o">/</span><span class="n">detectron2</span><span class="o">.</span><span class="n">git</span><span class="o">@</span><span class="mi">5</span><span class="n">aeb252b194b93dc2879b4ac34bc51a31b5aee13</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">facebookresearch</span><span class="o">/</span><span class="n">detectron2</span><span class="o">.</span><span class="n">git</span><span class="nd">@5aeb252b194b93dc2879b4ac34bc51a31b5aee13</span>
 
 <span class="c1"># or within setup.py (not tested):</span>
-<span class="n">detectron2</span><span class="nd">@git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">facebookresearch</span><span class="o">/</span><span class="n">detectron2</span><span class="o">.</span><span class="n">git</span><span class="o">@</span><span class="mi">5</span><span class="n">aeb252b194b93dc2879b4ac34bc51a31b5aee13</span>
+<span class="n">detectron2</span><span class="nd">@git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">facebookresearch</span><span class="o">/</span><span class="n">detectron2</span><span class="o">.</span><span class="n">git</span><span class="nd">@5aeb252b194b93dc2879b4ac34bc51a31b5aee13</span>
 </pre></div>
 </div>
 </section>
 </section>
 <section id="building-detectree2-using-conda">
-<h3><a class="toc-backref" href="#id48"><span class="section-number">3.6.3. </span>Building Detectree2 using Conda</a><a class="headerlink" href="#building-detectree2-using-conda" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id46"><span class="section-number">3.5.3. </span>Building Detectree2 using Conda</a><a class="headerlink" href="#building-detectree2-using-conda" title="Permalink to this heading"></a></h3>
 <p>Many of the aforementioned complexities can be solved using Conda. This is currently working for python 3.9.13, in branch <a class="reference external" href="https://github.com/PatBall1/detectree2/tree/matt/conda">matt/conda</a>. The most important file is <a class="reference external" href="https://github.com/PatBall1/detectree2/blob/matt/conda/conda/environment.yaml">environment.yaml</a> which specifies the required dependencies.</p>
 <p>Install miniconda, and source (usually <code class="docutils literal notranslate"><span class="pre">~/.miniconda/bin/activate</span></code> if not in <code class="docutils literal notranslate"><span class="pre">.bashrc</span></code> already). Begin by installing <code class="docutils literal notranslate"><span class="pre">mamba</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">mamba</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
@@ -618,7 +598,7 @@ We can also point to a specific working commit:</p>
 </pre></div>
 </div>
 <p>The downside of this approach is that it takes much longer to install compared to pip, even with Mamba’s improved dependency resolution.</p>
-<div class="admonition-todo admonition" id="id15">
+<div class="admonition-todo admonition" id="id14">
 <p class="admonition-title">Todo</p>
 <ul class="simple">
 <li><p>Determine how this can be integrated into current pip install without breaking <code class="docutils literal notranslate"><span class="pre">colab</span></code> pip deployment.</p></li>
@@ -628,7 +608,7 @@ We can also point to a specific working commit:</p>
 </div>
 </section>
 <section id="distributing-detectree2-using-conda">
-<h3><a class="toc-backref" href="#id49"><span class="section-number">3.6.4. </span>Distributing detectree2 using Conda</a><a class="headerlink" href="#distributing-detectree2-using-conda" title="Permalink to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id47"><span class="section-number">3.5.4. </span>Distributing detectree2 using Conda</a><a class="headerlink" href="#distributing-detectree2-using-conda" title="Permalink to this heading"></a></h3>
 <p>In the <a class="reference external" href="https://github.com/PatBall1/detectree2/tree/matt/conda">matt/conda</a> branch, the <a class="reference external" href="https://github.com/PatBall1/detectree2/blob/matt/conda/conda/meta.yaml">conda/meta.yaml</a> packages detectree2. An initial attempt can be found here: <a class="reference external" href="https://anaconda.org/ma595/detectree2">ma595/detectree2</a>. To install, do the following:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">ma595</span> <span class="n">detectree2</span>
 </pre></div>
@@ -642,7 +622,7 @@ We can also point to a specific working commit:</p>
 <span class="n">anaconda</span> <span class="n">upload</span> <span class="o">&lt;</span><span class="n">path</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">tar</span><span class="o">.</span><span class="n">bz2</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<div class="admonition-todo admonition" id="id17">
+<div class="admonition-todo admonition" id="id16">
 <p class="admonition-title">Todo</p>
 <ul class="simple">
 <li><p>Automate distribution of package to <a class="reference external" href="https://anaconda.org/ma595/detectree2">anaconda</a> using workflow.</p></li>
@@ -651,8 +631,8 @@ We can also point to a specific working commit:</p>
 </section>
 </section>
 <section id="python-development-environment">
-<h2><a class="toc-backref" href="#id50"><span class="section-number">3.7. </span>Python development environment</a><a class="headerlink" href="#python-development-environment" title="Permalink to this heading"></a></h2>
-<div class="admonition-todo admonition" id="id18">
+<h2><a class="toc-backref" href="#id48"><span class="section-number">3.6. </span>Python development environment</a><a class="headerlink" href="#python-development-environment" title="Permalink to this heading"></a></h2>
+<div class="admonition-todo admonition" id="id17">
 <p class="admonition-title">Todo</p>
 <ul class="simple">
 <li><p>Setting up visual studio.</p></li>
