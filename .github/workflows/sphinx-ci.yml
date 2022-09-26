@@ -24,7 +24,7 @@ jobs:
         # python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
         # pip install --upgrade Pygments
         # pip install . 
-        pip install sphinx==5.1.0 sphinx_rtd_theme nbsphinx 
+        pip install markupsafe==2.0.1 sphinx==5.1.0 sphinx_rtd_theme nbsphinx 
         sphinx-apidoc -f -o ./docs/source/ detectree2/
         sphinx-build -b html docs/source/ docs/build/html
     # - name: Build HTML
