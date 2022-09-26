@@ -362,34 +362,34 @@ Then using your favourite browser open docs/build/html/index.html. It's often ne
 
     * Style checks on documentation. 
 
-.. =====
-.. Tests
-.. =====
+=====
+Tests
+=====
 
-.. Test-driven development stipulates that tests should be written as new features are introduced to the code. To run the tests simply do::
+Test-driven development stipulates that tests should be written as new features are introduced to the code. To run the tests simply do::
 
-..     # install Pytest if haven't already done so.
-..     pip install pytest
-..     # pytest should be run from the project root: 
-..     pytest . 
+    # install Pytest if haven't already done so.
+    pip install pytest
+    # pytest should be run from the project root: 
+    pytest . 
 
-.. It can sometimes be helpful to run individual tests::
+It can sometimes be helpful to run individual tests::
 
-..     pytest -rP -v detectree2/tests/test_preprocessing.py -k test_to_traintest_folders
+    pytest -rP -v detectree2/tests/test_preprocessing.py -k test_to_traintest_folders
 
-.. Which runs the *test_to_traintest_folders* function in the test_preprocessing.py module, and captures whatever output that may be produced.
+Which runs the *test_to_traintest_folders* function in the test_preprocessing.py module, and captures whatever output that may be produced.
 
-.. A few unit tests have been implemented but there is definitely scope to add more. *test_preprocessing.py* executes a few functions like tile_data_train, and to_traintest_folders, but does not test if the output is correct. ``pytest.mark.order`` is used to force dependencies but better approaches may exist. Further TODOs are listed within the code.
+A few unit tests have been implemented but there is definitely scope to add more. *test_preprocessing.py* executes a few functions like tile_data_train, and to_traintest_folders, but does not test if the output is correct. ``pytest.mark.order`` is used to force dependencies but better approaches may exist. Further TODOs are listed within the code.
 
-.. *test_prediction.py* executes some quite trivial tests. *test_evaluation.py* computes the area intersection over union (with dummy .geojson data containing square shapes with known areas). The test is still incomplete as some of the code in evaluation.py needs refactoring slightly. 
+*test_prediction.py* executes some quite trivial tests. *test_evaluation.py* computes the area intersection over union (with dummy .geojson data containing square shapes with known areas). The test is still incomplete as some of the code in evaluation.py needs refactoring slightly. 
 
-.. As of August 2022, an integration test has been written which demos the tiling, and training steps. The integration test will run the training on the CPU only. It is possible to run tests on other systems using GitHub, but this will take more work. 
+As of August 2022, an integration test has been written which demos the tiling, and training steps. The integration test will run the training on the CPU only. It is possible to run tests on other systems using GitHub, but this will take more work. 
 
-.. TIP: Always write tests for newly introduced logic when contributing code.
+TIP: Always write tests for newly introduced logic when contributing code.
 
-.. .. todo:: 
+.. todo:: 
 
-..     * Write more unit tests for existing code. 
+    * Write more unit tests for existing code. 
 
 ===================
 Building Detectree2 
