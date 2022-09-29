@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>2. Tutorial &mdash; detectree2 0.0.1 documentation</title>
@@ -16,6 +16,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -111,11 +112,11 @@
 <li><p>making landscape level predictions</p></li>
 </ol>
 <p>Before getting started ensure detectree2 is installed either through</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">(.venv) $</span>pip install detectree2
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$</span>pip install detectree2
 </pre></div>
 </div>
 <p>or</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">(.venv) $</span>conda install detectree2 -c conda-forge
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$</span>conda install detectree2 -c conda-forge
 </pre></div>
 </div>
 <p>To train a model you will need an orthomosaic (as <code class="docutils literal notranslate"><span class="pre">&lt;orthmosaic.tif</span></code>) and</p>
@@ -130,14 +131,14 @@ model from the <code class="docutils literal notranslate"><span class="pre">mode
 <p>An example of the recommended file structure when training a new model is as follows:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>├── Danum                                       <span class="o">(</span>site directory<span class="o">)</span>
 │   ├── rgb
-│   │   └── Dan_2014_RGB_project_to_CHM.tif     <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
+│   │   └── Dan_2014_RGB_project_to_CHM.tif     <span class="o">(</span>RGB orthomosaic <span class="k">in</span> <span class="nb">local</span> UTM CRS<span class="o">)</span>
 │   └── crowns
 │       └── Danum.gpkg                          <span class="o">(</span>Crown polygons readable by geopandas e.g. Geopackage, shapefile<span class="o">)</span>
 │
 └── Paracou                                     <span class="o">(</span>site directory<span class="o">)</span>
     ├── rgb
-    │   ├── Paracou_RGB_2016_10cm.tif           <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
-    │   └── Paracou_RGB_2019.tif                <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
+    │   ├── Paracou_RGB_2016_10cm.tif           <span class="o">(</span>RGB orthomosaic <span class="k">in</span> <span class="nb">local</span> UTM CRS<span class="o">)</span>
+    │   └── Paracou_RGB_2019.tif                <span class="o">(</span>RGB orthomosaic <span class="k">in</span> <span class="nb">local</span> UTM CRS<span class="o">)</span>
     └── crowns
         └── UpdatedCrowns8.gpkg                 <span class="o">(</span>Crown polygons readable by geopandas e.g. Geopackage, shapefile<span class="o">)</span>
 </pre></div>
@@ -151,7 +152,7 @@ directory (see e.g <code class="docutils literal notranslate"><span class="pre">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data_train</span><span class="p">,</span> <span class="n">to_traintest_folders</span>
 <span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">register_train_data</span><span class="p">,</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
 <span class="kn">import</span> <span class="nn">rasterio</span>
-<span class="kn">import</span> <span class="nn">geopandas</span> <span class="kn">as</span> <span class="nn">gpd</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 </pre></div>
 </div>
 <p>Set up the paths for the orthomosaic and corresponding manual crown data.</p>
@@ -174,14 +175,14 @@ directory (see e.g <code class="docutils literal notranslate"><span class="pre">
 <p>The tile size will depend on:
 - The resolution of your imagery</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set tiling parameters</span>
-<span class="nb">buffer</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">buffer</span> <span class="o">=</span> <span class="mi">30</span>
 <span class="n">tile_width</span> <span class="o">=</span> <span class="mi">40</span>
 <span class="n">tile_height</span> <span class="o">=</span> <span class="mi">40</span>
 <span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.6</span>
 </pre></div>
 </div>
 <p>Next we tile the data</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tile_data_train</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">crowns</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tile_data_train</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">crowns</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="simple">
@@ -197,7 +198,7 @@ spatial separation</p>
 <p>Are data is now tiled and partitioned for training and model evaluation</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>└── Danum                                       <span class="o">(</span>site directory<span class="o">)</span>
     ├── rgb
-    │   └── Dan_2014_RGB_project_to_CHM.tif     <span class="o">(</span>RGB orthomosaic in <span class="nb">local</span> UTM CRS<span class="o">)</span>
+    │   └── Dan_2014_RGB_project_to_CHM.tif     <span class="o">(</span>RGB orthomosaic <span class="k">in</span> <span class="nb">local</span> UTM CRS<span class="o">)</span>
     ├── crowns
     │   └── Danum.gpkg
     └── tiles                                   <span class="o">(</span>tile directory<span class="o">)</span>
