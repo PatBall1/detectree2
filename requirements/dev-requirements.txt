@@ -2,12 +2,55 @@
 # As a standard they include certain formatters and linters.
 
 # local package
--e ../.
+# -e ../.
 
-# external requirements (mostly linters and formatters)
-flake8              # flake8 linter
-flake8-docstrings   # docstring support for flake8
-mypy                # python type checker
-black               # automatic formatting provider
-isort               # automatic import sorter
-python-dotenv       # environment variable manager
+
+# # external requirements (mostly linters and formatters)
+# flake8              # flake8 linter
+# flake8-docstrings   # docstring support for flake8
+# mypy                # python type checker
+# yapf                # automatic formatting provider
+# isort               # automatic import sorter
+# # python-dotenv       # environment variable manager
+
+# # testing
+# pytest
+# pytest-order
+
+
+# # documentation
+# sphinx
+# spihnx_rtd_theme
+# nbsphinx 
+
+# requests
+# wandb
+
+# essential
+--find-links https://download.pytorch.org/whl/torch_stable.html
+# --find-links https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.10/index.html
+--find-links https://dl.fbaipublicfiles.com/detectron2/wheels/index.html
+wheel
+torch==1.10.0+cu111 
+torchvision==0.11.1+cu111
+numpy==1.23
+opencv-python
+pyyaml==5.1
+GDAL>=1.11
+proj
+geos
+pypng
+pygeos
+geopandas
+rasterio==1.3.2
+fiona
+pycrs
+descartes
+# detectron2: 
+# detectron wheels exist for python: 3.6, 3.7, 3.8, 3.9
+# and cpu, cuda: 10.1, 10.2, 11.1, 11.2
+# https://github.com/facebookresearch/detectron2/releases/tag/v0.6
+# https://dl.fbaipublicfiles.com/detectron2/wheels/index.html
+# e.g. python3.9, cuda11.1, torch1.10
+# https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.10/detectron2-0.6%2Bcu111-cp39-cp39-linux_x86_64.whl
+detectron2==0.6+cu111
