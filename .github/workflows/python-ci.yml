@@ -16,28 +16,32 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.10"]
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
       with:
-        python-version: "3.10.6"
+        python-version: ${{ matrix.python-version }}
     - name: Install code development dependencies 
       run: |
         python3 --version
-        python -m pip install --upgrade pip
-        pip3 install flake8 pep8-naming pydocstyle pytest isort
-        pip3 install mypy data-science-types pandas-stubs types-pillow numpy==1.23.1
+        python -m pip install --upgrade pip wheel
+        pip3 install flake8 pytest isort mypy numpy==1.23.1
+        # pep8-naming pydocstyle
+        # data-science-types pandas-stubs types-pillow 
         # if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
     - name: Install detectree2 dependencies
       run: |
         sudo apt install -yqq software-properties-common
         sudo add-apt-repository -y ppa:ubuntugis/ppa
         sudo apt -yqq update
-        sudo apt install -yqq libgdal-dev gdal-bin python3-pip git 
+        sudo apt install -yqq libgdal-dev gdal-bin python3-pip 
         # export CPLUS_INCLUDE_PATH=/usr/include/gdal
         # export C_INCLUDE_PATH=/usr/include/gdal
-        pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu 
+        pip3 install torch==1.10 torchvision==0.11.1 --extra-index-url https://download.pytorch.org/whl/cpu 
         pip3 install 'git+https://github.com/facebookresearch/detectron2.git'
     - name: Install detectree2
       run: |

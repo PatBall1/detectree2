@@ -19,7 +19,7 @@ setup(
         "pygeos",
         "geopandas",
         "opencv-python",
-        "rasterio==1.2.10",
+        "rasterio==1.3a1",
         "fiona",
         "pycrs",
         "descartes",
