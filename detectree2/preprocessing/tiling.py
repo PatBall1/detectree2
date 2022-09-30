@@ -256,7 +256,6 @@ def tile_data_train(  # noqa: C901
             elif sumnan > nan_threshold * totalpix:  # reject tiles with many NaN cells
                 continue
 
-
             # copy the metadata then update it, the "nodata" and "dtype" where important as made larger
             # tifs have outputted tiles which were not just black
             out_meta = data.meta.copy()
@@ -292,7 +291,7 @@ def tile_data_train(  # noqa: C901
             # stack up the bands in an order appropriate for saving with cv2, then rescale to the correct 0-255 range
             # for cv2. BGR ordering is correct for cv2 (and detectron2)
             rgb = np.dstack((b, g, r))
-            
+
             # Some rasters need to have values rescaled to 0-255
             # TODO: more robust check
             if np.max(g) > 255:
@@ -358,7 +357,7 @@ def tile_data_train(  # noqa: C901
                 print("Cannot write empty DataFrame to file.")
                 continue
             # Repeat and want to save crowns before being moved as overlap with lidar data to get the heights
-            # can try clean up the code here as lots of reprojecting and resaving but just going to get to 
+            # can try clean up the code here as lots of reprojecting and resaving but just going to get to
             # work for now
             out_path_geo = str(out_path_root) + "_geo"
             out_path_geo = Path(out_path_geo)

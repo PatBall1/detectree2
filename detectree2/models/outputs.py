@@ -311,7 +311,7 @@ def calc_iou(shape1, shape2):
     iou = shape1.intersection(shape2).area / shape1.union(shape2).area
     return iou
 
- 
+
 def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
     """Clean overlapping crowns.
 
@@ -354,17 +354,17 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
 def clean_predictions(directory, iou_threshold=0.7):
     pred_fold = directory
     entries = os.listdir(pred_fold)
-    
+
     for file in entries:
         if ".json" in file:
             print(file)
             with open(pred_fold + "/" + file) as prediction_file:
                 datajson = json.load(prediction_file)
-            
+
             crowns = gpd.GeoDataFrame()
-    
-            for shape in datajson:
-                crown_coords = polygon_from_mask(mask_util.decode(shape["segmentation"]))
+
+            for shp in datajson:
+                crown_coords = polygon_from_mask(mask_util.decode(shp["segmentation"]))
                 if crown_coords == 0:
                     continue
                 rescaled_coords = []
@@ -374,8 +374,10 @@ def clean_predictions(directory, iou_threshold=0.7):
                     x_coord = crown_coords[c]
                     y_coord = crown_coords[c + 1]
                     rescaled_coords.append([x_coord, y_coord])
-                crowns = crowns.append(gpd.GeoDataFrame({'Confidence_score': shape['score'],'geometry': [Polygon(rescaled_coords)]}, geometry=[Polygon(rescaled_coords)]))
-    
+                crowns = crowns.append(gpd.GeoDataFrame({'Confidence_score': shp['score'],
+                                                        'geometry': [Polygon(rescaled_coords)]},
+                                                        geometry=[Polygon(rescaled_coords)]))
+
             crowns = crowns.reset_index().drop('index', axis=1)
             crowns, indices = clean_outputs(crowns, iou_threshold)
             datajson_reduced = [datajson[i] for i in indices]
@@ -383,11 +385,12 @@ def clean_predictions(directory, iou_threshold=0.7):
             with open(pred_fold + "/" + file, "w") as dest:
                 json.dump(datajson_reduced, dest)
 
+
 def clean_outputs(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
     """Clean predictions prior to accuracy assessment
 
     Outputs can contain highly overlapping crowns including in the buffer region.
-    This function removes crowns with a high degree of overlap with others but a 
+    This function removes crowns with a high degree of overlap with others but a
     lower Confidence Score.
     """
     crowns = crowns[crowns.is_valid]
@@ -406,13 +409,13 @@ def clean_outputs(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
             iou = []
             for index1, row1 in intersecting.iterrows():  # iterate over those intersecting crowns
                 # print(row1.geometry)
-                area = row.geometry.intersection(row.geometry).area
-                area1 = row1.geometry.intersection(row1.geometry).area
-                intersection_1 = row.geometry.intersection(row1.geometry).area
-                #if intersection_1 >= area*0.8 or intersection_1 >= area1*0.8:
+                # area = row.geometry.intersection(row.geometry).area
+                # area1 = row1.geometry.intersection(row1.geometry).area
+                # intersection_1 = row.geometry.intersection(row1.geometry).area
+                # if intersection_1 >= area*0.8 or intersection_1 >= area1*0.8:
                 #    print("contained")
                 #    iou.append(1)
-                #else: 
+                # else:
                 iou.append(calc_iou(row.geometry, row1.geometry))  # Calculate the IoU with each of those crowns
             # print(iou)
             intersecting['iou'] = iou
