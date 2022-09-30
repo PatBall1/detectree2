@@ -72,14 +72,15 @@ def tile_data(
     # Should clip data to crowns straight off to speed things up
     os.makedirs(out_dir, exist_ok=True)
     crs = data.crs.data["init"].split(":")[1]
+    tilename = Path(data.name).stem
     # out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
-    for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width, int):
-        for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height, tile_height, int):
-
+    for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
+                          tile_width, int):
+        for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
+                              tile_height, int):
             # Naming conventions
-            tilename = Path(data.name).stem
-            out_path = out_dir + tilename + "_" + str(minx) + "_" + str(miny) + "_" + str(tile_width) + "_" + \
-                str(buffer) + "_" + crs
+            out_path = out_dir + tilename + "_" + str(minx) + "_" + str(
+                miny) + "_" + str(tile_width) + "_" + str(buffer) + "_" + crs
             # new tiling bbox including the buffer
             bbox = box(
                 minx - buffer,
@@ -176,6 +177,7 @@ def tile_data_train(  # noqa: C901
     tile_height: int = 200,
     crowns: gpd.GeoDataFrame = None,
     threshold: float = 0,
+    nan_threshold: float = 0.1,
     dtype_bool: bool = False,
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns into training tiles.
@@ -190,6 +192,7 @@ def tile_data_train(  # noqa: C901
         tile_height: Tile height in meters
         crowns: Crown polygons as a geopandas dataframe
         threshold: Min proportion of the tile covered by crowns to be accepted {0,1}
+        nan_theshold: Max proportion of tile covered by nans
         dtype_bool: Flag to edit dtype to prevent black tiles
 
     Returns:
@@ -208,7 +211,6 @@ def tile_data_train(  # noqa: C901
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height, tile_height, int):
 
             out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
-
             # new tiling bbox including the buffer
             bbox = box(
                 minx - buffer,
@@ -216,17 +218,11 @@ def tile_data_train(  # noqa: C901
                 minx + tile_width + buffer,
                 miny + tile_height + buffer,
             )
-            # define the bounding box of the tile, excluding the buffer (hence selecting
-            # just the central part of the tile)
-            # bbox_central = box(minx, miny, minx + tile_width, miny + tile_height)
 
             # turn the bounding boxes into geopandas DataFrames
-            geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=data.crs)
-            # geo_central = gpd.GeoDataFrame(
-            #    {"geometry": bbox_central}, index=[0], crs=from_epsg(4326)
-            # )  # 3182
-            # overlapping_crowns = sjoin(crowns, geo_central, how="inner")
-            # overlapping_crowns = sjoin(crowns, geo, predicate="within", how="inner")
+            geo = gpd.GeoDataFrame({"geometry": bbox},
+                                   index=[0],
+                                   crs=data.crs)
 
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
@@ -255,26 +251,10 @@ def tile_data_train(  # noqa: C901
             sumzero = zero_mask.sum()
             sumnan = nan_mask.sum()
             totalpix = out_img.shape[1] * out_img.shape[2]
-            if sumzero > 0.25 * totalpix:  # reject tiles with many 0 cells
+            if sumzero > nan_threshold * totalpix:  # reject tiles with many 0 cells
                 continue
-            elif sumnan > 0.25 * totalpix:  # reject tiles with many NaN cells
+            elif sumnan > nan_threshold * totalpix:  # reject tiles with many NaN cells
                 continue
-
-            # out_img = out_img.astype("uint8")
-            # Or to really narrow down the crop onto the crown area
-            # newbox = overlapping_crowns.total_bounds
-            # newbox = gpd.GeoDataFrame(
-            #    {"geometry": box(newbox[0], newbox[1], newbox[2], newbox[3])},
-            #    index=[0],
-            #    crs=from_epsg(4326),
-            # )
-            # newbox = getFeatures(newbox)
-
-            # out_img, out_transform = mask(data, shapes=newbox, crop=True)
-
-            # This can be useful when reprojecting later as know the crs format to put it into
-            # epsg_code = int(data.crs.data["init"][5:])
-            # print(epsg_code)
 
             # copy the metadata then update it, the "nodata" and "dtype" where important as made larger
             # tifs have outputted tiles which were not just black
@@ -312,6 +292,8 @@ def tile_data_train(  # noqa: C901
             # for cv2. BGR ordering is correct for cv2 (and detectron2)
             rgb = np.dstack((b, g, r))
 
+            # Some rasters need to have values rescaled to 0-255
+            # TODO: more robust check
             if np.max(g) > 255:
                 rgb_rescaled = 255 * rgb / 65535
             else:
@@ -370,6 +352,25 @@ def tile_data_train(  # noqa: C901
                     shp = json.load(f)
                     shp.update(impath)
                 with open(filename, "w") as f:
+                    json.dump(shp, f)
+            except ValueError:
+                print("Cannot write empty DataFrame to file.")
+                continue
+            # Repeat and want to save crowns before being moved as overlap with lidar data to get the heights
+            # can try clean up the code here as lots of reprojecting and resaving but just going to get to
+            # work for now
+            out_geo_file = out_path_root.parts[-1] + "_geo"
+            out_path_geo = out_path / Path(out_geo_file)
+            try:
+                filename_unmoved = out_path_geo.with_suffix(out_path_geo.suffix + ".geojson")
+                overlapping_crowns.to_file(
+                    driver="GeoJSON",
+                    filename=filename_unmoved,
+                )
+                with open(filename_unmoved, "r") as f:
+                    shp = json.load(f)
+                    shp.update(impath)
+                with open(filename_unmoved, "w") as f:
                     json.dump(shp, f)
             except ValueError:
                 print("Cannot write empty DataFrame to file.")
