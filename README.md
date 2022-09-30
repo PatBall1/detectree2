@@ -37,7 +37,7 @@ Currently works on Google Colab (Pro version recommended). May struggle on clust
 
 ### conda
 
-```conda install detectree2 -c conda-forge```
+```conda install detectree2 -c ma595```
 
 ## Getting started
 
