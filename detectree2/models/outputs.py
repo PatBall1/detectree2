@@ -124,7 +124,7 @@ def to_eval_geojson(directory=None):  # noqa:N803
             # error appears.
             print(geofile)
 
-            output_geo_file = directory + "/" + img_dict["filename"].replace(".json", "_eval.geojson")
+            output_geo_file = os.path.join(directory, img_dict["filename"].replace(".json", "_eval.geojson"))
             print(output_geo_file)
             with open(output_geo_file, "w") as dest:
                 json.dump(geofile, dest)
@@ -133,8 +133,8 @@ def to_eval_geojson(directory=None):  # noqa:N803
 def project_to_geojson(data, output_fold=None, pred_fold=None):  # noqa:N803
     """Projects json predictions back in geographic space.
 
-    Takes a json and changes it to a geojson so it can overlay with
-    orthomosaic. Another copy is produced to overlay with PNGs.
+    Takes a json and changes it to a geojson so it can overlay with orthomosaic. Another copy is produced to overlay
+    with PNGs.
     """
 
     Path(output_fold).mkdir(parents=True, exist_ok=True)
@@ -240,7 +240,7 @@ def project_to_geojson(data, output_fold=None, pred_fold=None):  # noqa:N803
             # Check final form is correct - compare to a known geojson file if error appears.
             # print("geofile",geofile)
 
-            output_geo_file = output_fold + "/" + img_dict["filename"].replace(".json", ".geojson")
+            output_geo_file = os.path.join(output_fold, img_dict["filename"].replace(".json", ".geojson"))
             # print("output location:", output_geo_file)
             with open(output_geo_file, "w") as dest:
                 json.dump(geofile, dest)

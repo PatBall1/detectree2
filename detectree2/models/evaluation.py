@@ -186,7 +186,7 @@ class GeoFeature:
 
 # Regular functions now
 def get_tile_width(file):
-    """Splitting up the file name to get width and buffer then adding to get overall width."""
+    """Split up the file name to get width and buffer then adding to get overall width."""
     filename = file.replace(".geojson", "")
     filename_split = filename.split("_")
 
@@ -401,7 +401,7 @@ def find_intersections(all_test_feats, all_pred_feats):
             if shape(test_feat.geometry).intersects(shape(pred_feat.geometry)):
                 try:
                     intersection = (shape(pred_feat.geometry).intersection(shape(test_feat.geometry))).area
-                except Exception:
+                except ValueError:
                     continue
 
                 # calculate the IoU
@@ -437,6 +437,7 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height, max_heig
 
     Store the numbers of all test features which have true positives arise.
     """
+
     test_feats_tps = []
 
     tps = 0
@@ -446,7 +447,7 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height, max_heig
     tall_pred_nums = feats_height_filt(all_pred_feats, min_height, max_height)
 
     for pred_feat in all_pred_feats:
-        # if the pred feat is not all enough then skip it
+        # if the pred feat is not tall enough then skip it
         if pred_feat.number not in tall_pred_nums:
             continue
         # if the number has remained at -1 it means the pred feat does not intersect
@@ -455,7 +456,7 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height, max_heig
             fps += 1
             continue
 
-        # test to see if the two crowns both overlap with each other the most and if
+        # test to see if the two crowns overlap with each other the most and if
         # they are above the required GIoU. Then need the height of the test feature
         # to also be above the threshold to allow it to be considered
         matching_test_feat = all_test_feats[pred_feat.GIoU_other_feat_num]
@@ -471,7 +472,7 @@ def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height, max_heig
     return tps, fps, fns
 
 
-def prec_recall_func(total_tps, total_fps, total_fns):
+def prec_recall(total_tps: int, total_fps: int, total_fns: int):
     """Calculate the precision and recall by standard formulas."""
 
     precision = total_tps / (total_tps + total_fps)
@@ -481,7 +482,7 @@ def prec_recall_func(total_tps, total_fps, total_fns):
 
 
 def f1_cal(precision, recall):
-    """Calculating the F1 score."""
+    """Calculate the F1 score."""
 
     return (2 * precision * recall) / (precision + recall)
 
@@ -528,8 +529,6 @@ def site_f1_score(
 
     for file in test_entries:
         if ".geojson" in file:
-            print(file)
-
             # work out the area threshold to ignore these crowns in the tiles
             tile_width = get_tile_width(file) * scaling[0]
             area_threshold = ((tile_width)**2) * area_fraction_limit
@@ -578,8 +577,7 @@ def site_f1_score(
             total_fns = total_fns + fns
 
     try:
-        prec, rec = prec_recall_func(total_tps, total_fps, total_fns)
-        # not used!
+        prec, rec = prec_recall(total_tps, total_fps, total_fns)
         f1_score = f1_cal(prec, rec)  # noqa: F841
         print("Precision  ", "Recall  ", "F1")
         print(prec, rec, f1_score)

@@ -2,7 +2,6 @@
 import json
 import os
 import random
-from http.client import REQUEST_URI_TOO_LONG  # noqa: F401
 from pathlib import Path
 
 import cv2
@@ -11,7 +10,8 @@ from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 
 from detectree2.models.train import get_filenames, get_tree_dicts
 
-# Code to convert RLE data from the output instances into Polygons, a small about of info is lost but is fine.
+# Code to convert RLE data from the output instances into Polygons,
+# a small amout of info is lost but is fine.
 # https://github.com/hazirbas/coco-json-converter/blob/master/generate_coco_json.py <-- found here
 
 
@@ -24,7 +24,7 @@ def predict_on_data(
 ):
     """Make predictions on tiled data.
 
-    Predicts crowns for all png images present in a directory and outputs masks as jsons
+    Predicts crowns for all png images present in a directory and outputs masks as jsons.
     """
 
     pred_dir = os.path.join(directory, "predictions")

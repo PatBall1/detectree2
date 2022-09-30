@@ -4,7 +4,7 @@
     - id: yapf
       name: "yapf"
 
-    
+      
 -   repo: https://github.com/pycqa/flake8
     rev: '5.0.4'  # pick a git hash / tag to point to
     hooks:
