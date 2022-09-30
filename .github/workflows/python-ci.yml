@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.7", "3.10"]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -42,19 +42,13 @@ jobs:
         sudo apt install -yqq libgdal-dev gdal-bin python3-pip 
         gdal_version=$(gdal-config --version)
         pip install gdal==$gdal_version
-        # export CPLUS_INCLUDE_PATH=/usr/include/gdal
-        # export C_INCLUDE_PATH=/usr/include/gdal
         pip3 install torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu 
         pip3 install 'git+https://github.com/facebookresearch/detectron2.git'
     - name: Install detectree2
       run: |
-        # export CPLUS_INCLUDE_PATH=/usr/include/gdal
-        # export C_INCLUDE_PATH=/usr/include/gdal
-        # pip3 install GDAL==3.3.2
         pip3 install .
     - name: flake8 checks
       run: |
-        # stop the build if there are Python syntax errors or undefined names
         flake8 detectree2 --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. 
         flake8 detectree2 --count --max-complexity=10 --statistics
