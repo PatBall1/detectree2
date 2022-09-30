@@ -663,7 +663,7 @@ def site_f1_score2(
             total_fns += fns
 
     try:
-        prec, rec = prec_recall_func(total_tps, total_fps, total_fns)
+        prec, rec = prec_recall(total_tps, total_fps, total_fns)
         # not used!
         f1_score = f1_cal(prec, rec)    # noqa: F841
         print("Precision  ", "Recall  ", "F1")
