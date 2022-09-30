@@ -194,6 +194,8 @@ Pre-commit hooks ensure that each commit passes a minimum set of style checks. T
     git add -u  # e.g
     git commit -m "your message"
 
+If tests do not pass, correct errors and then do ``git add -u`` again so that changes are staged.
+
 If it is desirable to avoid pre-commit hooks::
 
     git commit -m "your message" --no-verify
@@ -371,9 +373,17 @@ Test-driven development stipulates that tests should be written as new features 
     # pytest should be run from the project root: 
     pytest . 
 
-As of August 2022, an integration test has been written which demos the tiling, and training steps. The integration test will run the training on the CPU only. It is possible to run tests on other systems using GitHub, but this will take more work. 
+It can sometimes be helpful to run individual tests::
 
-A few unit tests have been implemented, the most interesting computes the area intersection over union (with dummy .geojson data containing square shapes with known areas). The test is still incomplete because much of the code in evaluation.py and F1_calculator is not sufficiently modular - a major refactor is required. 
+    pytest -rP -v detectree2/tests/test_preprocessing.py -k test_to_traintest_folders
+
+Which runs the *test_to_traintest_folders* function in the test_preprocessing.py module, and captures whatever output that may be produced.
+
+A few unit tests have been implemented but there is definitely scope to add more. *test_preprocessing.py* executes a few functions like tile_data_train, and to_traintest_folders, but does not test if the output is correct. ``pytest.mark.order`` is used to force dependencies but better approaches may exist. Further TODOs are listed within the code.
+
+*test_prediction.py* executes some quite trivial tests. *test_evaluation.py* computes the area intersection over union (with dummy .geojson data containing square shapes with known areas). The test is still incomplete as some of the code in evaluation.py needs refactoring slightly. 
+
+As of August 2022, an integration test has been written which demos the tiling, and training steps. The integration test will run the training on the CPU only. It is possible to run tests on other systems using GitHub, but this will take more work. 
 
 TIP: Always write tests for newly introduced logic when contributing code.
 

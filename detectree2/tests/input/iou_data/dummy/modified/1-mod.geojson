@@ -1,0 +1,74 @@
+{
+    "type": "FeatureCollection",
+    "crs": {
+        "type": "name",
+        "properties": {
+            "name": "urn:ogc:def:crs:EPSG::32622"
+        }
+    },
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "level_0": 3237,
+                "level_1": 0,
+                "Site": "Paracou",
+                "PlotOrg": "CNES",
+                "PlotNum": 1.0,
+                "SubPlot": 1.0,
+                "LocalID": 577.0,
+                "CensusYear": 2021.0,
+                "CodeAlive": "1",
+                "Family": "Sapotaceae",
+                "Genus_Species": "Pouteria_Indet.",
+                "Genus": "Pouteria",
+                "Species": "Indet.",
+                "Infraspecific.rank": null,
+                "Infraspecific": null,
+                "DBH": 52.5,
+                "TrunkMatch": 1.0,
+                "CrownIntegrity": 2.0,
+                "HS2016": null,
+                "Lianas": null,
+                "StartDate": null,
+                "EndDate": null,
+                "GroundValid": null,
+                "Creator": "J_Ball",
+                "EditJB": null,
+                "CheckJB": null,
+                "Comments": "New extension",
+                "BaseLayer": null,
+                "IDStatus": null,
+                "DBHest": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            600,
+                            600
+                        ],
+                        [
+                            600,
+                            1200
+                        ],
+                        [
+                            1200,
+                            1200
+                        ],
+                        [
+                            1200,
+                            600
+                        ],
+                        [
+                            600,
+                            600
+                        ]
+                    ]
+                ]
+            }
+        }
+    ],
+    "imagePath": "/rds/project/rds-5mCMIDBOkPU/ma595/detectree2/detectree2-data/paracou-out/tiles/Paracou_20220426_RGB10cm_mosa_rect_cropsmall_286658_583751_40_15.png"
+}
