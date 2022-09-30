@@ -12,7 +12,7 @@ import cv2
 import geopandas as gpd
 import pycocotools.mask as mask_util
 from fiona.crs import from_epsg
-from shapely.geometry import box, shape
+from shapely.geometry import Polygon, box, shape
 
 
 def polygon_from_mask(masked_arr):
@@ -26,8 +26,8 @@ def polygon_from_mask(masked_arr):
 
     segmentation = []
     for contour in contours:
-        # Valid polygons have >= 6 coordinates (3 points)
-        if contour.size >= 6:
+        # Valid polygons have >= 6 coordinates (3 points) -  for security
+        if contour.size >= 10:
             segmentation.append(contour.flatten().tolist())
     # rles = mask_util.frPyObjects(segmentation, masked_arr.shape[0], masked_arr.shape[1])
     # RLE = mask_util.merge(RLEs) # not used
@@ -103,7 +103,7 @@ def to_eval_geojson(directory=None):  # noqa:N803
                     for c in range(0, len(crown_coords), 2):
                         x_coord = crown_coords[c]
                         y_coord = crown_coords[c + 1]
-
+                        # TODO: make flexible to deal with hemispheres
                         if epsg == "26917":
                             rescaled_coords.append([x_coord, -y_coord])
                         else:
@@ -112,7 +112,7 @@ def to_eval_geojson(directory=None):  # noqa:N803
                     geofile["features"].append({
                         "type": "Feature",
                         "properties": {
-                            "Confidence score": confidence_score
+                            "Confidence_score": confidence_score
                         },
                         "geometry": {
                             "type": "Polygon",
@@ -229,7 +229,7 @@ def project_to_geojson(data, output_fold=None, pred_fold=None):  # noqa:N803
                     geofile["features"].append({
                         "type": "Feature",
                         "properties": {
-                            "Confidence score": confidence_score
+                            "Confidence_score": confidence_score
                         },
                         "geometry": {
                             "type": "Polygon",
@@ -285,7 +285,7 @@ def stitch_crowns(folder: str, shift: int = 1):
     _, _, _, _, crs = filename_geoinfo(list(files)[0])
     files = crowns_path.glob("*geojson")
     crowns = gpd.GeoDataFrame(
-        columns=["Confidence score", "geometry"],
+        columns=["Confidence_score", "geometry"],
         geometry="geometry",
         crs=from_epsg(crs),
     )  # initiate an empty gpd.GDF
@@ -340,7 +340,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
             # print(iou)
             intersecting["iou"] = iou
             matches = intersecting[intersecting["iou"] > iou_threshold]  # Remove those crowns with a poor match
-            matches = matches.sort_values("Confidence score", ascending=False).reset_index().drop("index", axis=1)
+            matches = matches.sort_values("Confidence_score", ascending=False).reset_index().drop("index", axis=1)
             match = matches.loc[[0]]  # Of the remaining crowns select the crown with the highest confidence
             if match["iou"][0] < 1:  # If the most confident is not the initial crown
                 continue
@@ -349,6 +349,86 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
                 # print(index)
                 crowns_out = crowns_out.append(match)
     return crowns_out.reset_index()
+
+
+def clean_predictions(directory, iou_threshold=0.7):
+    pred_fold = directory
+    entries = os.listdir(pred_fold)
+
+    for file in entries:
+        if ".json" in file:
+            print(file)
+            with open(pred_fold + "/" + file) as prediction_file:
+                datajson = json.load(prediction_file)
+
+            crowns = gpd.GeoDataFrame()
+
+            for shp in datajson:
+                crown_coords = polygon_from_mask(mask_util.decode(shp["segmentation"]))
+                if crown_coords == 0:
+                    continue
+                rescaled_coords = []
+                # coords from json are in a list of [x1, y1, x2, y2,... ] so convert them to [[x1, y1], ...]
+                # format and at the same time rescale them so they are in the correct position for QGIS
+                for c in range(0, len(crown_coords), 2):
+                    x_coord = crown_coords[c]
+                    y_coord = crown_coords[c + 1]
+                    rescaled_coords.append([x_coord, y_coord])
+                crowns = crowns.append(gpd.GeoDataFrame({'Confidence_score': shp['score'],
+                                                        'geometry': [Polygon(rescaled_coords)]},
+                                                        geometry=[Polygon(rescaled_coords)]))
+
+            crowns = crowns.reset_index().drop('index', axis=1)
+            crowns, indices = clean_outputs(crowns, iou_threshold)
+            datajson_reduced = [datajson[i] for i in indices]
+            print("data_json:", len(datajson), " ", len(datajson_reduced))
+            with open(pred_fold + "/" + file, "w") as dest:
+                json.dump(datajson_reduced, dest)
+
+
+def clean_outputs(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
+    """Clean predictions prior to accuracy assessment
+
+    Outputs can contain highly overlapping crowns including in the buffer region.
+    This function removes crowns with a high degree of overlap with others but a
+    lower Confidence Score.
+    """
+    crowns = crowns[crowns.is_valid]
+    crowns_out = gpd.GeoDataFrame()
+    indices = []
+    for index, row in crowns.iterrows():  # iterate over each crown
+        if index % 1000 == 0:
+            print(str(index) + " / " + str(len(crowns)) + " cleaned")
+        # if there is not a crown interesects with the row (other than itself)
+        if crowns.intersects(row.geometry).sum() == 1:
+            crowns_out = crowns_out.append(row)  # retain it
+        else:
+            # Find those crowns that intersect with it
+            intersecting = crowns.loc[crowns.intersects(row.geometry)]
+            intersecting = intersecting.reset_index().drop("index", axis=1)
+            iou = []
+            for index1, row1 in intersecting.iterrows():  # iterate over those intersecting crowns
+                # print(row1.geometry)
+                # area = row.geometry.intersection(row.geometry).area
+                # area1 = row1.geometry.intersection(row1.geometry).area
+                # intersection_1 = row.geometry.intersection(row1.geometry).area
+                # if intersection_1 >= area*0.8 or intersection_1 >= area1*0.8:
+                #    print("contained")
+                #    iou.append(1)
+                # else:
+                iou.append(calc_iou(row.geometry, row1.geometry))  # Calculate the IoU with each of those crowns
+            # print(iou)
+            intersecting['iou'] = iou
+            matches = intersecting[intersecting['iou'] > iou_threshold]  # Remove those crowns with a poor match
+            matches = matches.sort_values('Confidence_score', ascending=False).reset_index().drop('index', axis=1)
+            match = matches.loc[[0]]  # Of the remaining crowns select the crown with the highest confidence
+            if match['iou'][0] < 1:   # If the most confident is not the initial crown
+                continue
+            else:
+                match = match.drop('iou', axis=1)
+                indices.append(index)
+                crowns_out = crowns_out.append(match)
+    return crowns_out, indices
 
 
 if __name__ == "__main__":
