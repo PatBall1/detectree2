@@ -359,8 +359,8 @@ def tile_data_train(  # noqa: C901
             # Repeat and want to save crowns before being moved as overlap with lidar data to get the heights
             # can try clean up the code here as lots of reprojecting and resaving but just going to get to
             # work for now
-            out_path_geo = str(out_path_root) + "_geo"
-            out_path_geo = Path(out_path_geo)
+            out_geo_file = out_path_root.parts[-1] + "_geo"
+            out_path_geo = out_path / Path(out_geo_file)
             try:
                 filename_unmoved = out_path_geo.with_suffix(out_path_geo.suffix + ".geojson")
                 overlapping_crowns.to_file(
