@@ -42,7 +42,7 @@ jobs:
         sudo apt install -yqq libgdal-dev gdal-bin python3-pip 
         # export CPLUS_INCLUDE_PATH=/usr/include/gdal
         # export C_INCLUDE_PATH=/usr/include/gdal
-        pip3 install torch==1.10 torchvision==0.11.1 --extra-index-url https://download.pytorch.org/whl/cpu 
+        pip3 install torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu 
         pip3 install 'git+https://github.com/facebookresearch/detectron2.git'
     - name: Install detectree2
       run: |
