@@ -4,7 +4,7 @@ setup(
     name="detectree2",
     version="0.0.1",
     author="James G. C. Ball",
-    author_email="ball.jgc@gmail.com.com",
+    author_email="ball.jgc@gmail.com",
     description="Detectree packaging",
     url="https://github.com/PatBall1/detectree2",
     # package_dir={"": "detectree2"},
