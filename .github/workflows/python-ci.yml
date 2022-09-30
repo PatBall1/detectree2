@@ -29,7 +29,8 @@ jobs:
       run: |
         python3 --version
         python -m pip install --upgrade pip wheel
-        pip3 install flake8 pytest isort mypy numpy==1.23.1
+        pip3 install flake8 pytest isort mypy numpy
+        # why is numpy=1.23.1 needed?
         # pep8-naming pydocstyle
         # data-science-types pandas-stubs types-pillow 
         # if [ -f requirements/requirements.txt ]; then pip install -r requirements/requirements.txt; fi
