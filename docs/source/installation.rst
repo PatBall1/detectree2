@@ -14,9 +14,9 @@ For users wanting to run detectree2 only it is possible to install detectree2 an
 Using pip
 =========
 
-It is easy to install detectree2 on your own system. 
+It is easy to install detectree2 on your own system with Pip.
 
-First install ``pytorch``, ``torchvision`` and ``torchaudio`` (compatible versions https://pypi.org/project/torchvision/). Follow `https://pytorch.org/get-started/locally/`_ to get compatible version for your system (with or without GPU support). Below we run through the process with pip. By default, ``pip install torch torchvision``, will install compatible versions for CPU and GPU with CUDA 10.2 support. It is possible to point to pre-built wheels that are compatible with your system:
+First install ``pytorch``, and ``torchvision``. Follow `https://pytorch.org/get-started/locally/`_ to get compatible version for your system (with or without GPU support). By default, ``pip install torch torchvision``, will install compatible versions for CPU and GPU with CUDA 10.2 support. It is possible to point to pre-built wheels that are compatible with your system / GPU see `https://docs.nvidia.com/deeplearning/cudnn/support-matrix/index.html`_.  Below we point to the CUDA 11.1 wheel.
 
 This can be done inside ``virtualenv`` (if root access is unavailable)::
 
@@ -26,11 +26,11 @@ This can be done inside ``virtualenv`` (if root access is unavailable)::
   pip install wheel
   pip install torch==1.10 torchvision==0.11.1 -f https://download.pytorch.org/whl/cu111/torch_stable.html
 
-Then install detectron2 from a wheel::
+Then install detectron2 either from a wheel::
 
   pip install detectron2==0.6 -f https://dl.fbaipublicfiles.com/detectron2/wheels/index.html
 
-Or from source::
+Or from source (for unsupported CUDA versions)::
   
   python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
 
@@ -46,6 +46,10 @@ Then simply pip install and all remaining dependencies will be installed automat
   git clone git@github.com:PatBall1/detectree2.git
   cd detectree2
   pip install .  # (add -e flag to allow editable installs)
+
+Or::
+
+  pip install detectree2
 
 On other systems the process is more involved especially if root access is not available.
 
