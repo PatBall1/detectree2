@@ -459,7 +459,8 @@ def setup_cfg(
     warm_iter=120,
     momentum=0.9,
     batch_size_per_im=1024,
-    base_lr=0.001,
+    base_lr=0.0003389,
+    weight_decay = 0.001,
     max_iter=1000,
     num_classes=1,
     eval_period=100,
@@ -481,6 +482,7 @@ def setup_cfg(
         momentum:
         batch_size_per_im:
         base_lr:
+        weight_decay
         max_iter:
         num_classes:
         eval_period:
@@ -497,7 +499,7 @@ def setup_cfg(
     cfg.SOLVER.WARMUP_ITERS = warm_iter
     cfg.SOLVER.MOMENTUM = momentum
     cfg.MODEL.RPN.BATCH_SIZE_PER_IMAGE = batch_size_per_im
-    cfg.SOLVER.WEIGHT_DECAY = 0.001
+    cfg.SOLVER.WEIGHT_DECAY = weight_decay
     cfg.SOLVER.BASE_LR = base_lr
     cfg.OUTPUT_DIR = out_dir
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
