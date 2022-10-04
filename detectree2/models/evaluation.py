@@ -695,7 +695,7 @@ def site_f1_score2(
         f1_score = f1_cal(prec, rec)    # noqa: F841
         med_height = median(heights)
         print("Precision  ", "Recall  ", "F1")
-        print(prec, rec, f1_score, med_height)
+        print(prec, rec, f1_score)
         print(" ")
         print("Total_trees=", len(heights))
         print("med_height=", med_height)
