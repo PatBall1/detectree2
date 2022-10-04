@@ -1,5 +1,16 @@
 from setuptools import find_packages, setup
 
+try:
+    import torch  # noqa: F401
+except ImportError:
+    raise Exception("""
+You must install PyTorch prior to installing Detectree2:
+pip install torch
+
+For more information:
+    https://pytorch.org/get-started/locally/
+    """)
+
 setup(
     name="detectree2",
     version="0.0.1",
@@ -18,7 +29,8 @@ setup(
         "pypng",
         "pygeos",
         "geopandas",
-        "rasterio==1.3.2",
+        "opencv-python",
+        "rasterio==1.3a3",
         "fiona",
         "pycrs",
         "descartes",
