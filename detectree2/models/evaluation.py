@@ -697,6 +697,7 @@ def site_f1_score2(
         print("Precision  ", "Recall  ", "F1")
         print(prec, rec, f1_score, med_height)
         print(" ")
+        print("Total_trees=", len(heights))
         print("med_height=", med_height)
     except ZeroDivisionError:
         print("ZeroDivisionError: Height threshold is too large.")
