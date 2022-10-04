@@ -6,45 +6,50 @@ Building Detectree2
 Getting up and running quickly 
 ==============================
 
-For users wanting to run detectree2 only it is possible to install detectree2 and its dependencies with Conda. Simply do::
+For users wanting to run detectree2 only it is possible to install detectree2 and its dependencies with Conda. This assumes CUDA 11.1 compatibility. Simply do::
 
     conda install -c ma595 detectree2
-
-
 
 =========
 Using pip
 =========
 
-It is easy to install detectree2 on your own system. Simply pip install and all dependencies will be installed automatically. 
+It is easy to install detectree2 on your own system. 
 
- See workflow `python-app.yaml <https://github.com/PatBall1/detectree2/tree/master/.github/workflows/python-app.yml>`_ workflow for a working CPU deployment. 
-
-First install ``pytorch``, ``torchvision`` and ``torchaudio`` (compatible versions https://pypi.org/project/torchvision/). Follow `https://pytorch.org/get-started/locally/`_ to get compatible version for your system. Below we run through the process with pip but the conda approach is equally valid.
+First install ``pytorch``, ``torchvision`` and ``torchaudio`` (compatible versions https://pypi.org/project/torchvision/). Follow `https://pytorch.org/get-started/locally/`_ to get compatible version for your system (with or without GPU support). Below we run through the process with pip. By default, ``pip install torch torchvision``, will install compatible versions for CPU and GPU with CUDA 10.2 support. It is possible to point to pre-built wheels that are compatible with your system:
 
 This can be done inside ``virtualenv`` (if root access is unavailable)::
 
-    python3 -m venv ./venv # (check version of python is sufficiently high >=3.7, required by detectron2)
-    . venv/bin/activate
-    pip install --upgrade pip
-    pip install wheel
-    pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0 --extra-index-url https://download.pytorch.org/whl/cu113
+  python3 -m venv ./venv # (check version of python is sufficiently high >=3.7, required by detectron2)
+  . venv/bin/activate
+  pip install --upgrade pip
+  pip install wheel
+  pip install torch==1.10 torchvision==0.11.1 -f https://download.pytorch.org/whl/cu111/torch_stable.html
+
+Then install detectron2 from a wheel::
+
+  pip install detectron2==0.6 -f https://dl.fbaipublicfiles.com/detectron2/wheels/index.html
+
+Or from source::
+  
+  python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
 
 Then point to preinstalled GDAL header files (not necessary if include directory is already in your path)::
 
-    export CPLUS_INCLUDE_PATH=/usr/include/gdal
-    export C_INCLUDE_PATH=/usr/include/gdal
+  export CPLUS_INCLUDE_PATH=/usr/include/gdal
+  export C_INCLUDE_PATH=/usr/include/gdal
 
 Depending on the version of setuptools installed, it may be necessary to downgrade to install GDAL. This may in the process break pytorch. 
 
-then::
+Then simply pip install and all remaining dependencies will be installed automatically::
 
-    git clone git@github.com:PatBall1/detectree2.git
-    cd detectree2
-    pip install .  # (add -e flag to allow editable installs)
+  git clone git@github.com:PatBall1/detectree2.git
+  cd detectree2
+  pip install .  # (add -e flag to allow editable installs)
 
 On other systems the process is more involved especially if root access is not available.
 
+See workflow `python-ci.yaml <https://github.com/PatBall1/detectree2/tree/master/.github/workflows/python-app.yml>`_ workflow for a working CPU deployment. 
 
 .. todo:: 
 
