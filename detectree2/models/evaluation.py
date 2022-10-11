@@ -5,13 +5,13 @@ Classes and functions to evaluate model performances.
 import json
 import os
 from pathlib import Path
+from statistics import median
 
 import numpy as np
 import rasterio
 import rasterio.drivers
 from rasterio.mask import mask
 from shapely.geometry import Polygon, shape
-from statistics import median
 
 # Initialising the parent class so any attributes or functions that are common
 # to both features should be placed in here
