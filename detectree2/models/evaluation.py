@@ -5,6 +5,7 @@ Classes and functions to evaluate model performances.
 import json
 import os
 from pathlib import Path
+from statistics import median
 
 import numpy as np
 import rasterio
@@ -436,6 +437,22 @@ def feats_height_filt(all_feats, min_height, max_height):
     return tall_feat
 
 
+def get_heights(all_feats, min_height, max_height):
+    """Find the heights of the trees
+
+    """
+    heights = []
+    test_nums = feats_height_filt(all_feats, min_height, max_height)
+
+    for feat in all_feats:
+        # if the pred feat is not tall enough then skip it
+        if feat.number not in test_nums:
+            continue
+        else:
+            heights.append(feat.height)
+    return heights
+
+
 def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height, max_height):
     """Determines number of true postives, false positives and false negatives.
 
@@ -625,6 +642,8 @@ def site_f1_score2(
     total_tps = 0
     total_fps = 0
     total_fns = 0
+    heights = []
+    # total_tests = 0
 
     for file in test_entries:
         if ".geojson" in file:
@@ -643,6 +662,9 @@ def site_f1_score2(
                                                lidar_img, area_threshold,
                                                conf_threshold, border_filter,
                                                tile_width, tile_origin, epsg)
+
+            new_heights = get_heights(all_test_feats, min_height, max_height)
+            heights.extend(new_heights)
 
             pred_file = "Prediction_" + file
             all_pred_feats = initialise_feats2(pred_directory, pred_file,
@@ -671,8 +693,12 @@ def site_f1_score2(
         prec, rec = prec_recall(total_tps, total_fps, total_fns)
         # not used!
         f1_score = f1_cal(prec, rec)    # noqa: F841
+        med_height = median(heights)
         print("Precision  ", "Recall  ", "F1")
         print(prec, rec, f1_score)
+        print(" ")
+        print("Total_trees=", len(heights))
+        print("med_height=", med_height)
     except ZeroDivisionError:
         print("ZeroDivisionError: Height threshold is too large.")
     return prec, rec, f1_score
