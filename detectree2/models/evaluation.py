@@ -439,7 +439,7 @@ def feats_height_filt(all_feats, min_height, max_height):
 
 def get_heights(all_feats, min_height, max_height):
     """Find the heights of the trees
-    
+
     """
     heights = []
     test_nums = feats_height_filt(all_feats, min_height, max_height)
@@ -451,7 +451,7 @@ def get_heights(all_feats, min_height, max_height):
         else:
             heights.append(feat.height)
     return heights
-            
+
 
 def positives_test(all_test_feats, all_pred_feats, min_IoU, min_height, max_height):
     """Determines number of true postives, false positives and false negatives.
@@ -662,7 +662,7 @@ def site_f1_score2(
                                                lidar_img, area_threshold,
                                                conf_threshold, border_filter,
                                                tile_width, tile_origin, epsg)
-            
+
             new_heights = get_heights(all_test_feats, min_height, max_height)
             heights.extend(new_heights)
 

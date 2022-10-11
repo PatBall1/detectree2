@@ -460,7 +460,7 @@ def setup_cfg(
     momentum=0.9,
     batch_size_per_im=1024,
     base_lr=0.0003389,
-    weight_decay = 0.001,
+    weight_decay=0.001,
     max_iter=1000,
     num_classes=1,
     eval_period=100,
