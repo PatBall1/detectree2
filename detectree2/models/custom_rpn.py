@@ -36,13 +36,13 @@ def move_device_like(src: torch.Tensor, dst: torch.Tensor) -> torch.Tensor:
     return src.to(dst.device)
   
 
-@torch.jit.script_if_tracing
-def move_device_like(src: torch.Tensor, dst: torch.Tensor) -> torch.Tensor:
-    """
-    Tracing friendly way to cast tensor to another tensor's device. Device will be treated
-    as constant during tracing, scripting the casting process as whole can workaround this issue.
-    """
-    return src.to(dst.device)
+def _is_tracing():
+    # (fixed in TORCH_VERSION >= 1.9)
+    if torch.jit.is_scripting():
+        # https://github.com/pytorch/pytorch/issues/47379
+        return False
+    else:
+        return torch.jit.is_tracing()
   
   
 @PROPOSAL_GENERATOR_REGISTRY.register()
