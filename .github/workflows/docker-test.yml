@@ -1,0 +1,58 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Detectree docker CI test
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    container:  ma595/detectree-cpu-20.04:latest
+    steps:
+    - uses: actions/checkout@v3
+    # - name: Set up Python 3.8
+    #   uses: actions/setup-python@v3
+    #   with:
+    #     python-version: "3.8"
+    # # - name: Install detectree2
+    #   run: |
+    #     pip install .
+    - name: flake8 checks
+      continue-on-error: true
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 detectree2 --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. 
+        flake8 detectree2 --count --max-complexity=10 --statistics
+    - name: clone data for tests
+      uses: GuillaumeFalourd/clone-github-repo-action@v2
+      with:
+        owner: 'ma595'
+        repository: 'detectree2-data'
+    - name: install detectree2
+      run: |
+        pip install .
+    - name: integration tests
+      continue-on-error: true
+      run: |
+        pip install pytest-order
+        pytest -rP -v detectree2/tests/integration/demo.py
+    - name: unit tests
+      run: |
+        pytest detectree2
+    - name: mypy checks
+      run: |
+        which python3
+        python3 --version
+        mypy detectree2
+    - name: isort checks
+      run: |
+        isort --check detectree2

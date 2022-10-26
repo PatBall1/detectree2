@@ -2,7 +2,7 @@
 
 rm(list=ls())
 
-# it is possible that this one has to be imported first
+# import packages
 
 library(velox)
 
@@ -19,7 +19,7 @@ library(MASS)
 library(ggpointdensity)
 
 ### Function that we are going to need later on
-### I think this going to need some editing...
+###
 
 get_poly_CHM_info_velox=function(rpoly,CHM_org,CHM_2020,CHM_diff){
   
@@ -51,6 +51,7 @@ get_poly_CHM_info_velox=function(rpoly,CHM_org,CHM_2020,CHM_diff){
   rpoly$Change_H_min =sapply(poly_change_raster_data_list,FUN=min)
   rpoly$Change_H_var =sapply(poly_change_raster_data_list,FUN=var)
   
+  # could comment these in?
   #rpoly$perimeter=as.numeric(polyPerimeter(rpoly)) # perimeter of each polygon
   #rpoly$shape_complexity = as.numeric(rpoly$perimeter/(2*sqrt(rpoly$area*pi)))
   #rpoly$shape_circleness=as.numeric(4*pi*(rpoly$area)/((rpoly$perimeter)^2))
@@ -126,7 +127,6 @@ print(data_long)
 
 #plot all three series on the same chart using geom_line()
 
-
 ggplot(data = data_long, aes(x=type_of_forest, y = value, color = variable))+
   geom_point()+
   geom_line()+
@@ -143,7 +143,11 @@ ggplot(data = data_long, aes(x=type_of_forest, y = value, color = variable))+
   
 ggsave("C:/Users/sebhi/ai4er/sep_cross_site.png")
 
+
+#################################
+# Now looking at individual sites
 # SEPILOK
+#################################
 
 sep_crowns = shapefile("C:/Users/sebhi/ai4er/mres_project/full_sepilok.shp")
 
@@ -185,10 +189,8 @@ plot(sep_dfs, add=TRUE)
 
 #summary(sep_crowns_clean)
 
-### now let us try to do this good business to get changes in height and so forth
 
-# this doesn't work since the raster is too big...so let's
-# just read in the dfs created on MAGEOHub and placed in folder lustre_scratch/final_dfs
+# read in the shapefile, and CHMs of 2014, 2020 and the difference.
 
 #sep_dfs = get_poly_CHM_info_velox(rpoly=sep_crowns_clean, CHM_org=Sep_2014, CHM_2020=Sep_2020, CHM_diff=Sep_diff)
 
@@ -196,6 +198,7 @@ plot(sep_dfs, add=TRUE)
 
 summary(sep_dfs)
 
+# Read in the eastern shapefile of predictions
 sep_east_dfs = shapefile("C:/Users/sebhi/ai4er/mres_project/work/final_dfs/sep_east.shp")
 
 sep_east_dfs$area_sqm <- raster::area(sep_east_dfs) 
@@ -204,6 +207,7 @@ sep_east_dfs$area_sqm <- raster::area(sep_east_dfs)
 sep_east_dfs@data = sep_east_dfs@data[sep_east_dfs@data$Org_H_md > 10,]
 
 # use this clever @data method to get around the problem of NAs in row index
+# more manual filtering applied here
 
 sep_east_dfs@data = sep_east_dfs@data[sep_east_dfs@data$prmtr > 5,]
 sep_east_dfs@data = sep_east_dfs@data[sep_east_dfs@data$area_sqm < 3000,]
@@ -218,6 +222,7 @@ writeOGR(sep_east_dfs, dsn = paste(file_name, '.shp', sep=''),layer = basename(f
 
 sep_east_dfs = shapefile("C:/Users/sebhi/ai4er/mres_project/work/final_dfs/sep_east.shp")
 
+# plotting original vs. change in height
 ggplot(sep_east_dfs@data,aes(Org_H_md, Chng_H_md))+
   geom_point(aes(Org_H_md, Chng_H_md, color=Site), alpha = 0.18)+
   geom_abline(intercept = 0, slope = -0.06, color='navy', alpha = 0.5, linetype='dashed')+
@@ -237,6 +242,10 @@ ggplot(sep_east_dfs@data,aes(Org_H_md, Chng_H_md))+
 
 ggsave("C:/Users/sebhi/ai4er/sep_east_growth_bigger.png")
 
+
+# fitting a robust least squares fit to change vs original
+# then finding 3 standard deviations from this fit
+# this had to be read off manually...but likely there is a better way to do it
 sep_east_fit <- rlm(Chng_H_md ~ Org_H_md, data = sep_east_dfs@data)
 summary(sep_east_fit)
 
@@ -260,6 +269,7 @@ pred_interval_3sd <- pred_interval_3sd[ order(pred_interval_3sd[,4]),]
 
 pred_interval_3sd
 
+# raw plot of the lines and the standard deviation lines
 plot(Chng_H_md ~ Org_H_md, data=sep_dfs)
 lines(pred_interval_1sd[,4], pred_interval_1sd[, "upr"], col="blue", lty=3)
 lines(pred_interval_1sd[,4], pred_interval_1sd[, "lwr"], col="blue", lty=3)
@@ -271,31 +281,42 @@ lines(pred_interval_3sd[,4], pred_interval_3sd[, "lwr"], col="blue", lty=3)
 sep_east_model_intercept <- coef(sep_east_fit)[1]
 sep_east_model_slope <- coef(sep_east_fit)[2]
 
+
+# rounding to bins
 sep_east_dfs$Org_H_max_round=round(sep_east_dfs$Org_H_mx,digits=-1)
 sep_east_dfs$Org_H_md_round=round(sep_east_dfs$Org_H_md,digits=-1)
 
+# creating a summary containing the number that died (defined as the number below 3 s.d. from robust fit, and then pct died each year)
 sep_east_df_summary= sep_east_dfs@data %>% group_by(Site,Org_H_md_round) %>% 
   summarize(num_tot=n(),num_died=sum(Chng_H_md <= (Org_H_md*-0.061)-2.2, na.rm=TRUE),pct_died_per_year=(100*num_died/num_tot)^(1/5.314))
 
 sep_east_df_summary$pct_died_per_year
 
-
 sep_east_df_base = sep_east_dfs@data %>% group_by(Site,Org_H_md_round)
 
-sep_east_df_base_2 = sep_east_df_base %>% summarize(num_tot=n(),
-                            num_died=sum(Chng_H_md <= (Org_H_md*-0.061)-2.2, 
-                            na.rm=TRUE),
-                            pct_died_per_year=(100*num_died/num_tot)^(1/5.314))
+# doing it again, but not grouped by...ignore this
+#sep_east_df_base_2 = sep_east_df_base %>% summarize(num_tot=n(),
+#                            num_died=sum(Chng_H_md <= (Org_H_md*-0.061)-2.2, 
+#                            na.rm=TRUE),
+#                            pct_died_per_year=(100*num_died/num_tot)^(1/5.314))
 
-sep_east_df_base_2
+# sep_east_df_base_2
 
+# just checking
 sep_east_dfs@data[2000,]
 
 colSums(is.na(sep_east_dfs@data))
 # x1 x2 x3 
 #  2  1  0
 
-# bootstrapping...
+#### BOOTSTRAPPING ############
+
+# now we do bootstrapping...to get the uncertainty for number of mortalities
+# currently doing it manually for each height bin...
+# this could be done in a loop
+# these values were then manually transferred to the plotting script
+
+# note below for Sepilok West is neater.
 
 library(boot)
 
@@ -305,7 +326,7 @@ mortality_function <- function(data, indices){
   mort <- d %>% group_by(Org_H_md_round) %>% 
     summarize(num_tot=n(),num_died=sum(Chng_H_md <= (Org_H_md*-0.061)-2.2),
               pct_died_per_year=(100*num_died/num_tot)^(1/5.314)) #fit regression model
-  return(mort$pct_died_per_year[])
+  return(mort$pct_died_per_year[]) # this column allows us to select for each height bin...doing it manually atm
   #return coefficient estimates of model
 }
 
@@ -320,13 +341,14 @@ mortality_function <- function(data, indices){
   mort <- d %>% group_by(Org_H_md_round) %>% 
     summarize(num_tot=n(),num_died=sum(Chng_H_md <= (Org_H_md*-0.061)-2.2, na.rm=TRUE),
               pct_died_per_year=((100*num_died)/num_tot)^(1/5.314)) #fit regression model
-  return(mort$pct_died_per_year[7])
+  return(mort$pct_died_per_year[7]) # 1, 2, 3, 4, 5, etc. for each height bin
   #return coefficient estimates of model
 }
 
 
 mortality_function(sep_east_dfs@data)
 
+# do the bootstrapping with 1000 fold repetition
 reps <- boot(data=sep_east_dfs@data, statistic=mortality_function, R=1000)
 
 reps
@@ -334,9 +356,12 @@ reps
 
 plot(reps)
 
-boot.ci(boot.out=reps, type="bca")
+# I don't think this line works.
+# boot.ci(boot.out=reps, type="bca")
 
 ## bootstrapping of sep east growth
+# once again doing each height bin manually, could loop through
+
 grow <- sep_east_dfs@data %>% group_by(Org_H_md_round) %>% 
   summarize(num_tot=n(),growth=sum(Chng_H_md >= (Org_H_md*-0.061)-2.2, na.rm=TRUE)/(5.314*num_tot)) 
 
@@ -360,7 +385,7 @@ reps
 
 plot(reps)
 
-##plotting
+##plotting of the percentage died
 
 
 sep_east_df_summary
@@ -401,6 +426,7 @@ ggplot()+
 
 #########################################################
 # SEPILOK WEST
+# repeat of what was done above, but with Sepilok West
 #########################################################
 
 sep_west_dfs$area_sqm <- raster::area(sep_west_dfs) 
@@ -427,6 +453,7 @@ ggplot(sep_west_dfs@data,aes(Org_H_md, Chng_H_md))+
   ylim(-60, 40)
 
 
+# robust least squares fit here
 sep_west_fit <- rlm(Chng_H_md ~ Org_H_md, data = sep_west_dfs@data)
 summary(sep_west_fit)
 
@@ -462,10 +489,12 @@ sep_west_model_slope <- coef(sep_west_fit)[2]
 sep_west_dfs$Org_H_max_round=round(sep_west_dfs$Org_H_mx,digits=-1)
 sep_west_dfs$Org_H_md_round=round(sep_west_dfs$Org_H_md,digits=-1)
 
+# create the summary with number died and so on
 sep_west_df_summary= sep_west_dfs@data %>% group_by(Site,Org_H_md_round) %>% 
   summarize(num_tot=n(),num_died=sum(Chng_H_md <= (Org_H_md*-0.0728)-2.2, na.rm=TRUE),pct_died_per_year=(100*num_died/num_tot)^(1/5.314))
 
 ## bootstrapping of sep west 
+# this bootstrapping is neater than above.
 
 mort <- sep_west_dfs@data %>% group_by(Org_H_md_round) %>% 
   summarize(num_tot=n(),num_died=sum(Chng_H_md <= (Org_H_md*-0.0728)-2.2, na.rm=TRUE),
@@ -485,6 +514,7 @@ mortality_function <- function(data, indices){
 
 mortality_function(sep_west_dfs@data)
 
+# do the bootstrapping
 reps <- boot(data=sep_west_dfs@data, statistic=mortality_function, R=1000)
 
 reps
@@ -493,6 +523,7 @@ reps
 plot(reps)
 
 ## bootstrapping of sep west growth
+
 grow <- sep_west_dfs@data %>% group_by(Org_H_md_round) %>% 
   summarize(num_tot=n(),growth=sum(Chng_H_md >= (Org_H_md*-0.0728)-2.2, na.rm=TRUE)/(5.314*num_tot)) 
 
@@ -509,6 +540,7 @@ growth_function <- function(data, indices){
 
 growth_function(sep_west_dfs@data)
 
+# do the bootstrapping
 reps <- boot(data=sep_west_dfs@data, statistic=growth_function, R=1000)
 
 reps
@@ -531,7 +563,7 @@ ggplot(sep_west_df_summary,aes(Org_H_md_round, pct_died_per_year))+
 
 # let's just do a quick carbon storage for the first LiDAR scan
 
-### Now do a carbon calculation
+### Now do a carbon calculation - not used in paper
 
 
 sep_west_dfs$diameter = 2*sqrt((sep_west_dfs$area_sqm)/pi)
@@ -595,6 +627,7 @@ ggplot(dan_dfs@data,aes(Org_H_md, Chng_H_md))+
   ylim(-60, 40)
 
 
+# do robust least squares fit as before
 dan_fit <- rlm(Chng_H_md ~ Org_H_md, data = dan_dfs@data)
 summary(dan_fit)
 
@@ -633,7 +666,7 @@ dan_dfs$Org_H_md_round=round(dan_dfs$Org_H_md,digits=-1)
 dan_df_summary= dan_dfs@data %>% group_by(Site,Org_H_md_round) %>% 
   summarize(num_tot=n(),num_died=sum(Chng_H_md <= (Org_H_md*-0.11)-11.1, na.rm=TRUE),pct_died_per_year=(100*num_died/num_tot)^(1/5.361))
 
-## bootstrapping of danum
+## bootstrapping of danum number that died and then growth below
 
 mort <- dan_dfs@data %>% group_by(Org_H_md_round) %>% 
   summarize(num_tot=n(),num_died=sum(Chng_H_md <= (Org_H_md*-0.11)-11.1, na.rm=TRUE),
@@ -719,7 +752,7 @@ ggplot()+
 
 
 
-# PARACOU
+# Repeat all steps for PARACOU
 
 par_dfs = shapefile("C:/Users/sebhi/ai4er/mres_project/work/final_dfs/par_dfs.shp")
 
@@ -937,6 +970,14 @@ save(par_df_summary, file = "C:/Users/sebhi/ai4er/mres_project/par_df_summary.Rd
 save(dan_df_summary, file = "C:/Users/sebhi/ai4er/mres_project/dan_df_summary.Rda")     
 save(sep_west_df_summary, file = "C:/Users/sebhi/ai4er/mres_project/sep_west_df_summary.Rda")     
 save(sep_east_df_summary, file = "C:/Users/sebhi/ai4er/mres_project/sep_east_df_summary.Rda")     
+
+
+
+######################################
+### Below this is just old plots.
+######################################
+
+
 
 ######################################
 ### Joint plots
