@@ -523,6 +523,7 @@ def setup_cfg(
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes
     cfg.TEST.EVAL_PERIOD = eval_period
     cfg.RESIZE = resize
+    cfg.INPUT.MIN_SIZE_TRAIN = 1000
     return cfg
 
 
