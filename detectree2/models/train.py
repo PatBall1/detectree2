@@ -243,8 +243,12 @@ class MyTrainer(DefaultTrainer):
                 self.cfg.TEST.EVAL_PERIOD,
                 self.model,
                 build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST, 
-                DatasetMapper(self.cfg, True, 
-                augmentations=augmentations)),
+                    DatasetMapper(
+                        self.cfg,
+                        True, 
+                        #augmentations=augmentations
+                    )
+                ),
                 self.patience,
             ),
         )
