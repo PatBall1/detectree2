@@ -233,10 +233,9 @@ class MyTrainer(DefaultTrainer):
 
     def build_hooks(self):
         hooks = super().build_hooks()
-        augmentations = [T.ResizeShortestEdge(short_edge_length=(1000, 1000),
-                                             max_size=1333,
-                                             sample_style='choice')
-        ]
+        #augmentations = [T.ResizeShortestEdge(short_edge_length=(1000, 1000),
+        #                                     max_size=1333,
+        #                                     sample_style='choice')]
         hooks.insert(
             -1,
             LossEvalHook(
