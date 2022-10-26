@@ -238,7 +238,11 @@ class MyTrainer(DefaultTrainer):
             LossEvalHook(
                 self.cfg.TEST.EVAL_PERIOD,
                 self.model,
-                build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST, DatasetMapper(self.cfg, True)),
+                build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST, 
+                DatasetMapper(self.cfg, True, 
+                augmentations=ResizeShortestEdge(short_edge_length=(1000, 1000),
+                                                 max_size=1333,
+                                                 sample_style='choice'))),
                 self.patience,
             ),
         )
