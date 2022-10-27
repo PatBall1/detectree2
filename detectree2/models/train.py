@@ -431,17 +431,17 @@ def register_train_data(train_location,
                                                                               val_fold, d,
                                                                               classes=classes, classes_at=classes_at))
             if classes is None:
-                MetadataCatalog.get(name + "_" + d).set(thing_classes = ["tree"])
+                MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
             else:
-                MetadataCatalog.get(name +"_" + d).set(thing_classes = classes)
+                MetadataCatalog.get(name + "_" + d).set(thing_classes=classes)
     else:
         DatasetCatalog.register(name + "_" + "full", lambda d=d: combine_dicts(train_location,
                                                                                0, "full",
                                                                                classes=classes, classes_at=classes_at))
         if classes is None:
-            MetadataCatalog.get(name + "_" + "full").set(thing_classes = ["tree"])
+            MetadataCatalog.get(name + "_" + "full").set(thing_classes=["tree"])
         else:
-            MetadataCatalog.get(name + "_" + "full").set(thing_classes = classes)
+            MetadataCatalog.get(name + "_" + "full").set(thing_classes=classes)
 
 
 def read_data(out_dir):
