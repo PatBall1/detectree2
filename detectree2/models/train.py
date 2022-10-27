@@ -299,7 +299,6 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
     if classes is not None:
         # list_of_classes = crowns[variable].unique().tolist()
         classes = classes
-        assert classes_at == None, "if classes is not None, then must also define 'classes_at'"
     else:
         classes = ["tree"]
     # classes = Genus_Species_UniqueList #['tree'] # genus_species list
@@ -365,7 +364,11 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
     return dataset_dicts
 
 
-def combine_dicts(root_dir: str, val_dir: int, mode: str = "train", classes: List[str] = None, classes_at: str = None) -> List[Dict]:
+def combine_dicts(root_dir: str,
+                  val_dir: int,
+                  mode: str = "train",
+                  classes: List[str] = None,
+                  classes_at: str = None) -> List[Dict]:
     """Join tree dicts from different directories.
 
     Args:
@@ -409,7 +412,11 @@ def get_filenames(directory: str):
     return dataset_dicts
 
 
-def register_train_data(train_location, name: str = "tree", val_fold=None, classes=None, classes_at=None):
+def register_train_data(train_location,
+                        name: str = "tree",
+                        val_fold=None,
+                        classes=None,
+                        classes_at=None):
     """Register data for training and (optionally) validation.
 
     Args:
@@ -420,17 +427,21 @@ def register_train_data(train_location, name: str = "tree", val_fold=None, class
     """
     if val_fold is not None:
         for d in ["train", "val"]:
-            DatasetCatalog.register(name + "_" + d, lambda d=d: combine_dicts(train_location, val_fold, d, classes=classes, classes_at=classes_at))
-            if classes == None:
-                MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
+            DatasetCatalog.register(name + "_" + d, lambda d=d: combine_dicts(train_location,
+                                                                              val_fold, d,
+                                                                              classes=classes, classes_at=classes_at))
+            if classes is None:
+                MetadataCatalog.get(name + "_" + d).set(thing_classes = ["tree"])
             else:
                 MetadataCatalog.get(name +"_" + d).set(thing_classes = classes)
     else:
-        DatasetCatalog.register(name + "_" + "full", lambda d=d: combine_dicts(train_location, 0, "full", classes=classes, classes_at=classes_at))
-        if classes == None:
-            MetadataCatalog.get(name + "_" + "full").set(thing_classes=["tree"])
+        DatasetCatalog.register(name + "_" + "full", lambda d=d: combine_dicts(train_location,
+                                                                               0, "full",
+                                                                               classes=classes, classes_at=classes_at))
+        if classes is None:
+            MetadataCatalog.get(name + "_" + "full").set(thing_classes = ["tree"])
         else:
-            MetadataCatalog.get(name + "_" + "full").set(thing_classes=classes)
+            MetadataCatalog.get(name + "_" + "full").set(thing_classes = classes)
 
 
 def read_data(out_dir):
