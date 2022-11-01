@@ -456,7 +456,7 @@ def read_data(out_dir):
             x = line[:-1]
             # add current item to the list
             list.append(x)
-    return(list)
+    return (list)
 
 
 def remove_registered_data(name="tree"):
