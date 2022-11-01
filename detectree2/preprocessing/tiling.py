@@ -421,6 +421,25 @@ def is_overlapping_box(test_boxes_array, train_box):
     return False
 
 
+def record_data(crowns,
+                out_dir,
+                column='status'):
+    """Function that will record a list of classes into a file that can be readed during training."""
+
+    list_of_classes = crowns[column].unique().tolist()
+
+    print("**The list of classes are:**")
+    print(list_of_classes)
+    print("**The list has been saved to the out_dir**")
+
+    # Write it into file "classes.txt"
+    out_tif = out_dir + 'classes.txt'
+    f = open(out_tif, "w")
+    for i in list_of_classes:
+        f.write("%s\n" % i)
+    f.close()
+
+
 def to_traintest_folders(tiles_folder: str = "./",
                          out_folder: str = "./data/",
                          test_frac: float = 0.2,

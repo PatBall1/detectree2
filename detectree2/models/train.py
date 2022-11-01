@@ -288,7 +288,7 @@ def build_train_loader(cls, cfg):
     )
 
 
-def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
+def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = None) -> List[Dict]:
     """Get the tree dictionaries.
 
     Args:
@@ -307,8 +307,7 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
     #
     if classes is not None:
         # list_of_classes = crowns[variable].unique().tolist()
-        list_of_classes = ["CIRAD", "CNES", "INRA"]
-        classes = list_of_classes
+        classes = classes
     else:
         classes = ["tree"]
     # classes = Genus_Species_UniqueList #['tree'] # genus_species list
@@ -354,7 +353,7 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
                     "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
                     "bbox_mode": BoxMode.XYXY_ABS,
                     "segmentation": [poly],
-                    "category_id": classes.index(features["properties"]["PlotOrg"]),  # id
+                    "category_id": classes.index(features["properties"][classes_at]),  # id
                     # "category_id": 0,  #id
                     "iscrowd": 0,
                 }
@@ -374,7 +373,11 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
     return dataset_dicts
 
 
-def combine_dicts(root_dir: str, val_dir: int, mode: str = "train") -> List[Dict]:
+def combine_dicts(root_dir: str,
+                  val_dir: int,
+                  mode: str = "train",
+                  classes: List[str] = None,
+                  classes_at: str = None) -> List[Dict]:
     """Join tree dicts from different directories.
 
     Args:
@@ -389,13 +392,13 @@ def combine_dicts(root_dir: str, val_dir: int, mode: str = "train") -> List[Dict
         del train_dirs[(val_dir - 1)]
         tree_dicts = []
         for d in train_dirs:
-            tree_dicts += get_tree_dicts(d)
+            tree_dicts += get_tree_dicts(d, classes=classes, classes_at=classes_at)
     elif mode == "val":
-        tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)])
+        tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)], classes=classes, classes_at=classes_at)
     elif mode == "full":
         tree_dicts = []
         for d in train_dirs:
-            tree_dicts += get_tree_dicts(d)
+            tree_dicts += get_tree_dicts(d, classes=classes, classes_at=classes_at)
     return tree_dicts
 
 
@@ -418,7 +421,11 @@ def get_filenames(directory: str):
     return dataset_dicts
 
 
-def register_train_data(train_location, name: str = "tree", val_fold=None):
+def register_train_data(train_location,
+                        name: str = "tree",
+                        val_fold=None,
+                        classes=None,
+                        classes_at=None):
     """Register data for training and (optionally) validation.
 
     Args:
@@ -429,11 +436,36 @@ def register_train_data(train_location, name: str = "tree", val_fold=None):
     """
     if val_fold is not None:
         for d in ["train", "val"]:
-            DatasetCatalog.register(name + "_" + d, lambda d=d: combine_dicts(train_location, val_fold, d))
-            MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
+            DatasetCatalog.register(name + "_" + d, lambda d=d: combine_dicts(train_location,
+                                                                              val_fold, d,
+                                                                              classes=classes, classes_at=classes_at))
+            if classes is None:
+                MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
+            else:
+                MetadataCatalog.get(name + "_" + d).set(thing_classes=classes)
     else:
-        DatasetCatalog.register(name + "_" + "full", lambda d=d: combine_dicts(train_location, 0, "full"))
-        MetadataCatalog.get(name + "_" + "full").set(thing_classes=["tree"])
+        DatasetCatalog.register(name + "_" + "full", lambda d=d: combine_dicts(train_location,
+                                                                               0, "full",
+                                                                               classes=classes, classes_at=classes_at))
+        if classes is None:
+            MetadataCatalog.get(name + "_" + "full").set(thing_classes=["tree"])
+        else:
+            MetadataCatalog.get(name + "_" + "full").set(thing_classes=classes)
+
+
+def read_data(out_dir):
+    """Function that will read the classes that are recorded during tiling."""
+    list = []
+    out_tif = out_dir + 'classes.txt'
+    # open file and read the content in a list
+    with open(out_tif, 'r') as fp:
+        for line in fp:
+            # remove linebreak from a current name
+            # linebreak is the last character of each line
+            x = line[:-1]
+            # add current item to the list
+            list.append(x)
+    return (list)
 
 
 def remove_registered_data(name="tree"):
