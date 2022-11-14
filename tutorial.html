@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>2. Tutorial &mdash; detectree2 0.0.1 documentation</title>
+  <title>4. Tutorial &mdash; detectree2 0.0.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -21,7 +21,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="3. Contributing guide" href="contributing.html" />
+    <link rel="next" title="5. Contributing guide" href="contributing.html" />
     <link rel="prev" title="1. Installation" href="installation.html" /> 
 </head>
 
@@ -43,15 +43,17 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">2. Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#preparing-data">2.1. Preparing data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#training-a-model">2.2. Training a model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#evaluating-model-performance">2.3. Evaluating model performance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#generating-landscape-predictions">2.4. Generating landscape predictions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#gdal-complexities">2. GDAL complexities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#using-pip">3. Using pip</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">4. Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#preparing-data">4.1. Preparing data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#training-a-model">4.2. Training a model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluating-model-performance">4.3. Evaluating model performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#generating-landscape-predictions">4.4. Generating landscape predictions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">3. Contributing guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="using-git.html">4. Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">5. Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">6. Git/Github</a></li>
 </ul>
 
         </div>
@@ -67,8 +69,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li><span class="section-number">2. </span>Tutorial</li>
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">4. </span>Tutorial</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/tutorial.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -103,7 +105,7 @@
 }
 </style>
 <section id="tutorial">
-<h1><span class="section-number">2. </span>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this heading"></a></h1>
+<h1><span class="section-number">4. </span>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this heading"></a></h1>
 <p>A tutorial for:</p>
 <ol class="arabic simple">
 <li><p>preparing data</p></li>
@@ -127,7 +129,7 @@ sparsely scattered across in the landscape</p>
 <p>If you would just like to make predictions on an orthomosaic with a pre-trained
 model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code>, skip to part 4.</p>
 <section id="preparing-data">
-<h2><span class="section-number">2.1. </span>Preparing data<a class="headerlink" href="#preparing-data" title="Permalink to this heading"></a></h2>
+<h2><span class="section-number">4.1. </span>Preparing data<a class="headerlink" href="#preparing-data" title="Permalink to this heading"></a></h2>
 <p>An example of the recommended file structure when training a new model is as follows:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>├── Danum                                       <span class="o">(</span>site directory<span class="o">)</span>
 │   ├── rgb
@@ -211,7 +213,7 @@ spatial separation</p>
 </div>
 </section>
 <section id="training-a-model">
-<h2><span class="section-number">2.2. </span>Training a model<a class="headerlink" href="#training-a-model" title="Permalink to this heading"></a></h2>
+<h2><span class="section-number">4.2. </span>Training a model<a class="headerlink" href="#training-a-model" title="Permalink to this heading"></a></h2>
 <p>Register the training data. It is possible to set a validation fold for model
 evaluation</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_location</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/&quot;</span>
@@ -235,10 +237,10 @@ evaluation</p>
 </div>
 </section>
 <section id="evaluating-model-performance">
-<h2><span class="section-number">2.3. </span>Evaluating model performance<a class="headerlink" href="#evaluating-model-performance" title="Permalink to this heading"></a></h2>
+<h2><span class="section-number">4.3. </span>Evaluating model performance<a class="headerlink" href="#evaluating-model-performance" title="Permalink to this heading"></a></h2>
 </section>
 <section id="generating-landscape-predictions">
-<h2><span class="section-number">2.4. </span>Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Permalink to this heading"></a></h2>
+<h2><span class="section-number">4.4. </span>Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Permalink to this heading"></a></h2>
 </section>
 </section>
 
@@ -247,7 +249,7 @@ evaluation</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="installation.html" class="btn btn-neutral float-left" title="1. Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="contributing.html" class="btn btn-neutral float-right" title="3. Contributing guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="contributing.html" class="btn btn-neutral float-right" title="5. Contributing guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

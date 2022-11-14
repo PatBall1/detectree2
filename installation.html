@@ -21,7 +21,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="2. Tutorial" href="tutorial.html" />
+    <link rel="next" title="4. Tutorial" href="tutorial.html" />
     <link rel="prev" title="Detectree2" href="index.html" /> 
 </head>
 
@@ -42,10 +42,15 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">1. Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">2. Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">3. Contributing guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="using-git.html">4. Git/Github</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1. Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#building-detectree2">1.1. Building Detectree2</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#gdal-complexities">2. GDAL complexities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#using-pip">3. Using pip</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">4. Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">5. Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">6. Git/Github</a></li>
 </ul>
 
         </div>
@@ -61,8 +66,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li><span class="section-number">1. </span>Installation</li>
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">1. </span>Installation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -99,7 +104,72 @@
 <section id="installation">
 <h1><span class="section-number">1. </span>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
 <p>To use detectree2, first install it using:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$ </span>pip install detectree2
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$ </span>pip install git+https://github.com/PatBall1/detectree2.git
+</pre></div>
+</div>
+<section id="building-detectree2">
+<h2><span class="section-number">1.1. </span>Building Detectree2<a class="headerlink" href="#building-detectree2" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+<section id="gdal-complexities">
+<h1><span class="section-number">2. </span>GDAL complexities<a class="headerlink" href="#gdal-complexities" title="Permalink to this heading"></a></h1>
+<p>GDAL presents a number of complexities. The issue is covered in <a class="reference external" href="https://github.com/PatBall1/detectree2/issues/1">gdal/issue</a> We must point to the location of the preinstalled GDAL headers, and the GDAL version must match the pip package version. <a class="reference external" href="https://github.com/OSGeo/gdal/issues/2293">https://github.com/OSGeo/gdal/issues/2293</a>
+For instance, on my cluster:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gdal</span><span class="o">-</span><span class="n">config</span> <span class="o">-</span><span class="n">v</span>  <span class="c1"># gives 3.0.4</span>
+</pre></div>
+</div>
+<p>So this means we must install the corresponding pip version: <code class="docutils literal notranslate"><span class="pre">GDAL==3.0.4</span></code>.</p>
+<p>In the event that GDAL does not exist on the system, install it as so (assuming root access):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">libgdal</span><span class="o">-</span><span class="n">dev</span> <span class="n">gdal</span><span class="o">-</span><span class="nb">bin</span>
+</pre></div>
+</div>
+</section>
+<section id="using-pip">
+<h1><span class="section-number">3. </span>Using pip<a class="headerlink" href="#using-pip" title="Permalink to this heading"></a></h1>
+<p>It is relatively straightforward to install detectree2 on Colab. Simply pip install and all dependencies will be installed automatically.</p>
+<p>On other systems the process is more involved especially if root access is not available. See workflow <a class="reference external" href="https://github.com/PatBall1/detectree2/tree/master/.github/workflows/python-app.yml">python-app.yaml</a> workflow for a working CPU deployment.</p>
+<p>First we need to install <code class="docutils literal notranslate"><span class="pre">pytorch</span></code>, <code class="docutils literal notranslate"><span class="pre">torchvision</span></code> and <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code> (compatible versions <a class="reference external" href="https://pypi.org/project/torchvision/">https://pypi.org/project/torchvision/</a>).</p>
+<p>This can be done inside <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code> (if root access is unavailable):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">venv</span> <span class="o">./</span><span class="n">venv</span> <span class="c1"># (check version of python is sufficiently high &gt;=3.7)</span>
+<span class="o">.</span> <span class="n">venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">pip</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">wheel</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">opencv</span><span class="o">-</span><span class="n">python</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span><span class="o">==</span><span class="mf">1.11.0</span><span class="o">+</span><span class="n">cu113</span> <span class="n">torchvision</span><span class="o">==</span><span class="mf">0.12.0</span><span class="o">+</span><span class="n">cu113</span> <span class="n">torchaudio</span><span class="o">==</span><span class="mf">0.11.0</span> <span class="o">--</span><span class="n">extra</span><span class="o">-</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cu113</span>
+</pre></div>
+</div>
+<p>Then point to preinstalled GDAL header files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">CPLUS_INCLUDE_PATH</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">gdal</span>
+<span class="n">export</span> <span class="n">C_INCLUDE_PATH</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">gdal</span>
+</pre></div>
+</div>
+<p>then:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">.</span>  <span class="c1"># (add -e flag to allow editable installs)</span>
+</pre></div>
+</div>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<ul class="simple">
+<li><p>Pin torch and torchvision versions in setup.py</p></li>
+<li><p><a class="reference external" href="https://detectron2.readthedocs.io/en/latest/tutorials/install.html">https://detectron2.readthedocs.io/en/latest/tutorials/install.html</a></p></li>
+<li><p><a class="reference external" href="http://www.tekroi.in/detectron2/projects/DensePose/setup.py">http://www.tekroi.in/detectron2/projects/DensePose/setup.py</a></p></li>
+<li><p><a class="reference external" href="https://stackoverflow.com/questions/66738473/installing-pytorch-with-cuda-in-setup-py">https://stackoverflow.com/questions/66738473/installing-pytorch-with-cuda-in-setup-py</a></p></li>
+</ul>
+</div>
+<p>We can fix the version of <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> by pointing to the pre-built wheel using pip:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">detectron2</span><span class="o">==</span><span class="mf">0.6</span> <span class="o">-</span><span class="n">f</span> \ <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">dl</span><span class="o">.</span><span class="n">fbaipublicfiles</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">detectron2</span><span class="o">/</span><span class="n">wheels</span><span class="o">/</span><span class="n">cu113</span><span class="o">/</span><span class="n">torch1</span><span class="mf">.10</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
+</pre></div>
+</div>
+<p>Or by changing the <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> line in setup.py (which will build the latest version from source):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">detectron2</span><span class="nd">@https</span><span class="p">:</span><span class="o">//</span><span class="n">dl</span><span class="o">.</span><span class="n">fbaipublicfiles</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">detectron2</span><span class="o">/</span><span class="n">wheels</span><span class="o">/</span><span class="n">cu113</span><span class="o">/</span><span class="n">torch1</span><span class="mf">.10</span><span class="o">/</span><span class="n">detectron2</span><span class="o">-</span><span class="mf">0.6</span><span class="o">%</span><span class="mi">2</span><span class="n">Bcu113</span><span class="o">-</span><span class="n">cp38</span><span class="o">-</span><span class="n">cp38</span><span class="o">-</span><span class="n">linux_x86_64</span><span class="o">.</span><span class="n">whl</span>
+</pre></div>
+</div>
+<p>It may be preferable to do this as errors have a tendency to be introduced into the <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> codebase and may take a day or two to fix.
+We can also point to a specific working commit:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">facebookresearch</span><span class="o">/</span><span class="n">detectron2</span><span class="o">.</span><span class="n">git</span><span class="o">@</span><span class="mi">5</span><span class="n">aeb252b194b93dc2879b4ac34bc51a31b5aee13</span>
+
+<span class="c1"># or within setup.py (not tested):</span>
+<span class="n">detectron2</span><span class="nd">@git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">facebookresearch</span><span class="o">/</span><span class="n">detectron2</span><span class="o">.</span><span class="n">git</span><span class="o">@</span><span class="mi">5</span><span class="n">aeb252b194b93dc2879b4ac34bc51a31b5aee13</span>
 </pre></div>
 </div>
 </section>
@@ -109,7 +179,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Detectree2" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="tutorial.html" class="btn btn-neutral float-right" title="2. Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="tutorial.html" class="btn btn-neutral float-right" title="4. Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
