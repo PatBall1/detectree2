@@ -233,12 +233,19 @@ class MyTrainer(DefaultTrainer):
 
     def build_hooks(self):
         hooks = super().build_hooks()
+        # augmentations = [T.ResizeShortestEdge(short_edge_length=(1000, 1000),
+        #                                     max_size=1333,
+        #                                     sample_style='choice')]
         hooks.insert(
             -1,
             LossEvalHook(
                 self.cfg.TEST.EVAL_PERIOD,
                 self.model,
-                build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST, DatasetMapper(self.cfg, True)),
+                build_detection_test_loader(
+                    self.cfg,
+                    self.cfg.DATASETS.TEST,
+                    DatasetMapper(self.cfg, True)
+                ),
                 self.patience,
             ),
         )
@@ -546,6 +553,7 @@ def setup_cfg(
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes
     cfg.TEST.EVAL_PERIOD = eval_period
     cfg.RESIZE = resize
+    cfg.INPUT.MIN_SIZE_TRAIN = 1000
     return cfg
 
 
