@@ -233,7 +233,7 @@ class MyTrainer(DefaultTrainer):
 
     def build_hooks(self):
         hooks = super().build_hooks()
-        #augmentations = [T.ResizeShortestEdge(short_edge_length=(1000, 1000),
+        # augmentations = [T.ResizeShortestEdge(short_edge_length=(1000, 1000),
         #                                     max_size=1333,
         #                                     sample_style='choice')]
         hooks.insert(
@@ -241,11 +241,11 @@ class MyTrainer(DefaultTrainer):
             LossEvalHook(
                 self.cfg.TEST.EVAL_PERIOD,
                 self.model,
-                build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST, 
+                build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST,
                     DatasetMapper(
-                        self.cfg,
-                        True, 
-                        #augmentations=augmentations
+                                  self.cfg,
+                                  True,
+                                  # augmentations=augmentations
                     )
                 ),
                 self.patience,
