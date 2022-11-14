@@ -241,10 +241,10 @@ class MyTrainer(DefaultTrainer):
             LossEvalHook(
                 self.cfg.TEST.EVAL_PERIOD,
                 self.model,
-                build_detection_test_loader(self.cfg,
-                                            self.cfg.DATASETS.TEST,
-                                            DatasetMapper(self.cfg,
-                                                          True,
+                build_detection_test_loader(
+                    self.cfg,
+                    self.cfg.DATASETS.TEST,
+                    DatasetMapper(self.cfg, True,
                     )
                 ),
                 self.patience,
