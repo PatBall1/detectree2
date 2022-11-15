@@ -1,5 +1,6 @@
+************
 Installation
-------------
+************
 
 To use detectree2, first install it using:
 
@@ -28,9 +29,9 @@ In the event that GDAL does not exist on the system, install it as so (assuming 
 Using pip
 ---------
 
-It is relatively straightforward to install detectree2 on Colab. Simply pip install and all dependencies will be installed automatically. 
+It is straightforward to install detectree2 on Colab. Simply pip install and all dependencies will be installed automatically. 
 
-On other systems the process is more involved especially if root access is not available. See workflow `python-app.yaml <https://github.com/PatBall1/detectree2/tree/master/.github/workflows/python-app.yml>`_ workflow for a working CPU deployment. 
+On other systems the process can be more involved especially if root access is not available. See workflow `python-app.yaml <https://github.com/PatBall1/detectree2/tree/master/.github/workflows/python-app.yml>`_ workflow for a working CPU deployment. 
 
 First we need to install ``pytorch``, ``torchvision`` and ``torchaudio`` (compatible versions https://pypi.org/project/torchvision/).
 
