@@ -2,11 +2,13 @@
 Installation
 ************
 
-To use detectree2, first install it using:
+To use detectree2, install it using:
 
 .. code-block:: console
 
    (.venv) $ pip install git+https://github.com/PatBall1/detectree2.git
+
+Below we describe some issues that may arise.
 
 ===================
 Building Detectree2 
