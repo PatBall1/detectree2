@@ -12,13 +12,13 @@ Before getting started ensure detectree2 is installed either through
 
 .. code-block:: console
 
-   (.venv) $pip install detectree2
+   (.venv) $pip install git+https://github.com/PatBall1/detectree2.git
 
 or
 
 .. code-block:: console
 
-   (.venv) $conda install detectree2 -c conda-forge
+   (.venv) $conda install detectree2 -c ma595
 
 To train a model you will need an orthomosaic (as ``<orthmosaic.tif``) and
 
