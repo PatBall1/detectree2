@@ -236,9 +236,55 @@ evaluation</p>
 </section>
 <section id="evaluating-model-performance">
 <h2><span class="section-number">2.3. </span>Evaluating model performance<a class="headerlink" href="#evaluating-model-performance" title="Permalink to this heading"></a></h2>
+<p>Coming soon! See Colab notebook for example routine (detectree2/notebooks/colab/evaluationJB.ipynb).</p>
 </section>
 <section id="generating-landscape-predictions">
 <h2><span class="section-number">2.4. </span>Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Permalink to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data</span>
+<span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
+<span class="n">register_train_data</span><span class="p">(</span><span class="n">train_location</span><span class="p">,</span> <span class="s2">&quot;Paracou&quot;</span><span class="p">,</span> <span class="n">val_fold</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Call necessary functions.</p>
+<p>Start by tiling up the entire orthomosaic so that a crown map can be made for the entire landscape. Tiles should be
+approximately the same size as those trained on (typically ~ 100 m).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Path to site folder and orthomosaic</span>
+<span class="n">site_path</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/BCI_50ha&quot;</span>
+<span class="n">img_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/rgb/2015.06.10_07cm_ORTHO.tif&quot;</span>
+<span class="n">tiles_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/tilespred/&quot;</span>
+<span class="c1"># Location of pre-trained model</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/models/220629_ParacouSepilokDanum_JB.pth&quot;</span>
+
+<span class="c1"># Specify tiling</span>
+<span class="n">buffer</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">tile_width</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">tile_height</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">tile_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tiles_path</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">dtype_bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Point to a trained model, set up the configuration state and make predictions on the tile.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">trained_model</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/models/220723_withParacouUAV.pth&quot;</span>
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span><span class="n">update_model</span><span class="o">=</span><span class="n">trained_model</span><span class="p">)</span>
+<span class="n">predict_on_data</span><span class="p">(</span><span class="n">tiles_path</span><span class="p">,</span> <span class="n">DefaultPredictor</span><span class="p">(</span><span class="n">cfg</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Once the predictions have been made on the tiles, it is necessary to project them back into geographic space</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_to_geojson</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions_geo/&quot;</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions/&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To create a useful outputs it is necessary to stitch the crowns together while handling overlaps in the buffer.
+Invalid geometries may arise when converting from a mask to a polygon - it is usually best to simply remove these.
+Cleaning the crowns will remove instances where there is large overlaps between predicted crowns (removing the
+predictions with lower confidence).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_to_geojson</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions_geo/&quot;</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions/&quot;</span><span class="p">)</span>
+<span class="n">crowns</span> <span class="o">=</span> <span class="n">crowns</span><span class="p">[</span><span class="n">crowns</span><span class="o">.</span><span class="n">is_valid</span><span class="p">]</span>
+<span class="n">crowns</span> <span class="o">=</span> <span class="n">clean_crowns</span><span class="p">(</span><span class="n">crowns</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once we’re happy with the crown map, save the crowns to file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">crowns</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/&quot;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;/crowns_out.gpkg&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 </section>
 
