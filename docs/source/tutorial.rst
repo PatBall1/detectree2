@@ -165,6 +165,66 @@ Supply the ``base_model`` from Detectron2's  ``model_zoo``
 Evaluating model performance
 ----------------------------
 
+Coming soon! See Colab notebook for example routine (detectree2/notebooks/colab/evaluationJB.ipynb).
 
 Generating landscape predictions
 --------------------------------
+
+.. code-block:: python
+   
+   from detectree2.preprocessing.tiling import tile_data
+   from detectree2.models.train import MyTrainer, setup_cfg
+   register_train_data(train_location, "Paracou", val_fold)
+
+Call necessary functions.
+
+Start by tiling up the entire orthomosaic so that a crown map can be made for the entire landscape. Tiles should be 
+approximately the same size as those trained on (typically ~ 100 m).
+
+.. code-block:: python
+   
+   # Path to site folder and orthomosaic
+   site_path = "/content/drive/Shareddrives/detectree2/data/BCI_50ha"
+   img_path = site_path + "/rgb/2015.06.10_07cm_ORTHO.tif"
+   tiles_path = site_path + "/tilespred/"
+   # Location of pre-trained model
+   model_path = "/content/drive/Shareddrives/detectree2/models/220629_ParacouSepilokDanum_JB.pth"
+
+   # Specify tiling
+   buffer = 30
+   tile_width = 40
+   tile_height = 40
+   tile_data(data, tiles_path, buffer, tile_width, tile_height, dtype_bool = True)
+
+
+Point to a trained model, set up the configuration state and make predictions on the tile.
+
+.. code-block:: python
+   
+   trained_model = "/content/drive/Shareddrives/detectree2/models/220723_withParacouUAV.pth"
+   cfg = setup_cfg(update_model=trained_model)
+   predict_on_data(tiles_path, DefaultPredictor(cfg))
+
+Once the predictions have been made on the tiles, it is necessary to project them back into geographic space
+
+.. code-block:: python
+   
+   project_to_geojson(data, tiles_path + "predictions_geo/", tiles_path + "predictions/")
+
+To create a useful outputs it is necessary to stitch the crowns together while handling overlaps in the buffer.
+Invalid geometries may arise when converting from a mask to a polygon - it is usually best to simply remove these.
+Cleaning the crowns will remove instances where there is large overlaps between predicted crowns (removing the
+predictions with lower confidence).
+
+.. code-block:: python
+   
+   project_to_geojson(data, tiles_path + "predictions_geo/", tiles_path + "predictions/")
+   crowns = crowns[crowns.is_valid]
+   crowns = clean_crowns(crowns, 0.6)
+
+Once we're happy with the crown map, save the crowns to file.
+
+.. code-block:: python
+   
+   crowns.to_file("/content/drive/Shareddrives/detectree2/data/" + name + "/crowns_out.gpkg")
+
