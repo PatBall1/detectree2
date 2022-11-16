@@ -170,13 +170,13 @@ Coming soon! See Colab notebook for example routine (detectree2/notebooks/colab/
 Generating landscape predictions
 --------------------------------
 
+Call necessary functions.
+
 .. code-block:: python
    
    from detectree2.preprocessing.tiling import tile_data
    from detectree2.models.train import MyTrainer, setup_cfg
-   register_train_data(train_location, "Paracou", val_fold)
 
-Call necessary functions.
 
 Start by tiling up the entire orthomosaic so that a crown map can be made for the entire landscape. Tiles should be 
 approximately the same size as those trained on (typically ~ 100 m).

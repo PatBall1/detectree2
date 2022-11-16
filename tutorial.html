@@ -240,12 +240,11 @@ evaluation</p>
 </section>
 <section id="generating-landscape-predictions">
 <h2><span class="section-number">2.4. </span>Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Permalink to this heading"></a></h2>
+<p>Call necessary functions.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data</span>
 <span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
-<span class="n">register_train_data</span><span class="p">(</span><span class="n">train_location</span><span class="p">,</span> <span class="s2">&quot;Paracou&quot;</span><span class="p">,</span> <span class="n">val_fold</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Call necessary functions.</p>
 <p>Start by tiling up the entire orthomosaic so that a crown map can be made for the entire landscape. Tiles should be
 approximately the same size as those trained on (typically ~ 100 m).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Path to site folder and orthomosaic</span>
