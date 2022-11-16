@@ -261,13 +261,13 @@ approximately the same size as those trained on (typically ~ 100 m).</p>
 <span class="n">tile_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tiles_path</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">dtype_bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Point to a trained model, set up the configuration state and make predictions on the tile.</p>
+<p>Point to a trained model, set up the configuration state and make predictions on the tiles.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">trained_model</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/models/220723_withParacouUAV.pth&quot;</span>
 <span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span><span class="n">update_model</span><span class="o">=</span><span class="n">trained_model</span><span class="p">)</span>
 <span class="n">predict_on_data</span><span class="p">(</span><span class="n">tiles_path</span><span class="p">,</span> <span class="n">DefaultPredictor</span><span class="p">(</span><span class="n">cfg</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>Once the predictions have been made on the tiles, it is necessary to project them back into geographic space</p>
+<p>Once the predictions have been made on the tiles, it is necessary to project them back into geographic space.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_to_geojson</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions_geo/&quot;</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions/&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
