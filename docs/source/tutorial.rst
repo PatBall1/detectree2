@@ -197,7 +197,7 @@ approximately the same size as those trained on (typically ~ 100 m).
    tile_data(data, tiles_path, buffer, tile_width, tile_height, dtype_bool = True)
 
 
-Point to a trained model, set up the configuration state and make predictions on the tile.
+Point to a trained model, set up the configuration state and make predictions on the tiles.
 
 .. code-block:: python
    
@@ -205,7 +205,7 @@ Point to a trained model, set up the configuration state and make predictions on
    cfg = setup_cfg(update_model=trained_model)
    predict_on_data(tiles_path, DefaultPredictor(cfg))
 
-Once the predictions have been made on the tiles, it is necessary to project them back into geographic space
+Once the predictions have been made on the tiles, it is necessary to project them back into geographic space.
 
 .. code-block:: python
    
