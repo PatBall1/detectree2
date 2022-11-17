@@ -248,9 +248,9 @@ def project_to_geojson(data, output_fold=None, pred_fold=None):  # noqa:N803
 
 def filename_geoinfo(filename):
     """Return geographic info of a tile from its filename."""
-    parts = os.path.basename(filename).split("_")
+    parts = os.path.basename(filename).replace(".geojson", "").split("_")
 
-    parts = [int(part) for part in parts[-6:-1]]  # type: ignore
+    parts = [int(part) for part in parts[-5:]]  # type: ignore
     minx = parts[0]
     miny = parts[1]
     width = parts[2]

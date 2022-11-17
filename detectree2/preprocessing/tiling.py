@@ -79,8 +79,7 @@ def tile_data(
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
             # Naming conventions
-            out_path = out_dir + tilename + "_" + str(minx) + "_" + str(
-                miny) + "_" + str(tile_width) + "_" + str(buffer) + "_" + crs
+            out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
             # new tiling bbox including the buffer
             bbox = box(
                 minx - buffer,
@@ -135,7 +134,7 @@ def tile_data(
             # If tile appears blank in folder can show the image here and may
             # need to fix RGB data or the dtype
             # show(out_img)
-            out_tif = out_path + ".tif"
+            out_tif = out_path_root + ".tif"
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
 
@@ -164,7 +163,7 @@ def tile_data(
             # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
             # here as a naughty method
             cv2.imwrite(
-                out_path + ".png",
+                out_path_root + ".png",
                 rgb_rescaled,
             )
 
@@ -210,7 +209,8 @@ def tile_data_train(  # noqa: C901
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width, int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height, tile_height, int):
 
-            out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
+            out_path_root = out_dir + tilename + "_" + str(minx) + "_" + str(
+                miny) + "_" + str(tile_width) + "_" + str(buffer) + "_" + crs
             # new tiling bbox including the buffer
             bbox = box(
                 minx - buffer,
