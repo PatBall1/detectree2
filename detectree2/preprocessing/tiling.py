@@ -79,7 +79,8 @@ def tile_data(
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
             # Naming conventions
-            out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
+            out_path_root = out_dir + tilename + "_" + str(minx) + "_" + str(
+                miny) + "_" + str(tile_width) + "_" + str(buffer) + "_" + crs
             # new tiling bbox including the buffer
             bbox = box(
                 minx - buffer,
@@ -209,8 +210,7 @@ def tile_data_train(  # noqa: C901
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width, int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height, tile_height, int):
 
-            out_path_root = out_dir + tilename + "_" + str(minx) + "_" + str(
-                miny) + "_" + str(tile_width) + "_" + str(buffer) + "_" + crs
+            out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
             # new tiling bbox including the buffer
             bbox = box(
                 minx - buffer,
