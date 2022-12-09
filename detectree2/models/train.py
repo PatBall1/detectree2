@@ -278,6 +278,7 @@ def build_train_loader(cls, cfg):
             location = datas['file_name']
             size = cv2.imread(location).shape[0]
             break
+        print("ADD RANDOM RESIZE WITH SIZE = ", size)
         augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
     return build_detection_train_loader(
         cfg,
