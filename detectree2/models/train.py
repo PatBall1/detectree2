@@ -274,8 +274,12 @@ def build_train_loader(cls, cfg):
     if cfg.RESIZE:
         augmentations.append(T.Resize((1000, 1000)))
     elif cfg.RESIZE == "random":
-        augmentations.append(T.Resize((1000, 1000)))
-        augmentations.append(T.ResizeScale(800 / 1000, 1333 / 800, 1000, 1000))
+        for i, datas in enumerate(DatasetCatalog.get(cfg.DATASETS.TRAIN[0])):
+            location = datas['file_name']
+            size = cv2.imread(location).shape[0]
+            break
+        print("ADD RANDOM RESIZE WITH SIZE = ", size)
+        augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
     return build_detection_train_loader(
         cfg,
         mapper=DatasetMapper(
