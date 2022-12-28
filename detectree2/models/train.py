@@ -31,8 +31,7 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 from IPython.display import display
 from PIL import Image
 
-from .custom_nms import custom_RPN
-from .predict import DefaultPredictor1
+from .custom_nms import custom_RPN, DefaultPredictor1
 
 
 class LossEvalHook(HookBase):
