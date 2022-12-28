@@ -31,7 +31,7 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 from IPython.display import display
 from PIL import Image
 
-from custom_ms import custom_RPN
+from custom_nms import custom_RPN
 from predict import DefaultPredictor1
 
 
