@@ -32,7 +32,7 @@ from IPython.display import display
 from PIL import Image
 
 from .custom_nms import custom_RPN
-from predict import DefaultPredictor1
+from .predict import DefaultPredictor1
 
 
 class LossEvalHook(HookBase):
