@@ -177,6 +177,138 @@ class custom_RPN(RPN):
         res.objectness_logits = scores_per_img[keep]
         results.append(res)
     return results
+
+@PROPOSAL_GENERATOR_REGISTRY.register()
+class custom_RPN(RPN):
+
+  @configurable
+  def __init__(self,
+        *,
+        in_features: List[str],
+        head: nn.Module,
+        anchor_generator: nn.Module,
+        anchor_matcher: Matcher,
+        box2box_transform: Box2BoxTransform,
+        batch_size_per_image: int,
+        positive_fraction: float,
+        pre_nms_topk: Tuple[float, float],
+        post_nms_topk: Tuple[float, float],
+        nms_thresh: float = 0.4,
+        nms_thresh_union: float = 0.4,
+        min_box_size: float = 0.0,
+        anchor_boundary_thresh: float = -1.0,
+        loss_weight: Union[float, Dict[str, float]] = 1.0,
+        box_reg_loss_type: str = "smooth_l1",
+        smooth_l1_beta: float = 0.0,):
+    super().__init__(in_features=in_features, head=head, anchor_generator=anchor_generator, 
+                 anchor_matcher=anchor_matcher, box2box_transform=box2box_transform, batch_size_per_image=batch_size_per_image, 
+                 positive_fraction=positive_fraction, pre_nms_topk=pre_nms_topk, post_nms_topk=post_nms_topk)
+    self.nms_thresh_union = nms_thresh_union
+
+  @classmethod
+  def from_config(cls, cfg, input_shape: Dict[str, ShapeSpec]):
+    in_features = cfg.MODEL.RPN.IN_FEATURES
+    ret = {
+        "in_features": in_features,
+        "min_box_size": cfg.MODEL.PROPOSAL_GENERATOR.MIN_SIZE,
+        "nms_thresh": cfg.MODEL.RPN.NMS_THRESH,
+        "nms_thresh_union": cfg.nms_thresh_union,
+        "batch_size_per_image": cfg.MODEL.RPN.BATCH_SIZE_PER_IMAGE,
+        "positive_fraction": cfg.MODEL.RPN.POSITIVE_FRACTION,
+        "loss_weight": {
+            "loss_rpn_cls": cfg.MODEL.RPN.LOSS_WEIGHT,
+            "loss_rpn_loc": cfg.MODEL.RPN.BBOX_REG_LOSS_WEIGHT * cfg.MODEL.RPN.LOSS_WEIGHT,
+        },
+        "anchor_boundary_thresh": cfg.MODEL.RPN.BOUNDARY_THRESH,
+        "box2box_transform": Box2BoxTransform(weights=cfg.MODEL.RPN.BBOX_REG_WEIGHTS),
+        "box_reg_loss_type": cfg.MODEL.RPN.BBOX_REG_LOSS_TYPE,
+        "smooth_l1_beta": cfg.MODEL.RPN.SMOOTH_L1_BETA,
+    }
+
+    ret["pre_nms_topk"] = (cfg.MODEL.RPN.PRE_NMS_TOPK_TRAIN, cfg.MODEL.RPN.PRE_NMS_TOPK_TEST)
+    ret["post_nms_topk"] = (cfg.MODEL.RPN.POST_NMS_TOPK_TRAIN, cfg.MODEL.RPN.POST_NMS_TOPK_TEST)
+
+    ret["anchor_generator"] = build_anchor_generator(cfg, [input_shape[f] for f in in_features])
+    ret["anchor_matcher"] = Matcher(
+        cfg.MODEL.RPN.IOU_THRESHOLDS, cfg.MODEL.RPN.IOU_LABELS, allow_low_quality_matches=True
+    )
+    ret["head"] = build_rpn_head(cfg, [input_shape[f] for f in in_features]) 
+    return ret
+
+  def find_top_rpn_proposals(
+    proposals: List[torch.Tensor],
+    pred_objectness_logits: List[torch.Tensor],
+    image_sizes: List[Tuple[int, int]],
+    nms_thresh: float,
+    nms_thresh_union: float,
+    pre_nms_topk: int,
+    post_nms_topk: int,
+    min_box_size: float,
+    training: bool,
+):
+    # here the box refinement has been done when proposals are inputted 
+    num_images = len(image_sizes)
+    device = (
+        proposals[0].device
+        if torch.jit.is_scripting()
+        else ("cpu" if torch.jit.is_tracing() else proposals[0].device)
+    )
+
+    # 1. Select top-k anchor for every level and every image
+    topk_scores = []  # #lvl Tensor, each of shape N x topk
+    topk_proposals = []
+    batch_idx = move_device_like(torch.arange(num_images, device=device), proposals[0])
+    for level_id, (proposals_i, logits_i) in enumerate(zip(proposals, pred_objectness_logits)):
+        Hi_Wi_A = logits_i.shape[1]
+        if isinstance(Hi_Wi_A, torch.Tensor):  # it's a tensor in tracing
+            num_proposals_i = torch.clamp(Hi_Wi_A, max=pre_nms_topk)
+        else:
+            num_proposals_i = min(Hi_Wi_A, pre_nms_topk)
+
+        topk_scores_i, topk_idx = logits_i.topk(num_proposals_i, dim=1)
+
+        # each is N x topk
+        topk_proposals_i = proposals_i[batch_idx[:, None], topk_idx]  # N x topk x 4
+
+        topk_proposals.append(topk_proposals_i)
+        topk_scores.append(topk_scores_i)
+
+
+    # 2. Concat all levels together
+    topk_scores = cat(topk_scores, dim=1)
+    topk_proposals = cat(topk_proposals, dim=1)
+
+    # 3. For each image, run a per-level NMS, and choose topk results.
+    results: List[Instances] = []
+    for n, image_size in enumerate(image_sizes):
+        print("----------------------------------------", image_size)
+        boxes = Boxes(topk_proposals[n])
+        scores_per_img = topk_scores[n]
+
+        valid_mask = torch.isfinite(boxes.tensor).all(dim=1) & torch.isfinite(scores_per_img)
+        if not valid_mask.all():
+            if training:
+                raise FloatingPointError(
+                    "Predicted boxes or scores contain Inf/NaN. Training has diverged."
+                )
+            boxes = boxes[valid_mask]
+            scores_per_img = scores_per_img[valid_mask]
+        boxes.clip(image_size)
+
+        # filter empty boxes
+        keep = boxes.nonempty(threshold=min_box_size)
+        if _is_tracing() or keep.sum().item() != len(boxes):
+            boxes, scores_per_img= boxes[keep], scores_per_img[keep]
+
+        keep = custom_nms(boxes.tensor, scores_per_img, nms_thresh_union)
+
+        keep = keep[:post_nms_topk]  # keep is already sorted
+
+        res = Instances(image_size)
+        res.proposal_boxes = boxes[keep]
+        res.objectness_logits = scores_per_img[keep]
+        results.append(res)
+    return results
   
 def custom_nms(P : torch.tensor ,scores: torch.tensor, thresh_iou_o : float):
     """
