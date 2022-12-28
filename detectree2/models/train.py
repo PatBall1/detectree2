@@ -391,6 +391,61 @@ class MyTrainer(DefaultTrainer):
         ),
     )
 
+  # def build_optimizer(cls, cfg, model):
+  #   """
+  #   Returns:
+  #     torch.optim.Optimizer:
+
+  #   It now calls :func:`detectron2.solver.build_optimizer`.
+  #   Overwrite it if you'd like a different optimizer.
+  #   """
+  #   def build_optimizer_adam(cfg, model):
+  #     """
+  #     Build an optimizer from config.
+  #     """
+  #     norm_module_types = (
+  #       torch.nn.BatchNorm1d,
+  #       torch.nn.BatchNorm2d,
+  #       torch.nn.BatchNorm3d,
+  #       torch.nn.SyncBatchNorm,
+  #       # NaiveSyncBatchNorm inherits from BatchNorm2d
+  #       torch.nn.GroupNorm,
+  #       torch.nn.InstanceNorm1d,
+  #       torch.nn.InstanceNorm2d,
+  #       torch.nn.InstanceNorm3d,
+  #       torch.nn.LayerNorm,
+  #       torch.nn.LocalResponseNorm,
+  #     )
+  #     params: List[Dict[str, Any]] = []
+  #     memo: Set[torch.nn.parameter.Parameter] = set()
+  #     for module in model.modules():
+  #       for key, value in module.named_parameters(recurse=False):
+  #           if not value.requires_grad:
+  #               continue
+  #           # Avoid duplicating parameters
+  #           if value in memo:
+  #               continue
+  #           memo.add(value)
+  #           lr = cfg.SOLVER.BASE_LR
+  #           weight_decay = cfg.SOLVER.WEIGHT_DECAY
+  #           if isinstance(module, norm_module_types):
+  #               weight_decay = cfg.SOLVER.WEIGHT_DECAY_NORM
+  #           elif key == "bias":
+  #               # NOTE: unlike Detectron v1, we now default BIAS_LR_FACTOR to 1.0
+  #               # and WEIGHT_DECAY_BIAS to WEIGHT_DECAY so that bias optimizer
+  #               # hyperparameters are by default exactly the same as for regular
+  #               # weights.
+  #               lr = cfg.SOLVER.BASE_LR * cfg.SOLVER.BIAS_LR_FACTOR
+  #               #weight_decay = cfg.SOLVER.WEIGHT_DECAY_BIAS
+  #               weight_decay = 0
+  #           params += [{"params": [value], "lr": lr, "weight_decay": weight_decay}]
+
+  #     optimizer = torch.optim.Adam(params, cfg.SOLVER.BASE_LR, cfg.betas, weight_decay = weight_decay)
+  #     optimizer = maybe_add_gradient_clipping(cfg, optimizer)
+  #     return optimizer
+
+  #   return build_optimizer_adam(cfg, model)
+
   @classmethod
   def test_train(cls, cfg, model, evaluators=None):
       """
@@ -448,13 +503,11 @@ class MyTrainer(DefaultTrainer):
       return results
 
 
-def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
+def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = None) -> List[Dict]:
     """Get the tree dictionaries.
-
     Args:
         directory: Path to directory
         classes: Signifies which column (if any) corresponds to the class labels
-
     Returns:
         List of dictionaries corresponding to segmentations of trees. Each dictionary includes
         bounding box around tree and points tracing a polygon around a tree.
@@ -467,8 +520,7 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
     #
     if classes is not None:
         # list_of_classes = crowns[variable].unique().tolist()
-        list_of_classes = ["CIRAD", "CNES", "INRA"]
-        classes = list_of_classes
+        classes = classes
     else:
         classes = ["tree"]
     # classes = Genus_Species_UniqueList #['tree'] # genus_species list
@@ -478,16 +530,16 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
     #        if file.endswith(".geojson"):
     #            print(os.path.join(root, file))
 
-    for filename in [
-            file for file in os.listdir(directory) if file.endswith(".geojson")
-    ]:
+    for filename in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
         json_file = os.path.join(directory, filename)
         with open(json_file) as f:
             img_anns = json.load(f)
         # Turn off type checking for annotations until we have a better solution
-        record: dict[str, Any] = {}
+        record: Dict[str, Any] = {}
 
+        # filename = os.path.join(directory, img_anns["imagePath"])
         filename = img_anns["imagePath"]
+
         # Make sure we have the correct height and width
         height, width = cv2.imread(filename).shape[:2]
 
@@ -511,29 +563,19 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
             # print("#### HERE ARE SOME POLYS #####", poly)
             if classes != ["tree"]:
                 obj = {
-                    "bbox": [np.min(px),
-                             np.min(py),
-                             np.max(px),
-                             np.max(py)],
-                    "bbox_mode":
-                        BoxMode.XYXY_ABS,
+                    "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
+                    "bbox_mode": BoxMode.XYXY_ABS,
                     "segmentation": [poly],
-                    "category_id":
-                        classes.index(features["properties"]["PlotOrg"]
-                                      ),    # id
+                    "category_id": classes.index(features["properties"][classes_at]),  # id
                     # "category_id": 0,  #id
-                    "iscrowd":
-                        0,
+                    "iscrowd": 0,
                 }
             else:
                 obj = {
-                    "bbox": [np.min(px),
-                             np.min(py),
-                             np.max(px),
-                             np.max(py)],
+                    "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
                     "bbox_mode": BoxMode.XYXY_ABS,
                     "segmentation": [poly],
-                    "category_id": 0,    # id
+                    "category_id": 0,  # id
                     "iscrowd": 0,
                 }
             # pdb.set_trace()
@@ -546,13 +588,13 @@ def get_tree_dicts(directory: str, classes: List[str] = None) -> List[Dict]:
 
 def combine_dicts(root_dir: str,
                   val_dir: int,
-                  mode: str = "train") -> List[Dict]:
+                  mode: str = "train",
+                  classes: List[str] = None,
+                  classes_at: str = None) -> List[Dict]:
     """Join tree dicts from different directories.
-
     Args:
         root_dir:
         val_dir:
-
     Returns:
         Concatenated array of dictionaries over all directories
     """
@@ -561,18 +603,19 @@ def combine_dicts(root_dir: str,
         del train_dirs[(val_dir - 1)]
         tree_dicts = []
         for d in train_dirs:
-            tree_dicts += get_tree_dicts(d)
-        return tree_dicts
-    else:
-        tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)])
-        return tree_dicts
+            tree_dicts += get_tree_dicts(d, classes=classes, classes_at=classes_at)
+    elif mode == "val":
+        tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)], classes=classes, classes_at=classes_at)
+    elif mode == "full":
+        tree_dicts = []
+        for d in train_dirs:
+            tree_dicts += get_tree_dicts(d, classes=classes, classes_at=classes_at)
+    return tree_dicts
 
 
 def get_filenames(directory: str):
     """Get the file names if no geojson is present.
-
     Allows for predictions where no delinations have been manually produced.
-
     Args:
         directory (str): directory of images to be predicted on
     """
@@ -587,12 +630,50 @@ def get_filenames(directory: str):
     return dataset_dicts
 
 
-def register_train_data(train_location, name="tree", val_fold=1):
-    for d in ["train", "val"]:
-        DatasetCatalog.register(
-            name + "_" + d,
-            lambda d=d: combine_dicts(train_location, val_fold, d))
-        MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
+def register_train_data(train_location,
+                        name: str = "tree",
+                        val_fold=None,
+                        classes=None,
+                        classes_at=None):
+    """Register data for training and (optionally) validation.
+    Args:
+        train_location: directory containing training folds
+        name: string to name data
+        val_fold: fold assigned for validation and tuning. If not given,
+        will take place on all folds.
+    """
+    if val_fold is not None:
+        for d in ["train", "val"]:
+            DatasetCatalog.register(name + "_" + d, lambda d=d: combine_dicts(train_location,
+                                                                              val_fold, d,
+                                                                              classes=classes, classes_at=classes_at))
+            if classes is None:
+                MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
+            else:
+                MetadataCatalog.get(name + "_" + d).set(thing_classes=classes)
+    else:
+        DatasetCatalog.register(name + "_" + "full", lambda d=d: combine_dicts(train_location,
+                                                                               0, "full",
+                                                                               classes=classes, classes_at=classes_at))
+        if classes is None:
+            MetadataCatalog.get(name + "_" + "full").set(thing_classes=["tree"])
+        else:
+            MetadataCatalog.get(name + "_" + "full").set(thing_classes=classes)
+
+
+def read_data(out_dir):
+    """Function that will read the classes that are recorded during tiling."""
+    list = []
+    out_tif = out_dir + 'classes.txt'
+    # open file and read the content in a list
+    with open(out_tif, 'r') as fp:
+        for line in fp:
+            # remove linebreak from a current name
+            # linebreak is the last character of each line
+            x = line[:-1]
+            # add current item to the list
+            list.append(x)
+    return (list)
 
 
 def remove_registered_data(name="tree"):
@@ -603,8 +684,7 @@ def remove_registered_data(name="tree"):
 
 def register_test_data(test_location, name="tree"):
     d = "test"
-    DatasetCatalog.register(name + "_" + d,
-                            lambda d=d: get_tree_dicts(test_location))
+    DatasetCatalog.register(name + "_" + d, lambda d=d: get_tree_dicts(test_location))
     MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
 
 
@@ -614,7 +694,6 @@ def load_json_arr(json_path):
         for line in f:
             lines.append(json.loads(line))
     return lines
-
 
 def setup_cfg(
     base_model="COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
