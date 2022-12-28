@@ -658,8 +658,16 @@ def setup_cfg(
   cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes
   cfg.TEST.EVAL_PERIOD = eval_period
   cfg.MODEL.BACKBONE.FREEZE_AT = 2
+  #cfg.MODEL.ROI_BOX_HEAD.BBOX_REG_LOSS_TYPE = 'diou'
   cfg.MODEL.PROPOSAL_GENERATOR.NAME  = 'custom_RPN'
   cfg.nms_thresh_union = 0.2
+  cfg.MODEL.RPN.NMS_THRESH = 0
+
+  #cfg.nms_thresh_union = 0
+  #cfg.MODEL.ROI_HEADS.NMS_THRESH_TEST = 0.1
+
+  #cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
+  cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1  # only has one class (pnumonia)
   return cfg
 
 def predictions_on_data(directory=None,
