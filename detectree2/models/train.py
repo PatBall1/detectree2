@@ -659,6 +659,7 @@ def setup_cfg(
   cfg.TEST.EVAL_PERIOD = eval_period
   cfg.MODEL.BACKBONE.FREEZE_AT = 2
   cfg.MODEL.PROPOSAL_GENERATOR.NAME  = 'custom_RPN'
+  cfg.nms_thresh_union = 0.2
   return cfg
 
 def predictions_on_data(directory=None,
