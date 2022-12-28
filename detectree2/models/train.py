@@ -31,6 +31,9 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 from IPython.display import display
 from PIL import Image
 
+from custom_ms import custom_RPN
+from predict import DefaultPredictor1
+
 
 class LossEvalHook(HookBase):
   """Do inference and get the loss metric
@@ -656,11 +659,11 @@ def setup_cfg(
   cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes
   cfg.TEST.EVAL_PERIOD = eval_period
   cfg.MODEL.BACKBONE.FREEZE_AT = 2
-  cfg.MODEL.ROI_BOX_HEAD.BBOX_REG_LOSS_TYPE = 'diou'
+  cfg.MODEL.PROPOSAL_GENERATOR.NAME  = 'custom_RPN'
   return cfg
 
 def predictions_on_data(directory=None,
-                        predictor=DefaultTrainer,
+                        predictor=DefaultPredictor1,
                         trees_metadata=None,
                         save=True,
                         scale=1,
