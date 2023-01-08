@@ -167,8 +167,6 @@ class LossEvalHook(HookBase):
         time.sleep(15)
         self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' + str(index) + '.pth')
 
->>>>>>> master
-
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
 class MyTrainer(DefaultTrainer):
   """_summary_
@@ -375,7 +373,7 @@ def build_train_loader(cls, cfg):
     )
 
 @classmethod
- def test_train(cls, cfg, model, evaluators=None):
+def test_train(cls, cfg, model, evaluators=None):
     """
     Evaluate the given model. The given model is expected to already contain
     weights to evaluate.
