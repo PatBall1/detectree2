@@ -274,8 +274,6 @@ class MyTrainer(DefaultTrainer):
     suboptimal as explained in https://arxiv.org/abs/2006.15704 Sec 3.2.4
     """
     self._trainer.optimizer.step()
-
-<<<<<<< master
   
   def build_hooks(self):
     """
