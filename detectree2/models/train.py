@@ -429,6 +429,135 @@ def test_train(cls, cfg, model, evaluators=None):
 def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = None) -> List[Dict]:
     """Get the tree dictionaries.
     Args:
+        directory: Path to directory
+        classes: Signifies which column (if any) corresponds to the class labels
+    Returns:
+        List of dictionaries corresponding to segmentations of trees. Each dictionary includes
+        bounding box around tree and points tracing a polygon around a tree.
+    """
+    # filepath = '/content/drive/MyDrive/forestseg/paracou_data/Panayiotis_Outputs/220303_AllSpLabelled.gpkg'
+    # datagpd = gpd.read_file(filepath)
+    # List_Genus = datagpd.Genus_Species.to_list()
+    # Genus_Species_UniqueList = list(set(List_Genus))
+
+    #
+    if classes is not None:
+        # list_of_classes = crowns[variable].unique().tolist()
+        classes = classes
+    else:
+        classes = ["tree"]
+    # classes = Genus_Species_UniqueList #['tree'] # genus_species list
+    dataset_dicts = []
+    # for root, dirs, files in os.walk(train_location):
+    #    for file in files:
+    #        if file.endswith(".geojson"):
+    #            print(os.path.join(root, file))
+
+    for filename in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
+        json_file = os.path.join(directory, filename)
+        with open(json_file) as f:
+            img_anns = json.load(f)
+        # Turn off type checking for annotations until we have a better solution
+        record: Dict[str, Any] = {}
+
+        # filename = os.path.join(directory, img_anns["imagePath"])
+        filename = img_anns["imagePath"]
+
+        # Make sure we have the correct height and width
+        height, width = cv2.imread(filename).shape[:2]
+
+        record["file_name"] = filename
+        record["height"] = height
+        record["width"] = width
+        record["image_id"] = filename[0:400]
+        record["annotations"] = {}
+        # print(filename[0:400])
+
+        objs = []
+        for features in img_anns["features"]:
+            anno = features["geometry"]
+            # pdb.set_trace()
+            # GenusSpecies = features['properties']['Genus_Species']
+            px = [a[0] for a in anno["coordinates"][0]]
+            py = [np.array(height) - a[1] for a in anno["coordinates"][0]]
+            # print("### HERE IS PY ###", py)
+            poly = [(x, y) for x, y in zip(px, py)]
+            poly = [p for x in poly for p in x]
+            # print("#### HERE ARE SOME POLYS #####", poly)
+            if classes != ["tree"]:
+                obj = {
+                    "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
+                    "bbox_mode": BoxMode.XYXY_ABS,
+                    "segmentation": [poly],
+                    "category_id": classes.index(features["properties"][classes_at]),  # id
+                    # "category_id": 0,  #id
+                    "iscrowd": 0,
+                }
+            else:
+                obj = {
+                    "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
+                    "bbox_mode": BoxMode.XYXY_ABS,
+                    "segmentation": [poly],
+                    "category_id": 0,  # id
+                    "iscrowd": 0,
+                }
+            # pdb.set_trace()
+            objs.append(obj)
+            # print("#### HERE IS OBJS #####", objs)
+        record["annotations"] = objs
+        dataset_dicts.append(record)
+    return dataset_dicts
+
+
+def combine_dicts(root_dir: str,
+                  val_dir: int,
+                  mode: str = "train",
+                  classes: List[str] = None,
+                  classes_at: str = None) -> List[Dict]:
+    """Join tree dicts from different directories.
+    Args:
+        root_dir:
+        val_dir:
+    Returns:
+        Concatenated array of dictionaries over all directories
+    """
+    train_dirs = [os.path.join(root_dir, dir) for dir in os.listdir(root_dir)]
+    if mode == "train":
+        del train_dirs[(val_dir - 1)]
+        tree_dicts = []
+        for d in train_dirs:
+            tree_dicts += get_tree_dicts(d, classes=classes, classes_at=classes_at)
+    elif mode == "val":
+        tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)], classes=classes, classes_at=classes_at)
+    elif mode == "full":
+        tree_dicts = []
+        for d in train_dirs:
+            tree_dicts += get_tree_dicts(d, classes=classes, classes_at=classes_at)
+    return tree_dicts
+
+def get_filenames(directory: str):
+    """Get the file names if no geojson is present.
+    Allows for predictions where no delinations have been manually produced.
+    Args:
+        directory (str): directory of images to be predicted on
+    """
+    dataset_dicts = []
+    files = glob.glob(directory + "*.png")
+    for filename in [file for file in files]:
+        file = {}
+        filename = os.path.join(directory, filename)
+        file["file_name"] = filename
+
+        dataset_dicts.append(file)
+    return dataset_dicts
+
+def register_train_data(train_location,
+                        name: str = "tree",
+                        val_fold=None,
+                        classes=None,
+                        classes_at=None):
+    """Register data for training and (optionally) validation.
+    Args:
         train_location: directory containing training folds
         name: string to name data
         val_fold: fold assigned for validation and tuning. If not given,
