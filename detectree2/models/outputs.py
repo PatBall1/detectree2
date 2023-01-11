@@ -298,6 +298,7 @@ def stitch_crowns(folder: str, shift: int = 1):
         geo = box_filter(file, shift)
         # geo.plot()
         crowns_tile = gpd.sjoin(crowns_tile, geo, "inner", "within")
+        crowns_tile = crowns_tile.set_crs(crowns.crs, allow_override=True)
         # print(crowns_tile)
         crowns = crowns.append(crowns_tile)
         # print(crowns)
