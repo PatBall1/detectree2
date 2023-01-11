@@ -89,6 +89,8 @@ Set up the tiling parameters.
 
 The tile size will depend on:
 - The resolution of your imagery
+- The detail required on the crown outline
+- If using a pre-trained model, the tile size used to train it
 
 .. code-block:: python
 
@@ -118,7 +120,7 @@ spatial separation
 
 Are data is now tiled and partitioned for training and model evaluation
 
-.. code-block:: bash
+.. code-block::
    
    └── Danum                                       (site directory)
        ├── rgb

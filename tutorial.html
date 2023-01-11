@@ -112,11 +112,11 @@
 <li><p>making landscape level predictions</p></li>
 </ol>
 <p>Before getting started ensure detectree2 is installed either through</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$</span>pip install git+https://github.com/PatBall1/detectree2.git
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$</span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/PatBall1/detectree2.git
 </pre></div>
 </div>
 <p>or</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$</span>conda install detectree2 -c ma595
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$</span>conda<span class="w"> </span>install<span class="w"> </span>detectree2<span class="w"> </span>-c<span class="w"> </span>ma595
 </pre></div>
 </div>
 <p>To train a model you will need an orthomosaic (as <code class="docutils literal notranslate"><span class="pre">&lt;orthmosaic.tif</span></code>) and</p>
@@ -129,18 +129,18 @@ model from the <code class="docutils literal notranslate"><span class="pre">mode
 <section id="preparing-data">
 <h2><span class="section-number">2.1. </span>Preparing data<a class="headerlink" href="#preparing-data" title="Permalink to this heading"></a></h2>
 <p>An example of the recommended file structure when training a new model is as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>├── Danum                                       <span class="o">(</span>site directory<span class="o">)</span>
-│   ├── rgb
-│   │   └── Dan_2014_RGB_project_to_CHM.tif     <span class="o">(</span>RGB orthomosaic <span class="k">in</span> <span class="nb">local</span> UTM CRS<span class="o">)</span>
-│   └── crowns
-│       └── Danum.gpkg                          <span class="o">(</span>Crown polygons readable by geopandas e.g. Geopackage, shapefile<span class="o">)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>├──<span class="w"> </span>Danum<span class="w">                                       </span><span class="o">(</span>site<span class="w"> </span>directory<span class="o">)</span>
+│<span class="w">   </span>├──<span class="w"> </span>rgb
+│<span class="w">   </span>│<span class="w">   </span>└──<span class="w"> </span>Dan_2014_RGB_project_to_CHM.tif<span class="w">     </span><span class="o">(</span>RGB<span class="w"> </span>orthomosaic<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">local</span><span class="w"> </span>UTM<span class="w"> </span>CRS<span class="o">)</span>
+│<span class="w">   </span>└──<span class="w"> </span>crowns
+│<span class="w">       </span>└──<span class="w"> </span>Danum.gpkg<span class="w">                          </span><span class="o">(</span>Crown<span class="w"> </span>polygons<span class="w"> </span>readable<span class="w"> </span>by<span class="w"> </span>geopandas<span class="w"> </span>e.g.<span class="w"> </span>Geopackage,<span class="w"> </span>shapefile<span class="o">)</span>
 │
-└── Paracou                                     <span class="o">(</span>site directory<span class="o">)</span>
-    ├── rgb
-    │   ├── Paracou_RGB_2016_10cm.tif           <span class="o">(</span>RGB orthomosaic <span class="k">in</span> <span class="nb">local</span> UTM CRS<span class="o">)</span>
-    │   └── Paracou_RGB_2019.tif                <span class="o">(</span>RGB orthomosaic <span class="k">in</span> <span class="nb">local</span> UTM CRS<span class="o">)</span>
-    └── crowns
-        └── UpdatedCrowns8.gpkg                 <span class="o">(</span>Crown polygons readable by geopandas e.g. Geopackage, shapefile<span class="o">)</span>
+└──<span class="w"> </span>Paracou<span class="w">                                     </span><span class="o">(</span>site<span class="w"> </span>directory<span class="o">)</span>
+<span class="w">    </span>├──<span class="w"> </span>rgb
+<span class="w">    </span>│<span class="w">   </span>├──<span class="w"> </span>Paracou_RGB_2016_10cm.tif<span class="w">           </span><span class="o">(</span>RGB<span class="w"> </span>orthomosaic<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">local</span><span class="w"> </span>UTM<span class="w"> </span>CRS<span class="o">)</span>
+<span class="w">    </span>│<span class="w">   </span>└──<span class="w"> </span>Paracou_RGB_2019.tif<span class="w">                </span><span class="o">(</span>RGB<span class="w"> </span>orthomosaic<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">local</span><span class="w"> </span>UTM<span class="w"> </span>CRS<span class="o">)</span>
+<span class="w">    </span>└──<span class="w"> </span>crowns
+<span class="w">        </span>└──<span class="w"> </span>UpdatedCrowns8.gpkg<span class="w">                 </span><span class="o">(</span>Crown<span class="w"> </span>polygons<span class="w"> </span>readable<span class="w"> </span>by<span class="w"> </span>geopandas<span class="w"> </span>e.g.<span class="w"> </span>Geopackage,<span class="w"> </span>shapefile<span class="o">)</span>
 </pre></div>
 </div>
 <p>Here we have two site available to train on. Multiple site directories can be
@@ -173,7 +173,9 @@ directory (see e.g <code class="docutils literal notranslate"><span class="pre">
 </div>
 <p>Set up the tiling parameters.</p>
 <p>The tile size will depend on:
-- The resolution of your imagery</p>
+- The resolution of your imagery
+- The detail required on the crown outline
+- If using a pre-trained model, the tile size used to train it</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set tiling parameters</span>
 <span class="n">buffer</span> <span class="o">=</span> <span class="mi">30</span>
 <span class="n">tile_width</span> <span class="o">=</span> <span class="mi">40</span>
@@ -196,17 +198,17 @@ spatial separation</p>
 </pre></div>
 </div>
 <p>Are data is now tiled and partitioned for training and model evaluation</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>└── Danum                                       <span class="o">(</span>site directory<span class="o">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>└── Danum                                       (site directory)
     ├── rgb
-    │   └── Dan_2014_RGB_project_to_CHM.tif     <span class="o">(</span>RGB orthomosaic <span class="k">in</span> <span class="nb">local</span> UTM CRS<span class="o">)</span>
+    │   └── Dan_2014_RGB_project_to_CHM.tif     (RGB orthomosaic in local UTM CRS)
     ├── crowns
     │   └── Danum.gpkg
-    └── tiles                                   <span class="o">(</span>tile directory<span class="o">)</span>
+    └── tiles                                   (tile directory)
         ├── train
-        │   ├── fold_1                          <span class="o">(</span>train fold folder<span class="o">)</span>
-        │   ├── fold_2                          <span class="o">(</span>train fold folder<span class="o">)</span>
+        │   ├── fold_1                          (train fold folder)
+        │   ├── fold_2                          (train fold folder)
         │   └── ...
-        └── <span class="nb">test</span>                                <span class="o">(</span><span class="nb">test</span> data folder<span class="o">)</span>
+        └── test                                (test data folder)
 </pre></div>
 </div>
 </section>
