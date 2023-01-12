@@ -207,7 +207,7 @@ def project_to_geojson(data, output_fold=None, pred_fold=None):  # noqa:N803
                         # rescaling the coords depending on where the tile is in the original image, note the
                         # correction factors have been manually added as outputs did not line up with predictions
                         # from training script
-                        # TODO: clarify these rules
+                        # TODO: clarify these rules - see `buffer` for bottom corner and bottom edge
                         if minx == int(data.bounds[0]) and miny == int(data.bounds[1]):
                             # print("Bottom Corner")
                             x_coord = (x_coord) * scalingx + minx
