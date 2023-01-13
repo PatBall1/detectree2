@@ -269,14 +269,14 @@ class MyTrainer(DefaultTrainer):
     """
     self._trainer.optimizer.step()
 
-@classmethod
-def build_evaluator(cls, cfg, dataset_name, output_folder=None):
+  @classmethod
+  def build_evaluator(cls, cfg, dataset_name, output_folder=None):
         if output_folder is None:
             os.makedirs("eval", exist_ok=True)
             output_folder = "eval"
         return COCOEvaluator(dataset_name, cfg, True, output_folder)
 
-def build_hooks(self):
+  def build_hooks(self):
      hooks = super().build_hooks()
      # augmentations = [T.ResizeShortestEdge(short_edge_length=(1000, 1000),
      #                                     max_size=1333,
@@ -296,7 +296,7 @@ def build_hooks(self):
      )
      return hooks
 
-def build_train_loader(cls, cfg):
+  def build_train_loader(cls, cfg):
     """Summary.
 
     Args:
