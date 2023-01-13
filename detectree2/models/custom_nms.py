@@ -47,8 +47,149 @@ def _is_tracing():
         # https://github.com/pytorch/pytorch/issues/47379
         return False
     else:
-        return torch.jit.is_tracing()
-      
+        return torch.jit.is_tracing()        
+
+def pairwise_ioa(boxes1: Boxes, boxes2: Boxes) -> torch.Tensor:
+    """
+    Similar to :func:`pariwise_iou` but compute the IoA (intersection over boxes2 area).
+    Args:
+        boxes1,boxes2 (Boxes): two `Boxes`. Contains N & M boxes, respectively.
+    Returns:
+        Tensor: IoA, sized [N,M].
+    """
+    area2 = boxes2.area()  # [M]
+    area1 = boxes1.area()  # [M]
+    inter = pairwise_intersection(boxes1, boxes2)
+
+    # handle empty boxes
+    ioa_dif = torch.where(
+        inter > 0, abs(inter / area2 - inter / area1), torch.zeros(1, dtype=inter.dtype, device=inter.device)
+    )
+    return ioa_dif
+
+class Ioa_Matcher(object):
+    """
+    This class assigns to each predicted "element" (e.g., a box) a ground-truth
+    element. Each predicted element will have exactly zero or one matches; each
+    ground-truth element may be matched to zero or more predicted elements.
+    The matching is determined by the MxN match_quality_matrix, that characterizes
+    how well each (ground-truth, prediction)-pair match each other. For example,
+    if the elements are boxes, this matrix may contain box intersection-over-union
+    overlap values.
+    The matcher returns (a) a vector of length N containing the index of the
+    ground-truth element m in [0, M) that matches to prediction n in [0, N).
+    (b) a vector of length N containing the labels for each prediction.
+    """
+
+    def __init__(
+        self, thresholds: List[float], thresholds_ioa: List[float], labels: List[int], allow_low_quality_matches: bool = False
+    ):
+        """
+        Args:
+            thresholds (list): a list of thresholds used to stratify predictions
+                into levels.
+            thresholds_ioa (list): a list of thresholds used to stratify predictions
+                into levels.
+            labels (list): a list of values to label predictions belonging at
+                each level. A label can be one of {-1, 0, 1} signifying
+                {ignore, negative class, positive class}, respectively.
+            allow_low_quality_matches (bool): if True, produce additional matches
+                for predictions with maximum match quality lower than high_threshold.
+                See set_low_quality_matches_ for more details.
+            For example,
+                thresholds = [0.3, 0.5]
+                thresholds_ioa = 0.5
+                labels = [0, -1, 1]
+                All predictions with iou < 0.3 and ioa_dif > 0.5 will be marked with 0 and
+                thus will be considered as false positives while training.
+                All predictions with 0.3 <= iou < 0.5 will be marked with -1 and
+                thus will be ignored.
+                All predictions with 0.5 <= iou and ioa_dif < 0.5 will be marked with 1 and
+                thus will be considered as true positives.
+        """
+        # Add -inf and +inf to first and last position in thresholds
+        thresholds = thresholds[:]
+        assert thresholds[0] > 0
+        thresholds.insert(0, -float("inf"))
+        thresholds.append(float("inf"))
+        # Currently torchscript does not support all + generator
+        assert all([low <= high for (low, high) in zip(thresholds[:-1], thresholds[1:])])
+        assert all([l in [-1, 0, 1] for l in labels])
+        assert len(labels) == len(thresholds) - 1
+        self.thresholds = thresholds
+        self.labels = labels
+        self.allow_low_quality_matches = allow_low_quality_matches
+
+    def __call__(self, match_quality_matrix, match_quality_matrix_ioa):
+        """
+        Args:
+            match_quality_matrix (Tensor[float]): an MxN tensor, containing the
+                pairwise quality between M ground-truth elements and N predicted
+                elements. All elements must be >= 0 (due to the us of `torch.nonzero`
+                for selecting indices in :meth:`set_low_quality_matches_`).
+            match_quality_matrix (Tensor[float]): an MxN tensor, containing the
+                two ioa difference between M ground-truth elements and N predicted
+                elements. All elements must be >= 0 (due to the us of `torch.nonzero`
+                for selecting indices in :meth:`set_low_quality_matches_`).
+        Returns:
+            matches (Tensor[int64]): a vector of length N, where matches[i] is a matched
+                ground-truth index in [0, M)
+            match_labels (Tensor[int8]): a vector of length N, where pred_labels[i] indicates
+                whether a prediction is a true or false positive or ignored
+        """
+        assert match_quality_matrix.dim() == 2
+        if match_quality_matrix.numel() == 0:
+            default_matches = match_quality_matrix.new_full(
+                (match_quality_matrix.size(1),), 0, dtype=torch.int64
+            )
+            # When no gt boxes exist, we define IOU = 0 and therefore set labels
+            # to `self.labels[0]`, which usually defaults to background class 0
+            # To choose to ignore instead, can make labels=[-1,0,-1,1] + set appropriate thresholds
+            default_match_labels = match_quality_matrix.new_full(
+                (match_quality_matrix.size(1),), self.labels[0], dtype=torch.int8
+            )
+            return default_matches, default_match_labels
+
+        assert torch.all(match_quality_matrix >= 0)
+
+        # match_quality_matrix is M (gt) x N (predicted)
+        # Max over gt elements (dim 0) to find best gt candidate for each prediction
+        matched_vals, matches = match_quality_matrix.max(dim=0)
+
+        match_labels = matches.new_full(matches.size(), 1, dtype=torch.int8)
+
+        for (l, low, high) in zip(self.labels, self.thresholds[:-1], self.thresholds[1:]):
+            low_high = (matched_vals >= low) & (matched_vals < high)
+            match_labels[low_high] = l
+
+        if self.allow_low_quality_matches:
+            self.set_low_quality_matches_(match_labels, match_quality_matrix)
+
+        return matches, match_labels
+
+    def set_low_quality_matches_(self, match_labels, match_quality_matrix):
+        """
+        Produce additional matches for predictions that have only low-quality matches.
+        Specifically, for each ground-truth G find the set of predictions that have
+        maximum overlap with it (including ties); for each prediction in that set, if
+        it is unmatched, then match it to the ground-truth G.
+        This function implements the RPN assignment case (i) in Sec. 3.1.2 of
+        :paper:`Faster R-CNN`.
+        """
+        # For each gt, find the prediction with which it has highest quality
+        highest_quality_foreach_gt, _ = match_quality_matrix.max(dim=1)
+        # Find the highest quality match available, even if it is low, including ties.
+        # Note that the matches qualities must be positive due to the use of
+        # `torch.nonzero`.
+        _, pred_inds_with_highest_quality = nonzero_tuple(
+            match_quality_matrix == highest_quality_foreach_gt[:, None]
+        )
+        # If an anchor was labeled positive only due to a low-quality match
+        # with gt_A, but it has larger overlap with gt_B, it's matched index will still be gt_B.
+        # This follows the implementation in Detectron, and is found to have no significant impact.
+        match_labels[pred_inds_with_highest_quality] = 1
+
+
 @PROPOSAL_GENERATOR_REGISTRY.register()
 class custom_RPN(RPN):
 
@@ -58,17 +199,17 @@ class custom_RPN(RPN):
         in_features: List[str],
         head: nn.Module,
         anchor_generator: nn.Module,
-        anchor_matcher: Matcher,
+        anchor_matcher: Ioa_Matcher,
         box2box_transform: Box2BoxTransform,
         batch_size_per_image: int,
         positive_fraction: float,
         pre_nms_topk: Tuple[float, float],
         post_nms_topk: Tuple[float, float],
-        nms_thresh: float = 0.4,
-        nms_thresh_union: float = 0.4,
-        min_box_size: float = 0.0,
-        anchor_boundary_thresh: float = -1.0,
-        loss_weight: Union[float, Dict[str, float]] = 1.0,
+        nms_thresh: float,
+        nms_thresh_union: float,
+        min_box_size: float,
+        anchor_boundary_thresh: float,
+        loss_weight: Union[float, Dict[str, float]],
         box_reg_loss_type: str = "smooth_l1",
         smooth_l1_beta: float = 0.0,):
     super().__init__(in_features=in_features, head=head, anchor_generator=anchor_generator, 
@@ -100,12 +241,72 @@ class custom_RPN(RPN):
     ret["post_nms_topk"] = (cfg.MODEL.RPN.POST_NMS_TOPK_TRAIN, cfg.MODEL.RPN.POST_NMS_TOPK_TEST)
 
     ret["anchor_generator"] = build_anchor_generator(cfg, [input_shape[f] for f in in_features])
-    ret["anchor_matcher"] = Matcher(
-        cfg.MODEL.RPN.IOU_THRESHOLDS, cfg.MODEL.RPN.IOU_LABELS, allow_low_quality_matches=True
+    ret["anchor_matcher"] = Ioa_Matcher(
+        cfg.MODEL.RPN.IOU_THRESHOLDS, cfg.MODEL.RPN.IOA_THRESHOLDS, cfg.MODEL.RPN.IOU_LABELS, allow_low_quality_matches=True
     )
     ret["head"] = build_rpn_head(cfg, [input_shape[f] for f in in_features]) 
     return ret
 
+  @torch.jit.unused
+  @torch.no_grad()
+    def label_and_sample_anchors(
+        self, anchors: List[Boxes], gt_instances: List[Instances]
+    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
+        """
+        Args:
+            anchors (list[Boxes]): anchors for each feature map.
+            gt_instances: the ground-truth instances for each image.
+        Returns:
+            list[Tensor]:
+                List of #img tensors. i-th element is a vector of labels whose length is
+                the total number of anchors across all feature maps R = sum(Hi * Wi * A).
+                Label values are in {-1, 0, 1}, with meanings: -1 = ignore; 0 = negative
+                class; 1 = positive class.
+            list[Tensor]:
+                i-th element is a Rx4 tensor. The values are the matched gt boxes for each
+                anchor. Values are undefined for those anchors not labeled as 1.
+        """
+        anchors = Boxes.cat(anchors)
+
+        gt_boxes = [x.gt_boxes for x in gt_instances]
+        image_sizes = [x.image_size for x in gt_instances]
+        del gt_instances
+
+        gt_labels = []
+        matched_gt_boxes = []
+        for image_size_i, gt_boxes_i in zip(image_sizes, gt_boxes):
+            """
+            image_size_i: (h, w) for the i-th image
+            gt_boxes_i: ground-truth boxes for i-th image
+            """
+
+            match_quality_matrix = retry_if_cuda_oom(pairwise_iou)(gt_boxes_i, anchors)
+            match_quality_matrix_ioa = retry_if_cuda_oom(pairwise_ioa)(gt_boxes_i, anchors)
+            matched_idxs, gt_labels_i = retry_if_cuda_oom(self.anchor_matcher)(match_quality_matrix, match_quality_matrix_ioa)
+            # Matching is memory-expensive and may result in CPU tensors. But the result is small
+            gt_labels_i = gt_labels_i.to(device=gt_boxes_i.device)
+            del match_quality_matrix
+
+            if self.anchor_boundary_thresh >= 0:
+                # Discard anchors that go out of the boundaries of the image
+                # NOTE: This is legacy functionality that is turned off by default in Detectron2
+                anchors_inside_image = anchors.inside_box(image_size_i, self.anchor_boundary_thresh)
+                gt_labels_i[~anchors_inside_image] = -1
+
+            # A vector of labels (-1, 0, 1) for each anchor
+            gt_labels_i = self._subsample_labels(gt_labels_i)
+
+            if len(gt_boxes_i) == 0:
+                # These values won't be used anyway since the anchor is labeled as background
+                matched_gt_boxes_i = torch.zeros_like(anchors.tensor)
+            else:
+                # TODO wasted indexing computation for ignored boxes
+                matched_gt_boxes_i = gt_boxes_i[matched_idxs].tensor
+
+            gt_labels.append(gt_labels_i)  # N,AHW
+            matched_gt_boxes.append(matched_gt_boxes_i)
+        return gt_labels, matched_gt_boxes
+    
   def find_top_rpn_proposals(
     proposals: List[torch.Tensor],
     pred_objectness_logits: List[torch.Tensor],
@@ -384,7 +585,7 @@ class DefaultPredictor1:
             pred_classes = predictions['instances'].get_fields()['pred_classes']
             pred_masks = predictions['instances'].get_fields()['pred_masks']
 
-            keep = custom_nms_mask(pred_masks ,scores, thresh_iou_o = 0.3)
+            keep = custom_nms_mask(pred_masks ,scores, thresh_iou_o = self.cfg.MODEL.ROI_HEADS.NMS_THRESH_TEST)
 
             predictions['instances'].get_fields()['pred_boxes'] = boxes[keep]
             predictions['instances'].get_fields()['scores'] = scores[keep]
