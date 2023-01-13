@@ -250,13 +250,7 @@ class MyTrainer(DefaultTrainer):
         losses = loss_dict
         loss_dict = {"total_loss": loss_dict}
     else:
-        # loss_dict['cls'] = torch.tensor(0)
-        # loss_dict['loss_rpn_cls'] = torch.tensor(0)
-        # if self.iter > 1000:
-        #   self.reweight = True
-        # if self.reweight:
-        #   loss_dict['loss_mask'] *= 4
-        loss_dict['loss_mask'] *= 0.8
+        loss_dict['loss_mask'] *= self.cfg.mask_weight
         losses = sum(loss_dict.values())
 
     """
@@ -274,7 +268,14 @@ class MyTrainer(DefaultTrainer):
     suboptimal as explained in https://arxiv.org/abs/2006.15704 Sec 3.2.4
     """
     self._trainer.optimizer.step()
-  
+
+@classmethod
+def build_evaluator(cls, cfg, dataset_name, output_folder=None):
+        if output_folder is None:
+            os.makedirs("eval", exist_ok=True)
+            output_folder = "eval"
+        return COCOEvaluator(dataset_name, cfg, True, output_folder)
+
 def build_hooks(self):
      hooks = super().build_hooks()
      # augmentations = [T.ResizeShortestEdge(short_edge_length=(1000, 1000),
