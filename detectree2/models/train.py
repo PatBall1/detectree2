@@ -602,7 +602,7 @@ def setup_cfg(
     #cfg.MODEL.PROPOSAL_GENERATOR.NAME  = 'custom_RPN'
     cfg.nms_thresh_union = nms_thresh_union
     cfg.MODEL.RPN.NMS_THRESH = rpn_nms_thresh
-    #cfg.MODEL.RPN.IOA_THRESHOLDS = ?
+    cfg.MODEL.RPN.IOA_THRESHOLDS = 0.5
     cfg.MODEL.ROI_HEADS.NMS_THRESH_TEST = nms_thresh_test
     
     return cfg
