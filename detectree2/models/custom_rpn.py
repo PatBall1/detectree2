@@ -1,3 +1,6 @@
+''' change iou metric to ioa in rpn nms process for better mask quality and combine these two in anchor matching for better box regression'''
+''' a predictor using mask_iou for proprocessing'''
+
 from typing import Tuple
 
 import torch
@@ -17,6 +20,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
+from detectron2.layers import nonzero_tuple
 from detectron2.config import configurable
 from detectron2.layers import Conv2d, ShapeSpec, cat
 from detectron2.structures import Boxes, ImageList, Instances, pairwise_iou
@@ -72,10 +76,10 @@ class Ioa_Matcher(object):
     This class assigns to each predicted "element" (e.g., a box) a ground-truth
     element. Each predicted element will have exactly zero or one matches; each
     ground-truth element may be matched to zero or more predicted elements.
-    The matching is determined by the MxN match_quality_matrix, that characterizes
-    how well each (ground-truth, prediction)-pair match each other. For example,
+    The matching is determined by the MxN match_quality_matrix and match_quality_matrix_ioa, 
+    they characterize how well each (ground-truth, prediction)-pair match each other. For example,
     if the elements are boxes, this matrix may contain box intersection-over-union
-    overlap values.
+    overlap values and intersection-over-area difference values.
     The matcher returns (a) a vector of length N containing the index of the
     ground-truth element m in [0, M) that matches to prediction n in [0, N).
     (b) a vector of length N containing the labels for each prediction.
@@ -98,13 +102,13 @@ class Ioa_Matcher(object):
                 See set_low_quality_matches_ for more details.
             For example,
                 thresholds = [0.3, 0.5]
-                thresholds_ioa = 0.5
+                thresholds_ioa = 0.6
                 labels = [0, -1, 1]
-                All predictions with iou < 0.3 and ioa_dif > 0.5 will be marked with 0 and
+                All predictions with iou < 0.3 will be marked with 0 and
                 thus will be considered as false positives while training.
                 All predictions with 0.3 <= iou < 0.5 will be marked with -1 and
                 thus will be ignored.
-                All predictions with 0.5 <= iou and ioa_dif < 0.5 will be marked with 1 and
+                All predictions with 0.5 <= iou and ioa_dif < 0.6 will be marked with 1 and
                 thus will be considered as true positives.
         """
         # Add -inf and +inf to first and last position in thresholds
@@ -117,6 +121,7 @@ class Ioa_Matcher(object):
         assert all([l in [-1, 0, 1] for l in labels])
         assert len(labels) == len(thresholds) - 1
         self.thresholds = thresholds
+        self.thresholds_ioa = thresholds_ioa
         self.labels = labels
         self.allow_low_quality_matches = allow_low_quality_matches
 
@@ -155,11 +160,13 @@ class Ioa_Matcher(object):
         # match_quality_matrix is M (gt) x N (predicted)
         # Max over gt elements (dim 0) to find best gt candidate for each prediction
         matched_vals, matches = match_quality_matrix.max(dim=0)
+        
+        matched_vals_ioa = match_quality_matrix_ioa[matches, np.arange(0, match_quality_matrix.size(1))]
 
-        match_labels = matches.new_full(matches.size(), 1, dtype=torch.int8)
+        match_labels = matches.new_full(matches.size(), 0, dtype=torch.int8)
 
         for (l, low, high) in zip(self.labels, self.thresholds[:-1], self.thresholds[1:]):
-            low_high = (matched_vals >= low) & (matched_vals < high)
+            low_high = (matched_vals >= low) & (matched_vals < high) & (matched_vals_ioa*l < self.thresholds_ioa)
             match_labels[low_high] = l
 
         if self.allow_low_quality_matches:
@@ -192,7 +199,11 @@ class Ioa_Matcher(object):
 
 @PROPOSAL_GENERATOR_REGISTRY.register()
 class custom_RPN(RPN):
-
+  '''
+  from detectron2-rpn.py 
+  the main change is to use ioa instead of iou in nms and combine these two in anchor matching
+  another change is that before nms will be processed for each class, but now images from all classes wil be processed together
+  '''
   @configurable
   def __init__(self,
         *,
