@@ -599,9 +599,10 @@ def setup_cfg(
     cfg.MODEL.BACKBONE.FREEZE_AT = 2
     cfg.mask_weight = mask_weight
     #cfg.MODEL.ROI_BOX_HEAD.BBOX_REG_LOSS_TYPE = 'diou'
-    cfg.MODEL.PROPOSAL_GENERATOR.NAME  = 'custom_RPN'
-    cfg.nms_thresh_union = rpn_nms_thresh
+    #cfg.MODEL.PROPOSAL_GENERATOR.NAME  = 'custom_RPN'
+    cfg.nms_thresh_union = nms_thresh_union
     cfg.MODEL.RPN.NMS_THRESH = rpn_nms_thresh
+    #cfg.MODEL.RPN.IOA_THRESHOLDS = ?
     cfg.MODEL.ROI_HEADS.NMS_THRESH_TEST = nms_thresh_test
     
     return cfg
