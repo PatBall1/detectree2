@@ -51,7 +51,7 @@ def _is_tracing():
 
 def pairwise_ioa(boxes1: Boxes, boxes2: Boxes) -> torch.Tensor:
     """
-    Similar to :func:`pariwise_iou` but compute the IoA (intersection over boxes2 area).
+    Compute the IoA difference (intersection over boxes2 area - intersection over boxes2 area).
     Args:
         boxes1,boxes2 (Boxes): two `Boxes`. Contains N & M boxes, respectively.
     Returns:
@@ -249,7 +249,7 @@ class custom_RPN(RPN):
 
   @torch.jit.unused
   @torch.no_grad()
-    def label_and_sample_anchors(
+  def label_and_sample_anchors(
         self, anchors: List[Boxes], gt_instances: List[Instances]
     ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
         """
