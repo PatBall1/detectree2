@@ -115,7 +115,7 @@ class LossEvalHook(HookBase):
         else:
             AP = self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]
         print("Av. AP50 =", AP)
-        self.trainer.values.append(AP)
+        self.trainer.APs.append(AP)
         self.trainer.storage.put_scalar("validation_loss", mean_loss)
         self.trainer.storage.put_scalar("validation_ap", AP)
         comm.synchronize()
@@ -142,10 +142,10 @@ class LossEvalHook(HookBase):
         is_final = next_iter == self.trainer.max_iter
         if is_final or (self._period > 0 and next_iter % self._period == 0):
             self._do_loss_eval()
-            if self.max_ap < self.trainer.values[-1]:
+            if self.max_ap < self.trainer.APs[-1]:
                 self.iter = 0
-                self.max_ap = self.trainer.values[-1]
-                self.trainer.checkpointer.save("model_" + str(len(self.trainer.values)))
+                self.max_ap = self.trainer.APs[-1]
+                self.trainer.checkpointer.save("model_" + str(len(self.trainer.APs)))
                 self.best_iter = self.trainer.iter
             else:
                 self.iter += 1
@@ -160,8 +160,8 @@ class LossEvalHook(HookBase):
         # not found!
         # Therefore sleep is attempt to allow CI to pass, but it often still fails.
         time.sleep(15)
-        if len(self.trainer.values) != 0:
-          index = self.trainer.values.index(max(self.trainer.values)) + 1
+        if len(self.trainer.APs) != 0:
+          index = self.trainer.values.index(max(self.trainer.APs)) + 1
           print(self.trainer.early_stop,"best model is", index)
           self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' + str(index) + '.pth')
 
@@ -198,7 +198,7 @@ class MyTrainer(DefaultTrainer):
     self.iter = self.start_iter = start_iter
     self.max_iter = max_iter
     self.early_stop = False
-    self.values = []
+    self.APs = []
     self.reweight = False ### used to decide when to increase the weight of classification loss
 
     with EventStorage(start_iter) as self.storage:
