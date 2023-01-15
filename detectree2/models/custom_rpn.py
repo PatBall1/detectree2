@@ -58,6 +58,8 @@ def _is_tracing():
 def pairwise_ioa(boxes1: Boxes, boxes2: Boxes) -> torch.Tensor:
     """
     Compute the IoA difference (intersection over boxes2 area - intersection over boxes2 area).
+    This metric is used for anchor choice and the chosen anchor is processsed through box2box transformation.
+    The box2box transformation is assumed to be linear so we use IOA difference to restrict distances between anchors and gt bounding boxes
     Args:
         boxes1,boxes2 (Boxes): two `Boxes`. Contains N & M boxes, respectively.
     Returns:
