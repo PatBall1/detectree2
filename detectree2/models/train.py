@@ -71,6 +71,7 @@ class LossEvalHook(HookBase):
         self.iter = 0
         self.max_value = 0
         self.best_iter = 0
+        self.max_ap = 0
 
   def _do_loss_eval(self):
         """Copying inference_on_dataset from evaluator.py.
