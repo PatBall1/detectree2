@@ -71,7 +71,6 @@ class LossEvalHook(HookBase):
         self.iter = 0
         self.max_value = 0
         self.best_iter = 0
-        #self.checkpointer = DetectionCheckpointer(self._model, save_dir=out_dir)
 
   def _do_loss_eval(self):
         """Copying inference_on_dataset from evaluator.py.
@@ -116,7 +115,7 @@ class LossEvalHook(HookBase):
         else:
             AP = self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]
         print("Av. AP50 =", AP)
-        self.trainer.APs.append(AP)
+        self.trainer.values.append(AP)
         self.trainer.storage.put_scalar("validation_loss", mean_loss)
         self.trainer.storage.put_scalar("validation_ap", AP)
         comm.synchronize()
@@ -143,10 +142,10 @@ class LossEvalHook(HookBase):
         is_final = next_iter == self.trainer.max_iter
         if is_final or (self._period > 0 and next_iter % self._period == 0):
             self._do_loss_eval()
-            if self.max_ap < self.trainer.APs[-1]:
+            if self.max_ap < self.trainer.values[-1]:
                 self.iter = 0
-                self.max_ap = self.trainer.APs[-1]
-                self.trainer.checkpointer.save("model_" + str(len(self.trainer.APs)))
+                self.max_ap = self.trainer.values[-1]
+                self.trainer.checkpointer.save("model_" + str(len(self.trainer.values)))
                 self.best_iter = self.trainer.iter
             else:
                 self.iter += 1
@@ -156,8 +155,6 @@ class LossEvalHook(HookBase):
         self.trainer.storage.put_scalars(timetest=12)
 
   def after_train(self):
-        # Select the model with the best AP50
-        index = self.trainer.APs.index(max(self.trainer.APs)) + 1
         # Error in demo:
         # AssertionError: Checkpoint /__w/detectree2/detectree2/detectree2-data/paracou-out/train_outputs-1/model_1.pth
         # not found!
