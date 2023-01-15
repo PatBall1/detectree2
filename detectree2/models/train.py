@@ -69,7 +69,6 @@ class LossEvalHook(HookBase):
         self._data_loader = data_loader
         self.patience = patience
         self.iter = 0
-        self.max_value = 0
         self.best_iter = 0
         self.max_ap = 0
 
