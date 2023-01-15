@@ -24,6 +24,7 @@ from detectron2.layers import nonzero_tuple
 from detectron2.config import configurable
 from detectron2.layers import Conv2d, ShapeSpec, cat
 from detectron2.structures import Boxes, ImageList, Instances, pairwise_iou
+from detectron2.structures.boxes import pairwise_intersection
 from detectron2.utils.events import get_event_storage
 from detectron2.utils.memory import retry_if_cuda_oom
 from detectron2.utils.registry import Registry
@@ -62,12 +63,11 @@ def pairwise_ioa(boxes1: Boxes, boxes2: Boxes) -> torch.Tensor:
         Tensor: IoA, sized [N,M].
     """
     area2 = boxes2.area()  # [M]
-    area1 = boxes1.area()  # [M]
+    area1 = boxes1.area()  # [N]
     inter = pairwise_intersection(boxes1, boxes2)
-
     # handle empty boxes
     ioa_dif = torch.where(
-        inter > 0, abs(inter / area2 - inter / area1), torch.zeros(1, dtype=inter.dtype, device=inter.device)
+        inter > 0, abs(inter / area2 - (inter.T / area1).T), torch.zeros(1, dtype=inter.dtype, device=inter.device)
     )
     return ioa_dif
 
