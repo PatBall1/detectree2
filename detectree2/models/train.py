@@ -161,7 +161,7 @@ class LossEvalHook(HookBase):
         # Therefore sleep is attempt to allow CI to pass, but it often still fails.
         time.sleep(15)
         if len(self.trainer.APs) != 0:
-          index = self.trainer.values.index(max(self.trainer.APs)) + 1
+          index = self.trainer.APs.index(max(self.trainer.APs)) + 1
           print(self.trainer.early_stop,"best model is", index)
           self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' + str(index) + '.pth')
 
@@ -594,7 +594,7 @@ def setup_cfg(
     cfg.MODEL.BACKBONE.FREEZE_AT = 2
     cfg.mask_weight = mask_weight
     #cfg.MODEL.ROI_BOX_HEAD.BBOX_REG_LOSS_TYPE = 'diou'
-    cfg.MODEL.PROPOSAL_GENERATOR.NAME  = 'custom_RPN'
+    #cfg.MODEL.PROPOSAL_GENERATOR.NAME  = 'custom_RPN'
     cfg.nms_thresh_union = nms_thresh_union
     cfg.MODEL.RPN.NMS_THRESH = rpn_nms_thresh
     cfg.MODEL.RPN.IOA_THRESHOLDS = 0.4
