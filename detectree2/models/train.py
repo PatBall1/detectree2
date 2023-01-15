@@ -39,11 +39,10 @@ from detectron2.utils.events import EventStorage
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
 
-# from IPython.display import display
-# from PIL import Image
-
 from .custom_rpn import custom_RPN, DefaultPredictor1
 
+# from IPython.display import display
+# from PIL import Image
 
 class LossEvalHook(HookBase):
   """Do inference and get the loss metric
@@ -64,25 +63,24 @@ class LossEvalHook(HookBase):
     """
 
 
-  def __init__(self, eval_period, model, data_loader, patience, out_dir):
-    self._model = model
-    self._period = eval_period
-    self._data_loader = data_loader
-    self.patience = patience
-    self.iter = 0
-    self.max_value = 0
-    self.best_iter = 0
-    #self.checkpointer = DetectionCheckpointer(self._model, save_dir=out_dir)
+  def __init__(self, eval_period, model, data_loader, patience):
+        self._model = model
+        self._period = eval_period
+        self._data_loader = data_loader
+        self.patience = patience
+        self.iter = 0
+        self.max_value = 0
+        self.best_iter = 0
+        #self.checkpointer = DetectionCheckpointer(self._model, save_dir=out_dir)
 
   def _do_loss_eval(self):
-    total = len(self._data_loader)
-    num_warmup = min(5, total - 1)
+        """Copying inference_on_dataset from evaluator.py.
+        Returns:
+            _type_: _description_
+        """
+        total = len(self._data_loader)
+        num_warmup = min(5, total - 1)
 
-    start_time = time.perf_counter()
-    total_compute_time = 0
-    losses = []
-    for idx, inputs in enumerate(self._data_loader):
-      if idx == num_warmup:
         start_time = time.perf_counter()
         total_compute_time = 0
         losses = []
@@ -165,7 +163,10 @@ class LossEvalHook(HookBase):
         # not found!
         # Therefore sleep is attempt to allow CI to pass, but it often still fails.
         time.sleep(15)
-        self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' + str(index) + '.pth')
+        if len(self.trainer.values) != 0:
+          index = self.trainer.values.index(max(self.trainer.values)) + 1
+          print(self.trainer.early_stop,"best model is", index)
+          self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' + str(index) + '.pth')
 
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
 class MyTrainer(DefaultTrainer):
@@ -298,10 +299,8 @@ class MyTrainer(DefaultTrainer):
 
   def build_train_loader(cls, cfg):
     """Summary.
-
     Args:
         cfg (_type_): _description_
-
     Returns:
         _type_: _description_
     """
@@ -548,7 +547,6 @@ def setup_cfg(
     resize=True,
 ):
     """Set up config object # noqa: D417.
-
     Args:
         base_model: base pre-trained model from detectron2 model_zoo
         trains: names of registered data to use for training
