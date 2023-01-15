@@ -3,6 +3,7 @@
 
 from typing import Tuple
 
+import numpy as np
 import torch
 import torchvision
 from torch import Tensor
