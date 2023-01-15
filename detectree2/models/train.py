@@ -123,7 +123,7 @@ class LossEvalHook(HookBase):
 
         return losses
 
-    def _get_loss(self, data):
+  def _get_loss(self, data):
         """Calculate loss in train_loop.
         Args:
             data (_type_): _description_
@@ -138,7 +138,7 @@ class LossEvalHook(HookBase):
         total_losses_reduced = sum(loss for loss in metrics_dict.values())
         return total_losses_reduced
 
-    def after_step(self):
+   def after_step(self):
         next_iter = self.trainer.iter + 1
         is_final = next_iter == self.trainer.max_iter
         if is_final or (self._period > 0 and next_iter % self._period == 0):
@@ -155,7 +155,7 @@ class LossEvalHook(HookBase):
             print("Early stopping occurs in iter {}, max ap is {}".format(self.best_iter, self.max_ap))
         self.trainer.storage.put_scalars(timetest=12)
 
-    def after_train(self):
+   def after_train(self):
         # Select the model with the best AP50
         index = self.trainer.APs.index(max(self.trainer.APs)) + 1
         # Error in demo:
