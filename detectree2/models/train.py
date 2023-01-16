@@ -539,7 +539,6 @@ def setup_cfg(
     nms_thresh_union = 0.1,
     rpn_nms_thresh = 0,
     nms_thresh_test = 0.2,
-    mask_weight = 1,
     out_dir="/content/drive/Shareddrives/detectree2/train_outputs",
     resize=True,
 ):
@@ -592,13 +591,12 @@ def setup_cfg(
     cfg.INPUT.MIN_SIZE_TRAIN = 1000
     
     cfg.MODEL.BACKBONE.FREEZE_AT = 2
-    '''cfg.mask_weight = mask_weight
     #cfg.MODEL.ROI_BOX_HEAD.BBOX_REG_LOSS_TYPE = 'diou'
     cfg.MODEL.PROPOSAL_GENERATOR.NAME  = 'custom_RPN'
     cfg.nms_thresh_union = nms_thresh_union
     cfg.MODEL.RPN.NMS_THRESH = rpn_nms_thresh
     cfg.MODEL.RPN.IOA_THRESHOLDS = 0.4
-    cfg.MODEL.ROI_HEADS.NMS_THRESH_TEST = nms_thresh_test'''
+    cfg.MODEL.ROI_HEADS.NMS_THRESH_TEST = nms_thresh_test
     
     return cfg
 
