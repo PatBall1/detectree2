@@ -9,10 +9,10 @@ from http.client import REQUEST_URI_TOO_LONG  # noqa: F401
 from pathlib import Path
 
 import cv2
+import rasterio
 import geopandas as gpd
 import pycocotools.mask as mask_util
 from fiona.crs import from_epsg
-from rasterio.transform import xy
 from shapely.geometry import Polygon, box, shape
 
 
@@ -201,7 +201,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None):  # noqa:N8
                     y_coord = crown_coords[c + 1]
 
                     # Using rasterio transform here is slower but more reliable
-                    x_coord, y_coord = xy(transform=raster_transform,
+                    x_coord, y_coord = rasterio.transform.xy(transform=raster_transform,
                                           rows=y_coord,
                                           cols=x_coord)
 

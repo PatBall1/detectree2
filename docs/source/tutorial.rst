@@ -20,8 +20,7 @@ or
 
    (.venv) $conda install detectree2 -c ma595
 
-To train a model you will need an orthomosaic (as ``<orthmosaic.tif``) and
-
+To train a model you will need an orthomosaic (as ``<orthmosaic>.tif``) and 
 corresponding tree crown polgons that are readable by Geopandas
 (e.g. ``<crowns_polygon>.gpkg``, ``<crowns_polygon>.shp``). For the best
 results, manual crowns should be supplied as dense clusters rather than
