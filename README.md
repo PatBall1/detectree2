@@ -13,8 +13,8 @@ Original MRes project repo at <https://github.com/shmh40/detectreeRGB>.</sub>
 
 **Please cite**:
 
-Accurate tropical forest individual tree crown delineation from RGB imagery using Mask R-CNN.
-Sebastian H M Hickman, James G C Ball, Tobias D Jackson, Xian Jing Koay, James Hirst, William Jay, Melaine Aubry-Kientz, Gregoire Vincent, David A Coomes
+Accurate tropical forest individual tree crown delineation from aerial RGB imagery using Mask R-CNN.
+James G. C. Ball, Sebastian H. M. Hickman, Tobias D. Jackson, Xian Jing Koay, James Hirst, William Jay, Mélaine Aubry-Kientz, Grégoire Vincent, David A. Coomes
 *bioRxiv* 2022.07.10.499480; doi: [https://doi.org/10.1101/2022.07.10.499480](https://doi.org/10.1101/2022.07.10.499480)
 
 ## Requirements
