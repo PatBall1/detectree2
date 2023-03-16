@@ -247,7 +247,7 @@ approximately the same size as those trained on (typically ~ 100 m).</p>
 </pre></div>
 </div>
 <p>Once the predictions have been made on the tiles, it is necessary to project them back into geographic space.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_to_geojson</span><span class="p">(</span><span class="n">tiles_path</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions_geo/&quot;</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions/&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_to_geojson</span><span class="p">(</span><span class="n">tiles_path</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions/&quot;</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions_geo/&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>To create a useful outputs it is necessary to stitch the crowns together while handling overlaps in the buffer.
