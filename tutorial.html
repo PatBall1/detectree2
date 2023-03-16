@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>2. Tutorial &mdash; detectree2 0.0.1 documentation</title>
@@ -12,9 +12,6 @@
   <![endif]-->
   
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -30,11 +27,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> detectree2
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            detectree2
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -67,7 +68,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active"><span class="section-number">2. </span>Tutorial</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/tutorial.rst.txt" rel="nofollow"> View page source</a>
@@ -78,31 +79,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<section id="tutorial">
+  <section id="tutorial">
 <h1><span class="section-number">2. </span>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this heading"></a></h1>
 <p>A tutorial for:</p>
 <ol class="arabic simple">
@@ -119,8 +96,8 @@
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$</span>conda<span class="w"> </span>install<span class="w"> </span>detectree2<span class="w"> </span>-c<span class="w"> </span>ma595
 </pre></div>
 </div>
-<p>To train a model you will need an orthomosaic (as <code class="docutils literal notranslate"><span class="pre">&lt;orthmosaic.tif</span></code>) and</p>
-<p>corresponding tree crown polgons that are readable by Geopandas
+<p>To train a model you will need an orthomosaic (as <code class="docutils literal notranslate"><span class="pre">&lt;orthmosaic&gt;.tif</span></code>) and
+corresponding tree crown polgons that are readable by Geopandas
 (e.g. <code class="docutils literal notranslate"><span class="pre">&lt;crowns_polygon&gt;.gpkg</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;crowns_polygon&gt;.shp</span></code>). For the best
 results, manual crowns should be supplied as dense clusters rather than
 sparsely scattered across in the landscape</p>
@@ -270,14 +247,14 @@ approximately the same size as those trained on (typically ~ 100 m).</p>
 </pre></div>
 </div>
 <p>Once the predictions have been made on the tiles, it is necessary to project them back into geographic space.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_to_geojson</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions_geo/&quot;</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions/&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_to_geojson</span><span class="p">(</span><span class="n">tiles_path</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions_geo/&quot;</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions/&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>To create a useful outputs it is necessary to stitch the crowns together while handling overlaps in the buffer.
 Invalid geometries may arise when converting from a mask to a polygon - it is usually best to simply remove these.
 Cleaning the crowns will remove instances where there is large overlaps between predicted crowns (removing the
 predictions with lower confidence).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_to_geojson</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions_geo/&quot;</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions/&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">crowns</span> <span class="o">=</span> <span class="n">stitch_crowns</span><span class="p">(</span><span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions_geo/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">crowns</span> <span class="o">=</span> <span class="n">crowns</span><span class="p">[</span><span class="n">crowns</span><span class="o">.</span><span class="n">is_valid</span><span class="p">]</span>
 <span class="n">crowns</span> <span class="o">=</span> <span class="n">clean_crowns</span><span class="p">(</span><span class="n">crowns</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">)</span>
 </pre></div>
