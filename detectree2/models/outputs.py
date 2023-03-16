@@ -9,9 +9,9 @@ from http.client import REQUEST_URI_TOO_LONG  # noqa: F401
 from pathlib import Path
 
 import cv2
-import rasterio
 import geopandas as gpd
 import pycocotools.mask as mask_util
+import rasterio
 from fiona.crs import from_epsg
 from shapely.geometry import Polygon, box, shape
 
