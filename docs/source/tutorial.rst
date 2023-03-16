@@ -20,8 +20,7 @@ or
 
    (.venv) $conda install detectree2 -c ma595
 
-To train a model you will need an orthomosaic (as ``<orthmosaic.tif``) and
-
+To train a model you will need an orthomosaic (as ``<orthmosaic>.tif``) and 
 corresponding tree crown polgons that are readable by Geopandas
 (e.g. ``<crowns_polygon>.gpkg``, ``<crowns_polygon>.shp``). For the best
 results, manual crowns should be supplied as dense clusters rather than
@@ -211,7 +210,7 @@ Once the predictions have been made on the tiles, it is necessary to project the
 
 .. code-block:: python
    
-   project_to_geojson(data, tiles_path + "predictions_geo/", tiles_path + "predictions/")
+   project_to_geojson(tiles_path, tiles_path + "predictions_geo/", tiles_path + "predictions/")
 
 To create a useful outputs it is necessary to stitch the crowns together while handling overlaps in the buffer.
 Invalid geometries may arise when converting from a mask to a polygon - it is usually best to simply remove these.
@@ -220,7 +219,7 @@ predictions with lower confidence).
 
 .. code-block:: python
    
-   project_to_geojson(data, tiles_path + "predictions_geo/", tiles_path + "predictions/")
+   crowns = stitch_crowns(tiles_path + "predictions_geo/", 1)
    crowns = crowns[crowns.is_valid]
    crowns = clean_crowns(crowns, 0.6)
 
