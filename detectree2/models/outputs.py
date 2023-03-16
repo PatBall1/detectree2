@@ -193,8 +193,8 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None):  # noqa:N8
 
                     # Using rasterio transform here is slower but more reliable
                     x_coord, y_coord = rasterio.transform.xy(transform=raster_transform,
-                                          rows=y_coord,
-                                          cols=x_coord)
+                                                             rows=y_coord,
+                                                             cols=x_coord)
 
                     moved_coords.append([x_coord, y_coord])
 

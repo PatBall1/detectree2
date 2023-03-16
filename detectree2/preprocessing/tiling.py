@@ -72,7 +72,7 @@ def tile_data(
     os.makedirs(out_dir, exist_ok=True)
     crs = data.crs.data["init"].split(":")[1]
     tilename = Path(data.name).stem
-    
+
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
                           tile_width, int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
