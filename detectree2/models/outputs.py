@@ -141,24 +141,18 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None):  # noqa:N8
     Path(output_fold).mkdir(parents=True, exist_ok=True)
     entries = os.listdir(pred_fold)
 
-
-
     for filename in entries:
         if ".json" in filename:
             print(filename)
             tifpath = Path(tiles_path, (filename.replace("Prediction_", "")))
             tifpath = tifpath.with_suffix(".tif")
-            #print(tifpath)
+            # print(tifpath)
 
             data = rasterio.open(tifpath)
             epsg = str(data.crs).split(":")[1]
             raster_transform = data.transform
-            #print(raster_transform)
+            # print(raster_transform)
             # create a dictionary for each file to store data used multiple times
-            #img_dict = {}
-            #img_dict["filename"] = file
-            #print(img_dict["filename"])
-
 
             # create a geofile for each tile --> the EPSG value should be done
             # automatically
@@ -172,9 +166,6 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None):  # noqa:N8
                 },
                 "features": [],
             }
-            # update the image dictionary to store all information cleanly
-            #img_dict.update({"minx": minx, "miny": miny, "height": height, "buffer": buffer})
-            # print("Img dict:", img_dict)
 
             # load the json file we need to convert into a geojson
             with open(pred_fold + "/" + filename) as prediction_file:
