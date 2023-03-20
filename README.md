@@ -43,6 +43,8 @@ Currently works on Google Colab (Pro version recommended). May struggle on clust
 
 Detectree2, based on the [Detectron2](https://github.com/facebookresearch/detectron2) Mask R-CNN architecture, locates trees in aerial images. It has been designed to delineate trees in challenging dense tropical forests for a range of ecological applications.
 
+This [tutorial](https://patball1.github.io/detectree2/tutorial.html) takes you through the key steps. [Example Colab notebooks](https://github.com/PatBall1/detectree2/tree/master/notebooks/colab) are also available.
+
 The standard workflow includes:
 
 1) Tile the orthomosaics and crown data (for training, validation and testing)
@@ -50,7 +52,7 @@ The standard workflow includes:
 3) Evaluate the model performance by predicting on the test tiles and comparing to manual crowns for the tiles
 4) Using the trained model to predict the crowns over the entire region of interest
 
-Training crowns are used to teach the network to delineate tree crowns
+Training crowns are used to teach the network to delineate tree crowns.
 <p align="center">
 <img width="500" align="center" alt="predictions" src= ./report/figures/Workflow_Diagram2_a.png#gh-light-mode-only>
 <img width="500" align="center" alt="predictions" src= ./report/figures/Workflow_Diagram2_b.png#gh-dark-mode-only>
