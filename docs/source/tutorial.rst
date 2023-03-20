@@ -233,5 +233,5 @@ Once we're happy with the crown map, save the crowns to file.
 
 .. code-block:: python
    
-   crowns.to_file("/content/drive/Shareddrives/detectree2/data/" + name + "/crowns_out.gpkg")
+   crowns.to_file(site_path + "/crowns_out.gpkg")
 
