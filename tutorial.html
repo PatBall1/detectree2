@@ -230,7 +230,7 @@ approximately the same size as those trained on (typically ~ 100 m).</p>
 <span class="n">site_path</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/BCI_50ha&quot;</span>
 <span class="n">img_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/rgb/2015.06.10_07cm_ORTHO.tif&quot;</span>
 <span class="n">tiles_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/tilespred/&quot;</span>
-<span class="c1"># Location of pre-trained model</span>
+<span class="c1"># Location of trained model</span>
 <span class="n">model_path</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/models/220629_ParacouSepilokDanum_JB.pth&quot;</span>
 
 <span class="c1"># Specify tiling</span>
@@ -240,8 +240,12 @@ approximately the same size as those trained on (typically ~ 100 m).</p>
 <span class="n">tile_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tiles_path</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">dtype_bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>To download a pre-trained model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code> you can run <code class="docutils literal notranslate"><span class="pre">wget</span></code> on the package repo</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>!wget https://github.com/PatBall1/detectree2/raw/master/model_garden/230103_randresize_full.pth
+</pre></div>
+</div>
 <p>Point to a trained model, set up the configuration state and make predictions on the tiles.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">trained_model</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/models/220723_withParacouUAV.pth&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">trained_model</span> <span class="o">=</span> <span class="s2">&quot;./230103_randresize_full.pth&quot;</span>
 <span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span><span class="n">update_model</span><span class="o">=</span><span class="n">trained_model</span><span class="p">)</span>
 <span class="n">predict_on_data</span><span class="p">(</span><span class="n">tiles_path</span><span class="p">,</span> <span class="n">DefaultPredictor</span><span class="p">(</span><span class="n">cfg</span><span class="p">))</span>
 </pre></div>
@@ -260,7 +264,7 @@ predictions with lower confidence).</p>
 </pre></div>
 </div>
 <p>Once we’re happy with the crown map, save the crowns to file.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">crowns</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/&quot;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;/crowns_out.gpkg&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">crowns</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/crowns_out.gpkg&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

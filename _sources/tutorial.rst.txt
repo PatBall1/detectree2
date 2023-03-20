@@ -188,7 +188,7 @@ approximately the same size as those trained on (typically ~ 100 m).
    site_path = "/content/drive/Shareddrives/detectree2/data/BCI_50ha"
    img_path = site_path + "/rgb/2015.06.10_07cm_ORTHO.tif"
    tiles_path = site_path + "/tilespred/"
-   # Location of pre-trained model
+   # Location of trained model
    model_path = "/content/drive/Shareddrives/detectree2/models/220629_ParacouSepilokDanum_JB.pth"
 
    # Specify tiling
@@ -197,12 +197,18 @@ approximately the same size as those trained on (typically ~ 100 m).
    tile_height = 40
    tile_data(data, tiles_path, buffer, tile_width, tile_height, dtype_bool = True)
 
+To download a pre-trained model from the ``model_garden`` you can run ``wget`` on the package repo
+
+.. code-block:: python
+   
+   !wget https://github.com/PatBall1/detectree2/raw/master/model_garden/230103_randresize_full.pth
+
 
 Point to a trained model, set up the configuration state and make predictions on the tiles.
 
 .. code-block:: python
    
-   trained_model = "/content/drive/Shareddrives/detectree2/models/220723_withParacouUAV.pth"
+   trained_model = "./230103_randresize_full.pth"
    cfg = setup_cfg(update_model=trained_model)
    predict_on_data(tiles_path, DefaultPredictor(cfg))
 
@@ -227,5 +233,5 @@ Once we're happy with the crown map, save the crowns to file.
 
 .. code-block:: python
    
-   crowns.to_file("/content/drive/Shareddrives/detectree2/data/" + name + "/crowns_out.gpkg")
+   crowns.to_file(site_path + "/crowns_out.gpkg")
 
