@@ -87,9 +87,9 @@ Set up the paths for the orthomosaic and corresponding manual crown data.
 Set up the tiling parameters.
 
 The tile size will depend on:
-- The resolution of your imagery
-- The detail required on the crown outline
-- If using a pre-trained model, the tile size used to train it
+* The resolution of your imagery
+* The detail required on the crown outline
+* If using a pre-trained model, the tile size used to train it
 
 .. code-block:: python
 
@@ -107,8 +107,7 @@ Next we tile the data
    tile_data_train(data, out_dir, buffer, tile_width, tile_height, crowns, threshold)
 
 
-Send geojsons to train folder (with sub-folders for k-fold cross validation)
- and test folder. 
+Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder. 
 The approximate proportion of data to reserve for testing.
 Automatically removes training tiles that overlap with test tiles, ensuring
 spatial separation 

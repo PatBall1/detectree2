@@ -150,9 +150,9 @@ directory (see e.g <code class="docutils literal notranslate"><span class="pre">
 </div>
 <p>Set up the tiling parameters.</p>
 <p>The tile size will depend on:
-- The resolution of your imagery
-- The detail required on the crown outline
-- If using a pre-trained model, the tile size used to train it</p>
+* The resolution of your imagery
+* The detail required on the crown outline
+* If using a pre-trained model, the tile size used to train it</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set tiling parameters</span>
 <span class="n">buffer</span> <span class="o">=</span> <span class="mi">30</span>
 <span class="n">tile_width</span> <span class="o">=</span> <span class="mi">40</span>
@@ -164,11 +164,8 @@ directory (see e.g <code class="docutils literal notranslate"><span class="pre">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tile_data_train</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">crowns</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
 </pre></div>
 </div>
-<dl class="simple">
-<dt>Send geojsons to train folder (with sub-folders for k-fold cross validation)</dt><dd><p>and test folder.</p>
-</dd>
-</dl>
-<p>The approximate proportion of data to reserve for testing.
+<p>Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder.
+The approximate proportion of data to reserve for testing.
 Automatically removes training tiles that overlap with test tiles, ensuring
 spatial separation</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">to_traintest_folders</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">test_frac</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
