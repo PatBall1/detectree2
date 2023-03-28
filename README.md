@@ -12,6 +12,8 @@ A tutorial on how to prepare data, train models and make predictions is availabl
 The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge [Conservation Research Institute](https://www.conservation.cam.ac.uk/).
 Original MRes project repo at <https://github.com/shmh40/detectreeRGB>.</sub>
 
+## Citation
+
 **Please cite**:
 
 Ball, James GC, Sebastian HM Hickman, Tobias D. Jackson, Xian Jing Koay, James Hirst, William Jay, Mélaine Aubry-Kientz, Grégoire Vincent, and David A. Coomes. (2022)
@@ -69,7 +71,7 @@ Here is an example image of the predictions made by Detectree2.
 **Independent validation against DeepForest**:
 
 Gan, Yi, Quan Wang, and Atsuhiro Iio. (2023).
-"Tree Crown Detection and Delineation in a Temperate Deciduous Forest from UAV RGB Imagery Using Deep Learning Approaches: Effects of Spatial Resolution and Species Characteristics. 
+Tree Crown Detection and Delineation in a Temperate Deciduous Forest from UAV RGB Imagery Using Deep Learning Approaches: Effects of Spatial Resolution and Species Characteristics. 
 *Remote Sensing*. 15(3):778. [https://doi.org/10.3390/rs15030778](https://doi.org/10.3390/rs15030778)
 
 
