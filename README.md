@@ -70,6 +70,8 @@ Here is an example image of the predictions made by Detectree2.
 
 **Independent validation against DeepForest**:
 
+*"Detectree2 (F1 score: 0.57) outperformed DeepForest (F1 score: 0.52)"*
+
 Gan, Yi, Quan Wang, and Atsuhiro Iio. (2023).
 Tree Crown Detection and Delineation in a Temperate Deciduous Forest from UAV RGB Imagery Using Deep Learning Approaches: Effects of Spatial Resolution and Species Characteristics. 
 *Remote Sensing*. 15(3):778. [https://doi.org/10.3390/rs15030778](https://doi.org/10.3390/rs15030778)
