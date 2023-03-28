@@ -14,9 +14,9 @@ Original MRes project repo at <https://github.com/shmh40/detectreeRGB>.</sub>
 
 **Please cite**:
 
-Accurate tropical forest individual tree crown delineation from aerial RGB imagery using Mask R-CNN.
-James G. C. Ball, Sebastian H. M. Hickman, Tobias D. Jackson, Xian Jing Koay, James Hirst, William Jay, Mélaine Aubry-Kientz, Grégoire Vincent, David A. Coomes
-*bioRxiv* 2022.07.10.499480; doi: [https://doi.org/10.1101/2022.07.10.499480](https://doi.org/10.1101/2022.07.10.499480)
+Ball, James GC, Sebastian HM Hickman, Tobias D. Jackson, Xian Jing Koay, James Hirst, William Jay, Mélaine Aubry-Kientz, Grégoire Vincent, and David A. Coomes. (2022)
+Accurate delineation of individual tree crowns in tropical forests from aerial RGB imagery using Mask R-CNN.
+*bioRxiv* 2022.07.10.499480; [https://doi.org/10.1101/2022.07.10.499480](https://doi.org/10.1101/2022.07.10.499480)
 
 ## Requirements
 
@@ -63,6 +63,14 @@ Here is an example image of the predictions made by Detectree2.
 <p align="center">
 <img width="700" align="center" alt="predictions" src= ./report/figures/prediction_paracou.png >
 </p>
+
+## Independent validation
+
+**Independent validation against DeepForest**:
+
+Gan, Yi, Quan Wang, and Atsuhiro Iio. (2023).
+"Tree Crown Detection and Delineation in a Temperate Deciduous Forest from UAV RGB Imagery Using Deep Learning Approaches: Effects of Spatial Resolution and Species Characteristics. 
+*Remote Sensing*. 15(3):778. [https://doi.org/10.3390/rs15030778](https://doi.org/10.3390/rs15030778)
 
 ## To do
 
