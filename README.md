@@ -72,12 +72,6 @@ Gan, Yi, Quan Wang, and Atsuhiro Iio. (2023).
 "Tree Crown Detection and Delineation in a Temperate Deciduous Forest from UAV RGB Imagery Using Deep Learning Approaches: Effects of Spatial Resolution and Species Characteristics. 
 *Remote Sensing*. 15(3):778. [https://doi.org/10.3390/rs15030778](https://doi.org/10.3390/rs15030778)
 
-## To do
-
-- Functions for multiple labels vs single "tree" label
-- Implement early stopping
-- Gather "pristine" training and testing tiles across all available sites
-- Availability of pre-trained models (```model_garden```)
 
 ## Applications
 
@@ -111,47 +105,13 @@ Gan, Yi, Quan Wang, and Atsuhiro Iio. (2023).
 
 *In development*
 
+## To do
+
+- Functions for multiple labels vs single "tree" label
+
 ## Project Organization
 
 ```
-├── LICENSE
-├── Makefile           <- Makefile with commands like `make init` or `make lint-requirements`
-├── README.md          <- The top-level README for developers using this project.
-|
-├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-|   |                     the creator's initials, and a short `-` delimited description, e.g.
-|   |                     `1.0_jqp_initial-data-exploration`.
-|   ├── colab          <- Operational Google Colab notebooks.
-|   ├── colabPan       <- Operational Google Colab notebooks updated by Panagiotis Ioannou.
-│   ├── exploratory    <- Notebooks for initial exploration.
-│   ├── reports        <- Polished notebooks for presentations or intermediate results.
-│   └── turing         <- Notebooks developed by Seb Hickman (Cambridge) and 
-|                         Alejandro Coca Castro (Turing Institute) for Environmental AI Book.
-│
-├── report             <- Generated analysis as HTML, PDF, LaTeX, etc.
-│   ├── figures        <- Generated graphics and figures to be used in reporting
-│   └── sections       <- LaTeX sections. The report folder can be linked to your overleaf
-|                         report with github submodules.
-│
-├── requirements       <- Directory containing the requirement files.
-│
-├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
-├── src                <- Source code for use in this project.
-│   ├── __init__.py    <- Makes src a Python module
-│   │
-│   ├── data_loading   <- Scripts to download or generate data
-│   │
-│   ├── preprocessing  <- Scripts to turn raw data into clean data and features for modeling
-|   |
-│   ├── models         <- Scripts to train models and then use trained models to make
-│   │                     predictions
-│   │
-│   └── tests          <- Scripts for unit tests of your functions
-│
-└── setup.cfg          <- setup configuration file for linting rules
-
-NEW TREE:
-
 ├── LICENSE
 ├── Makefile
 ├── README.md
@@ -191,4 +151,4 @@ from within the project directory.
 
 ---
 
-Project template created by the [Cambridge AI4ER Cookiecutter](https://github.com/ai4er-cdt/ai4er-cookiecutter).
+Copyright (c) 2022, James G. C. Ball
