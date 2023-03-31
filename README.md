@@ -40,7 +40,7 @@ Currently works on Google Colab (Pro version recommended). May struggle on clust
 
 ### conda
 
-```conda install detectree2 -c ma595```
+*Under development*
 
 ## Getting started
 
