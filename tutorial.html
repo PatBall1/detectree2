@@ -232,11 +232,11 @@ our problem for the sake of time and efficiency.</p>
 </pre></div>
 </div>
 <p>Alternatively, it is possible to train from one of <code class="docutils literal notranslate"><span class="pre">detectree2</span></code>’s pre-trained models. This is normally recommended and
-especially useful if you only have limited training data available. To retrieve the model from the repo run</p>
+especially useful if you only have limited training data available. To retrieve the model from the repo run:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>!wget https://github.com/PatBall1/detectree2/raw/master/model_garden/230103_randresize_full.pth
 </pre></div>
 </div>
-<p>Then set up the configurations as before but with the trained model also supplied.</p>
+<p>Then set up the configurations as before but with the trained model also supplied:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the base (pre-trained) model from the detectron2 model_zoo</span>
 <span class="n">base_model</span> <span class="o">=</span> <span class="s2">&quot;COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml&quot;</span>
 
@@ -258,6 +258,11 @@ model training will converge given the particularities of the data supplied and 
 </div>
 <p>Once we are all set up, we can get commence model training. Training will continue until a specified number of
 iterations (<code class="docutils literal notranslate"><span class="pre">max_iter</span></code>) or until model performance is no longer improving (“early stopping” via <code class="docutils literal notranslate"><span class="pre">patience</span></code>).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span> <span class="o">=</span> <span class="n">MyTrainer</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">patience</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">resume_or_load</span><span class="p">(</span><span class="n">resume</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</pre></div>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Early stopping is implemented and will be triggered by a sustained failure to improve on the performance of
