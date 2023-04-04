@@ -8,7 +8,7 @@ A tutorial for:
 3. Evaluating model performance
 4. Making landscape level predictions
 
-Before getting started ensure `detectree2`` is installed through
+Before getting started ensure ``detectree2`` is installed through
 
 .. code-block:: console
 
@@ -183,12 +183,14 @@ our problem for the sake of time and efficiency.
 Alternatively, it is possible to train from one of ``detectree2``'s pre-trained models. This is normally recommended and
 especially useful if you only have limited training data available. To retrieve the model from the repo run
 
-.. code-block:: python   
+.. code-block:: python
+
    !wget https://github.com/PatBall1/detectree2/raw/master/model_garden/230103_randresize_full.pth
 
 Then set up the configurations as before but with the trained model also supplied.
 
-.. code-block:: python   
+.. code-block:: python
+
    # Set the base (pre-trained) model from the detectron2 model_zoo
    base_model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
 
@@ -203,7 +205,8 @@ Then set up the configurations as before but with the trained model also supplie
    cfg = setup_cfg(base_model, trains, tests, trained_model, workers = 4, eval_period=100, max_iter=3000, out_dir=out_dir) # update_model arg used to load in trained model
 
 .. note::
-   You may want to experiment with how you set up the `cfg`. The variables can make a big difference to how quickly 
+
+   You may want to experiment with how you set up the ``cfg``. The variables can make a big difference to how quickly 
    model training will converge given the particularities of the data supplied and computational resources available.
 
 Once we are all set up, we can get commence model training. Training will continue until a specified number of
