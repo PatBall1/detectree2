@@ -181,13 +181,13 @@ our problem for the sake of time and efficiency.
 
 
 Alternatively, it is possible to train from one of ``detectree2``'s pre-trained models. This is normally recommended and
-especially useful if you only have limited training data available. To retrieve the model from the repo run
+especially useful if you only have limited training data available. To retrieve the model from the repo run:
 
 .. code-block:: python
 
    !wget https://github.com/PatBall1/detectree2/raw/master/model_garden/230103_randresize_full.pth
 
-Then set up the configurations as before but with the trained model also supplied.
+Then set up the configurations as before but with the trained model also supplied:
 
 .. code-block:: python
 
@@ -213,11 +213,13 @@ Once we are all set up, we can get commence model training. Training will contin
 iterations (``max_iter``) or until model performance is no longer improving ("early stopping" via ``patience``).
 
 .. code-block::
+
    trainer = MyTrainer(cfg, patience = 5) 
    trainer.resume_or_load(resume=False)
    trainer.train()
 
 .. note::
+
    Early stopping is implemented and will be triggered by a sustained failure to improve on the performance of
    predictions on the validation fold. This is measured as the AP50 score of the validation predictions.
 
