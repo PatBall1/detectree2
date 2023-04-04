@@ -83,17 +83,13 @@
 <h1><span class="section-number">2. </span>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this heading"></a></h1>
 <p>A tutorial for:</p>
 <ol class="arabic simple">
-<li><p>preparing data</p></li>
-<li><p>training models</p></li>
-<li><p>evaluating model performance</p></li>
-<li><p>making landscape level predictions</p></li>
+<li><p>Preparing data</p></li>
+<li><p>Training models</p></li>
+<li><p>Evaluating model performance</p></li>
+<li><p>Making landscape level predictions</p></li>
 </ol>
-<p>Before getting started ensure detectree2 is installed either through</p>
+<p>Before getting started ensure <cite>detectree2`</cite> is installed through</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$</span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/PatBall1/detectree2.git
-</pre></div>
-</div>
-<p>or</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$</span>conda<span class="w"> </span>install<span class="w"> </span>detectree2<span class="w"> </span>-c<span class="w"> </span>ma595
 </pre></div>
 </div>
 <p>To train a model you will need an orthomosaic (as <code class="docutils literal notranslate"><span class="pre">&lt;orthmosaic&gt;.tif</span></code>) and
@@ -102,7 +98,7 @@ corresponding tree crown polgons that are readable by Geopandas
 results, manual crowns should be supplied as dense clusters rather than
 sparsely scattered across in the landscape</p>
 <p>If you would just like to make predictions on an orthomosaic with a pre-trained
-model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code>, skip to part 4.</p>
+model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code>, skip to part 4 (Generating landscape predictions).</p>
 <section id="preparing-data">
 <h2><span class="section-number">2.1. </span>Preparing data<a class="headerlink" href="#preparing-data" title="Permalink to this heading"></a></h2>
 <p>An example of the recommended file structure when training a new model is as follows:</p>
@@ -120,19 +116,17 @@ model from the <code class="docutils literal notranslate"><span class="pre">mode
 <span class="w">        </span>└──<span class="w"> </span>UpdatedCrowns8.gpkg<span class="w">                 </span><span class="o">(</span>Crown<span class="w"> </span>polygons<span class="w"> </span>readable<span class="w"> </span>by<span class="w"> </span>geopandas<span class="w"> </span>e.g.<span class="w"> </span>Geopackage,<span class="w"> </span>shapefile<span class="o">)</span>
 </pre></div>
 </div>
-<p>Here we have two site available to train on. Multiple site directories can be
-included in the training and testing phase but only a single site directory is
-required.
-If available, several RGB orthomosaics can be included in a single site
-directory (see e.g <code class="docutils literal notranslate"><span class="pre">Paracou</span> <span class="pre">-&gt;</span> <span class="pre">RGB</span></code>).</p>
-<p>We will call functions to from <code class="docutils literal notranslate"><span class="pre">detectree2</span></code>’s’ tiling and training modules.</p>
+<p>Here we have two sites available to train on (Danum and Paracou). Several site directories can be
+included in the training and testing phase (but only a single site directory is required).
+If available, several RGB orthomosaics can be included in a single site directory (see e.g <code class="docutils literal notranslate"><span class="pre">Paracou</span> <span class="pre">-&gt;</span> <span class="pre">RGB</span></code>).</p>
+<p>We call functions to from <code class="docutils literal notranslate"><span class="pre">detectree2</span></code>’s tiling and training modules.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data_train</span><span class="p">,</span> <span class="n">to_traintest_folders</span>
 <span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">register_train_data</span><span class="p">,</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
 <span class="kn">import</span> <span class="nn">rasterio</span>
 <span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 </pre></div>
 </div>
-<p>Set up the paths for the orthomosaic and corresponding manual crown data.</p>
+<p>Set up the paths to the orthomosaic and corresponding manual crown data.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set up input paths</span>
 <span class="n">site_path</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/Paracou&quot;</span>
 <span class="n">img_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/rgb/2016/Paracou_RGB_2016_10cm.tif&quot;</span>
@@ -163,18 +157,24 @@ directory (see e.g <code class="docutils literal notranslate"><span class="pre">
 <span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.6</span>
 </pre></div>
 </div>
-<p>Next we tile the data</p>
+<p>The total tile size here is 100 m x 100 m (a 40 m x 40 m core area with a surrounding 30 m buffer that overlaps with
+surrounding tiles). Including a buffer is recommended as it allows for tiles that include more training crowns.</p>
+<p>Next we tile the data. The <cite>tile_data_train</cite> function will only keep tiles that contain more than the given <cite>threshold</cite>
+coverage of training data (here 60%). This helps to reduce the chance that the network is trained with tiles that
+contain a large number of unlabelled crowns (which would reduce its sensitivity).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tile_data_train</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">crowns</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder.
-The approximate proportion of data to reserve for testing.
-Automatically removes training tiles that overlap with test tiles, ensuring
-spatial separation</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">to_traintest_folders</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">test_frac</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+The <cite>to_traintest_folders</cite> function automatically removes training/validation geojsons that overlap with test tiles,
+ensuring strict spatial separation of the test data. However, this can remove a significant proportion of the data
+available to train on so if validation accuracy is a sufficient test of model performance <cite>test_frac</cite> can be set to <cite>0</cite>.
+Alternatively, set a <cite>test_frac</cite> value that is smaller than you might otherwise have put.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data_folder</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="c1"># data_folder is the folder where the .png, .tif, .geojson tiles have been stored</span>
+<span class="n">to_traintest_folders</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">test_frac</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Are data is now tiled and partitioned for training and model evaluation</p>
+<p>The data has now been tiled and partitioned for model training, tuning and evaluation.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>└── Danum                                       (site directory)
     ├── rgb
     │   └── Dan_2014_RGB_project_to_CHM.tif     (RGB orthomosaic in local UTM CRS)
@@ -182,8 +182,8 @@ spatial separation</p>
     │   └── Danum.gpkg
     └── tiles                                   (tile directory)
         ├── train
-        │   ├── fold_1                          (train fold folder)
-        │   ├── fold_2                          (train fold folder)
+        │   ├── fold_1                          (train/val fold folder)
+        │   ├── fold_2                          (train/val fold folder)
         │   └── ...
         └── test                                (test data folder)
 </pre></div>
@@ -191,13 +191,17 @@ spatial separation</p>
 </section>
 <section id="training-a-model">
 <h2><span class="section-number">2.2. </span>Training a model<a class="headerlink" href="#training-a-model" title="Permalink to this heading"></a></h2>
-<p>Register the training data. It is possible to set a validation fold for model
-evaluation</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_location</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/&quot;</span>
+<p>Before training can commence, it is necessary to register the training data. It is possible to set a validation fold for
+model evaluation (which can be helpful for tuning models). The validation fold can be changed over different training
+steps to expose the model to the full range of available training data.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">val_fold</span> <span class="o">=</span> <span class="mi">5</span> <span class="c1"># Validation fold can be changed over different training steps</span>
+<span class="n">train_location</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/&quot;</span>
 <span class="n">register_train_data</span><span class="p">(</span><span class="n">train_location</span><span class="p">,</span> <span class="s2">&quot;Paracou&quot;</span><span class="p">,</span> <span class="n">val_fold</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Supply the <code class="docutils literal notranslate"><span class="pre">base_model</span></code> from Detectron2’s  <code class="docutils literal notranslate"><span class="pre">model_zoo</span></code></p>
+<p>Supply a <code class="docutils literal notranslate"><span class="pre">base_model</span></code> from Detectron2’s  <code class="docutils literal notranslate"><span class="pre">model_zoo</span></code>. This loads a backbone that has been pre-trained which saves us
+the pain of training a model from scratch. We are effectively transferring this model and (re)training it on our problem
+for the sake of time and efficiency.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the base (pre-trained) model from the detectron2 model_zoo</span>
 <span class="n">base_model</span> <span class="o">=</span> <span class="s2">&quot;COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml&quot;</span>
 
@@ -219,13 +223,14 @@ evaluation</p>
 </section>
 <section id="generating-landscape-predictions">
 <h2><span class="section-number">2.4. </span>Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Permalink to this heading"></a></h2>
-<p>Call necessary functions.</p>
+<p>Here we call the necessary functions.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data</span>
 <span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
 </pre></div>
 </div>
 <p>Start by tiling up the entire orthomosaic so that a crown map can be made for the entire landscape. Tiles should be
-approximately the same size as those trained on (typically ~ 100 m).</p>
+approximately the same size as those trained on (typically ~ 100 m). A buffer (here 30 m) should be included so that we
+can discard partial the crowns predicted at the edge of tiles.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Path to site folder and orthomosaic</span>
 <span class="n">site_path</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/BCI_50ha&quot;</span>
 <span class="n">img_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/rgb/2015.06.10_07cm_ORTHO.tif&quot;</span>
