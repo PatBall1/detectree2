@@ -8,9 +8,9 @@
 Python package for automatic tree crown delineation based on Mask R-CNN. Pre-trained models can be picked in the `model_garden`.
 A tutorial on how to prepare data, train models and make predictions is available [here](https://patball1.github.io/detectree2/tutorial.html).
 
-<sub>Code developed by Seb Hickman, James Ball, Thomas Koay, Panagiotis Ioannou, James Hinton and Matthew Archer in the [Forest Ecology and Conservation Group](https://coomeslab.org/) at the University of Cambridge.
+<sub>Code developed by James Ball, Seb Hickman, Thomas Koay, Oscar Jiang, Luran Wang, Panagiotis Ioannou, James Hinton and Matthew Archer in the [Forest Ecology and Conservation Group](https://coomeslab.org/) at the University of Cambridge.
 The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge [Conservation Research Institute](https://www.conservation.cam.ac.uk/).
-Original MRes project repo at <https://github.com/shmh40/detectreeRGB>.</sub>
+MRes project repo available [here](https://github.com/shmh40/detectreeRGB).</sub>
 
 ## Citation
 
