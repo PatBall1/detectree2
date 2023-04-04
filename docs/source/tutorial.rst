@@ -3,22 +3,17 @@ Tutorial
 
 A tutorial for:
 
-1. preparing data
-2. training models
-3. evaluating model performance
-4. making landscape level predictions
+1. Preparing data
+2. Training models
+3. Evaluating model performance
+4. Making landscape level predictions
 
-Before getting started ensure detectree2 is installed either through
+Before getting started ensure `detectree2`` is installed through
 
 .. code-block:: console
 
    (.venv) $pip install git+https://github.com/PatBall1/detectree2.git
 
-or
-
-.. code-block:: console
-
-   (.venv) $conda install detectree2 -c ma595
 
 To train a model you will need an orthomosaic (as ``<orthmosaic>.tif``) and 
 corresponding tree crown polgons that are readable by Geopandas
@@ -28,7 +23,7 @@ sparsely scattered across in the landscape
 
 
 If you would just like to make predictions on an orthomosaic with a pre-trained
-model from the ``model_garden``, skip to part 4.
+model from the ``model_garden``, skip to part 4 (Generating landscape predictions).
 
 
 Preparing data
@@ -51,13 +46,11 @@ An example of the recommended file structure when training a new model is as fol
        └── crowns
            └── UpdatedCrowns8.gpkg                 (Crown polygons readable by geopandas e.g. Geopackage, shapefile)
 
-Here we have two site available to train on. Multiple site directories can be 
-included in the training and testing phase but only a single site directory is 
-required.
-If available, several RGB orthomosaics can be included in a single site
-directory (see e.g ``Paracou -> RGB``).
+Here we have two sites available to train on (Danum and Paracou). Several site directories can be 
+included in the training and testing phase (but only a single site directory is required).
+If available, several RGB orthomosaics can be included in a single site directory (see e.g ``Paracou -> RGB``).
 
-We will call functions to from ``detectree2``'s' tiling and training modules.
+We call functions to from ``detectree2``'s tiling and training modules.
 
 .. code-block:: python
    
@@ -66,7 +59,7 @@ We will call functions to from ``detectree2``'s' tiling and training modules.
    import rasterio
    import geopandas as gpd
 
-Set up the paths for the orthomosaic and corresponding manual crown data.
+Set up the paths to the orthomosaic and corresponding manual crown data.
 
 .. code-block:: python
    
@@ -102,7 +95,12 @@ The tile size will depend on:
    threshold = 0.6
 
 
-Next we tile the data
+The total tile size here is 100 m x 100 m (a 40 m x 40 m core area with a surrounding 30 m buffer that overlaps with
+surrounding tiles). Including a buffer is recommended as it allows for tiles that include more training crowns.
+
+Next we tile the data. The `tile_data_train` function will only keep tiles that contain more than the given `threshold` 
+coverage of training data (here 60%). This helps to reduce the chance that the network is trained with tiles that
+contain a large number of unlabelled crowns (which would reduce its sensitivity).
 
 .. code-block:: python
    
@@ -110,15 +108,18 @@ Next we tile the data
 
 
 Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder. 
-The approximate proportion of data to reserve for testing.
-Automatically removes training tiles that overlap with test tiles, ensuring
-spatial separation 
+The `to_traintest_folders` function automatically removes training/validation geojsons that overlap with test tiles,
+ensuring strict spatial separation of the test data. However, this can remove a significant proportion of the data
+available to train on so if validation accuracy is a sufficient test of model performance `test_frac` can be set to `0`.
+Alternatively, set a `test_frac` value that is smaller than you might otherwise have put.
 
 .. code-block:: python
    
+   data_folder = out_dir # data_folder is the folder where the .png, .tif, .geojson tiles have been stored
    to_traintest_folders(data_folder, out_dir, test_frac=0.15, folds=5)
 
-Are data is now tiled and partitioned for training and model evaluation
+
+The data has now been tiled and partitioned for model training, tuning and evaluation.
 
 .. code-block::
    
@@ -129,8 +130,8 @@ Are data is now tiled and partitioned for training and model evaluation
        │   └── Danum.gpkg
        └── tiles                                   (tile directory)
            ├── train
-           │   ├── fold_1                          (train fold folder)
-           │   ├── fold_2                          (train fold folder)
+           │   ├── fold_1                          (train/val fold folder)
+           │   ├── fold_2                          (train/val fold folder)
            │   └── ...
            └── test                                (test data folder)
  
@@ -138,16 +139,20 @@ Are data is now tiled and partitioned for training and model evaluation
 Training a model
 ----------------
 
-Register the training data. It is possible to set a validation fold for model
-evaluation
+Before training can commence, it is necessary to register the training data. It is possible to set a validation fold for
+model evaluation (which can be helpful for tuning models). The validation fold can be changed over different training 
+steps to expose the model to the full range of available training data.
 
 .. code-block:: python
    
+   val_fold = 5 # Validation fold can be changed over different training steps
    train_location = "/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/"
    register_train_data(train_location, "Paracou", val_fold)
 
 
-Supply the ``base_model`` from Detectron2's  ``model_zoo``
+Supply a ``base_model`` from Detectron2's  ``model_zoo``. This loads a backbone that has been pre-trained which saves us
+the pain of training a model from scratch. We are effectively transferring this model and (re)training it on our problem 
+for the sake of time and efficiency.
 
 .. code-block:: python
    
@@ -172,7 +177,7 @@ Coming soon! See Colab notebook for example routine (detectree2/notebooks/colab/
 Generating landscape predictions
 --------------------------------
 
-Call necessary functions.
+Here we call the necessary functions.
 
 .. code-block:: python
    
@@ -181,7 +186,8 @@ Call necessary functions.
 
 
 Start by tiling up the entire orthomosaic so that a crown map can be made for the entire landscape. Tiles should be 
-approximately the same size as those trained on (typically ~ 100 m).
+approximately the same size as those trained on (typically ~ 100 m). A buffer (here 30 m) should be included so that we 
+can discard partial the crowns predicted at the edge of tiles.
 
 .. code-block:: python
    

@@ -37,6 +37,7 @@ e.g.
 ```pip install git+https://github.com/PatBall1/detectree2.git```
 
 Currently works on Google Colab (Pro version recommended). May struggle on clusters if geospatial libraries are not configured.
+See [Installation Instructions](https://patball1.github.io/detectree2/installation.html) if you are having trouble.
 
 ### conda
 

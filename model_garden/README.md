@@ -1,7 +1,7 @@
 # Model garden
 
 Welcome to the model garden. Here lives the pretrained models. Please feel free
-to pick if ripe for your tree crown delineation problem.
+to pick what is ripe for your tree crown delineation problem.
 
 Download with e.g.
 
