@@ -132,14 +132,12 @@ If available, several RGB orthomosaics can be included in a single site director
 <span class="n">img_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/rgb/2016/Paracou_RGB_2016_10cm.tif&quot;</span>
 <span class="n">crown_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/crowns/220619_AllSpLabelled.gpkg&quot;</span>
 
-<span class="n">out_dir</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s1">&#39;/tiles/&#39;</span>
-
 <span class="c1"># Read in the tiff file</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
 
-<span class="c1"># Read in crowns (then filter by an attribute?)</span>
+<span class="c1"># Read in crowns (then filter by an attribute if required)</span>
 <span class="n">crowns</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">crown_path</span><span class="p">)</span>
-<span class="n">crowns</span> <span class="o">=</span> <span class="n">crowns</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+<span class="n">crowns</span> <span class="o">=</span> <span class="n">crowns</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="c1"># making sure CRS match</span>
 </pre></div>
 </div>
 <p>Set up the tiling parameters.</p>
@@ -155,6 +153,8 @@ If available, several RGB orthomosaics can be included in a single site director
 <span class="n">tile_width</span> <span class="o">=</span> <span class="mi">40</span>
 <span class="n">tile_height</span> <span class="o">=</span> <span class="mi">40</span>
 <span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.6</span>
+<span class="n">appends</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tile_width</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span> <span class="c1"># this helps keep file structure organised</span>
+<span class="n">out_dir</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/tiles_&quot;</span> <span class="o">+</span> <span class="n">appends</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
 </pre></div>
 </div>
 <p>The total tile size here is 100 m x 100 m (a 40 m x 40 m core area with a surrounding 30 m buffer that overlaps with
@@ -162,26 +162,31 @@ surrounding tiles). Including a buffer is recommended as it allows for tiles tha
 <p>Next we tile the data. The <code class="docutils literal notranslate"><span class="pre">tile_data_train</span></code> function will only retain tiles that contain more than the given
 <code class="docutils literal notranslate"><span class="pre">threshold</span></code> coverage of training data (here 60%). This helps to reduce the chance that the network is trained with
 tiles that contain a large number of unlabelled crowns (which would reduce its sensitivity).</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>You will want to relax the <code class="docutils literal notranslate"><span class="pre">threshold</span></code> value if you trees are sparsely distributed across your landscape. Remember,
-<code class="docutils literal notranslate"><span class="pre">detectree2</span></code> was initially designed for dense, closed canopy forests so some of the default assumptions are likely
-to reflect this.</p>
-</div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tile_data_train</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">crowns</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If tiles are outputing as blank images set <code class="docutils literal notranslate"><span class="pre">dtype_bool</span> <span class="pre">=</span> <span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">tile_data_train</span></code> function. This is a bug
+and we are working on fixing it.</p>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The <cite>to_traintest_folders</cite> function automatically removes training/validation geojsons that overlap with test tiles,
-ensuring strict spatial separation of the test data. However, this can remove a significant proportion of the data
-available to train on so if validation accuracy is a sufficient test of model performance <cite>test_frac</cite> can be set to
-<cite>0</cite>. Alternatively, set a <cite>test_frac</cite> value that is smaller than you might otherwise have put.</p>
+<p>You will want to relax the <code class="docutils literal notranslate"><span class="pre">threshold</span></code> value if your trees are sparsely distributed across your landscape.
+Remember, <code class="docutils literal notranslate"><span class="pre">detectree2</span></code> was initially designed for dense, closed canopy forests so some of the default assumptions
+will reflect that.</p>
 </div>
+<p>Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data_folder</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="c1"># data_folder is the folder where the .png, .tif, .geojson tiles have been stored</span>
 <span class="n">to_traintest_folders</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">test_frac</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">to_traintest_folders</span></code> function automatically removes training/validation geojsons that overlap with test
+tiles, ensuring strict spatial separation of the test data. However, this can remove a significant proportion of the
+data available to train on so if validation accuracy is a sufficient test of model performance <code class="docutils literal notranslate"><span class="pre">test_frac</span></code> can be
+set to <code class="docutils literal notranslate"><span class="pre">0</span></code>. Alternatively, just set a <code class="docutils literal notranslate"><span class="pre">test_frac</span></code> value that is smaller than you might otherwise have put.</p>
 </div>
 <p>The data has now been tiled and partitioned for model training, tuning and evaluation.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>└── Danum                                       (site directory)
@@ -202,28 +207,44 @@ available to train on so if validation accuracy is a sufficient test of model pe
 <h2><span class="section-number">2.2. </span>Training a model<a class="headerlink" href="#training-a-model" title="Permalink to this heading"></a></h2>
 <p>Before training can commence, it is necessary to register the training data. It is possible to set a validation fold for
 model evaluation (which can be helpful for tuning models). The validation fold can be changed over different training
-steps to expose the model to the full range of available training data.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">val_fold</span> <span class="o">=</span> <span class="mi">5</span> <span class="c1"># Validation fold can be changed over different training steps</span>
-<span class="n">train_location</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/&quot;</span>
-<span class="n">register_train_data</span><span class="p">(</span><span class="n">train_location</span><span class="p">,</span> <span class="s2">&quot;Paracou&quot;</span><span class="p">,</span> <span class="n">val_fold</span><span class="p">)</span>
+steps to expose the model to the full range of available training data. Register as many different folders as necessary</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_location</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/Danum/tiles_&quot;</span> <span class="o">+</span> <span class="n">appends</span> <span class="o">+</span> <span class="s2">&quot;/train/&quot;</span>
+<span class="n">register_train_data</span><span class="p">(</span><span class="n">train_location</span><span class="p">,</span> <span class="s1">&#39;Danum&#39;</span><span class="p">,</span> <span class="n">val_fold</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">train_location</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/Paracou/tiles_&quot;</span> <span class="o">+</span> <span class="n">appends</span> <span class="o">+</span> <span class="s2">&quot;/train/&quot;</span>
+<span class="n">register_train_data</span><span class="p">(</span><span class="n">train_location</span><span class="p">,</span> <span class="s2">&quot;Paracou&quot;</span><span class="p">,</span> <span class="n">val_fold</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Supply a <code class="docutils literal notranslate"><span class="pre">base_model</span></code> from Detectron2’s  <code class="docutils literal notranslate"><span class="pre">model_zoo</span></code>. This loads a backbone that has been pre-trained which saves us
-the pain of training a model from scratch. We are effectively transferring this model and (re)training it on our problem
-for the sake of time and efficiency.</p>
+<p>The data will be registered as <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_train</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_val</span></code> (or <code class="docutils literal notranslate"><span class="pre">Paracou_train</span></code> and <code class="docutils literal notranslate"><span class="pre">Paracou_val</span></code> in the
+above example). It will be necessary to supply these registation names below…</p>
+<p>We must supply a <code class="docutils literal notranslate"><span class="pre">base_model</span></code> from Detectron2’s  <code class="docutils literal notranslate"><span class="pre">model_zoo</span></code>. This loads a backbone that has been pre-trained which
+saves us the pain of training a model from scratch. We are effectively transferring this model and (re)training it on
+our problem for the sake of time and efficiency.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the base (pre-trained) model from the detectron2 model_zoo</span>
 <span class="n">base_model</span> <span class="o">=</span> <span class="s2">&quot;COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml&quot;</span>
 
-<span class="c1"># trained_model = &quot;/content/drive/Shareddrives/detectree2/models/220629_ParacouSepilokDanum_JB.pth&quot;</span>
-<span class="n">trains</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Paracou_train&quot;</span><span class="p">,</span> <span class="s2">&quot;Paracou2019_train&quot;</span><span class="p">,</span> <span class="s2">&quot;ParacouUAV_train&quot;</span><span class="p">,</span> <span class="s2">&quot;Danum_train&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokEast_train&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokWest_train&quot;</span><span class="p">)</span>
-<span class="n">tests</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Paracou_val&quot;</span><span class="p">,</span> <span class="s2">&quot;Paracou2019_val&quot;</span><span class="p">,</span> <span class="s2">&quot;ParacouUAV_val&quot;</span><span class="p">,</span> <span class="s2">&quot;Danum_val&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokEast_val&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokWest_val&quot;</span><span class="p">)</span>
+<span class="n">trains</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Paracou_train&quot;</span><span class="p">,</span> <span class="s2">&quot;Danum_train&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokEast_train&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokWest_train&quot;</span><span class="p">)</span> <span class="c1"># Registered train data</span>
+<span class="n">tests</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Paracou_val&quot;</span><span class="p">,</span> <span class="s2">&quot;Danum_val&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokEast_val&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokWest_val&quot;</span><span class="p">)</span> <span class="c1"># Registered validation data</span>
 
-<span class="c1">#trains = (&quot;Paracou_train&quot;, &quot;Paracou2019_train&quot;)</span>
-<span class="c1">#tests = (&quot;Paracou_val&quot;, &quot;Paracou2019_val&quot;)</span>
 <span class="n">out_dir</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/220809_train_outputs&quot;</span>
 
 <span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">workers</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">eval_period</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="n">out_dir</span><span class="p">)</span> <span class="c1"># update_model arg can be used to load in trained  model</span>
 </pre></div>
+</div>
+<p>Alternatively, it is possible to train from one of <code class="docutils literal notranslate"><span class="pre">detectree2</span></code>’s pre-trained models. This is normally recommended and
+especially useful if you only have limited training data available. To retrieve the model from the repo run</p>
+<p>Then set up the configurations as before but with the trained model also supplied.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You may want to experiment with how you set up the <cite>cfg</cite>. The variables can make a big difference to how quickly
+model training will converge given the particularities of the data supplied and computational resources available.</p>
+</div>
+<p>Once we are all set up, we can get commence model training. Training will continue until a specified number of
+iterations (<code class="docutils literal notranslate"><span class="pre">max_iter</span></code>) or until model performance is no longer improving (“early stopping” via <code class="docutils literal notranslate"><span class="pre">patience</span></code>).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Early stopping is implemented and will be triggered by a sustained failure to improve on the performance of
+predictions on the validation fold. This is measured as the AP50 score of the validation predictions.</p>
 </div>
 </section>
 <section id="evaluating-model-performance">

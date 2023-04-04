@@ -68,14 +68,12 @@ Set up the paths to the orthomosaic and corresponding manual crown data.
    img_path = site_path + "/rgb/2016/Paracou_RGB_2016_10cm.tif"
    crown_path = site_path + "/crowns/220619_AllSpLabelled.gpkg"
 
-   out_dir = site_path + '/tiles/'
-
    # Read in the tiff file
    data = rasterio.open(img_path)
    
-   # Read in crowns (then filter by an attribute?)
+   # Read in crowns (then filter by an attribute if required)
    crowns = gpd.read_file(crown_path)
-   crowns = crowns.to_crs(data.crs.data)
+   crowns = crowns.to_crs(data.crs.data) # making sure CRS match
 
 Set up the tiling parameters.
 
@@ -93,7 +91,8 @@ The tile size will depend on:
    tile_width = 40
    tile_height = 40
    threshold = 0.6
-
+   appends = str(tile_width) + "_" + str(buffer) + "_" + str(threshold) # this helps keep file structure organised
+   out_dir = site_path + "/tiles_" + appends + "/"
 
 The total tile size here is 100 m x 100 m (a 40 m x 40 m core area with a surrounding 30 m buffer that overlaps with
 surrounding tiles). Including a buffer is recommended as it allows for tiles that include more training crowns.
@@ -102,29 +101,31 @@ Next we tile the data. The ``tile_data_train`` function will only retain tiles t
 ``threshold`` coverage of training data (here 60%). This helps to reduce the chance that the network is trained with
 tiles that contain a large number of unlabelled crowns (which would reduce its sensitivity).
 
-.. note::
-   You will want to relax the ``threshold`` value if you trees are sparsely distributed across your landscape. Remember,
-   ``detectree2`` was initially designed for dense, closed canopy forests so some of the default assumptions are likely
-   to reflect this.
-
 .. code-block:: python
    
    tile_data_train(data, out_dir, buffer, tile_width, tile_height, crowns, threshold)
 
-
-Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder.
+.. warning::
+   If tiles are outputing as blank images set ``dtype_bool = True`` in the ``tile_data_train`` function. This is a bug
+   and we are working on fixing it.
 
 .. note::
-   The `to_traintest_folders` function automatically removes training/validation geojsons that overlap with test tiles,
-   ensuring strict spatial separation of the test data. However, this can remove a significant proportion of the data
-   available to train on so if validation accuracy is a sufficient test of model performance `test_frac` can be set to
-   `0`. Alternatively, set a `test_frac` value that is smaller than you might otherwise have put.
+   You will want to relax the ``threshold`` value if your trees are sparsely distributed across your landscape.
+   Remember, ``detectree2`` was initially designed for dense, closed canopy forests so some of the default assumptions 
+   will reflect that.
 
+Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder.
 
 .. code-block:: python
    
    data_folder = out_dir # data_folder is the folder where the .png, .tif, .geojson tiles have been stored
    to_traintest_folders(data_folder, out_dir, test_frac=0.15, folds=5)
+
+.. note::
+   The ``to_traintest_folders`` function automatically removes training/validation geojsons that overlap with test
+   tiles, ensuring strict spatial separation of the test data. However, this can remove a significant proportion of the
+   data available to train on so if validation accuracy is a sufficient test of model performance ``test_frac`` can be
+   set to ``0``. Alternatively, just set a ``test_frac`` value that is smaller than you might otherwise have put.
 
 
 The data has now been tiled and partitioned for model training, tuning and evaluation.
@@ -149,33 +150,74 @@ Training a model
 
 Before training can commence, it is necessary to register the training data. It is possible to set a validation fold for
 model evaluation (which can be helpful for tuning models). The validation fold can be changed over different training 
-steps to expose the model to the full range of available training data.
+steps to expose the model to the full range of available training data. Register as many different folders as necessary
 
 .. code-block:: python
    
-   val_fold = 5 # Validation fold can be changed over different training steps
-   train_location = "/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/"
-   register_train_data(train_location, "Paracou", val_fold)
+   train_location = "/content/drive/Shareddrives/detectree2/data/Danum/tiles_" + appends + "/train/"
+   register_train_data(train_location, 'Danum', val_fold=5)
 
+   train_location = "/content/drive/Shareddrives/detectree2/data/Paracou/tiles_" + appends + "/train/"
+   register_train_data(train_location, "Paracou", val_fold=5) 
 
-Supply a ``base_model`` from Detectron2's  ``model_zoo``. This loads a backbone that has been pre-trained which saves us
-the pain of training a model from scratch. We are effectively transferring this model and (re)training it on our problem 
-for the sake of time and efficiency.
+The data will be registered as ``<name>_train`` and ``<name>_val`` (or ``Paracou_train`` and ``Paracou_val`` in the
+above example). It will be necessary to supply these registation names below...
+
+We must supply a ``base_model`` from Detectron2's  ``model_zoo``. This loads a backbone that has been pre-trained which
+saves us the pain of training a model from scratch. We are effectively transferring this model and (re)training it on
+our problem for the sake of time and efficiency.
 
 .. code-block:: python
    
    # Set the base (pre-trained) model from the detectron2 model_zoo
    base_model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
       
-   # trained_model = "/content/drive/Shareddrives/detectree2/models/220629_ParacouSepilokDanum_JB.pth"
-   trains = ("Paracou_train", "Paracou2019_train", "ParacouUAV_train", "Danum_train", "SepilokEast_train", "SepilokWest_train")
-   tests = ("Paracou_val", "Paracou2019_val", "ParacouUAV_val", "Danum_val", "SepilokEast_val", "SepilokWest_val")
+   trains = ("Paracou_train", "Danum_train", "SepilokEast_train", "SepilokWest_train") # Registered train data
+   tests = ("Paracou_val", "Danum_val", "SepilokEast_val", "SepilokWest_val") # Registered validation data
    
-   #trains = ("Paracou_train", "Paracou2019_train")
-   #tests = ("Paracou_val", "Paracou2019_val")
    out_dir = "/content/drive/Shareddrives/detectree2/220809_train_outputs"
    
    cfg = setup_cfg(base_model, trains, tests, workers = 4, eval_period=100, max_iter=3000, out_dir=out_dir) # update_model arg can be used to load in trained  model
+
+
+Alternatively, it is possible to train from one of ``detectree2``'s pre-trained models. This is normally recommended and
+especially useful if you only have limited training data available. To retrieve the model from the repo run
+
+.. code-block:: python   
+   !wget https://github.com/PatBall1/detectree2/raw/master/model_garden/230103_randresize_full.pth
+
+Then set up the configurations as before but with the trained model also supplied.
+
+.. code-block:: python   
+   # Set the base (pre-trained) model from the detectron2 model_zoo
+   base_model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
+
+   # Set the updated model weights from the detectree2 pre-trained model
+   trained_model = "./230103_randresize_full.pth"
+      
+   trains = ("Paracou_train", "Danum_train", "SepilokEast_train", "SepilokWest_train") # Registered train data
+   tests = ("Paracou_val", "Danum_val", "SepilokEast_val", "SepilokWest_val") # Registered validation data
+   
+   out_dir = "/content/drive/Shareddrives/detectree2/220809_train_outputs"
+   
+   cfg = setup_cfg(base_model, trains, tests, trained_model, workers = 4, eval_period=100, max_iter=3000, out_dir=out_dir) # update_model arg used to load in trained model
+
+.. note::
+   You may want to experiment with how you set up the `cfg`. The variables can make a big difference to how quickly 
+   model training will converge given the particularities of the data supplied and computational resources available.
+
+Once we are all set up, we can get commence model training. Training will continue until a specified number of
+iterations (``max_iter``) or until model performance is no longer improving ("early stopping" via ``patience``).
+
+.. code-block::
+   trainer = MyTrainer(cfg, patience = 5) 
+   trainer.resume_or_load(resume=False)
+   trainer.train()
+
+.. note::
+   Early stopping is implemented and will be triggered by a sustained failure to improve on the performance of
+   predictions on the validation fold. This is measured as the AP50 score of the validation predictions.
+
 
 Evaluating model performance
 ----------------------------
