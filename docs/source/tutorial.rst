@@ -87,9 +87,9 @@ Set up the paths for the orthomosaic and corresponding manual crown data.
 Set up the tiling parameters.
 
 The tile size will depend on:
-* The resolution of your imagery
-* The detail required on the crown outline
-* If using a pre-trained model, the tile size used to train it
+* The resolution of your imagery.
+* The detail required on the crown outline.
+* If using a pre-trained model, the tile size used in training should roughly match the tile size of predictions.
 
 .. code-block:: python
 
