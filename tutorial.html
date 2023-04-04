@@ -159,17 +159,26 @@ If available, several RGB orthomosaics can be included in a single site director
 </div>
 <p>The total tile size here is 100 m x 100 m (a 40 m x 40 m core area with a surrounding 30 m buffer that overlaps with
 surrounding tiles). Including a buffer is recommended as it allows for tiles that include more training crowns.</p>
-<p>Next we tile the data. The <cite>tile_data_train</cite> function will only keep tiles that contain more than the given <cite>threshold</cite>
-coverage of training data (here 60%). This helps to reduce the chance that the network is trained with tiles that
-contain a large number of unlabelled crowns (which would reduce its sensitivity).</p>
+<p>Next we tile the data. The <code class="docutils literal notranslate"><span class="pre">tile_data_train</span></code> function will only retain tiles that contain more than the given
+<code class="docutils literal notranslate"><span class="pre">threshold</span></code> coverage of training data (here 60%). This helps to reduce the chance that the network is trained with
+tiles that contain a large number of unlabelled crowns (which would reduce its sensitivity).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You will want to relax the <code class="docutils literal notranslate"><span class="pre">threshold</span></code> value if you trees are sparsely distributed across your landscape. Remember,
+<code class="docutils literal notranslate"><span class="pre">detectree2</span></code> was initially designed for dense, closed canopy forests so some of the default assumptions are likely
+to reflect this.</p>
+</div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tile_data_train</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">crowns</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder.
-The <cite>to_traintest_folders</cite> function automatically removes training/validation geojsons that overlap with test tiles,
+<p>Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <cite>to_traintest_folders</cite> function automatically removes training/validation geojsons that overlap with test tiles,
 ensuring strict spatial separation of the test data. However, this can remove a significant proportion of the data
-available to train on so if validation accuracy is a sufficient test of model performance <cite>test_frac</cite> can be set to <cite>0</cite>.
-Alternatively, set a <cite>test_frac</cite> value that is smaller than you might otherwise have put.</p>
+available to train on so if validation accuracy is a sufficient test of model performance <cite>test_frac</cite> can be set to
+<cite>0</cite>. Alternatively, set a <cite>test_frac</cite> value that is smaller than you might otherwise have put.</p>
+</div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data_folder</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="c1"># data_folder is the folder where the .png, .tif, .geojson tiles have been stored</span>
 <span class="n">to_traintest_folders</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">test_frac</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
@@ -219,7 +228,7 @@ for the sake of time and efficiency.</p>
 </section>
 <section id="evaluating-model-performance">
 <h2><span class="section-number">2.3. </span>Evaluating model performance<a class="headerlink" href="#evaluating-model-performance" title="Permalink to this heading"></a></h2>
-<p>Coming soon! See Colab notebook for example routine (detectree2/notebooks/colab/evaluationJB.ipynb).</p>
+<p>Coming soon! See Colab notebook for example routine (<code class="docutils literal notranslate"><span class="pre">detectree2/notebooks/colab/evaluationJB.ipynb</span></code>).</p>
 </section>
 <section id="generating-landscape-predictions">
 <h2><span class="section-number">2.4. </span>Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Permalink to this heading"></a></h2>

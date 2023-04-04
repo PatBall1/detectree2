@@ -98,20 +98,28 @@ The tile size will depend on:
 The total tile size here is 100 m x 100 m (a 40 m x 40 m core area with a surrounding 30 m buffer that overlaps with
 surrounding tiles). Including a buffer is recommended as it allows for tiles that include more training crowns.
 
-Next we tile the data. The `tile_data_train` function will only keep tiles that contain more than the given `threshold` 
-coverage of training data (here 60%). This helps to reduce the chance that the network is trained with tiles that
-contain a large number of unlabelled crowns (which would reduce its sensitivity).
+Next we tile the data. The ``tile_data_train`` function will only retain tiles that contain more than the given
+``threshold`` coverage of training data (here 60%). This helps to reduce the chance that the network is trained with
+tiles that contain a large number of unlabelled crowns (which would reduce its sensitivity).
+
+.. note::
+   You will want to relax the ``threshold`` value if you trees are sparsely distributed across your landscape. Remember,
+   ``detectree2`` was initially designed for dense, closed canopy forests so some of the default assumptions are likely
+   to reflect this.
 
 .. code-block:: python
    
    tile_data_train(data, out_dir, buffer, tile_width, tile_height, crowns, threshold)
 
 
-Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder. 
-The `to_traintest_folders` function automatically removes training/validation geojsons that overlap with test tiles,
-ensuring strict spatial separation of the test data. However, this can remove a significant proportion of the data
-available to train on so if validation accuracy is a sufficient test of model performance `test_frac` can be set to `0`.
-Alternatively, set a `test_frac` value that is smaller than you might otherwise have put.
+Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder.
+
+.. note::
+   The `to_traintest_folders` function automatically removes training/validation geojsons that overlap with test tiles,
+   ensuring strict spatial separation of the test data. However, this can remove a significant proportion of the data
+   available to train on so if validation accuracy is a sufficient test of model performance `test_frac` can be set to
+   `0`. Alternatively, set a `test_frac` value that is smaller than you might otherwise have put.
+
 
 .. code-block:: python
    
@@ -172,7 +180,7 @@ for the sake of time and efficiency.
 Evaluating model performance
 ----------------------------
 
-Coming soon! See Colab notebook for example routine (detectree2/notebooks/colab/evaluationJB.ipynb).
+Coming soon! See Colab notebook for example routine (``detectree2/notebooks/colab/evaluationJB.ipynb``).
 
 Generating landscape predictions
 --------------------------------
