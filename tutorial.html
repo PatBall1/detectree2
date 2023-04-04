@@ -149,10 +149,13 @@ directory (see e.g <code class="docutils literal notranslate"><span class="pre">
 </pre></div>
 </div>
 <p>Set up the tiling parameters.</p>
-<p>The tile size will depend on:
-* The resolution of your imagery.
-* The detail required on the crown outline.
-* If using a pre-trained model, the tile size used in training should roughly match the tile size of predictions.</p>
+<p>The tile size will depend on:</p>
+<ul class="simple">
+<li><p>The resolution of your imagery.</p></li>
+<li><p>Available computational resources.</p></li>
+<li><p>The detail required on the crown outline.</p></li>
+<li><p>If using a pre-trained model, the tile size used in training should roughly match the tile size of predictions.</p></li>
+</ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set tiling parameters</span>
 <span class="n">buffer</span> <span class="o">=</span> <span class="mi">30</span>
 <span class="n">tile_width</span> <span class="o">=</span> <span class="mi">40</span>
