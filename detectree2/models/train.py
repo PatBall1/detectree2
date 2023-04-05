@@ -507,7 +507,7 @@ def setup_cfg(
     max_iter=1000,
     num_classes=1,
     eval_period=100,
-    out_dir="/content/drive/Shareddrives/detectree2/train_outputs",
+    out_dir="./train_outputs",
     resize=True,
 ):
     """Set up config object # noqa: D417.

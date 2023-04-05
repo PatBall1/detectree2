@@ -32,7 +32,7 @@ Citation
 
 Ball, James GC, Sebastian HM Hickman, Tobias D. Jackson, Xian Jing Koay, James Hirst, William Jay, Mélaine Aubry-Kientz, Grégoire Vincent, and David A. Coomes. (2022)
 Accurate delineation of individual tree crowns in tropical forests from aerial RGB imagery using Mask R-CNN.
-*bioRxiv* 2022.07.10.499480; `https://doi.org/10.1101/2022.07.10.499480 <https://doi.org/10.1101/2022.07.10.499480>`
+*bioRxiv* 2022.07.10.499480; `https://doi.org/10.1101/2022.07.10.499480 <https://doi.org/10.1101/2022.07.10.499480>`_
 
 .. toctree::
    :numbered:
@@ -46,7 +46,6 @@ Accurate delineation of individual tree crowns in tropical forests from aerial R
    .. _notebooks/contributing_guide
    .. _notebooks/trainingJB
 
-Citation
 
 Indices and tables
 ==================
