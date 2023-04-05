@@ -219,7 +219,9 @@ steps to expose the model to the full range of available training data. Register
 above example). It will be necessary to supply these registation names below…</p>
 <p>We must supply a <code class="docutils literal notranslate"><span class="pre">base_model</span></code> from Detectron2’s  <code class="docutils literal notranslate"><span class="pre">model_zoo</span></code>. This loads a backbone that has been pre-trained which
 saves us the pain of training a model from scratch. We are effectively transferring this model and (re)training it on
-our problem for the sake of time and efficiency.</p>
+our problem for the sake of time and efficiency. The <cite>trains</cite> and <cite>tests</cite> variables containing the registered datasets
+should be tuples containing strings. If just a single site is being used a comma should still be supplied (e.g.
+<code class="docutils literal notranslate"><span class="pre">trains</span> <span class="pre">=</span> <span class="pre">(&quot;Paracou_train&quot;,)</span></code>) otherwise the data loader will malfunction.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the base (pre-trained) model from the detectron2 model_zoo</span>
 <span class="n">base_model</span> <span class="o">=</span> <span class="s2">&quot;COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml&quot;</span>
 
@@ -232,7 +234,8 @@ our problem for the sake of time and efficiency.</p>
 </pre></div>
 </div>
 <p>Alternatively, it is possible to train from one of <code class="docutils literal notranslate"><span class="pre">detectree2</span></code>’s pre-trained models. This is normally recommended and
-especially useful if you only have limited training data available. To retrieve the model from the repo run:</p>
+especially useful if you only have limited training data available. To retrieve the model from the repo’s
+<code class="docutils literal notranslate"><span class="pre">model_garden</span></code> run e.g.:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>!wget https://github.com/PatBall1/detectree2/raw/master/model_garden/230103_randresize_full.pth
 </pre></div>
 </div>
@@ -257,7 +260,8 @@ especially useful if you only have limited training data available. To retrieve 
 model training will converge given the particularities of the data supplied and computational resources available.</p>
 </div>
 <p>Once we are all set up, we can get commence model training. Training will continue until a specified number of
-iterations (<code class="docutils literal notranslate"><span class="pre">max_iter</span></code>) or until model performance is no longer improving (“early stopping” via <code class="docutils literal notranslate"><span class="pre">patience</span></code>).</p>
+iterations (<code class="docutils literal notranslate"><span class="pre">max_iter</span></code>) or until model performance is no longer improving (“early stopping” via <code class="docutils literal notranslate"><span class="pre">patience</span></code>).
+Training outputs, including model weights and training metrics, will be stored in <code class="docutils literal notranslate"><span class="pre">out_dir</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span> <span class="o">=</span> <span class="n">MyTrainer</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">patience</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
 <span class="n">trainer</span><span class="o">.</span><span class="n">resume_or_load</span><span class="p">(</span><span class="n">resume</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
