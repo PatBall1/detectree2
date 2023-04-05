@@ -241,7 +241,9 @@ Here we call the necessary functions.
 .. code-block:: python
    
    from detectree2.preprocessing.tiling import tile_data
-   from detectree2.models.train import MyTrainer, setup_cfg
+   from detectree2.models.predict import predict_on_data
+   from detectree2.models.train import setup_cfg
+   from detectron2.engine import DefaultPredictor
 
 
 Start by tiling up the entire orthomosaic so that a crown map can be made for the entire landscape. Tiles should be 

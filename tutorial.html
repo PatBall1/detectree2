@@ -281,7 +281,9 @@ predictions on the validation fold. This is measured as the AP50 score of the va
 <h2><span class="section-number">2.4. </span>Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Permalink to this heading"></a></h2>
 <p>Here we call the necessary functions.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data</span>
-<span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
+<span class="kn">from</span> <span class="nn">detectree2.models.predict</span> <span class="kn">import</span> <span class="n">predict_on_data</span>
+<span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">setup_cfg</span>
+<span class="kn">from</span> <span class="nn">detectron2.engine</span> <span class="kn">import</span> <span class="n">DefaultPredictor</span>
 </pre></div>
 </div>
 <p>Start by tiling up the entire orthomosaic so that a crown map can be made for the entire landscape. Tiles should be
