@@ -165,7 +165,9 @@ above example). It will be necessary to supply these registation names below...
 
 We must supply a ``base_model`` from Detectron2's  ``model_zoo``. This loads a backbone that has been pre-trained which
 saves us the pain of training a model from scratch. We are effectively transferring this model and (re)training it on
-our problem for the sake of time and efficiency.
+our problem for the sake of time and efficiency. The `trains` and `tests` variables containing the registered datasets 
+should be tuples containing strings. If just a single site is being used a comma should still be supplied (e.g. 
+``trains = ("Paracou_train",)``) otherwise the data loader will malfunction.
 
 .. code-block:: python
    
@@ -181,7 +183,8 @@ our problem for the sake of time and efficiency.
 
 
 Alternatively, it is possible to train from one of ``detectree2``'s pre-trained models. This is normally recommended and
-especially useful if you only have limited training data available. To retrieve the model from the repo run:
+especially useful if you only have limited training data available. To retrieve the model from the repo's
+``model_garden`` run e.g.:
 
 .. code-block:: python
 
@@ -211,6 +214,7 @@ Then set up the configurations as before but with the trained model also supplie
 
 Once we are all set up, we can get commence model training. Training will continue until a specified number of
 iterations (``max_iter``) or until model performance is no longer improving ("early stopping" via ``patience``).
+Training outputs, including model weights and training metrics, will be stored in ``out_dir``.
 
 .. code-block::
 

@@ -9,7 +9,7 @@ Detectree2
 `Detectree2 <https://github.com/PatBall1/detectree2>`_, based on the `Detectron2 <https://github.com/facebookresearch/detectron2>`_ 
 Mask R-CNN architecture, locates trees in aerial images. 
 It has been designed to delineate trees in challenging dense tropical forests for a range of 
-ecological applications.  Here is an example image of the predictions made by Mask R-CNN.
+ecological applications.  Here is an example image of the predictions made by Detectree2.
 
 .. .. image:: ../../report/figures/plot_13_285520_583300.jpg 
 ..   :width: 400
@@ -22,9 +22,17 @@ ecological applications.  Here is an example image of the predictions made by Ma
    :align: center
 
 
-Code developed by Seb Hickman, James Ball, Thomas Koay, Panagiotis Ioannou and James Hinton in the `Forest Ecology and Conservation Group <https://coomeslab.org/>`_ 
+|
+Code developed by James Ball, Seb Hickman, Thomas Koay, Oscar Jiang, Luran Wang, Panagiotis Ioannou, James Hinton and Matthew Archer in the `Forest Ecology and Conservation Group <https://coomeslab.org/>`_ 
 at the University of Cambridge.  The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge `Conservation Research Institute <https://www.conservation.cam.ac.uk/>`_.
-Original MRes project repo at https://github.com/shmh40/detectreeRGB.
+MRes project repo available `here <https://github.com/shmh40/detectreeRGB/>`_.
+
+Citation
+--------
+
+Ball, James GC, Sebastian HM Hickman, Tobias D. Jackson, Xian Jing Koay, James Hirst, William Jay, Mélaine Aubry-Kientz, Grégoire Vincent, and David A. Coomes. (2022)
+Accurate delineation of individual tree crowns in tropical forests from aerial RGB imagery using Mask R-CNN.
+*bioRxiv* 2022.07.10.499480; `https://doi.org/10.1101/2022.07.10.499480 <https://doi.org/10.1101/2022.07.10.499480>`
 
 .. toctree::
    :numbered:
@@ -38,7 +46,7 @@ Original MRes project repo at https://github.com/shmh40/detectreeRGB.
    .. _notebooks/contributing_guide
    .. _notebooks/trainingJB
 
-
+Citation
 
 Indices and tables
 ==================
