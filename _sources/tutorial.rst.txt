@@ -244,6 +244,7 @@ Here we call the necessary functions.
    from detectree2.models.predict import predict_on_data
    from detectree2.models.train import setup_cfg
    from detectron2.engine import DefaultPredictor
+   import rasterio
 
 
 Start by tiling up the entire orthomosaic so that a crown map can be made for the entire landscape. Tiles should be 
@@ -256,6 +257,8 @@ can discard partial the crowns predicted at the edge of tiles.
    site_path = "/content/drive/Shareddrives/detectree2/data/BCI_50ha"
    img_path = site_path + "/rgb/2015.06.10_07cm_ORTHO.tif"
    tiles_path = site_path + "/tilespred/"
+   # Read in the geotiff
+   data = rasterio.open(img_path)
    # Location of trained model
    model_path = "/content/drive/Shareddrives/detectree2/models/220629_ParacouSepilokDanum_JB.pth"
 
@@ -264,6 +267,10 @@ can discard partial the crowns predicted at the edge of tiles.
    tile_width = 40
    tile_height = 40
    tile_data(data, tiles_path, buffer, tile_width, tile_height, dtype_bool = True)
+
+.. warning::
+   If tiles are outputing as blank images set ``dtype_bool = True`` in the ``tile_data_train`` function. This is a bug
+   and we are working on fixing it.
 
 To download a pre-trained model from the ``model_garden`` you can run ``wget`` on the package repo
 
