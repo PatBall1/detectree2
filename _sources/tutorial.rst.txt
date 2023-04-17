@@ -241,6 +241,7 @@ Here we call the necessary functions.
 .. code-block:: python
    
    from detectree2.preprocessing.tiling import tile_data
+   from detectree2.models.outputs import project_to_geojson, stitch_crowns, clean_crowns
    from detectree2.models.predict import predict_on_data
    from detectree2.models.train import setup_cfg
    from detectron2.engine import DefaultPredictor
@@ -269,7 +270,7 @@ can discard partial the crowns predicted at the edge of tiles.
    tile_data(data, tiles_path, buffer, tile_width, tile_height, dtype_bool = True)
 
 .. warning::
-   If tiles are outputing as blank images set ``dtype_bool = True`` in the ``tile_data_train`` function. This is a bug
+   If tiles are outputing as blank images set ``dtype_bool = True`` in the ``tile_data`` function. This is a bug
    and we are working on fixing it.
 
 To download a pre-trained model from the ``model_garden`` you can run ``wget`` on the package repo

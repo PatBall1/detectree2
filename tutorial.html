@@ -281,6 +281,7 @@ predictions on the validation fold. This is measured as the AP50 score of the va
 <h2><span class="section-number">2.4. </span>Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Permalink to this heading"></a></h2>
 <p>Here we call the necessary functions.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data</span>
+<span class="kn">from</span> <span class="nn">detectree2.models.outputs</span> <span class="kn">import</span> <span class="n">project_to_geojson</span><span class="p">,</span> <span class="n">stitch_crowns</span><span class="p">,</span> <span class="n">clean_crowns</span>
 <span class="kn">from</span> <span class="nn">detectree2.models.predict</span> <span class="kn">import</span> <span class="n">predict_on_data</span>
 <span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">setup_cfg</span>
 <span class="kn">from</span> <span class="nn">detectron2.engine</span> <span class="kn">import</span> <span class="n">DefaultPredictor</span>
@@ -308,7 +309,7 @@ can discard partial the crowns predicted at the edge of tiles.</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>If tiles are outputing as blank images set <code class="docutils literal notranslate"><span class="pre">dtype_bool</span> <span class="pre">=</span> <span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">tile_data_train</span></code> function. This is a bug
+<p>If tiles are outputing as blank images set <code class="docutils literal notranslate"><span class="pre">dtype_bool</span> <span class="pre">=</span> <span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">tile_data</span></code> function. This is a bug
 and we are working on fixing it.</p>
 </div>
 <p>To download a pre-trained model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code> you can run <code class="docutils literal notranslate"><span class="pre">wget</span></code> on the package repo</p>
