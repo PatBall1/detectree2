@@ -340,7 +340,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
     # Filter any rows with invalid geometry
     crowns = crowns[crowns.is_valid]
     # Reset the index
-    # crowns = crowns.reset_index()
+    crowns = crowns.reset_index(drop=True)
     # Create an object to store the cleaned crowns
     crowns_out = gpd.GeoDataFrame()
     for index, row in crowns.iterrows():  # iterate over each crown
@@ -352,7 +352,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
         else:
             # Find those crowns that intersect with it
             intersecting = crowns.loc[crowns.intersects(shape(row.geometry))]
-            intersecting = intersecting.reset_index().drop("index", axis=1)
+            intersecting = intersecting.reset_index(drop=True)
             iou = []
             for (
                     index1,
@@ -363,7 +363,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
             # print(iou)
             intersecting["iou"] = iou
             matches = intersecting[intersecting["iou"] > iou_threshold]  # Remove those crowns with a poor match
-            matches = matches.sort_values("Confidence_score", ascending=False).reset_index().drop("index", axis=1)
+            matches = matches.sort_values("Confidence_score", ascending=False).reset_index(drop=True)
             match = matches.loc[[0]]  # Of the remaining crowns select the crown with the highest confidence
             if match["iou"][0] < 1:  # If the most confident is not the initial crown
                 continue
@@ -377,7 +377,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
     # Filter remaining crowns based on confidence score
     if confidence != 0:
         crowns_out = crowns_out[crowns_out["Confidence_score"] > confidence]
-    return crowns_out.reset_index()
+    return crowns_out.reset_index(drop=True)
 
 
 def clean_predictions(directory, iou_threshold=0.7):
