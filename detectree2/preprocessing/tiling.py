@@ -423,7 +423,16 @@ def is_overlapping_box(test_boxes_array, train_box):
 def record_data(crowns,
                 out_dir,
                 column='status'):
-    """Function that will record a list of classes into a file that can be readed during training."""
+    """Function that will record a list of classes into a file that can be readed during training.
+
+    Args:
+        crowns: gpd dataframe with the crowns
+        out_dir: directory to save the file
+        column: column name to get the classes from
+
+    Returns:
+        None
+    """
 
     list_of_classes = crowns[column].unique().tolist()
 
@@ -447,10 +456,10 @@ def to_traintest_folders(tiles_folder: str = "./",
     """Send tiles to training (+validation) and test dir and automatically make sure no overlap.
 
     Args:
-        tiles_folder:
-        out_folder:
-        test_frac:
-        folds:
+        tiles_folder: folder with tiles
+        out_folder: folder to save train and test folders
+        test_frac: fraction of tiles to be used for testing
+        folds: number of folds to split the data into
 
     Returns:
         None
