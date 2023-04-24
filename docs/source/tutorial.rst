@@ -305,6 +305,24 @@ predictions with lower confidence).
    crowns = crowns[crowns.is_valid]
    crowns = clean_crowns(crowns, 0.6)
 
+The "clean" set of crowns can include crowns of all confidence scores (0%-100%). It is likely that crowns with very low
+confidence will be poor quality so it is usually preferable to filter these out. A suitable threshold can be determined
+by eye in QGIS or implemented as single line in Python. ``Confidence_score`` is a column in the ``crowns`` GeoDataFrame
+and is considered a tunable parameter.
+
+.. code-block:: python
+   
+   crowns = crowns[crowns["Confidence_score"] > 0.5]
+
+The outputted crown polygons will have many vertices because they are generated from a mask which is pixelwise. If you
+will need to edit the crowns in QGIS it is best to simplify them to a reasonable number of vertices. This can be done
+with ``simplify`` method. The ``tolerance`` will determine the coarseness of the simplification it has the same units as
+the coordinate reference system of the GeoSeries (meters when working with UTM).
+
+.. code-block:: python
+   
+   clean = clean.set_geometry(crowns.simplify(0.3))
+
 Once we're happy with the crown map, save the crowns to file.
 
 .. code-block:: python
