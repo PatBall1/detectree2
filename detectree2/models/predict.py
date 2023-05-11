@@ -1,4 +1,7 @@
-"""Generate predictions."""
+"""Generate predictions.
+
+This module contains the code to generate predictions on tiled data.
+"""
 import json
 import os
 import random
@@ -63,4 +66,4 @@ def predict_on_data(
 
 
 if __name__ == "__main__":
-    print("something")
+    predict_on_data()

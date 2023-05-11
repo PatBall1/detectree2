@@ -136,6 +136,14 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None):  # noqa:N8
 
     Takes a json and changes it to a geojson so it can overlay with orthomosaic. Another copy is produced to overlay
     with PNGs.
+
+    Args:
+        tiles_path (str): Path to the tiles folder.
+        pred_fold (str): Path to the predictions folder.
+        output_fold (str): Path to the output folder.
+
+    Returns:
+        None
     """
 
     Path(output_fold).mkdir(parents=True, exist_ok=True)
@@ -232,14 +240,33 @@ def filename_geoinfo(filename):
 
 
 def box_filter(filename, shift: int = 0):
-    """Create a bounding box from a file name to filter edge crowns."""
+    """Create a bounding box from a file name to filter edge crowns.
+
+    Args:
+        filename: Name of the file.
+        shift: Number of meters to shift the size of the bounding box in by. This is to avoid edge crowns.
+
+    Returns:
+        gpd.GeoDataFrame: A GeoDataFrame containing the bounding box."""
     minx, miny, width, buffer, crs = filename_geoinfo(filename)
     bounding_box = box_make(minx, miny, width, buffer, crs, shift)
     return bounding_box
 
 
 def box_make(minx: int, miny: int, width: int, buffer: int, crs, shift: int = 0):
-    """Generate bounding box from geographic specifications."""
+    """Generate bounding box from geographic specifications.
+
+    Args:
+        minx: Minimum x coordinate.
+        miny: Minimum y coordinate.
+        width: Width of the tile.
+        buffer: Buffer around the tile.
+        crs: Coordinate reference system.
+        shift: Number of meters to shift the size of the bounding box in by. This is to avoid edge crowns.
+
+    Returns:
+        gpd.GeoDataFrame: A GeoDataFrame containing the bounding box.
+    """
     bbox = box(
         minx - buffer + shift,
         miny - buffer + shift,
@@ -251,7 +278,15 @@ def box_make(minx: int, miny: int, width: int, buffer: int, crs, shift: int = 0)
 
 
 def stitch_crowns(folder: str, shift: int = 1):
-    """Stitch together predicted crowns."""
+    """Stitch together predicted crowns.
+
+    Args:
+        folder: Path to folder containing geojson files.
+        shift: Number of meters to shift the size of the bounding box in by. This is to avoid edge crowns.
+
+    Returns:
+        gpd.GeoDataFrame: A GeoDataFrame containing all the crowns.
+    """
     crowns_path = Path(folder)
     files = crowns_path.glob("*geojson")
     _, _, _, _, crs = filename_geoinfo(list(files)[0])
@@ -285,13 +320,28 @@ def calc_iou(shape1, shape2):
     return iou
 
 
-def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
+def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
     """Clean overlapping crowns.
 
     Outputs can contain highly overlapping crowns including in the buffer region.
     This function removes crowns with a high degree of overlap with others but a
     lower Confidence Score.
+
+    Args:
+        crowns (gpd.GeoDataFrame): Crowns to be cleaned.
+        iou_threshold (float, optional): IoU threshold that determines whether crowns are overlapping.
+        confidence (float, optional): Minimum confidence score for crowns to be retained. Defaults to 0.2.
+
+    Returns:
+        gpd.GeoDataFrame: Cleaned crowns.
     """
+    # Filter any rows with empty geometry
+    crowns = crowns[crowns.is_empty == False]
+    # Filter any rows with invalid geometry
+    crowns = crowns[crowns.is_valid]
+    # Reset the index
+    crowns = crowns.reset_index(drop=True)
+    # Create an object to store the cleaned crowns
     crowns_out = gpd.GeoDataFrame()
     for index, row in crowns.iterrows():  # iterate over each crown
         if index % 1000 == 0:
@@ -302,7 +352,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
         else:
             # Find those crowns that intersect with it
             intersecting = crowns.loc[crowns.intersects(shape(row.geometry))]
-            intersecting = intersecting.reset_index().drop("index", axis=1)
+            intersecting = intersecting.reset_index(drop=True)
             iou = []
             for (
                     index1,
@@ -313,7 +363,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
             # print(iou)
             intersecting["iou"] = iou
             matches = intersecting[intersecting["iou"] > iou_threshold]  # Remove those crowns with a poor match
-            matches = matches.sort_values("Confidence_score", ascending=False).reset_index().drop("index", axis=1)
+            matches = matches.sort_values("Confidence_score", ascending=False).reset_index(drop=True)
             match = matches.loc[[0]]  # Of the remaining crowns select the crown with the highest confidence
             if match["iou"][0] < 1:  # If the most confident is not the initial crown
                 continue
@@ -321,7 +371,13 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
                 match = match.drop("iou", axis=1)
                 # print(index)
                 crowns_out = crowns_out.append(match)
-    return crowns_out.reset_index()
+    # Convert pandas into back geopandas if it is not already
+    if not isinstance(crowns_out, gpd.GeoDataFrame):
+        crowns_out = gpd.GeoDataFrame(crowns_out)
+    # Filter remaining crowns based on confidence score
+    if confidence != 0:
+        crowns_out = crowns_out[crowns_out["Confidence_score"] > confidence]
+    return crowns_out.reset_index(drop=True)
 
 
 def clean_predictions(directory, iou_threshold=0.7):

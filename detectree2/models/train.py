@@ -53,9 +53,9 @@ class LossEvalHook(HookBase):
     See https://gist.github.com/ortegatron/c0dad15e49c2b74de8bb09a5615d9f6b
 
     Attributes:
-        model:
-        period:
-        data_loader:
+        model: model to train
+        period: number of iterations between evaluations
+        data_loader: data loader to use for evaluation
         patience: number of evaluation periods to wait for improvement
     """
 
@@ -295,7 +295,8 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
 
     Args:
         directory: Path to directory
-        classes: Signifies which column (if any) corresponds to the class labels
+        classes: List of classes to include
+        classes_at: Signifies which column (if any) corresponds to the class labels
 
     Returns:
         List of dictionaries corresponding to segmentations of trees. Each dictionary includes
@@ -471,18 +472,25 @@ def read_data(out_dir):
 
 
 def remove_registered_data(name="tree"):
+    """Remove registered data from catalog.
+
+    Args:
+        name: string of named registered data
+    """
     for d in ["train", "val"]:
         DatasetCatalog.remove(name + "_" + d)
         MetadataCatalog.remove(name + "_" + d)
 
 
 def register_test_data(test_location, name="tree"):
+    """Register data for testing."""
     d = "test"
     DatasetCatalog.register(name + "_" + d, lambda d=d: get_tree_dicts(test_location))
     MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
 
 
 def load_json_arr(json_path):
+    """Load json array."""
     lines = []
     with open(json_path, "r") as f:
         for line in f:
@@ -517,19 +525,19 @@ def setup_cfg(
         trains: names of registered data to use for training
         tests: names of registered data to use for evaluating models
         update_model: updated pre-trained model from detectree2 model_garden
-        workers:
-        ims_per_batch:
-        gamma:
-        backbone_freeze:
-        warm_iter:
-        momentum:
-        batch_size_per_im:
-        base_lr:
-        weight_decay
-        max_iter:
-        num_classes:
-        eval_period:
-        out_dir:
+        workers: number of workers for dataloader
+        ims_per_batch: number of images per batch
+        gamma: gamma for learning rate scheduler
+        backbone_freeze: backbone layer to freeze
+        warm_iter: number of iterations for warmup
+        momentum: momentum for optimizer
+        batch_size_per_im: batch size per image
+        base_lr: base learning rate
+        weight_decay: weight decay for optimizer
+        max_iter: maximum number of iterations
+        num_classes: number of classes
+        eval_period: number of iterations between evaluations
+        out_dir: directory to save outputs
     """
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(base_model))
