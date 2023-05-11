@@ -125,6 +125,14 @@ train_box:</p>
 <dt class="sig sig-object py" id="detectree2.preprocessing.tiling.record_data">
 <span class="sig-prename descclassname"><span class="pre">detectree2.preprocessing.tiling.</span></span><span class="sig-name descname"><span class="pre">record_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crowns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'status'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.preprocessing.tiling.record_data" title="Permalink to this definition"></a></dt>
 <dd><p>Function that will record a list of classes into a file that can be readed during training.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>crowns: gpd dataframe with the crowns
+out_dir: directory to save the file
+column: column name to get the classes from</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -172,10 +180,10 @@ dtype_bool: Flag to edit dtype to prevent black tiles</p>
 <span class="sig-prename descclassname"><span class="pre">detectree2.preprocessing.tiling.</span></span><span class="sig-name descname"><span class="pre">to_traintest_folders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tiles_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'./'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'./data/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_frac</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#detectree2.preprocessing.tiling.to_traintest_folders" title="Permalink to this definition"></a></dt>
 <dd><p>Send tiles to training (+validation) and test dir and automatically make sure no overlap.</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>tiles_folder:
-out_folder:
-test_frac:
-folds:</p>
+<dt>Args:</dt><dd><p>tiles_folder: folder with tiles
+out_folder: folder to save train and test folders
+test_frac: fraction of tiles to be used for testing
+folds: number of folds to split the data into</p>
 </dd>
 <dt>Returns:</dt><dd><p>None</p>
 </dd>

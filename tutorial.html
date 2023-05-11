@@ -330,9 +330,24 @@ and we are working on fixing it.</p>
 Invalid geometries may arise when converting from a mask to a polygon - it is usually best to simply remove these.
 Cleaning the crowns will remove instances where there is large overlaps between predicted crowns (removing the
 predictions with lower confidence).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">crowns</span> <span class="o">=</span> <span class="n">stitch_crowns</span><span class="p">(</span><span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions_geo/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">crowns</span> <span class="o">=</span> <span class="n">stitch_crowns</span><span class="p">(</span><span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions_geo/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">crowns</span> <span class="o">=</span> <span class="n">crowns</span><span class="p">[</span><span class="n">crowns</span><span class="o">.</span><span class="n">is_valid</span><span class="p">]</span>
 <span class="n">crowns</span> <span class="o">=</span> <span class="n">clean_crowns</span><span class="p">(</span><span class="n">crowns</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default the <code class="docutils literal notranslate"><span class="pre">clean_crowns</span></code> function will remove crowns with a condidence of less than 20%. The above ‘clean’ crowns
+includes crowns of all confidence scores (0%-100%) as <code class="docutils literal notranslate"><span class="pre">condidence=0</span></code>. It is likely that crowns with very low
+confidence will be poor quality so it is usually preferable to filter these out. A suitable threshold can be determined
+by eye in QGIS or implemented as single line in Python. <code class="docutils literal notranslate"><span class="pre">Confidence_score</span></code> is a column in the <code class="docutils literal notranslate"><span class="pre">crowns</span></code> GeoDataFrame
+and is considered a tunable parameter.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">crowns</span> <span class="o">=</span> <span class="n">crowns</span><span class="p">[</span><span class="n">crowns</span><span class="p">[</span><span class="s2">&quot;Confidence_score&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The outputted crown polygons will have many vertices because they are generated from a mask which is pixelwise. If you
+will need to edit the crowns in QGIS it is best to simplify them to a reasonable number of vertices. This can be done
+with <code class="docutils literal notranslate"><span class="pre">simplify</span></code> method. The <code class="docutils literal notranslate"><span class="pre">tolerance</span></code> will determine the coarseness of the simplification it has the same units as
+the coordinate reference system of the GeoSeries (meters when working with UTM).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">clean</span> <span class="o">=</span> <span class="n">clean</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">crowns</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="mf">0.3</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Once we’re happy with the crown map, save the crowns to file.</p>
