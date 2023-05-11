@@ -301,11 +301,12 @@ predictions with lower confidence).
 
 .. code-block:: python
    
-   crowns = stitch_crowns(tiles_path + "predictions_geo/", 1)
+   crowns = stitch_crowns(tiles_path + "predictions_geo/", 1, confidence=0)
    crowns = crowns[crowns.is_valid]
    crowns = clean_crowns(crowns, 0.6)
 
-The "clean" set of crowns can include crowns of all confidence scores (0%-100%). It is likely that crowns with very low
+By default the ``clean_crowns`` function will remove crowns with a condidence of less than 20%. The above 'clean' crowns
+includes crowns of all confidence scores (0%-100%) as ``condidence=0``. It is likely that crowns with very low
 confidence will be poor quality so it is usually preferable to filter these out. A suitable threshold can be determined
 by eye in QGIS or implemented as single line in Python. ``Confidence_score`` is a column in the ``crowns`` GeoDataFrame
 and is considered a tunable parameter.
