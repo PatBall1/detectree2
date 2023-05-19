@@ -30,9 +30,9 @@ MRes project repo available `here <https://github.com/shmh40/detectreeRGB/>`_.
 Citation
 --------
 
-Ball, James GC, Sebastian HM Hickman, Tobias D. Jackson, Xian Jing Koay, James Hirst, William Jay, Mélaine Aubry-Kientz, Grégoire Vincent, and David A. Coomes. (2022)
+Ball, J.G.C., Hickman, S.H.M., Jackson, T.D., Koay, X.J., Hirst, J., Jay, W., Archer, M., Aubry-Kientz, M., Vincent, G. and Coomes, D.A. (2023)
 Accurate delineation of individual tree crowns in tropical forests from aerial RGB imagery using Mask R-CNN.
-*bioRxiv* 2022.07.10.499480; `https://doi.org/10.1101/2022.07.10.499480 <https://doi.org/10.1101/2022.07.10.499480>`_
+*Remote Sens Ecol Conserv*. `https://doi.org/10.1002/rse2.332 <https://doi.org/10.1002/rse2.332>`_
 
 .. toctree::
    :numbered:
