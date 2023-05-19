@@ -301,9 +301,8 @@ predictions with lower confidence).
 
 .. code-block:: python
    
-   crowns = stitch_crowns(tiles_path + "predictions_geo/", 1, confidence=0)
-   crowns = crowns[crowns.is_valid]
-   crowns = clean_crowns(crowns, 0.6)
+   crowns = stitch_crowns(tiles_path + "predictions_geo/", 1)
+   clean = clean_crowns(crowns, 0.6, confidence=0) # set a confidence>0 to filter out less confident crowns
 
 By default the ``clean_crowns`` function will remove crowns with a condidence of less than 20%. The above 'clean' crowns
 includes crowns of all confidence scores (0%-100%) as ``condidence=0``. It is likely that crowns with very low
@@ -313,7 +312,7 @@ and is considered a tunable parameter.
 
 .. code-block:: python
    
-   crowns = crowns[crowns["Confidence_score"] > 0.5]
+   clean = clean[clean["Confidence_score"] > 0.5] # step included for illustration - can be done in clean_crowns func
 
 The outputted crown polygons will have many vertices because they are generated from a mask which is pixelwise. If you
 will need to edit the crowns in QGIS it is best to simplify them to a reasonable number of vertices. This can be done
@@ -328,5 +327,7 @@ Once we're happy with the crown map, save the crowns to file.
 
 .. code-block:: python
    
-   crowns.to_file(site_path + "/crowns_out.gpkg")
+   clean.to_file(site_path + "/crowns_out.gpkg")
 
+View the file in QGIS or ArcGIS to see whether you are satisfied with the results. The first output might not be perfect
+and so tweaking of the above parameters may be necessary to get a satisfactory output.
