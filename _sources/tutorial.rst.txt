@@ -175,13 +175,14 @@ and images align. This can be done quickly with the inbuilt ``detectron2`` visua
    :alt: Training tile 1
    :align: center
 
+|
 .. image:: ../../report/figures/trees_train2.png
    :width: 400
    :alt: Training tile 2
    :align: center
 
 
-
+|
 Training a model
 ----------------
 
