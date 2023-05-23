@@ -181,6 +181,7 @@ and images align. This can be done quickly with the inbuilt ``detectron2`` visua
    :align: left
 
 
+|
 Training a model
 ----------------
 
