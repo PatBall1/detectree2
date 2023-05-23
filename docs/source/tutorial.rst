@@ -145,6 +145,42 @@ The data has now been tiled and partitioned for model training, tuning and evalu
            └── test                                (test data folder)
  
 
+It is advisable to do a visual inspection on the tiles to ensure that the tiling has worked as expected and that crowns
+and images align. This can be done quickly with the inbuilt ``detectron2`` visualisation tools.
+
+.. code-block:: python
+   
+   from detectron2.data import DatasetCatalog, MetadataCatalog
+   from detectron2.utils.visualizer import Visualizer
+   from detectree2.models.train import combine_dicts, register_train_data
+   import random
+   import cv2
+   from PIL import Image
+
+   name = "Danum"
+   train_location = "/content/drive/Shareddrives/detectree2/data/" + name + "/tiles_" + appends + "/train"
+   dataset_dicts = combine_dicts(train_location, 1) # The number gives the fold to visualise
+   trees_metadata = MetadataCatalog.get(name + "_train")
+
+   for d in dataset_dicts:
+      img = cv2.imread(d["file_name"])
+      visualizer = Visualizer(img[:, :, ::-1], metadata=trees_metadata, scale=0.3)
+      out = visualizer.draw_dataset_dict(d)
+      image = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
+      display(Image.fromarray(image))
+
+
+.. image:: ../../report/figures/trees_train1.jpg 
+   :width: 400
+   :alt: Prediction
+   :align: left
+
+.. image:: ../../report/figures/trees_train2.jpg 
+   :width: 400
+   :alt: Prediction
+   :align: left
+
+
 Training a model
 ----------------
 

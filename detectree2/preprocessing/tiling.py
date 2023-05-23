@@ -9,6 +9,7 @@ import os
 import random
 import shutil
 import warnings
+from math import ceil
 from pathlib import Path
 
 import cv2
@@ -206,23 +207,33 @@ def tile_data_train(  # noqa: C901
     tilename = Path(data.name).stem
     crs = data.crs.data["init"].split(":")[1]
     # out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
-    for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width, int):
-        for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height, tile_height, int):
+    # Should start from data.bounds[0] + buffer, data.bounds[1] + buffer to avoid later complications
+    for minx in np.arange(ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, int):
+        for miny in np.arange(ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, int):
 
             out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
-            # new tiling bbox including the buffer
-            bbox = box(
-                minx - buffer,
-                miny - buffer,
-                minx + tile_width + buffer,
-                miny + tile_height + buffer,
-            )
 
-            # turn the bounding boxes into geopandas DataFrames
-            geo = gpd.GeoDataFrame({"geometry": bbox},
-                                   index=[0],
-                                   crs=data.crs)
+            # Calculate the buffered tile dimensions
+            #tile_width_buffered = tile_width + 2 * buffer
+            #tile_height_buffered = tile_height + 2 * buffer
 
+            # Calculate the bounding box coordinates with buffer
+            minx_buffered = minx - buffer
+            miny_buffered = miny - buffer
+            maxx_buffered = minx + tile_width + buffer
+            maxy_buffered = miny + tile_height + buffer
+
+            # Create the affine transformation matrix for the tile
+            # transform = from_bounds(minx_buffered, miny_buffered, maxx_buffered,
+            #                        maxy_buffered, tile_width_buffered, tile_height_buffered)
+
+            # Crop the tile using the affine transformation
+            bbox = box(minx_buffered, miny_buffered, maxx_buffered, maxy_buffered)
+            geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=data.crs)
+            coords = get_features(geo)
+            out_img, out_transform = mask(data, shapes=coords, crop=True)
+
+            # Skip if insufficient coverage of crowns - good to have early on to save time
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 # Warning:
@@ -237,12 +248,6 @@ def tile_data_train(  # noqa: C901
                 if (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
                     continue
 
-            # here we are cropping the tiff to the bounding box of the tile we want
-            coords = get_features(geo)
-
-            # define the tile as a mask of the whole tiff with just the bounding box
-            out_img, out_transform = mask(data, shapes=coords, crop=True)
-
             # Discard scenes with many out-of-range pixels
             out_sumbands = np.sum(out_img, 0)
             zero_mask = np.where(out_sumbands == 0, 1, 0)
@@ -255,8 +260,6 @@ def tile_data_train(  # noqa: C901
             elif sumnan > nan_threshold * totalpix:  # reject tiles with many NaN cells
                 continue
 
-            # copy the metadata then update it, the "nodata" and "dtype" where important as made larger
-            # tifs have outputted tiles which were not just black
             out_meta = data.meta.copy()
             out_meta.update({
                 "driver": "GTiff",
@@ -265,10 +268,12 @@ def tile_data_train(  # noqa: C901
                 "transform": out_transform,
                 "nodata": None,
             })
-
-            # dtype needs to be unchanged for some data and set to uint8 for others
+            # dtype needs to be unchanged for some data and set to uint8 for others to deal with black tiles
             if dtype_bool:
                 out_meta.update({"dtype": "uint8"})
+
+            # define the tile as a mask of the whole tiff with just the bounding box
+            out_img, out_transform = mask(data, shapes=coords, crop=True)
 
             # Saving the tile as a new tiff, named by the origin of the tile. If tile appears blank in folder can show
             # the image here and may need to fix RGB data or the dtype
@@ -314,20 +319,8 @@ def tile_data_train(  # noqa: C901
 
             overlapping_crowns = overlapping_crowns.explode(index_parts=True)
 
-            # translate to 0,0 to overlay on png
-            # this now works as a universal approach.
-            if minx == data.bounds[0] and miny == data.bounds[1]:
-                # print("We are in the bottom left!")
-                moved = overlapping_crowns.translate(-minx, -miny)
-            elif miny == data.bounds[1]:
-                # print("We are on the bottom, but not bottom left")
-                moved = overlapping_crowns.translate(-minx + buffer, -miny)
-            elif minx == data.bounds[0]:
-                # print("We are along the left hand side, but not bottom left!")
-                moved = overlapping_crowns.translate(-minx, -miny + buffer)
-            else:
-                # print("We are in the middle!")
-                moved = overlapping_crowns.translate(-minx + buffer, -miny + buffer)
+            # Translate to 0,0 to overlay on png
+            moved = overlapping_crowns.translate(-minx + buffer, -miny + buffer)
 
             # scale to deal with the resolution
             scalingx = 1 / (data.transform[0])
