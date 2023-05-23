@@ -170,14 +170,14 @@ and images align. This can be done quickly with the inbuilt ``detectron2`` visua
       display(Image.fromarray(image))
 
 
-.. image:: ../../report/figures/trees_train1.jpg 
+.. image:: ../../report/figures/trees_train1.png 
    :width: 400
-   :alt: Prediction
+   :alt: Training tile 1
    :align: left
 
-.. image:: ../../report/figures/trees_train2.jpg 
+.. image:: ../../report/figures/trees_train2.png
    :width: 400
-   :alt: Prediction
+   :alt: Training tile 2
    :align: left
 
 
