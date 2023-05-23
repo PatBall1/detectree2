@@ -227,13 +227,11 @@ def tile_data_train(  # noqa: C901
             # transform = from_bounds(minx_buffered, miny_buffered, maxx_buffered,
             #                        maxy_buffered, tile_width_buffered, tile_height_buffered)
 
-            # Crop the tile using the affine transformation
             bbox = box(minx_buffered, miny_buffered, maxx_buffered, maxy_buffered)
             geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=data.crs)
             coords = get_features(geo)
-            out_img, out_transform = mask(data, shapes=coords, crop=True)
 
-            # Skip if insufficient coverage of crowns - good to have early on to save time
+            # Skip if insufficient coverage of crowns - good to have early on to save on unnecessary processing
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 # Warning:
@@ -247,6 +245,9 @@ def tile_data_train(  # noqa: C901
                 # Discard tiles that do not have a sufficient coverage of training crowns
                 if (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
                     continue
+
+            # define the tile as a mask of the whole tiff with just the bounding box
+            out_img, out_transform = mask(data, shapes=coords, crop=True)
 
             # Discard scenes with many out-of-range pixels
             out_sumbands = np.sum(out_img, 0)
@@ -271,9 +272,6 @@ def tile_data_train(  # noqa: C901
             # dtype needs to be unchanged for some data and set to uint8 for others to deal with black tiles
             if dtype_bool:
                 out_meta.update({"dtype": "uint8"})
-
-            # define the tile as a mask of the whole tiff with just the bounding box
-            out_img, out_transform = mask(data, shapes=coords, crop=True)
 
             # Saving the tile as a new tiff, named by the origin of the tile. If tile appears blank in folder can show
             # the image here and may need to fix RGB data or the dtype
