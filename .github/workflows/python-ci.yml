@@ -41,8 +41,7 @@ jobs:
         opencv-python wandb sphinx
         pip3 install wheel
         pip3 install --no-build-isolation 'git+https://github.com/facebookresearch/detectron2.git'
-        sudo apt-get install python3-dev
-        pip3 install cython
+        pip3 install 'git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI'
     - name: Install detectree2
       run: |
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
