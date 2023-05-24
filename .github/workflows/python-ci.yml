@@ -41,7 +41,7 @@ jobs:
         opencv-python wandb sphinx
     - name: Install detectron2
       run: |
-        pip3 install 'git+https://github.com/facebookresearch/detectron2.git'
+        pip3 install --no-build-isolation 'git+https://github.com/facebookresearch/detectron2.git'
     - name: Install detectree2
       run: |
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
