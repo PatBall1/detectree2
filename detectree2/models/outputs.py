@@ -336,7 +336,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
         gpd.GeoDataFrame: Cleaned crowns.
     """
     # Filter any rows with empty geometry
-    crowns = crowns[crowns.is_empty == False]
+    crowns = crowns[~crowns.is_empty]
     # Filter any rows with invalid geometry
     crowns = crowns[crowns.is_valid]
     # Reset the index

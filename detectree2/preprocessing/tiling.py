@@ -214,8 +214,8 @@ def tile_data_train(  # noqa: C901
             out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
 
             # Calculate the buffered tile dimensions
-            #tile_width_buffered = tile_width + 2 * buffer
-            #tile_height_buffered = tile_height + 2 * buffer
+            # tile_width_buffered = tile_width + 2 * buffer
+            # tile_height_buffered = tile_height + 2 * buffer
 
             # Calculate the bounding box coordinates with buffer
             minx_buffered = minx - buffer
