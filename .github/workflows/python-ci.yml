@@ -39,7 +39,7 @@ jobs:
         export C_INCLUDE_PATH=/usr/include/gdal
         pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu \
         opencv-python wandb sphinx
-        pip3 install wheel
+        pip3 install wheel cython
         pip3 install 'git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI'
         pip3 install --no-build-isolation 'git+https://github.com/facebookresearch/detectron2.git'
     - name: Install detectree2
