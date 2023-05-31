@@ -1,4 +1,4 @@
-<p align="center">
+<p align="left">
 <img width="300" alt="predictions" src= ./.github/logo.png#gh-light-mode-only>
 <img width="300" alt="predictions" src= ./.github/logo_dark.png#gh-dark-mode-only>
 </p>
