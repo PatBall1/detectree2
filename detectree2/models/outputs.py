@@ -342,7 +342,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
     # Reset the index
     crowns = crowns.reset_index(drop=True)
     # Create an object to store the cleaned crowns
-    crowns_out = gpd.GeoDataFrame()
+    crowns_out = gpd.GeoDataFrame(crs=crowns.crs)
     for index, row in crowns.iterrows():  # iterate over each crown
         if index % 1000 == 0:
             print(str(index) + " / " + str(len(crowns)) + " cleaned")
@@ -373,7 +373,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
                 crowns_out = crowns_out.append(match)
     # Convert pandas into back geopandas if it is not already
     if not isinstance(crowns_out, gpd.GeoDataFrame):
-        crowns_out = gpd.GeoDataFrame(crowns_out)
+        crowns_out = gpd.GeoDataFrame(crowns_out, crs=crowns.crs)
     # Filter remaining crowns based on confidence score
     if confidence != 0:
         crowns_out = crowns_out[crowns_out["Confidence_score"] > confidence]
