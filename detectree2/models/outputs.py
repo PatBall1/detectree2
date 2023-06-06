@@ -10,6 +10,7 @@ from pathlib import Path
 
 import cv2
 import geopandas as gpd
+import pandas as pd
 import pycocotools.mask as mask_util
 import rasterio
 from fiona.crs import from_epsg
@@ -307,7 +308,7 @@ def stitch_crowns(folder: str, shift: int = 1):
         crowns_tile = gpd.sjoin(crowns_tile, geo, "inner", "within")
         crowns_tile = crowns_tile.set_crs(crowns.crs, allow_override=True)
         # print(crowns_tile)
-        crowns = crowns.append(crowns_tile)
+        crowns = pd.concat([crowns, crowns_tile])   
         # print(crowns)
     crowns = crowns.drop("index_right", axis=1).reset_index().drop("index", axis=1)
     # crowns = crowns.drop("index", axis=1)
