@@ -16,7 +16,8 @@ A tutorial on how to prepare data, train models and make predictions is availabl
 The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge [Conservation Research Institute](https://www.conservation.cam.ac.uk/).
 MRes project repo available [here](https://github.com/shmh40/detectreeRGB).</sub>
 
-DUE TO AN INFLUX OF NEW USERS WE HAVE BEEN HITTING BANDWIDTH LIMITS. THIS IS PRIMARILY FROM THE FILE SIZE OF THE PRE-TRAINED MODELS. IF YOU ARE USING THESE MODELS PLEASE AIM TO SAVE THEM LOCALLY AND POINT TO THEM WHEN YOU NEED THEM RATHER THAN DOWNLOADING THEM EACH TIME THEY ARE REQUIRED. WE WILL MOVE TO A MORE BANDWIDTH FRIENDLY SET UP SOON. IN THE MEANTIME, IF INSTALLING THE PACKAGE IS FAILING PLEASE RAISE IT AS AN ISSUE OR NOTIFY ME DIRECTLY ON BALL.JGC@GMAIL.COM.
+> **Warning**
+> Due to an influx of new users we have been hitting bandwidth limits. This is primarily from the file size of the pre-trained models. If you are using these models please aim to save them locally and point to them when you need them rather than downloading them each time they are required. We will move to a more bandwidth friendly set up soon. In the meantime, if installing the package is failing please raise it as an issue or notify me directly on ball.jgc@gmail.com.
 
 ## Citation
 
