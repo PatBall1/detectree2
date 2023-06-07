@@ -3,7 +3,6 @@
 <img width="350" alt="predictions" src= ./.github/logo_dark.png#gh-dark-mode-only>
 </p>
 
-DUE TO AN INFLUX OF NEW USERS WE HAVE BEEN HITTING BANDWIDTH LIMITS. THIS IS PRIMARILY FROM THE FILE SIZE OF THE PRE-TRAINED MODELS. IF YOU ARE USING THESE MODELS PLEASE AIM TO SAVE THEM LOCALLY AND POINT TO THEM WHEN YOU NEED THEM RATHER THAN DOWNLOADING THEM EACH TIME THEY ARE REQUIRED. WE WILL MOVE TO A MORE BANDWIDTH FRIENDLY SET UP SOON. IN THE MEANTIME, IF INSTALLING THE PACKAGE IS FAILING PLEASE RAISE IT AS AN ISSUE OR NOTIFY ME DIRECTLY ON BALL.JGC@GMAIL.COM.
 
  [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Detectree CI](https://github.com/patball1/detectree2/actions/workflows/python-ci.yml/badge.svg)](https://github.com/patball1/detectree2/actions/workflows/python-ci.yml) [![PEP8](https://img.shields.io/badge/code%20style-pep8-orange.svg)](https://www.python.org/dev/peps/pep-0008/) [![DOI](https://zenodo.org/badge/470698486.svg)](https://zenodo.org/badge/latestdoi/470698486)
 
@@ -16,6 +15,8 @@ A tutorial on how to prepare data, train models and make predictions is availabl
 <sub>Code developed by James Ball, Seb Hickman, Thomas Koay, Oscar Jiang, Luran Wang, Panagiotis Ioannou, James Hinton and Matthew Archer in the [Forest Ecology and Conservation Group](https://coomeslab.org/) at the University of Cambridge.
 The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge [Conservation Research Institute](https://www.conservation.cam.ac.uk/).
 MRes project repo available [here](https://github.com/shmh40/detectreeRGB).</sub>
+
+DUE TO AN INFLUX OF NEW USERS WE HAVE BEEN HITTING BANDWIDTH LIMITS. THIS IS PRIMARILY FROM THE FILE SIZE OF THE PRE-TRAINED MODELS. IF YOU ARE USING THESE MODELS PLEASE AIM TO SAVE THEM LOCALLY AND POINT TO THEM WHEN YOU NEED THEM RATHER THAN DOWNLOADING THEM EACH TIME THEY ARE REQUIRED. WE WILL MOVE TO A MORE BANDWIDTH FRIENDLY SET UP SOON. IN THE MEANTIME, IF INSTALLING THE PACKAGE IS FAILING PLEASE RAISE IT AS AN ISSUE OR NOTIFY ME DIRECTLY ON BALL.JGC@GMAIL.COM.
 
 ## Citation
 
