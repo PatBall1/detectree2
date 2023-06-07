@@ -10,6 +10,7 @@ from pathlib import Path
 
 import cv2
 import geopandas as gpd
+import pandas as pd
 import pycocotools.mask as mask_util
 import rasterio
 from fiona.crs import from_epsg
@@ -23,7 +24,8 @@ def polygon_from_mask(masked_arr):
     https://github.com/hazirbas/coco-json-converter/blob/master/generate_coco_json.py <-- found here
     """
 
-    contours, _ = cv2.findContours(masked_arr, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(
+        masked_arr, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     segmentation = []
     for contour in contours:
@@ -108,7 +110,8 @@ def to_eval_geojson(directory=None):  # noqa:N803
                         if epsg == "26917":
                             rescaled_coords.append([x_coord, -y_coord])
                         else:
-                            rescaled_coords.append([x_coord, -y_coord + int(img_dict["height"])])
+                            rescaled_coords.append(
+                                [x_coord, -y_coord + int(img_dict["height"])])
 
                     geofile["features"].append({
                         "type": "Feature",
@@ -125,7 +128,8 @@ def to_eval_geojson(directory=None):  # noqa:N803
             # error appears.
             print(geofile)
 
-            output_geo_file = os.path.join(directory, img_dict["filename"].replace(".json", "_eval.geojson"))
+            output_geo_file = os.path.join(
+                directory, img_dict["filename"].replace(".json", "_eval.geojson"))
             print(output_geo_file)
             with open(output_geo_file, "w") as dest:
                 json.dump(geofile, dest)
@@ -220,7 +224,8 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None):  # noqa:N8
             # Check final form is correct - compare to a known geojson file if error appears.
             # print("geofile",geofile)
 
-            output_geo_file = os.path.join(output_fold, filename.replace(".json", ".geojson"))
+            output_geo_file = os.path.join(
+                output_fold, filename.replace(".json", ".geojson"))
             # print("output location:", output_geo_file)
             with open(output_geo_file, "w") as dest:
                 json.dump(geofile, dest)
@@ -307,10 +312,13 @@ def stitch_crowns(folder: str, shift: int = 1):
         crowns_tile = gpd.sjoin(crowns_tile, geo, "inner", "within")
         crowns_tile = crowns_tile.set_crs(crowns.crs, allow_override=True)
         # print(crowns_tile)
-        crowns = crowns.append(crowns_tile)
+        crowns = pd.concat([crowns, crowns_tile])
         # print(crowns)
-    crowns = crowns.drop("index_right", axis=1).reset_index().drop("index", axis=1)
+    crowns = crowns.drop(
+        "index_right", axis=1).reset_index().drop("index", axis=1)
     # crowns = crowns.drop("index", axis=1)
+    if not isinstance(crowns, gpd.GeoDataFrame):
+        crowns = gpd.GeoDataFrame(crowns, crs=from_epsg(crs))
     return crowns
 
 
@@ -348,7 +356,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
             print(str(index) + " / " + str(len(crowns)) + " cleaned")
         # if there is not a crown interesects with the row (other than itself)
         if crowns.intersects(shape(row.geometry)).sum() == 1:
-            crowns_out = crowns_out.append(row)  # retain it
+            crowns_out = pd.concat([crowns_out, row])  # retain it
         else:
             # Find those crowns that intersect with it
             intersecting = crowns.loc[crowns.intersects(shape(row.geometry))]
@@ -359,21 +367,25 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
                     row1,
             ) in intersecting.iterrows():  # iterate over those intersecting crowns
                 # print(row1.geometry)
-                iou.append(calc_iou(row.geometry, row1.geometry))  # Calculate the IoU with each of those crowns
+                # Calculate the IoU with each of those crowns
+                iou.append(calc_iou(row.geometry, row1.geometry))
             # print(iou)
             intersecting["iou"] = iou
-            matches = intersecting[intersecting["iou"] > iou_threshold]  # Remove those crowns with a poor match
-            matches = matches.sort_values("Confidence_score", ascending=False).reset_index(drop=True)
-            match = matches.loc[[0]]  # Of the remaining crowns select the crown with the highest confidence
+            # Remove those crowns with a poor match
+            matches = intersecting[intersecting["iou"] > iou_threshold]
+            matches = matches.sort_values(
+                "Confidence_score", ascending=False).reset_index(drop=True)
+            # Of the remaining crowns select the crown with the highest confidence
+            match = matches.loc[[0]]
             if match["iou"][0] < 1:  # If the most confident is not the initial crown
                 continue
             else:
                 match = match.drop("iou", axis=1)
                 # print(index)
-                crowns_out = crowns_out.append(match)
+                crowns_out = pd.concat([crowns_out, match])
     # Convert pandas into back geopandas if it is not already
     if not isinstance(crowns_out, gpd.GeoDataFrame):
-        crowns_out = gpd.GeoDataFrame(crowns_out)
+        crowns_out = gpd.GeoDataFrame(crowns_out, crs=crowns.crs)
     # Filter remaining crowns based on confidence score
     if confidence != 0:
         crowns_out = crowns_out[crowns_out["Confidence_score"] > confidence]
@@ -393,7 +405,8 @@ def clean_predictions(directory, iou_threshold=0.7):
             crowns = gpd.GeoDataFrame()
 
             for shp in datajson:
-                crown_coords = polygon_from_mask(mask_util.decode(shp["segmentation"]))
+                crown_coords = polygon_from_mask(
+                    mask_util.decode(shp["segmentation"]))
                 if crown_coords == 0:
                     continue
                 rescaled_coords = []
@@ -403,9 +416,9 @@ def clean_predictions(directory, iou_threshold=0.7):
                     x_coord = crown_coords[c]
                     y_coord = crown_coords[c + 1]
                     rescaled_coords.append([x_coord, y_coord])
-                crowns = crowns.append(gpd.GeoDataFrame({'Confidence_score': shp['score'],
-                                                        'geometry': [Polygon(rescaled_coords)]},
-                                                        geometry=[Polygon(rescaled_coords)]))
+                crowns = pd.concat([crowns, gpd.GeoDataFrame({'Confidence_score': shp['score'],
+                                                              'geometry': [Polygon(rescaled_coords)]},
+                                                             geometry=[Polygon(rescaled_coords)])])
 
             crowns = crowns.reset_index().drop('index', axis=1)
             crowns, indices = clean_outputs(crowns, iou_threshold)
@@ -430,7 +443,7 @@ def clean_outputs(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
             print(str(index) + " / " + str(len(crowns)) + " cleaned")
         # if there is not a crown interesects with the row (other than itself)
         if crowns.intersects(row.geometry).sum() == 1:
-            crowns_out = crowns_out.append(row)  # retain it
+            crowns_out = pd.concat(crowns_out, row)  # retain it
         else:
             # Find those crowns that intersect with it
             intersecting = crowns.loc[crowns.intersects(row.geometry)]
@@ -445,18 +458,22 @@ def clean_outputs(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
                 #    print("contained")
                 #    iou.append(1)
                 # else:
-                iou.append(calc_iou(row.geometry, row1.geometry))  # Calculate the IoU with each of those crowns
+                # Calculate the IoU with each of those crowns
+                iou.append(calc_iou(row.geometry, row1.geometry))
             # print(iou)
             intersecting['iou'] = iou
-            matches = intersecting[intersecting['iou'] > iou_threshold]  # Remove those crowns with a poor match
-            matches = matches.sort_values('Confidence_score', ascending=False).reset_index().drop('index', axis=1)
-            match = matches.loc[[0]]  # Of the remaining crowns select the crown with the highest confidence
+            # Remove those crowns with a poor match
+            matches = intersecting[intersecting['iou'] > iou_threshold]
+            matches = matches.sort_values(
+                'Confidence_score', ascending=False).reset_index().drop('index', axis=1)
+            # Of the remaining crowns select the crown with the highest confidence
+            match = matches.loc[[0]]
             if match['iou'][0] < 1:   # If the most confident is not the initial crown
                 continue
             else:
                 match = match.drop('iou', axis=1)
                 indices.append(index)
-                crowns_out = crowns_out.append(match)
+                crowns_out = pd.concat([crowns_out, match])
     return crowns_out, indices
 
 

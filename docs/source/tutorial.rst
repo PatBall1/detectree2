@@ -203,8 +203,8 @@ above example). It will be necessary to supply these registation names below...
 
 We must supply a ``base_model`` from Detectron2's  ``model_zoo``. This loads a backbone that has been pre-trained which
 saves us the pain of training a model from scratch. We are effectively transferring this model and (re)training it on
-our problem for the sake of time and efficiency. The `trains` and `tests` variables containing the registered datasets 
-should be tuples containing strings. If just a single site is being used a comma should still be supplied (e.g. 
+our problem for the sake of time and efficiency. The ``trains`` and ``tests`` variables containing the registered
+datasets should be tuples containing strings. If just a single site is being used a comma should still be supplied (e.g. 
 ``trains = ("Paracou_train",)``) otherwise the data loader will malfunction.
 
 .. code-block:: python
