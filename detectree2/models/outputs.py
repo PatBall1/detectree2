@@ -382,7 +382,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
             else:
                 match = match.drop("iou", axis=1)
                 # print(index)
-                crowns_out = pd.concat([crowns_out, row])
+                crowns_out = pd.concat([crowns_out, match])
     # Convert pandas into back geopandas if it is not already
     if not isinstance(crowns_out, gpd.GeoDataFrame):
         crowns_out = gpd.GeoDataFrame(crowns_out, crs=crowns.crs)
