@@ -318,7 +318,7 @@ def stitch_crowns(folder: str, shift: int = 1):
         "index_right", axis=1).reset_index().drop("index", axis=1)
     # crowns = crowns.drop("index", axis=1)
     if not isinstance(crowns, gpd.GeoDataFrame):
-        crowns_out = gpd.GeoDataFrame(crowns_out, crs=from_epsg(crs))
+        crowns = gpd.GeoDataFrame(crowns, crs=from_epsg(crs))
     return crowns
 
 
