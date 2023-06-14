@@ -356,7 +356,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
             print(str(index) + " / " + str(len(crowns)) + " cleaned")
         # if there is not a crown interesects with the row (other than itself)
         if crowns.intersects(shape(row.geometry)).sum() == 1:
-            crowns_out = pd.concat([crowns_out, row])  # retain it
+            crowns_out = pd.concat([crowns_out, row.to_frame().T], ignore_index=True)  # retain it
         else:
             # Find those crowns that intersect with it
             intersecting = crowns.loc[crowns.intersects(shape(row.geometry))]
@@ -382,7 +382,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
             else:
                 match = match.drop("iou", axis=1)
                 # print(index)
-                crowns_out = pd.concat([crowns_out, match])
+                crowns_out = pd.concat([crowns_out, match], ignore_index=True)
     # Convert pandas into back geopandas if it is not already
     if not isinstance(crowns_out, gpd.GeoDataFrame):
         crowns_out = gpd.GeoDataFrame(crowns_out, crs=crowns.crs)
