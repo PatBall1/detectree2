@@ -98,7 +98,12 @@
 corresponding tree crown polgons that are readable by Geopandas
 (e.g. <code class="docutils literal notranslate"><span class="pre">&lt;crowns_polygon&gt;.gpkg</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;crowns_polygon&gt;.shp</span></code>). For the best
 results, manual crowns should be supplied as dense clusters rather than
-sparsely scattered across in the landscape</p>
+sparsely scattered across in the landscape. See below for an example of the
+required input crowns and image.</p>
+<a class="reference internal image-reference" href="_images/Danum_example_data.png"><img alt="Example Danum training data" class="align-center" src="_images/Danum_example_data.png" style="width: 400px;" /></a>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
 <p>If you would just like to make predictions on an orthomosaic with a pre-trained
 model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code>, skip to part 4 (Generating landscape predictions).</p>
 <section id="preparing-data">
@@ -180,15 +185,16 @@ will reflect that.</p>
 </div>
 <p>Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data_folder</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="c1"># data_folder is the folder where the .png, .tif, .geojson tiles have been stored</span>
-<span class="n">to_traintest_folders</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">test_frac</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">to_traintest_folders</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">test_frac</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">to_traintest_folders</span></code> function automatically removes training/validation geojsons that overlap with test
-tiles, ensuring strict spatial separation of the test data. However, this can remove a significant proportion of the
-data available to train on so if validation accuracy is a sufficient test of model performance <code class="docutils literal notranslate"><span class="pre">test_frac</span></code> can be
-set to <code class="docutils literal notranslate"><span class="pre">0</span></code>. Alternatively, just set a <code class="docutils literal notranslate"><span class="pre">test_frac</span></code> value that is smaller than you might otherwise have put.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">strict=True</span></code>, the <code class="docutils literal notranslate"><span class="pre">to_traintest_folders</span></code> function will automatically removes training/validation geojsons
+that have any overlap with test tiles (including the buffers), ensuring strict spatial separation of the test data.
+However, this can remove a significant proportion of the data available to train on so if validation accuracy is a
+sufficient test of model performance <code class="docutils literal notranslate"><span class="pre">test_frac</span></code> can be set to <code class="docutils literal notranslate"><span class="pre">0</span></code> or set <code class="docutils literal notranslate"><span class="pre">strict=False</span></code> (which allows for
+some overlap in the buffers between test and train/val tiles).</p>
 </div>
 <p>The data has now been tiled and partitioned for model training, tuning and evaluation.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>└── Danum                                       (site directory)

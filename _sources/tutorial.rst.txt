@@ -19,9 +19,15 @@ To train a model you will need an orthomosaic (as ``<orthmosaic>.tif``) and
 corresponding tree crown polgons that are readable by Geopandas
 (e.g. ``<crowns_polygon>.gpkg``, ``<crowns_polygon>.shp``). For the best
 results, manual crowns should be supplied as dense clusters rather than
-sparsely scattered across in the landscape
+sparsely scattered across in the landscape. See below for an example of the
+required input crowns and image.
 
+.. image:: ../../report/figures/Danum_example_data.png 
+   :width: 400
+   :alt: Example Danum training data
+   :align: center
 
+|
 If you would just like to make predictions on an orthomosaic with a pre-trained
 model from the ``model_garden``, skip to part 4 (Generating landscape predictions).
 
@@ -119,13 +125,14 @@ Send geojsons to train folder (with sub-folders for k-fold cross validation) and
 .. code-block:: python
    
    data_folder = out_dir # data_folder is the folder where the .png, .tif, .geojson tiles have been stored
-   to_traintest_folders(data_folder, out_dir, test_frac=0.15, folds=5)
+   to_traintest_folders(data_folder, out_dir, test_frac=0.15, strict=True, folds=5)
 
 .. note::
-   The ``to_traintest_folders`` function automatically removes training/validation geojsons that overlap with test
-   tiles, ensuring strict spatial separation of the test data. However, this can remove a significant proportion of the
-   data available to train on so if validation accuracy is a sufficient test of model performance ``test_frac`` can be
-   set to ``0``. Alternatively, just set a ``test_frac`` value that is smaller than you might otherwise have put.
+   If ``strict=True``, the ``to_traintest_folders`` function will automatically removes training/validation geojsons
+   that have any overlap with test tiles (including the buffers), ensuring strict spatial separation of the test data.
+   However, this can remove a significant proportion of the data available to train on so if validation accuracy is a 
+   sufficient test of model performance ``test_frac`` can be set to ``0`` or set ``strict=False`` (which allows for 
+   some overlap in the buffers between test and train/val tiles).
 
 
 The data has now been tiled and partitioned for model training, tuning and evaluation.
