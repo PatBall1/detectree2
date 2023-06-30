@@ -443,14 +443,18 @@ def to_traintest_folders(tiles_folder: str = "./",
                          out_folder: str = "./data/",
                          test_frac: float = 0.2,
                          folds: int = 1,
+                         strict: bool = False,
                          seed: int = None) -> None:
-    """Send tiles to training (+validation) and test dir and automatically make sure no overlap.
+    """Send tiles to training (+validation) and test dir
+     
+    With "strict" it is possible to automatically ensure no overlap between train/val and test tiles.
 
     Args:
         tiles_folder: folder with tiles
         out_folder: folder to save train and test folders
         test_frac: fraction of tiles to be used for testing
         folds: number of folds to split the data into
+        strict: if True, training/validation files will be removed if there is any overlap with test files (inc buffer)
 
     Returns:
         None
@@ -482,14 +486,18 @@ def to_traintest_folders(tiles_folder: str = "./",
 
     for i in range(0, len(file_roots)):
         # copy to test
-        if i <= len(file_roots) * test_frac:
+        if i < len(file_roots) * test_frac:
             test_boxes.append(image_details(file_roots[num[i]]))
             shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(
                 Path(file_roots[num[i]]).suffix + ".geojson"), out_dir / "test")
         else:
             # copy to train
             train_box = image_details(file_roots[num[i]])
-            if not is_overlapping_box(test_boxes, train_box):
+            if strict: # check if there is overlap with test boxes
+                if not is_overlapping_box(test_boxes, train_box):
+                    shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(
+                        Path(file_roots[num[i]]).suffix + ".geojson"), out_dir / "train")
+            else:
                 shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(
                     Path(file_roots[num[i]]).suffix + ".geojson"), out_dir / "train")
 
