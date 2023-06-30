@@ -439,14 +439,15 @@ def record_data(crowns,
     f.close()
 
 
-def to_traintest_folders(tiles_folder: str = "./",
-                         out_folder: str = "./data/",
-                         test_frac: float = 0.2,
-                         folds: int = 1,
-                         strict: bool = False,
-                         seed: int = None) -> None:
+def to_traintest_folders(  # noqa: C901
+        tiles_folder: str = "./",
+        out_folder: str = "./data/",
+        test_frac: float = 0.2,
+        folds: int = 1,
+        strict: bool = False,
+        seed: int = None) -> None:
     """Send tiles to training (+validation) and test dir
-     
+
     With "strict" it is possible to automatically ensure no overlap between train/val and test tiles.
 
     Args:
@@ -493,7 +494,7 @@ def to_traintest_folders(tiles_folder: str = "./",
         else:
             # copy to train
             train_box = image_details(file_roots[num[i]])
-            if strict: # check if there is overlap with test boxes
+            if strict:   # check if there is overlap with test boxes
                 if not is_overlapping_box(test_boxes, train_box):
                     shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(
                         Path(file_roots[num[i]]).suffix + ".geojson"), out_dir / "train")
