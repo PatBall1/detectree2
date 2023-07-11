@@ -17,6 +17,7 @@ import geopandas as gpd
 import numpy as np
 import rasterio
 from fiona.crs import from_epsg  # noqa: F401
+from rasterio.crs import CRS
 from rasterio.io import DatasetReader
 from rasterio.mask import mask
 from shapely.geometry import box
@@ -70,8 +71,10 @@ def tile_data(
     Returns:
         None
     """
-    os.makedirs(out_dir, exist_ok=True)
-    crs = data.crs.data["init"].split(":")[1]
+    out_path = Path(out_dir)
+    os.makedirs(out_path, exist_ok=True)
+    crs = CRS.from_string(data.crs.wkt)
+    crs = crs.to_epsg()
     tilename = Path(data.name).stem
 
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
@@ -79,8 +82,7 @@ def tile_data(
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
             # Naming conventions
-            out_path_root = out_dir + tilename + "_" + str(minx) + "_" + str(
-                miny) + "_" + str(tile_width) + "_" + str(buffer) + "_" + crs
+            out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
             # new tiling bbox including the buffer
             bbox = box(
                 minx - buffer,
@@ -205,7 +207,8 @@ def tile_data_train(  # noqa: C901
     out_path = Path(out_dir)
     os.makedirs(out_path, exist_ok=True)
     tilename = Path(data.name).stem
-    crs = data.crs.data["init"].split(":")[1]
+    crs = CRS.from_string(data.crs.wkt)
+    crs = crs.to_epsg()
     # out_img, out_transform = mask(data, shapes=crowns.buffer(buffer), crop=True)
     # Should start from data.bounds[0] + buffer, data.bounds[1] + buffer to avoid later complications
     for minx in np.arange(ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, int):
