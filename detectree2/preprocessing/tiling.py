@@ -137,7 +137,7 @@ def tile_data(
             # If tile appears blank in folder can show the image here and may
             # need to fix RGB data or the dtype
             # show(out_img)
-            out_tif = out_path_root + ".tif"
+            out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tif")
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
 
@@ -166,7 +166,7 @@ def tile_data(
             # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
             # here as a naughty method
             cv2.imwrite(
-                out_path_root + ".png",
+                str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
                 rgb_rescaled,
             )
 
