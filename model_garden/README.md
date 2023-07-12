@@ -30,6 +30,10 @@ transferability owing to random resize augmentation during training.
 
 * Appropriate tile size ~ 100 m (with some flexibility)
 
+## urban_trees.pth
+
+A new model for mapping trees in urban environments. Available upon requests.
+
 &nbsp;
 &nbsp;
 
