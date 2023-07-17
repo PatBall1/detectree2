@@ -8,6 +8,7 @@ import os
 from http.client import REQUEST_URI_TOO_LONG  # noqa: F401
 from pathlib import Path
 from typing import Optional
+
 import cv2
 import geopandas as gpd
 import pandas as pd
@@ -328,7 +329,9 @@ def calc_iou(shape1, shape2):
     return iou
 
 
-def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold: Optional[float] = 0.7, confidence: Optional[float] = 0.2) -> gpd.GeoDataFrame:
+def clean_crowns(crowns: gpd.GeoDataFrame,
+                 iou_threshold: Optional[float] = 0.7,
+                 confidence: Optional[float] = 0.2) -> gpd.GeoDataFrame:
     """Clean overlapping crowns.
 
     Outputs can contain highly overlapping crowns including in the buffer region.
@@ -345,7 +348,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold: Optional[float] = 0.7,
     """
     # Filter any rows with empty or invalid geometry
     crowns = crowns[~crowns.is_empty & crowns.is_valid]
-    
+
     cleaned_crowns = []
     for index, row in crowns.iterrows():
         if index % 1000 == 0:
@@ -376,7 +379,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold: Optional[float] = 0.7,
     # Filter remaining crowns based on confidence score
     if confidence != 0:
         crowns_out = crowns_out[crowns_out['Confidence_score'] > confidence]
-    
+
     return crowns_out.reset_index(drop=True)
 
 
