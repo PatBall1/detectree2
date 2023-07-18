@@ -7,6 +7,7 @@ import json
 import os
 from http.client import REQUEST_URI_TOO_LONG  # noqa: F401
 from pathlib import Path
+from typing import Optional
 
 import cv2
 import geopandas as gpd
@@ -328,7 +329,9 @@ def calc_iou(shape1, shape2):
     return iou
 
 
-def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
+def clean_crowns(crowns: gpd.GeoDataFrame,
+                 iou_threshold: Optional[float] = 0.7,
+                 confidence: Optional[float] = 0.2) -> gpd.GeoDataFrame:
     """Clean overlapping crowns.
 
     Outputs can contain highly overlapping crowns including in the buffer region.
@@ -343,52 +346,40 @@ def clean_crowns(crowns: gpd.GeoDataFrame, iou_threshold=0.7, confidence=0.2):
     Returns:
         gpd.GeoDataFrame: Cleaned crowns.
     """
-    # Filter any rows with empty geometry
-    crowns = crowns[~crowns.is_empty]
-    # Filter any rows with invalid geometry
-    crowns = crowns[crowns.is_valid]
-    # Reset the index
-    crowns = crowns.reset_index(drop=True)
-    # Create an object to store the cleaned crowns
-    crowns_out = gpd.GeoDataFrame()
-    for index, row in crowns.iterrows():  # iterate over each crown
+    # Filter any rows with empty or invalid geometry
+    crowns = crowns[~crowns.is_empty & crowns.is_valid]
+
+    cleaned_crowns = []
+    for index, row in crowns.iterrows():
         if index % 1000 == 0:
-            print(str(index) + " / " + str(len(crowns)) + " cleaned")
-        # if there is not a crown interesects with the row (other than itself)
-        if crowns.intersects(shape(row.geometry)).sum() == 1:
-            crowns_out = pd.concat([crowns_out, row.to_frame().T], ignore_index=True)  # retain it
-        else:
-            # Find those crowns that intersect with it
-            intersecting = crowns.loc[crowns.intersects(shape(row.geometry))]
-            intersecting = intersecting.reset_index(drop=True)
-            iou = []
-            for (
-                    index1,
-                    row1,
-            ) in intersecting.iterrows():  # iterate over those intersecting crowns
-                # print(row1.geometry)
-                # Calculate the IoU with each of those crowns
-                iou.append(calc_iou(row.geometry, row1.geometry))
-            # print(iou)
-            intersecting["iou"] = iou
-            # Remove those crowns with a poor match
-            matches = intersecting[intersecting["iou"] > iou_threshold]
-            matches = matches.sort_values(
-                "Confidence_score", ascending=False).reset_index(drop=True)
-            # Of the remaining crowns select the crown with the highest confidence
-            match = matches.loc[[0]]
-            if match["iou"][0] < 1:  # If the most confident is not the initial crown
+            print(f'{index} / {len(crowns)} cleaned')
+
+        intersecting_rows = crowns[crowns.intersects(shape(row.geometry))]
+
+        if len(intersecting_rows) > 1:
+            iou_values = intersecting_rows.geometry.map(lambda x: calc_iou(row.geometry, x))
+            intersecting_rows = intersecting_rows.assign(iou=iou_values)
+
+            # Filter rows with IoU over threshold and get the one with the highest confidence score
+            match = intersecting_rows[intersecting_rows['iou'] > iou_threshold].nlargest(1, 'Confidence_score')
+
+            if match['iou'].iloc[0] < 1:
                 continue
-            else:
-                match = match.drop("iou", axis=1)
-                # print(index)
-                crowns_out = pd.concat([crowns_out, match], ignore_index=True)
-    # Convert pandas into back geopandas if it is not already
+
+        else:
+            match = row.to_frame().T
+
+        cleaned_crowns.append(match)
+
+    crowns_out = pd.concat(cleaned_crowns, ignore_index=True)
+    # Ensuring crowns_out is a GeoDataFrame
     if not isinstance(crowns_out, gpd.GeoDataFrame):
         crowns_out = gpd.GeoDataFrame(crowns_out, crs=crowns.crs)
+
     # Filter remaining crowns based on confidence score
     if confidence != 0:
-        crowns_out = crowns_out[crowns_out["Confidence_score"] > confidence]
+        crowns_out = crowns_out[crowns_out['Confidence_score'] > confidence]
+
     return crowns_out.reset_index(drop=True)
 
 
