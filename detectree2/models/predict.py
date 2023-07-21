@@ -39,13 +39,17 @@ def predict_on_data(
     else:
         dataset_dicts = get_filenames(directory)
 
+    total_files = len(dataset_dicts)
+
     # Works out if all items in folder should be predicted on
     if num_predictions == 0:
         num_to_pred = len(dataset_dicts)
     else:
         num_to_pred = num_predictions
 
-    for d in random.sample(dataset_dicts, num_to_pred):
+    print(f"Predicting {num_to_pred} files")
+
+    for i, d in enumerate(dataset_dicts[:num_to_pred], start=1):
         img = cv2.imread(d["file_name"])
         outputs = predictor(img)
 
@@ -63,6 +67,9 @@ def predict_on_data(
             evaluations = instances_to_coco_json(outputs["instances"].to("cpu"), d["file_name"])
             with open(output_file, "w") as dest:
                 json.dump(evaluations, dest)
+        
+        if i % 50 == 0:
+            print(f"Predicted {i} files of {total_files}")
 
 
 if __name__ == "__main__":

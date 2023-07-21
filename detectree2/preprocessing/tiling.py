@@ -77,10 +77,17 @@ def tile_data(
     crs = crs.to_epsg()
     tilename = Path(data.name).stem
 
+    total_tiles = int(((data.bounds[2] - data.bounds[0]) / tile_width) * ((data.bounds[3] - data.bounds[1]) / tile_height))
+
+    tile_count = 0
+    print(f"Tiling to {total_tiles} total tiles")
+
     for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width,
                           tile_width, int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
+            
+            tile_count += 1
             # Naming conventions
             out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
             # new tiling bbox including the buffer
@@ -169,6 +176,10 @@ def tile_data(
                 str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
                 rgb_rescaled,
             )
+            if tile_count % 50 == 0:
+                print(f"Processed {tile_count} tiles of {total_tiles} tiles")
+    
+    print("Tiling complete")
 
 
 def tile_data_train(  # noqa: C901
@@ -368,6 +379,8 @@ def tile_data_train(  # noqa: C901
             except ValueError:
                 print("Cannot write empty DataFrame to file.")
                 continue
+    
+    print("Tiling complete")
 
 
 def image_details(fileroot):
