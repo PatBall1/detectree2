@@ -333,7 +333,8 @@ def clean_crowns(crowns: gpd.GeoDataFrame,
         iou_threshold (float, optional): IoU threshold that determines whether crowns are overlapping.
         confidence (float, optional): Minimum confidence score for crowns to be retained. Defaults to 0.2.
         area_threshold (float, optional): Minimum area of crowns to be retained. Defaults to 1m2 (assuming UTM).
-        field (str): Field to used to prioritise selection of crowns. Defaults to "Confidence_score".
+        field (str): Field to used to prioritise selection of crowns. Defaults to "Confidence_score" but this should
+            be changed to "Area" if using a model that outputs area.
 
     Returns:
         gpd.GeoDataFrame: Cleaned crowns.
