@@ -378,7 +378,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame,
     if not isinstance(crowns_out, gpd.GeoDataFrame):
         crowns_out = gpd.GeoDataFrame(crowns_out, crs=crowns.crs)
     else:
-        crowns_out = crowns_out.to_crs(crowns.crs)
+        crowns_out = crowns_out.set_crs(crowns.crs)
 
     # Filter remaining crowns based on confidence score
     if confidence != 0:
