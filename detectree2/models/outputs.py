@@ -320,7 +320,8 @@ def calc_iou(shape1, shape2):
 def clean_crowns(crowns: gpd.GeoDataFrame,
                  iou_threshold: Optional[float] = 0.7,
                  confidence: Optional[float] = 0.2,
-                 area_threshold: Optional[float] = 1) -> gpd.GeoDataFrame:
+                 area_threshold: Optional[float] = 1,
+                 field: str = "Confidence_score") -> gpd.GeoDataFrame:
     """Clean overlapping crowns.
 
     Outputs can contain highly overlapping crowns including in the buffer region.
@@ -331,7 +332,9 @@ def clean_crowns(crowns: gpd.GeoDataFrame,
         crowns (gpd.GeoDataFrame): Crowns to be cleaned.
         iou_threshold (float, optional): IoU threshold that determines whether crowns are overlapping.
         confidence (float, optional): Minimum confidence score for crowns to be retained. Defaults to 0.2.
-        area_threshold (float, optional): Minimum area of crowns to be retained. Defaults to 1.
+        area_threshold (float, optional): Minimum area of crowns to be retained. Defaults to 1m2 (assuming UTM).
+        field (str): Field to used to prioritise selection of crowns. Defaults to "Confidence_score" but this should
+            be changed to "Area" if using a model that outputs area.
 
     Returns:
         gpd.GeoDataFrame: Cleaned crowns.
@@ -356,7 +359,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame,
             intersecting_rows = intersecting_rows.assign(iou=iou_values)
 
             # Filter rows with IoU over threshold and get the one with the highest confidence score
-            match = intersecting_rows[intersecting_rows['iou'] > iou_threshold].nlargest(1, 'Confidence_score')
+            match = intersecting_rows[intersecting_rows['iou'] > iou_threshold].nlargest(1, field)
 
             if match['iou'].iloc[0] < 1:
                 continue
@@ -382,7 +385,6 @@ def clean_crowns(crowns: gpd.GeoDataFrame,
         crowns_out = crowns_out[crowns_out['Confidence_score'] > confidence]
 
     return crowns_out.reset_index(drop=True)
-
 
 
 def clean_predictions(directory, iou_threshold=0.7):
