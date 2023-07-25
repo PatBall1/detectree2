@@ -3,8 +3,10 @@
 Funtions to process model predictions into outputs for model evaluation and
 mapping crowns in geographic space.
 """
+import glob
 import json
 import os
+import re
 from http.client import REQUEST_URI_TOO_LONG  # noqa: F401
 from pathlib import Path
 from typing import Optional
@@ -16,7 +18,8 @@ import pandas as pd
 import pycocotools.mask as mask_util
 import rasterio
 from rasterio.crs import CRS
-from shapely.geometry import Polygon, box, shape
+from shapely.geometry import Multipoint, Polygon, box, shape
+from shapely.ops import unary_union
 
 
 def polygon_from_mask(masked_arr):
@@ -154,7 +157,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None):  # noqa:N8
         None
     """
     Path(output_fold).mkdir(parents=True, exist_ok=True)
-    entries = list(Path(pred_fold) / file for file in os.listdir(pred_fold) if Path(file).suffix == '.json')
+    entries = list(Path(pred_fold) / file for file in os.listdir(pred_fold) if Path(file).suffix == ".json")
     total_files = len(entries)
     print(f"Projecting {total_files} files")
 
@@ -320,7 +323,7 @@ def calc_iou(shape1, shape2):
 def clean_crowns(crowns: gpd.GeoDataFrame,
                  iou_threshold: Optional[float] = 0.7,
                  confidence: Optional[float] = 0.2,
-                 area_threshold: Optional[float] = 1,
+                 area_threshold: Optional[float] = 2,
                  field: str = "Confidence_score") -> gpd.GeoDataFrame:
     """Clean overlapping crowns.
 
@@ -331,7 +334,8 @@ def clean_crowns(crowns: gpd.GeoDataFrame,
     Args:
         crowns (gpd.GeoDataFrame): Crowns to be cleaned.
         iou_threshold (float, optional): IoU threshold that determines whether crowns are overlapping.
-        confidence (float, optional): Minimum confidence score for crowns to be retained. Defaults to 0.2.
+        confidence (float, optional): Minimum confidence score for crowns to be retained. Defaults to 0.2. Note that
+            this should be adjusted to fit "field".
         area_threshold (float, optional): Minimum area of crowns to be retained. Defaults to 1m2 (assuming UTM).
         field (str): Field to used to prioritise selection of crowns. Defaults to "Confidence_score" but this should
             be changed to "Area" if using a model that outputs area.
@@ -345,12 +349,14 @@ def clean_crowns(crowns: gpd.GeoDataFrame,
     # Filter any rows with polgon of less than 1m2 as these are likely to be artifacts
     crowns = crowns[crowns.area > area_threshold]
 
+    crowns.reset_index(drop=True, inplace=True)
+
     cleaned_crowns = []
-    print(f'Cleaning {len(crowns)} crowns')
+    print(f"Cleaning {len(crowns)} crowns")
 
     for index, row in crowns.iterrows():
         if index % 1000 == 0:
-            print(f'{index} / {len(crowns)} crowns cleaned')
+            print(f"{index} / {len(crowns)} crowns cleaned")
 
         intersecting_rows = crowns[crowns.intersects(shape(row.geometry))]
 
@@ -359,9 +365,9 @@ def clean_crowns(crowns: gpd.GeoDataFrame,
             intersecting_rows = intersecting_rows.assign(iou=iou_values)
 
             # Filter rows with IoU over threshold and get the one with the highest confidence score
-            match = intersecting_rows[intersecting_rows['iou'] > iou_threshold].nlargest(1, field)
+            match = intersecting_rows[intersecting_rows["iou"] > iou_threshold].nlargest(1, field)
 
-            if match['iou'].iloc[0] < 1:
+            if match["iou"].iloc[0] < 1:
                 continue
 
         else:
@@ -372,7 +378,7 @@ def clean_crowns(crowns: gpd.GeoDataFrame,
     crowns_out = pd.concat(cleaned_crowns, ignore_index=True)
 
     # Drop 'iou' column
-    crowns_out = crowns_out.drop('iou', axis=1)
+    crowns_out = crowns_out.drop("iou", axis=1)
 
     # Ensuring crowns_out is a GeoDataFrame
     if not isinstance(crowns_out, gpd.GeoDataFrame):
@@ -382,9 +388,111 @@ def clean_crowns(crowns: gpd.GeoDataFrame,
 
     # Filter remaining crowns based on confidence score
     if confidence != 0:
-        crowns_out = crowns_out[crowns_out['Confidence_score'] > confidence]
+        crowns_out = crowns_out[crowns_out[field] > confidence]
 
     return crowns_out.reset_index(drop=True)
+
+
+def load_geopandas_dataframes(folder):
+    # Get a list of all .gpkg filenames in the folder
+    all_files = glob.glob(f"{folder}/*.gpkg")
+    filenames = [f for f in all_files if re.match(f"{folder}/crowns_\d+\.gpkg", f)]
+
+    # Load each file into a GeoDataFrame and add it to a list
+    geopandas_dataframes = [gpd.read_file(filename) for filename in filenames]
+
+    return geopandas_dataframes
+
+
+# Function to normalize and average polygons, considering weights
+def normalize_polygon(polygon, num_points):
+    total_perimeter = polygon.length
+    distance_between_points = total_perimeter / num_points
+    points = [polygon.boundary.interpolate(i * distance_between_points) for i in range(num_points)]
+    return Polygon(points)
+
+
+def average_polygons(polygons, weights=None, num_points=300):
+    normalized_polygons = [normalize_polygon(poly, num_points) for poly in polygons]
+
+    avg_polygon_points = []
+    for i in range(num_points):
+        if weights:
+            points_at_i = [np.array(poly.exterior.coords[i]) * weight for poly, weight in zip(normalized_polygons, weights)]
+            avg_point_at_i = sum(points_at_i) / sum(weights)
+        else:
+            points_at_i = [np.array(poly.exterior.coords[i]) for poly in normalized_polygons]
+            avg_point_at_i = sum(points_at_i) / len(normalized_polygons)
+        avg_polygon_points.append(tuple(avg_point_at_i))
+    avg_polygon = Polygon(avg_polygon_points)
+    return avg_polygon
+
+
+def combine_and_average_polygons(gdfs, iou = 0.9):
+    # Combine all dataframes into one
+    combined_gdf = gpd.GeoDataFrame(pd.concat(gdfs, ignore_index=True))
+    combined_gdf["Confidence_score"] = pd.to_numeric(combined_gdf["Confidence_score"], errors="coerce")
+
+    # Create spatial index
+    sindex = combined_gdf.sindex
+
+    # Empty lists to store results
+    new_polygons = []
+    combined_counts = []
+    summed_confidences = []
+
+    total_rows = combined_gdf.shape[0]
+    print(f"Total rows: {total_rows}")
+
+    # Iterate over each polygon
+    for idx, row in combined_gdf.iterrows():
+        if idx % 500 == 0:
+            print(f"Processing row {idx} of {total_rows}")
+        polygon = row.geometry
+        confidence = row.Confidence_score if "Confidence_score" in combined_gdf.columns else None
+
+        possible_matches_index = list(sindex.intersection(polygon.bounds))
+        possible_matches = combined_gdf.iloc[possible_matches_index]
+        exact_matches = possible_matches[possible_matches.intersects(polygon)]
+
+        significant_matches = []
+        significant_confidences = []
+
+        for idx_match, row_match in exact_matches.iterrows():
+            match = row_match.geometry
+            match_confidence = row_match.Confidence_score if "Confidence_score" in combined_gdf.columns else None
+
+            intersection = polygon.intersection(match)
+            if intersection.area / match.area > iou:
+                significant_matches.append(match)
+                if match_confidence is not None:
+                    significant_confidences.append(match_confidence)
+
+        if len(significant_matches) > 1:
+            averaged_polygon = average_polygons(
+                significant_matches, 
+                significant_confidences if "Confidence_score" in combined_gdf.columns else None
+                )
+            new_polygons.append(averaged_polygon)
+            combined_counts.append(len(significant_matches))
+            if confidence is not None:
+                summed_confidences.append(sum(significant_confidences))
+        else:
+            new_polygons.append(polygon)
+            combined_counts.append(1)
+            if confidence is not None:
+                summed_confidences.append(confidence)
+
+    # Create a new GeoPandas dataframe with the averaged polygons
+    new_gdf = gpd.GeoDataFrame(geometry=new_polygons)
+    new_gdf["combined_counts"] = combined_counts
+    if "Confidence_score" in combined_gdf.columns:
+        new_gdf["summed_confidences"] = summed_confidences
+    
+    # Set crs
+    new_gdf.set_crs(gdfs[0].crs, inplace=True)
+
+    return new_gdf
 
 
 def clean_predictions(directory, iou_threshold=0.7):
