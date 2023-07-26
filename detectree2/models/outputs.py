@@ -19,7 +19,7 @@ import pycocotools.mask as mask_util
 import rasterio
 from rasterio.crs import CRS
 from shapely.geometry import Polygon, box, shape
-from shapely.ops import unary_union, orient
+from shapely.ops import orient, unary_union
 
 
 def polygon_from_mask(masked_arr):
