@@ -18,6 +18,7 @@ import pandas as pd
 import pycocotools.mask as mask_util
 import rasterio
 from rasterio.crs import CRS
+from shapely.affinity import scale
 from shapely.geometry import Polygon, box, shape
 from shapely.ops import orient, unary_union
 
