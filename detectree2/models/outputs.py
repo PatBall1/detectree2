@@ -18,6 +18,7 @@ import pandas as pd
 import pycocotools.mask as mask_util
 import rasterio
 from rasterio.crs import CRS
+from shapely.affinity import scale
 from shapely.geometry import Polygon, box, shape
 from shapely.ops import orient, unary_union
 
@@ -448,7 +449,23 @@ def average_polygons(polygons, weights=None, num_points=300):
             avg_point_at_i = sum(points_at_i) / len(normalized_polygons)
         avg_polygon_points.append(tuple(avg_point_at_i))
     avg_polygon = Polygon(avg_polygon_points)
-    return avg_polygon
+
+    # Compute the average centroid of the input polygons
+    average_centroid = (
+        np.mean([poly.centroid.x for poly in polygons]),
+        np.mean([poly.centroid.y for poly in polygons])
+    )
+
+    # Compute the average area of the input polygons
+    average_area = np.mean([poly.area for poly in polygons])
+
+    # Calculate the scale factor
+    scale_factor = np.sqrt(average_area / avg_polygon.area)
+
+    # Scale the average polygon
+    avg_polygon_scaled = scale(avg_polygon, xfact=scale_factor, yfact=scale_factor, origin=average_centroid)
+
+    return avg_polygon_scaled
 
 
 def combine_and_average_polygons(gdfs, iou = 0.9):
