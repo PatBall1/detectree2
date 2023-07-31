@@ -503,7 +503,7 @@ def combine_and_average_polygons(gdfs, iou = 0.9):
             match_confidence = row_match.Confidence_score if "Confidence_score" in combined_gdf.columns else None
 
             intersection = polygon.intersection(match)
-            if intersection.area / match.area > iou:
+            if intersection.area / (polygon.area + match.area - intersection.area) > iou:
                 significant_matches.append(match)
                 if match_confidence is not None:
                     significant_confidences.append(match_confidence)
