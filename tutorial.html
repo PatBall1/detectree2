@@ -357,7 +357,7 @@ and we are working on fixing it.</p>
 <p>Point to a trained model, set up the configuration state and make predictions on the tiles.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">trained_model</span> <span class="o">=</span> <span class="s2">&quot;./230103_randresize_full.pth&quot;</span>
 <span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span><span class="n">update_model</span><span class="o">=</span><span class="n">trained_model</span><span class="p">)</span>
-<span class="n">predict_on_data</span><span class="p">(</span><span class="n">tiles_path</span><span class="p">,</span> <span class="n">DefaultPredictor</span><span class="p">(</span><span class="n">cfg</span><span class="p">))</span>
+<span class="n">predict_on_data</span><span class="p">(</span><span class="n">tiles_path</span><span class="p">,</span> <span class="n">predictor</span><span class="o">=</span><span class="n">DefaultPredictor</span><span class="p">(</span><span class="n">cfg</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Once the predictions have been made on the tiles, it is necessary to project them back into geographic space.</p>

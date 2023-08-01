@@ -331,7 +331,7 @@ Point to a trained model, set up the configuration state and make predictions on
    
    trained_model = "./230103_randresize_full.pth"
    cfg = setup_cfg(update_model=trained_model)
-   predict_on_data(tiles_path, DefaultPredictor(cfg))
+   predict_on_data(tiles_path, predictor=DefaultPredictor(cfg))
 
 Once the predictions have been made on the tiles, it is necessary to project them back into geographic space.
 
