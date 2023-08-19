@@ -36,6 +36,17 @@ A new model for mapping trees in urban environments. Available upon requests.
 
 * Appropriate tile size ~ 200 m
 
+### Hyperparameters
+
+- Learning rate: 0.01709
+- Data loader workers: 6
+- Gamma: 0.08866
+- Backbone freeze at: 2
+- Warmup iterations: 184
+- Batch size per image: 623
+- Weight decay: 0.006519
+- AP50: 62.0
+
 &nbsp;
 &nbsp;
 
