@@ -34,6 +34,8 @@ transferability owing to random resize augmentation during training.
 
 A new model for mapping trees in urban environments. Available upon requests.
 
+* Appropriate tile size ~ 200 m
+
 &nbsp;
 &nbsp;
 
