@@ -13,10 +13,13 @@ setup(
     install_requires=[
         "pyyaml==5.1",
         "GDAL>=1.11",
+        "numpy",
+        "rtree",
         "proj",
         "geos",
         "pypng",
         "pygeos",
+        "shapely",
         "geopandas",
         "rasterio==1.3a3",
         "fiona",

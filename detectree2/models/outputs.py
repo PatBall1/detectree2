@@ -18,8 +18,9 @@ import pandas as pd
 import pycocotools.mask as mask_util
 import rasterio
 from rasterio.crs import CRS
+from shapely.affinity import scale
 from shapely.geometry import Polygon, box, shape
-from shapely.ops import unary_union
+from shapely.ops import orient, unary_union
 
 
 def polygon_from_mask(masked_arr):
@@ -407,11 +408,34 @@ def load_geopandas_dataframes(folder):
 
 
 # Function to normalize and average polygons, considering weights
+#def normalize_polygon(polygon, num_points):
+#    total_perimeter = polygon.length
+#    distance_between_points = total_perimeter / num_points
+#    points = [polygon.boundary.interpolate(i * distance_between_points) for i in range(num_points)]
+#    return Polygon(points)
+
 def normalize_polygon(polygon, num_points):
+    # Orient polygon to ensure consistent vertex order (counterclockwise)
+    polygon = orient(polygon, sign=1.0)
+
+    # Get all points
+    points = list(polygon.exterior.coords)
+
+    # Get point with minimum average of x and y
+    min_avg_point = min(points, key=lambda point: sum(point)/len(point))
+
+    # Rotate points to start from min_avg_point
+    min_avg_point_idx = points.index(min_avg_point)
+    points = points[min_avg_point_idx:] + points[:min_avg_point_idx]
+
+    # Create a new polygon with ordered points
+    polygon = Polygon(points)
+
     total_perimeter = polygon.length
     distance_between_points = total_perimeter / num_points
-    points = [polygon.boundary.interpolate(i * distance_between_points) for i in range(num_points)]
-    return Polygon(points)
+
+    normalized_points = [polygon.boundary.interpolate(i * distance_between_points) for i in range(num_points)]
+    return Polygon(normalized_points)
 
 
 def average_polygons(polygons, weights=None, num_points=300):
@@ -427,7 +451,23 @@ def average_polygons(polygons, weights=None, num_points=300):
             avg_point_at_i = sum(points_at_i) / len(normalized_polygons)
         avg_polygon_points.append(tuple(avg_point_at_i))
     avg_polygon = Polygon(avg_polygon_points)
-    return avg_polygon
+
+    # Compute the average centroid of the input polygons
+    average_centroid = (
+        np.mean([poly.centroid.x for poly in polygons]),
+        np.mean([poly.centroid.y for poly in polygons])
+    )
+
+    # Compute the average area of the input polygons
+    average_area = np.mean([poly.area for poly in polygons])
+
+    # Calculate the scale factor
+    scale_factor = np.sqrt(average_area / avg_polygon.area)
+
+    # Scale the average polygon
+    avg_polygon_scaled = scale(avg_polygon, xfact=scale_factor, yfact=scale_factor, origin=average_centroid)
+
+    return avg_polygon_scaled
 
 
 def combine_and_average_polygons(gdfs, iou = 0.9):
@@ -465,7 +505,7 @@ def combine_and_average_polygons(gdfs, iou = 0.9):
             match_confidence = row_match.Confidence_score if "Confidence_score" in combined_gdf.columns else None
 
             intersection = polygon.intersection(match)
-            if intersection.area / match.area > iou:
+            if intersection.area / (polygon.area + match.area - intersection.area) > iou:
                 significant_matches.append(match)
                 if match_confidence is not None:
                     significant_confidences.append(match_confidence)

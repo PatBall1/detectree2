@@ -20,6 +20,7 @@ from detectree2.models.train import get_filenames, get_tree_dicts
 
 def predict_on_data(
     directory: str = "./",
+    out_folder: str = "predictions",
     predictor=DefaultPredictor,
     eval=False,
     save: bool = True,
@@ -30,7 +31,7 @@ def predict_on_data(
     Predicts crowns for all png images present in a directory and outputs masks as jsons.
     """
 
-    pred_dir = os.path.join(directory, "predictions")
+    pred_dir = os.path.join(directory, out_folder)
 
     Path(pred_dir).mkdir(parents=True, exist_ok=True)
 
