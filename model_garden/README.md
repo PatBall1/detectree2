@@ -28,11 +28,11 @@ mounted cameras.
 An updated model trained across a range of tropical sites with better scale
 transferability owing to random resize augmentation during training.
 
-* Appropriate tile size ~ 100 m (with some flexibility)
+* Appropriate tile size ~ 100 m (with some tolerance)
 
 ## urban_trees_Cambridge20230630.pth
 
-A new model for mapping trees in urban environments. Available upon requests.
+A new model for mapping trees in urban environments (trained on Cambridge, UK).
 
 * Appropriate tile size ~ 200 m
 
