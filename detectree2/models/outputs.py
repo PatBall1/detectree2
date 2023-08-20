@@ -142,7 +142,7 @@ def to_eval_geojson(directory=None):  # noqa:N803
                 json.dump(geofile, dest)
 
 
-def project_to_geojson(tiles_path, pred_fold=None, output_fold=None):  # noqa:N803
+def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, Multi_class = False):  # noqa:N803
     """Projects json predictions back in geographic space.
 
     Takes a json and changes it to a geojson so it can overlay with orthomosaic. Another copy is produced to overlay
@@ -189,6 +189,8 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None):  # noqa:N8
 
         # json file is formated as a list of segmentation polygons so cycle through each one
         for crown_data in datajson:
+            if Multi_class == True:
+                print(crown_data)
             crown = crown_data["segmentation"]
             confidence_score = crown_data["score"]
 
