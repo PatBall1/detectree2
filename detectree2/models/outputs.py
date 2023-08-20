@@ -192,6 +192,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, Multi_class
         for crown_data in datajson:
             if Multi_class == True:
                 category = crown_data["category_id"]
+                print(category)
             crown = crown_data["segmentation"]
             confidence_score = crown_data["score"]
 
@@ -225,6 +226,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, Multi_class
                         "category": category
                     },
                 })
+                print(geofile["features"])
 
         output_geo_file = os.path.join(output_fold, filename.with_suffix(".geojson").name)
 
