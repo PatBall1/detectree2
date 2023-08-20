@@ -191,7 +191,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, Multi_class
         # json file is formated as a list of segmentation polygons so cycle through each one
         for crown_data in datajson:
             if Multi_class == True:
-                print(crown_data)
+                category = crown_data["category_id"]
             crown = crown_data["segmentation"]
             confidence_score = crown_data["score"]
 
@@ -218,6 +218,13 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, Multi_class
                     "coordinates": [moved_coords],
                 },
             })
+            if Multi_class= True:
+                geofile["features"].append({
+                    "type": "Feature",
+                    "properties": {
+                        "category": category
+                    },
+                })
 
         output_geo_file = os.path.join(output_fold, filename.with_suffix(".geojson").name)
 
