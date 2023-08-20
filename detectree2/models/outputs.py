@@ -218,7 +218,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, Multi_class
                     "coordinates": [moved_coords],
                 },
             })
-            if Multi_class= True:
+            if Multi_class == True:
                 geofile["features"].append({
                     "type": "Feature",
                     "properties": {
