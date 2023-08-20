@@ -400,6 +400,19 @@ lower Confidence Score.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.outputs.post_clean">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">post_clean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unclean_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Confidence_score'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GeoDataFrame</span></span></span><a class="headerlink" href="#detectree2.models.outputs.post_clean" title="Permalink to this definition"></a></dt>
+<dd><p>Fill in the gaps left by clean_crowns.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>unclean_df (gpd.GeoDataFrame): Unclean crowns.
+clean_df (gpd.GeoDataFrame): Clean crowns.
+iou_threshold (float, optional): IoU threshold that determines whether 
+crowns are overlapping. Defaults to 0.3.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.project_to_geojson">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">project_to_geojson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tiles_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_fold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_fold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.project_to_geojson" title="Permalink to this definition"></a></dt>
 <dd><p>Projects json predictions back in geographic space.</p>
