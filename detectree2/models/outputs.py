@@ -393,6 +393,48 @@ def clean_crowns(crowns: gpd.GeoDataFrame,
 
     return crowns_out.reset_index(drop=True)
 
+def post_clean(unclean_df: gpd.GeoDataFrame,
+               clean_df: gpd.GeoDataFrame,
+               iou_threshold: float = 0.3,
+               field: str = "Confidence_score") -> gpd.GeoDataFrame:
+    """Fill in the gaps left by clean_crowns.
+    
+    Args:
+        unclean_df (gpd.GeoDataFrame): Unclean crowns.
+        clean_df (gpd.GeoDataFrame): Clean crowns.
+        iou_threshold (float, optional): IoU threshold that determines whether 
+        crowns are overlapping. Defaults to 0.3.
+    """
+    # Spatial join between unclean and clean dataframes using the new syntax
+    joined_df = gpd.sjoin(unclean_df, clean_df, how='inner', predicate='intersects')
+    
+    to_remove = []
+    for idx, row in joined_df.iterrows():
+        # Using the default suffix 'left' for columns from the unclean_df and 'right' for columns from the clean_df
+        unclean_shape = unclean_df.loc[idx, 'geometry']
+        clean_shape = clean_df.loc[row['index_right'], 'geometry']
+
+        unclean_shape = unclean_shape.buffer(0)
+        clean_shape = clean_shape.buffer(0)
+        
+        intersection_area = unclean_shape.intersection(clean_shape).area
+        union_area = unclean_shape.union(clean_shape).area
+        iou = intersection_area / union_area
+        
+        if iou > iou_threshold:
+            to_remove.append(idx)
+    
+    reduced_unclean_df = unclean_df.drop(index=to_remove)
+    
+    # Concatenate the reduced unclean dataframe with the clean dataframe
+    result_df = pd.concat([clean_df, reduced_unclean_df], ignore_index=True)
+    
+    result_df.reset_index(drop=True, inplace=True)
+
+    reclean_df = clean_crowns(result_df, iou_threshold=iou_threshold, field=field)
+
+    return reclean_df.reset_index(drop=True)
+
 
 def load_geopandas_dataframes(folder):
     # Get a list of all .gpkg filenames in the folder
