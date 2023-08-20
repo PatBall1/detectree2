@@ -223,8 +223,8 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, Multi_class
                 geofile["features"].append({
                     "type": "Feature",
                     "properties": {
-                        "Confidence_score": confidence_score
-                        "category": category
+                        "Confidence_score": confidence_score,
+                        "category": category,
                     },
                     "geometry": {
                         "type": "Polygon",
