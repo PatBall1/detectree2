@@ -213,7 +213,6 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, Multi_class
                     "type": "Feature",
                     "properties": {
                         "Confidence_score": confidence_score
-                        "category": category
                     },
                     "geometry": {
                         "type": "Polygon",
