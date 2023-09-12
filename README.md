@@ -52,9 +52,13 @@ See [Installation Instructions](https://patball1.github.io/detectree2/installati
 
 ## Getting started
 
-Detectree2, based on the [Detectron2](https://github.com/facebookresearch/detectron2) Mask R-CNN architecture, locates trees in aerial images. It has been designed to delineate trees in challenging dense tropical forests for a range of ecological applications.
+Detectree2, based on the [Detectron2](https://github.com/facebookresearch/detectron2) Mask R-CNN architecture, locates
+trees in aerial images. It has been designed to delineate trees in challenging dense tropical forests for a range of
+ecological applications.
 
-This [tutorial](https://patball1.github.io/detectree2/tutorial.html) takes you through the key steps. [Example Colab notebooks](https://github.com/PatBall1/detectree2/tree/master/notebooks/colab) are also available.
+This [tutorial](https://patball1.github.io/detectree2/tutorial.html) takes you through the key steps.
+[Example Colab notebooks](https://github.com/PatBall1/detectree2/tree/master/notebooks/colab) are also available but are
+not updated frequently so functions and parameters may need to be adjusted to get things working properly.
 
 The standard workflow includes:
 
