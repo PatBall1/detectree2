@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="detectree2",
-    version="0.0.1",
+    version="1.0.6",
     author="James G. C. Ball",
     author_email="ball.jgc@gmail.com",
     description="Detectree packaging",
@@ -11,7 +11,7 @@ setup(
     packages=find_packages(),
     test_suite="detectree2.tests.test_all.suite",
     install_requires=[
-        "pyyaml==5.1",
+        "pyyaml>=5.1",
         "GDAL>=1.11",
         "numpy",
         "rtree",
