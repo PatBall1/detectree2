@@ -21,7 +21,9 @@ MRes project repo available [here](https://github.com/shmh40/detectreeRGB).</sub
 > **Warning**\
 > Due to an influx of new users we have been hitting bandwidth limits. This is primarily from the file size of the pre-trained models. If you are using these models please aim to save them locally and point to them when you need them rather than downloading them each time they are required. We will move to a more bandwidth friendly set up soon. In the meantime, if installing the package is failing please raise it as an issue or notify me directly on ball.jgc@gmail.com.
 
-## Please cite
+## Citation
+
+### Please cite this article if you use detectree2 in your work
 
 Ball, J.G.C., Hickman, S.H.M., Jackson, T.D., Koay, X.J., Hirst, J., Jay, W., Archer, M., Aubry-Kientz, M., Vincent, G. and Coomes, D.A. (2023),
 Accurate delineation of individual tree crowns in tropical forests from aerial RGB imagery using Mask R-CNN.
