@@ -23,19 +23,21 @@ MRes project repo available [here](https://github.com/shmh40/detectreeRGB).</sub
 
 ## Citation
 
-### Please cite this article if you use detectree2 in your work
+Please cite this article if you use detectree2 in your work:
 
 Ball, J.G.C., Hickman, S.H.M., Jackson, T.D., Koay, X.J., Hirst, J., Jay, W., Archer, M., Aubry-Kientz, M., Vincent, G. and Coomes, D.A. (2023),
 Accurate delineation of individual tree crowns in tropical forests from aerial RGB imagery using Mask R-CNN.
 *Remote Sens Ecol Conserv*. [https://doi.org/10.1002/rse2.332](https://doi.org/10.1002/rse2.332)
 
-### Independent validation
+## Independent validation
+
+Independent validation has been performed on a temperate deciduous forest in Japan.
 
 > *Detectree2 (F1 score: 0.57) outperformed DeepForest (F1 score: 0.52)*
 >
 > *Detectree2 could estimate tree crown areas accurately, highlighting its potential and robustness for tree detection and delineation*
 
-Gan, Yi, Quan Wang, and Atsuhiro Iio. (2023).
+Gan, Y., Wang, Q., and Iio, A. (2023).
 Tree Crown Detection and Delineation in a Temperate Deciduous Forest from UAV RGB Imagery Using Deep Learning Approaches: Effects of Spatial Resolution and Species Characteristics. 
 *Remote Sensing*. 15(3):778. [https://doi.org/10.3390/rs15030778](https://doi.org/10.3390/rs15030778)
 
