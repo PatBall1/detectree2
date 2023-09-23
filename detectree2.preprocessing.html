@@ -81,8 +81,119 @@
 <section id="module-detectree2.preprocessing.crowns">
 <span id="detectree2-preprocessing-crowns-module"></span><h2>detectree2.preprocessing.crowns module<a class="headerlink" href="#module-detectree2.preprocessing.crowns" title="Link to this heading"></a></h2>
 </section>
-<section id="detectree2-preprocessing-tiling-module">
-<h2>detectree2.preprocessing.tiling module<a class="headerlink" href="#detectree2-preprocessing-tiling-module" title="Link to this heading"></a></h2>
+<section id="module-detectree2.preprocessing.tiling">
+<span id="detectree2-preprocessing-tiling-module"></span><h2>detectree2.preprocessing.tiling module<a class="headerlink" href="#module-detectree2.preprocessing.tiling" title="Link to this heading"></a></h2>
+<p>Tiling orthomosaic and crown data.</p>
+<p>These functions tile orthomosaics and crown data for training and evaluation
+of models and making landscape predictions.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.preprocessing.tiling.get_features">
+<span class="sig-prename descclassname"><span class="pre">detectree2.preprocessing.tiling.</span></span><span class="sig-name descname"><span class="pre">get_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gdf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.preprocessing.tiling.get_features" title="Link to this definition"></a></dt>
+<dd><p>Function to parse features from GeoDataFrame in such a manner that rasterio wants them.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>gdf: Input geopandas dataframe</p>
+</dd>
+<dt>Returns:</dt><dd><p>json style data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.preprocessing.tiling.image_details">
+<span class="sig-prename descclassname"><span class="pre">detectree2.preprocessing.tiling.</span></span><span class="sig-name descname"><span class="pre">image_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fileroot</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.preprocessing.tiling.image_details" title="Link to this definition"></a></dt>
+<dd><p>Take a filename and split it up to get the coordinates, tile width and the buffer and then output box structure.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>fileroot: image filename without file extension</p>
+</dd>
+<dt>Returns:</dt><dd><p>Box structure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.preprocessing.tiling.is_overlapping_box">
+<span class="sig-prename descclassname"><span class="pre">detectree2.preprocessing.tiling.</span></span><span class="sig-name descname"><span class="pre">is_overlapping_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_boxes_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_box</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.preprocessing.tiling.is_overlapping_box" title="Link to this definition"></a></dt>
+<dd><p>Check if the train box overlaps with any of the test boxes.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>test_boxes_array:
+train_box:</p>
+</dd>
+<dt>Returns:</dt><dd><p>Boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.preprocessing.tiling.record_data">
+<span class="sig-prename descclassname"><span class="pre">detectree2.preprocessing.tiling.</span></span><span class="sig-name descname"><span class="pre">record_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crowns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'status'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.preprocessing.tiling.record_data" title="Link to this definition"></a></dt>
+<dd><p>Function that will record a list of classes into a file that can be readed during training.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>crowns: gpd dataframe with the crowns
+out_dir: directory to save the file
+column: column name to get the classes from</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.preprocessing.tiling.tile_data">
+<span class="sig-prename descclassname"><span class="pre">detectree2.preprocessing.tiling.</span></span><span class="sig-name descname"><span class="pre">tile_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DatasetReader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tile_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tile_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype_bool</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#detectree2.preprocessing.tiling.tile_data" title="Link to this definition"></a></dt>
+<dd><p>Tiles up orthomosaic for making predictions on.</p>
+<p>Tiles up full othomosaic into managable chunks to make predictions on. Use tile_data_train to generate tiled
+training data. A bug exists on some input raster types whereby outputed tiles are completely black - the dtype_bool
+argument should be switched if this is the case.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>data: Orthomosaic as a rasterio object in a UTM type projection
+buffer: Overlapping buffer of tiles in meters (UTM)
+tile_width: Tile width in meters
+tile_height: Tile height in meters
+dtype_bool: Flag to edit dtype to prevent black tiles</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.preprocessing.tiling.tile_data_train">
+<span class="sig-prename descclassname"><span class="pre">detectree2.preprocessing.tiling.</span></span><span class="sig-name descname"><span class="pre">tile_data_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DatasetReader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tile_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tile_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crowns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nan_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype_bool</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#detectree2.preprocessing.tiling.tile_data_train" title="Link to this definition"></a></dt>
+<dd><p>Tiles up orthomosaic and corresponding crowns into training tiles.</p>
+<p>A threshold can be used to ensure a good coverage of crowns across a tile. Tiles that do not have sufficient
+coverage are rejected.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>data: Orthomosaic as a rasterio object in a UTM type projection
+buffer: Overlapping buffer of tiles in meters (UTM)
+tile_width: Tile width in meters
+tile_height: Tile height in meters
+crowns: Crown polygons as a geopandas dataframe
+threshold: Min proportion of the tile covered by crowns to be accepted {0,1}
+nan_theshold: Max proportion of tile covered by nans
+dtype_bool: Flag to edit dtype to prevent black tiles</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.preprocessing.tiling.to_traintest_folders">
+<span class="sig-prename descclassname"><span class="pre">detectree2.preprocessing.tiling.</span></span><span class="sig-name descname"><span class="pre">to_traintest_folders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tiles_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'./'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'./data/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_frac</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#detectree2.preprocessing.tiling.to_traintest_folders" title="Link to this definition"></a></dt>
+<dd><p>Send tiles to training (+validation) and test dir</p>
+<p>With “strict” it is possible to automatically ensure no overlap between train/val and test tiles.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>tiles_folder: folder with tiles
+out_folder: folder to save train and test folders
+test_frac: fraction of tiles to be used for testing
+folds: number of folds to split the data into
+strict: if True, training/validation files will be removed if there is any overlap with test files (inc buffer)</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-detectree2.preprocessing">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-detectree2.preprocessing" title="Link to this heading"></a></h2>
