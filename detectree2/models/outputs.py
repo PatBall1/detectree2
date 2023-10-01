@@ -22,6 +22,9 @@ from shapely.affinity import scale
 from shapely.geometry import Polygon, box, shape
 from shapely.ops import orient
 
+# Type aliases definitions
+Feature = Dict[str, Any]
+GeoFile = Dict[str, Union[str, Dict[str, str], List[Feature]]]
 
 def polygon_from_mask(masked_arr):
     """Convert RLE data from the output instances into Polygons.
@@ -182,7 +185,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
                 },
             },
             "features": [],
-        }  # type: Dict[str, Union[str, Dict[str, Any], List[Dict[str, Any]]]]
+        }  # type: GeoFile
 
         # load the json file we need to convert into a geojson
         with open(filename, "r") as prediction_file:
