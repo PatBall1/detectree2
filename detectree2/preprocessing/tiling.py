@@ -78,8 +78,7 @@ def tile_data(
     tilename = Path(data.name).stem
 
     total_tiles = int(
-        ((data.bounds[2] - data.bounds[0]) / tile_width) *
-        ((data.bounds[3] - data.bounds[1]) / tile_height)
+        ((data.bounds[2] - data.bounds[0]) / tile_width) * ((data.bounds[3] - data.bounds[1]) / tile_height)
     )
 
     tile_count = 0

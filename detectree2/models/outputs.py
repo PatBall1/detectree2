@@ -212,19 +212,19 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
                 geofile["features"].append({
                     "type": "Feature",
                     "properties": {
-                        "Confidence_score": confidence_score
+                        "Confidence_score": confidence_score,
+                        "category": category,
                     },
                     "geometry": {
                         "type": "Polygon",
                         "coordinates": [moved_coords],
                     },
                 })
-            if multi_class:
+            else:
                 geofile["features"].append({
                     "type": "Feature",
                     "properties": {
-                        "Confidence_score": confidence_score,
-                        "category": category,
+                        "Confidence_score": confidence_score
                     },
                     "geometry": {
                         "type": "Polygon",
@@ -454,10 +454,10 @@ def post_clean(unclean_df: gpd.GeoDataFrame,
     return reclean_df.reset_index(drop=True)
 
 
-def load_geopandas_dataframes(folder):
+def load_geopandas_dataframes(folder):  # noqa:N605
     """Load all GeoPackage files in a folder into a list of GeoDataFrames."""
     all_files = glob.glob(f"{folder}/*.gpkg")
-    filenames = [f for f in all_files if re.match(f"{folder}/crowns_\d+\.gpkg", f)]  # noqa:N605
+    filenames = [f for f in all_files if re.match(f"{folder}/crowns_\d+\.gpkg", f)]
 
     # Load each file into a GeoDataFrame and add it to a list
     geopandas_dataframes = [gpd.read_file(filename) for filename in filenames]
@@ -474,7 +474,7 @@ def normalize_polygon(polygon, num_points):
     points = list(polygon.exterior.coords)
 
     # Get point with minimum average of x and y
-    min_avg_point = min(points, key=lambda point: sum(point)/len(point))
+    min_avg_point = min(points, key=lambda point: sum(point) / len(point))
 
     # Rotate points to start from min_avg_point
     min_avg_point_idx = points.index(min_avg_point)
@@ -497,7 +497,10 @@ def average_polygons(polygons, weights=None, num_points=300):
     avg_polygon_points = []
     for i in range(num_points):
         if weights:
-            points_at_i = [np.array(poly.exterior.coords[i]) * weight for poly, weight in zip(normalized_polygons, weights)]
+            points_at_i = [
+                np.array(poly.exterior.coords[i]) * weight
+                for poly, weight in zip(normalized_polygons, weights)
+            ]
             avg_point_at_i = sum(points_at_i) / sum(weights)
         else:
             points_at_i = [np.array(poly.exterior.coords[i]) for poly in normalized_polygons]
@@ -566,9 +569,9 @@ def combine_and_average_polygons(gdfs, iou=0.9):
 
         if len(significant_matches) > 1:
             averaged_polygon = average_polygons(
-                significant_matches, 
+                significant_matches,
                 significant_confidences if "Confidence_score" in combined_gdf.columns else None
-                )
+            )
             new_polygons.append(averaged_polygon)
             combined_counts.append(len(significant_matches))
             if confidence is not None:
