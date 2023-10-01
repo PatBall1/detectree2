@@ -9,7 +9,7 @@ import os
 import re
 from http.client import REQUEST_URI_TOO_LONG  # noqa: F401
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, TypedDict
 
 import cv2
 import geopandas as gpd
