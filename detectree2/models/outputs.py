@@ -182,7 +182,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
                 },
             },
             "features": [],
-        }
+        }  # type: Dict[str, Union[str, Dict[str, Any], List[Dict[str, Any]]]]
 
         # load the json file we need to convert into a geojson
         with open(filename, "r") as prediction_file:
