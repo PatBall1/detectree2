@@ -77,7 +77,10 @@ def tile_data(
     crs = crs.to_epsg()
     tilename = Path(data.name).stem
 
-    total_tiles = int(((data.bounds[2] - data.bounds[0]) / tile_width) * ((data.bounds[3] - data.bounds[1]) / tile_height))
+    total_tiles = int(
+        ((data.bounds[2] - data.bounds[0]) / tile_width) *
+        ((data.bounds[3] - data.bounds[1]) / tile_height)
+    )
 
     tile_count = 0
     print(f"Tiling to {total_tiles} total tiles")
@@ -86,7 +89,7 @@ def tile_data(
                           tile_width, int):
         for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height,
                               tile_height, int):
-            
+
             tile_count += 1
             # Naming conventions
             out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
@@ -178,7 +181,7 @@ def tile_data(
             )
             if tile_count % 50 == 0:
                 print(f"Processed {tile_count} tiles of {total_tiles} tiles")
-    
+
     print("Tiling complete")
 
 
@@ -379,7 +382,7 @@ def tile_data_train(  # noqa: C901
             except ValueError:
                 print("Cannot write empty DataFrame to file.")
                 continue
-    
+
     print("Tiling complete")
 
 

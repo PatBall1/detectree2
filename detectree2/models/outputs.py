@@ -20,7 +20,7 @@ import rasterio
 from rasterio.crs import CRS
 from shapely.affinity import scale
 from shapely.geometry import Polygon, box, shape
-from shapely.ops import orient, unary_union
+from shapely.ops import orient
 
 
 def polygon_from_mask(masked_arr):
@@ -39,9 +39,9 @@ def polygon_from_mask(masked_arr):
         if contour.size >= 10:
             contour = contour.flatten().tolist()
             # Ensure the polygon is closed (get rid of fiona warning?)
-            if contour[:2] != contour[-2:]: # if not closed
-                #continue # better to skip?
-                contour.extend(contour[:2]) # small artifacts due to this?
+            if contour[:2] != contour[-2:]:  # if not closed
+                # continue # better to skip?
+                contour.extend(contour[:2])  # small artifacts due to this?
             segmentation.append(contour)
 
     [x, y, w, h] = cv2.boundingRect(masked_arr)
@@ -143,7 +143,7 @@ def to_eval_geojson(directory=None):  # noqa:N803
                 json.dump(geofile, dest)
 
 
-def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, Multi_class = False):  # noqa:N803
+def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class: bool = False):  # noqa:N803
     """Projects json predictions back in geographic space.
 
     Takes a json and changes it to a geojson so it can overlay with orthomosaic. Another copy is produced to overlay
@@ -190,7 +190,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, Multi_class
 
         # json file is formated as a list of segmentation polygons so cycle through each one
         for crown_data in datajson:
-            if Multi_class == True:
+            if multi_class:
                 category = crown_data["category_id"]
                 # print(category)
             crown = crown_data["segmentation"]
@@ -205,10 +205,10 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, Multi_class
 
             crown_coords_array = np.array(crown_coords).reshape(-1, 2)
             x_coords, y_coords = rasterio.transform.xy(transform=raster_transform,
-                                                    rows=crown_coords_array[:, 1],
-                                                    cols=crown_coords_array[:, 0])
+                                                       rows=crown_coords_array[:, 1],
+                                                       cols=crown_coords_array[:, 0])
             moved_coords = list(zip(x_coords, y_coords))
-            if Multi_class == False:
+            if multi_class:
                 geofile["features"].append({
                     "type": "Feature",
                     "properties": {
@@ -219,7 +219,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, Multi_class
                         "coordinates": [moved_coords],
                     },
                 })
-            if Multi_class == True:
+            if multi_class:
                 geofile["features"].append({
                     "type": "Feature",
                     "properties": {
@@ -260,7 +260,8 @@ def box_filter(filename, shift: int = 0):
         shift: Number of meters to shift the size of the bounding box in by. This is to avoid edge crowns.
 
     Returns:
-        gpd.GeoDataFrame: A GeoDataFrame containing the bounding box."""
+        gpd.GeoDataFrame: A GeoDataFrame containing the bounding box.
+    """
     minx, miny, width, buffer, crs = filename_geoinfo(filename)
     bounding_box = box_make(minx, miny, width, buffer, crs, shift)
     return bounding_box
@@ -314,7 +315,7 @@ def stitch_crowns(folder: str, shift: int = 1):
         if idx % 50 == 0:
             print(f"Stitching file {idx} of {total_files}: {file}")
 
-        crowns_tile = gpd.read_file(file) # This throws a huge amount of warnings fiona closed ring detected
+        crowns_tile = gpd.read_file(file)  # This throws a huge amount of warnings fiona closed ring detected
 
         geo = box_filter(file, shift)
 
@@ -409,42 +410,43 @@ def clean_crowns(crowns: gpd.GeoDataFrame,
 
     return crowns_out.reset_index(drop=True)
 
+
 def post_clean(unclean_df: gpd.GeoDataFrame,
                clean_df: gpd.GeoDataFrame,
                iou_threshold: float = 0.3,
                field: str = "Confidence_score") -> gpd.GeoDataFrame:
     """Fill in the gaps left by clean_crowns.
-    
+
     Args:
         unclean_df (gpd.GeoDataFrame): Unclean crowns.
         clean_df (gpd.GeoDataFrame): Clean crowns.
-        iou_threshold (float, optional): IoU threshold that determines whether 
+        iou_threshold (float, optional): IoU threshold that determines whether predictions are considered overlapping.
         crowns are overlapping. Defaults to 0.3.
     """
     # Spatial join between unclean and clean dataframes using the new syntax
-    joined_df = gpd.sjoin(unclean_df, clean_df, how='inner', predicate='intersects')
-    
+    joined_df = gpd.sjoin(unclean_df, clean_df, how="inner", predicate="intersects")
+
     to_remove = []
     for idx, row in joined_df.iterrows():
         # Using the default suffix 'left' for columns from the unclean_df and 'right' for columns from the clean_df
-        unclean_shape = unclean_df.loc[idx, 'geometry']
-        clean_shape = clean_df.loc[row['index_right'], 'geometry']
+        unclean_shape = unclean_df.loc[idx, "geometry"]
+        clean_shape = clean_df.loc[row["index_right"], "geometry"]
 
         unclean_shape = unclean_shape.buffer(0)
         clean_shape = clean_shape.buffer(0)
-        
+
         intersection_area = unclean_shape.intersection(clean_shape).area
         union_area = unclean_shape.union(clean_shape).area
         iou = intersection_area / union_area
-        
+
         if iou > iou_threshold:
             to_remove.append(idx)
-    
+
     reduced_unclean_df = unclean_df.drop(index=to_remove)
-    
+
     # Concatenate the reduced unclean dataframe with the clean dataframe
     result_df = pd.concat([clean_df, reduced_unclean_df], ignore_index=True)
-    
+
     result_df.reset_index(drop=True, inplace=True)
 
     reclean_df = clean_crowns(result_df, iou_threshold=iou_threshold, field=field)
@@ -453,9 +455,9 @@ def post_clean(unclean_df: gpd.GeoDataFrame,
 
 
 def load_geopandas_dataframes(folder):
-    # Get a list of all .gpkg filenames in the folder
+    """Load all GeoPackage files in a folder into a list of GeoDataFrames."""
     all_files = glob.glob(f"{folder}/*.gpkg")
-    filenames = [f for f in all_files if re.match(f"{folder}/crowns_\d+\.gpkg", f)]
+    filenames = [f for f in all_files if re.match(f"{folder}/crowns_\d+\.gpkg", f)]  # noqa:N605
 
     # Load each file into a GeoDataFrame and add it to a list
     geopandas_dataframes = [gpd.read_file(filename) for filename in filenames]
@@ -463,14 +465,8 @@ def load_geopandas_dataframes(folder):
     return geopandas_dataframes
 
 
-# Function to normalize and average polygons, considering weights
-#def normalize_polygon(polygon, num_points):
-#    total_perimeter = polygon.length
-#    distance_between_points = total_perimeter / num_points
-#    points = [polygon.boundary.interpolate(i * distance_between_points) for i in range(num_points)]
-#    return Polygon(points)
-
 def normalize_polygon(polygon, num_points):
+    """Normalize a polygon to a set number of points."""
     # Orient polygon to ensure consistent vertex order (counterclockwise)
     polygon = orient(polygon, sign=1.0)
 
@@ -495,6 +491,7 @@ def normalize_polygon(polygon, num_points):
 
 
 def average_polygons(polygons, weights=None, num_points=300):
+    """Average a set of polygons."""
     normalized_polygons = [normalize_polygon(poly, num_points) for poly in polygons]
 
     avg_polygon_points = []
@@ -526,7 +523,8 @@ def average_polygons(polygons, weights=None, num_points=300):
     return avg_polygon_scaled
 
 
-def combine_and_average_polygons(gdfs, iou = 0.9):
+def combine_and_average_polygons(gdfs, iou=0.9):
+    """Combine and average polygons."""
     # Combine all dataframes into one
     combined_gdf = gpd.GeoDataFrame(pd.concat(gdfs, ignore_index=True))
     combined_gdf["Confidence_score"] = pd.to_numeric(combined_gdf["Confidence_score"], errors="coerce")
@@ -586,7 +584,7 @@ def combine_and_average_polygons(gdfs, iou = 0.9):
     new_gdf["combined_counts"] = combined_counts
     if "Confidence_score" in combined_gdf.columns:
         new_gdf["summed_confidences"] = summed_confidences
-    
+
     # Set crs
     new_gdf.set_crs(gdfs[0].crs, inplace=True)
 
@@ -594,6 +592,7 @@ def combine_and_average_polygons(gdfs, iou = 0.9):
 
 
 def clean_predictions(directory, iou_threshold=0.7):
+    """Clean predictions prior to accuracy assessment."""
     pred_fold = directory
     entries = os.listdir(pred_fold)
 
@@ -630,7 +629,7 @@ def clean_predictions(directory, iou_threshold=0.7):
 
 
 def clean_outputs(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
-    """Clean predictions prior to accuracy assessment
+    """Clean predictions prior to accuracy assessment.
 
     Outputs can contain highly overlapping crowns including in the buffer region.
     This function removes crowns with a high degree of overlap with others but a

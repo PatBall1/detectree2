@@ -4,7 +4,6 @@ This module contains the code to generate predictions on tiled data.
 """
 import json
 import os
-import random
 from pathlib import Path
 
 import cv2
@@ -68,7 +67,7 @@ def predict_on_data(
             evaluations = instances_to_coco_json(outputs["instances"].to("cpu"), d["file_name"])
             with open(output_file, "w") as dest:
                 json.dump(evaluations, dest)
-        
+
         if i % 50 == 0:
             print(f"Predicted {i} files of {total_files}")
 
