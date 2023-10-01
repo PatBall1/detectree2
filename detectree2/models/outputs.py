@@ -454,10 +454,10 @@ def post_clean(unclean_df: gpd.GeoDataFrame,
     return reclean_df.reset_index(drop=True)
 
 
-def load_geopandas_dataframes(folder):  # noqa:N605
+def load_geopandas_dataframes(folder):
     """Load all GeoPackage files in a folder into a list of GeoDataFrames."""
     all_files = glob.glob(f"{folder}/*.gpkg")
-    filenames = [f for f in all_files if re.match(f"{folder}/crowns_\d+\.gpkg", f)]
+    filenames = [f for f in all_files if re.match(rf"{folder}/crowns_\d+\.gpkg", f)]
 
     # Load each file into a GeoDataFrame and add it to a list
     geopandas_dataframes = [gpd.read_file(filename) for filename in filenames]
