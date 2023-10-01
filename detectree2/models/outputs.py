@@ -344,9 +344,9 @@ def calc_iou(shape1, shape2):
 
 
 def clean_crowns(crowns: gpd.GeoDataFrame,
-                 iou_threshold: Optional[float] = 0.7,
-                 confidence: Optional[float] = 0.2,
-                 area_threshold: Optional[float] = 2,
+                 iou_threshold: float = 0.7,
+                 confidence: float = 0.2,
+                 area_threshold: float = 2,
                  field: str = "Confidence_score") -> gpd.GeoDataFrame:
     """Clean overlapping crowns.
 
