@@ -143,7 +143,7 @@ def to_eval_geojson(directory=None):  # noqa:N803
                 json.dump(geofile, dest)
 
 
-def project_to_geojson(tiles_path, pred_fold=None, output_fold=None):  # noqa:N803
+def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, Multi_class = False):  # noqa:N803
     """Projects json predictions back in geographic space.
 
     Takes a json and changes it to a geojson so it can overlay with orthomosaic. Another copy is produced to overlay
@@ -190,6 +190,9 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None):  # noqa:N8
 
         # json file is formated as a list of segmentation polygons so cycle through each one
         for crown_data in datajson:
+            if Multi_class == True:
+                category = crown_data["category_id"]
+                # print(category)
             crown = crown_data["segmentation"]
             confidence_score = crown_data["score"]
 
@@ -205,17 +208,30 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None):  # noqa:N8
                                                     rows=crown_coords_array[:, 1],
                                                     cols=crown_coords_array[:, 0])
             moved_coords = list(zip(x_coords, y_coords))
-
-            geofile["features"].append({
-                "type": "Feature",
-                "properties": {
-                    "Confidence_score": confidence_score
-                },
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [moved_coords],
-                },
-            })
+            if Multi_class == False:
+                geofile["features"].append({
+                    "type": "Feature",
+                    "properties": {
+                        "Confidence_score": confidence_score
+                    },
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [moved_coords],
+                    },
+                })
+            if Multi_class == True:
+                geofile["features"].append({
+                    "type": "Feature",
+                    "properties": {
+                        "Confidence_score": confidence_score,
+                        "category": category,
+                    },
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [moved_coords],
+                    },
+                })
+                # print(geofile["features"])
 
         output_geo_file = os.path.join(output_fold, filename.with_suffix(".geojson").name)
 
