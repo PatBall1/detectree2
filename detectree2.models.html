@@ -293,7 +293,8 @@ mapping crowns in geographic space.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.average_polygons">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">average_polygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polygons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.average_polygons" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Average a set of polygons.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.box_filter">
@@ -359,7 +360,7 @@ field (str): Field to used to prioritise selection of crowns. Defaults to “Con
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.clean_outputs">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">clean_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crowns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.7</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.clean_outputs" title="Link to this definition"></a></dt>
-<dd><p>Clean predictions prior to accuracy assessment</p>
+<dd><p>Clean predictions prior to accuracy assessment.</p>
 <p>Outputs can contain highly overlapping crowns including in the buffer region.
 This function removes crowns with a high degree of overlap with others but a
 lower Confidence Score.</p>
@@ -368,12 +369,14 @@ lower Confidence Score.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.clean_predictions">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">clean_predictions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.7</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.clean_predictions" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Clean predictions prior to accuracy assessment.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.combine_and_average_polygons">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">combine_and_average_polygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gdfs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.combine_and_average_polygons" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Combine and average polygons.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.filename_geoinfo">
@@ -384,12 +387,14 @@ lower Confidence Score.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.load_geopandas_dataframes">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">load_geopandas_dataframes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.load_geopandas_dataframes" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Load all GeoPackage files in a folder into a list of GeoDataFrames.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.normalize_polygon">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">normalize_polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_points</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.normalize_polygon" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Normalize a polygon to a set number of points.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.polygon_from_mask">
@@ -406,7 +411,7 @@ lower Confidence Score.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>unclean_df (gpd.GeoDataFrame): Unclean crowns.
 clean_df (gpd.GeoDataFrame): Clean crowns.
-iou_threshold (float, optional): IoU threshold that determines whether 
+iou_threshold (float, optional): IoU threshold that determines whether predictions are considered overlapping.
 crowns are overlapping. Defaults to 0.3.</p>
 </dd>
 </dl>
@@ -414,7 +419,7 @@ crowns are overlapping. Defaults to 0.3.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.outputs.project_to_geojson">
-<span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">project_to_geojson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tiles_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_fold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_fold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Multi_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.project_to_geojson" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.outputs.</span></span><span class="sig-name descname"><span class="pre">project_to_geojson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tiles_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_fold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_fold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.outputs.project_to_geojson" title="Link to this definition"></a></dt>
 <dd><p>Projects json predictions back in geographic space.</p>
 <p>Takes a json and changes it to a geojson so it can overlay with orthomosaic. Another copy is produced to overlay
 with PNGs.</p>
