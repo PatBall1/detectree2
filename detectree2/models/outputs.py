@@ -9,7 +9,7 @@ import os
 import re
 from http.client import REQUEST_URI_TOO_LONG  # noqa: F401
 from pathlib import Path
-from typing import Optional, Dict, Union, List, Any
+from typing import Optional, Dict, Union, List, Any, TypedDict
 
 import cv2
 import geopandas as gpd
@@ -24,7 +24,9 @@ from shapely.ops import orient
 
 # Type aliases definitions
 Feature = Dict[str, Any]
-GeoFile = Dict[str, Union[str, Dict[str, str], List[Feature]]]
+CRSType = TypedDict("CRSType", {"type": str, "properties": Dict[str, str]})
+GeoFile = TypedDict("GeoFile", {"type": str, "crs": CRSType, "features": List[Feature]})
+
 
 def polygon_from_mask(masked_arr):
     """Convert RLE data from the output instances into Polygons.
