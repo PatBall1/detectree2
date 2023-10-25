@@ -26,11 +26,11 @@ Detectree2是一个基于Mask R-CNN的自动树冠检测与分割的Python包。
 
 ## Citation
 
-Please cite this article if you use detectree2 in your work:
+Please cite this article if you use _detectree2_ in your work:
 
 Ball, J.G.C., Hickman, S.H.M., Jackson, T.D., Koay, X.J., Hirst, J., Jay, W., Archer, M., Aubry-Kientz, M., Vincent, G. and Coomes, D.A. (2023),
 Accurate delineation of individual tree crowns in tropical forests from aerial RGB imagery using Mask R-CNN.
-*Remote Sens Ecol Conserv*. [https://doi.org/10.1002/rse2.332](https://doi.org/10.1002/rse2.332)
+*Remote Sens Ecol Conserv*. 9(5):641-655. [https://doi.org/10.1002/rse2.332](https://doi.org/10.1002/rse2.332)
 
 ## Independent validation
 
