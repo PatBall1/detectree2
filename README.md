@@ -14,12 +14,24 @@ A tutorial on how to prepare data, train models and make predictions is availabl
 
 Detectree2是一个基于Mask R-CNN的自动树冠检测与分割的Python包。您可以在[`model_garden`](https://github.com/PatBall1/detectree2/tree/master/model_garden)中选择预训练模型。[这里](https://patball1.github.io/detectree2/tutorial.html)提供了如何准备数据、训练模型和进行预测的教程。如果有任何问题，合作提案或者需要样例数据，可以邮件联系[James Ball](mailto:ball.jgc@gmail.com)。一些示例数据可以在[这里](https://doi.org/10.5281/zenodo.8136161)下载。
 
-<sub>Code developed by James Ball, Seb Hickman, Thomas Koay, Oscar Jiang, Luran Wang, Panagiotis Ioannou, James Hinton and Matthew Archer in the [Forest Ecology and Conservation Group](https://coomeslab.org/) at the University of Cambridge.
-The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge [Conservation Research Institute](https://www.conservation.cam.ac.uk/).
-MRes project repo available [here](https://github.com/shmh40/detectreeRGB).</sub>
-
 > **Warning**\
 > Due to an influx of new users we have been hitting bandwidth limits. This is primarily from the file size of the pre-trained models. If you are using these models please aim to save them locally and point to them when you need them rather than downloading them each time they are required. We will move to a more bandwidth friendly set up soon. In the meantime, if installing the package is failing please raise it as an issue or notify me directly on ball.jgc@gmail.com.
+
+---
+
+<div style="display: flex; align-items: center;">
+    <img src="./report/cam_logo.png" width="55" style="flex-shrink: 0;">
+    <div style="margin-left: 10px;">
+        <font size="1">
+            Code developed by James Ball, Seb Hickman, Thomas Koay, Oscar Jiang, Luran Wang, Panagiotis Ioannou, James Hinton and Matthew Archer in the 
+            <a href="https://coomeslab.org/">Forest Ecology and Conservation Group</a> at the University of Cambridge.
+            The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge 
+            <a href="https://www.conservation.cam.ac.uk/">Conservation Research Institute</a>.
+        </font>
+    </div>
+</div>
+
+---
 
 ## Citation
 
