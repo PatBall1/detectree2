@@ -22,12 +22,12 @@ Detectree2是一个基于Mask R-CNN的自动树冠检测与分割的Python包。
 <div style="display: flex; align-items: center;">
     <img src="./report/cam_logo.png" width="55" style="flex-shrink: 0;">
     <div style="margin-left: 10px;">
-        <font size="1">
+        <sup>
             Code developed by James Ball, Seb Hickman, Thomas Koay, Oscar Jiang, Luran Wang, Panagiotis Ioannou, James Hinton and Matthew Archer in the 
             <a href="https://coomeslab.org/">Forest Ecology and Conservation Group</a> at the University of Cambridge.
             The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge 
             <a href="https://www.conservation.cam.ac.uk/">Conservation Research Institute</a>.
-        </font>
+        </sup>
     </div>
 </div>
 
