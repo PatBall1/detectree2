@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "detectree2"
 version = "1.0.7"
-description = "detectree2 python package"
+description = "Python package for automatic tree crown delineation based on Mask R-CNN"
 authors = [
   { name="James G. C. Ball", email="ball.jgc@gmail.com" }, 
 ]
@@ -33,15 +33,18 @@ dependencies = [
 
 [project.optional-dependencies]
 lint = [
-    "yapf",
     "flake8", 
+    "flake8-docstrings",
     "isort",
+    "mypy", 
+    "pydocstyle",
+    "yapf",
 ]
 
 docs = [
     "nbsphinx", 
+    "sphinx==5.1.0",
     "sphinx_rtd_theme",
-    
 ]
 test = [
     "pytest",
@@ -50,7 +53,6 @@ test = [
 ]
 
 ci = [
-    "mypy", 
     "detectree2[docs,lint,test]"
 ]
 
