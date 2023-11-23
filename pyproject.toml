@@ -15,7 +15,7 @@ requires-python = ">=3.8.0"
 
 dependencies = [
     "descartes", 
-    "detectron2@git+https://github.com/facebookresearch/detectron2.git", 
+    "detectron2@git+https://github.com/facebookresearch/detectron2.git",
     "fiona", 
     "gdal>=1.11", 
     "geopandas", 
