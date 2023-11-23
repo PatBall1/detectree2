@@ -43,8 +43,16 @@ docs = [
     "sphinx_rtd_theme",
     
 ]
-test = ["pytest", "opencv-python"]
-ci = ["mypy", "detectree2[docs,lint,test]"]
+test = [
+    "pytest",
+    "pytest-order",
+    "opencv-python"
+]
+
+ci = [
+    "mypy", 
+    "detectree2[docs,lint,test]"
+]
 
 
 [tool.setuptools]
