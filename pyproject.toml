@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "detectree2"
+version = "1.0.7"
+description = "detectree2 python package"
+authors = [
+  { name="James G. C. Ball", email="ball.jgc@gmail.com" }, 
+]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8.0"
+
+dependencies = [
+    "descartes", 
+    "detectron2@git+https://github.com/facebookresearch/detectron2.git", 
+    "fiona", 
+    "gdal>=1.11", 
+    "geopandas", 
+    "geos", 
+    "numpy", 
+    "pygeos", 
+    "pypng", 
+    "proj", 
+    "pycrs", 
+    "pyyaml>=5.1", 
+    "rasterio==1.3a3", 
+    "rtree", 
+    "shapely",
+]
+
+[project.optional-dependencies]
+lint = [
+    "yapf",
+    "flake8", 
+    "isort",
+]
+
+docs = [
+    "nbsphinx", 
+    "sphinx_rtd_theme",
+    
+]
+test = ["pytest", "opencv-python"]
+ci = ["mypy", "detectree2[docs,lint,test]"]
+
+
+[tool.setuptools]
+packages = ["detectree2"]
