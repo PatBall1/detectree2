@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "detectree2"
+version = "1.0.7"
+description = "Python package for automatic tree crown delineation based on Mask R-CNN"
+authors = [
+  { name="James G. C. Ball", email="ball.jgc@gmail.com" }, 
+]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8.0"
+
+dependencies = [
+    "descartes", 
+    "detectron2@git+https://github.com/facebookresearch/detectron2.git",
+    "fiona", 
+    "gdal>=1.11", 
+    "geopandas", 
+    "geos", 
+    "numpy", 
+    "pygeos", 
+    "pypng", 
+    "proj", 
+    "pycrs", 
+    "pyyaml>=5.1", 
+    "rasterio==1.3a3", 
+    "rtree", 
+    "shapely",
+]
+
+[project.optional-dependencies]
+lint = [
+    "flake8", 
+    "flake8-docstrings",
+    "isort",
+    "mypy", 
+    "pydocstyle",
+    "yapf",
+]
+
+docs = [
+    "nbsphinx", 
+    "sphinx==5.1.0",
+    "sphinx_rtd_theme",
+]
+test = [
+    "pytest",
+    "pytest-order",
+    "opencv-python"
+]
+
+ci = [
+    "detectree2[docs,lint,test]"
+]
+
+
+[tool.setuptools]
+packages = ["detectree2"]
