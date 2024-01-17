@@ -85,7 +85,11 @@
              
   <section id="tutorial">
 <h1><span class="section-number">2. </span>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
-<p>A tutorial for:</p>
+<p>This tutorial goes through the steps of single class (tree) detection and
+delineation. A guide to multiclass prediction (e.g. species mapping,
+disease mapping) is coming soon. Example data that can be used in
+this tutorial is available <a class="reference external" href="https://zenodo.org/records/8136161">here</a>.</p>
+<p>The key steps are:</p>
 <ol class="arabic simple">
 <li><p>Preparing data</p></li>
 <li><p>Training models</p></li>
@@ -100,14 +104,18 @@
 corresponding tree crown polgons that are readable by Geopandas
 (e.g. <code class="docutils literal notranslate"><span class="pre">&lt;crowns_polygon&gt;.gpkg</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;crowns_polygon&gt;.shp</span></code>). For the best
 results, manual crowns should be supplied as dense clusters rather than
-sparsely scattered across in the landscape. See below for an example of the
-required input crowns and image.</p>
+sparsely scattered across in the landscape. The method is designed to make
+predictions across the entirety of the supplied tiles and assumes training
+tiles are comprehensively labelled. If the network is shown scenes that are
+incompletely labelled, it may replicate that in its predictions. See
+below for an example of the required input crowns and image.</p>
 <a class="reference internal image-reference" href="_images/Danum_example_data.png"><img alt="Example Danum training data" class="align-center" src="_images/Danum_example_data.png" style="width: 400px;" /></a>
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
 <p>If you would just like to make predictions on an orthomosaic with a pre-trained
-model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code>, skip to part 4 (Generating landscape predictions).</p>
+model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code>, skip to part 4 (Generating landscape
+predictions).</p>
 <section id="preparing-data">
 <h2><span class="section-number">2.1. </span>Preparing data<a class="headerlink" href="#preparing-data" title="Link to this heading"></a></h2>
 <p>An example of the recommended file structure when training a new model is as follows:</p>
@@ -276,7 +284,7 @@ datasets should be tuples containing strings. If just a single site is being use
 <p>Alternatively, it is possible to train from one of <code class="docutils literal notranslate"><span class="pre">detectree2</span></code>’s pre-trained models. This is normally recommended and
 especially useful if you only have limited training data available. To retrieve the model from the repo’s
 <code class="docutils literal notranslate"><span class="pre">model_garden</span></code> run e.g.:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="err">!</span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">PatBall1</span><span class="o">/</span><span class="n">detectree2</span><span class="o">/</span><span class="n">raw</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">model_garden</span><span class="o">/</span><span class="mi">230103</span><span class="n">_randresize_full</span><span class="o">.</span><span class="n">pth</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="err">!</span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">zenodo</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">records</span><span class="o">/</span><span class="mi">10522461</span><span class="o">/</span><span class="n">files</span><span class="o">/</span><span class="mi">230103</span><span class="n">_randresize_full</span><span class="o">.</span><span class="n">pth</span>
 </pre></div>
 </div>
 <p>Then set up the configurations as before but with the trained model also supplied:</p>

@@ -1,7 +1,12 @@
 Tutorial
 ========
 
-A tutorial for:
+This tutorial goes through the steps of single class (tree) detection and 
+delineation. A guide to multiclass prediction (e.g. species mapping,
+disease mapping) is coming soon. Example data that can be used in
+this tutorial is available `here <https://zenodo.org/records/8136161>`_.
+
+The key steps are:
 
 1. Preparing data
 2. Training models
@@ -19,8 +24,11 @@ To train a model you will need an orthomosaic (as ``<orthmosaic>.tif``) and
 corresponding tree crown polgons that are readable by Geopandas
 (e.g. ``<crowns_polygon>.gpkg``, ``<crowns_polygon>.shp``). For the best
 results, manual crowns should be supplied as dense clusters rather than
-sparsely scattered across in the landscape. See below for an example of the
-required input crowns and image.
+sparsely scattered across in the landscape. The method is designed to make 
+predictions across the entirety of the supplied tiles and assumes training
+tiles are comprehensively labelled. If the network is shown scenes that are 
+incompletely labelled, it may replicate that in its predictions. See
+below for an example of the required input crowns and image.
 
 .. image:: ../../report/figures/Danum_example_data.png 
    :width: 400
@@ -29,7 +37,8 @@ required input crowns and image.
 
 |
 If you would just like to make predictions on an orthomosaic with a pre-trained
-model from the ``model_garden``, skip to part 4 (Generating landscape predictions).
+model from the ``model_garden``, skip to part 4 (Generating landscape
+predictions).
 
 
 Preparing data
@@ -233,7 +242,7 @@ especially useful if you only have limited training data available. To retrieve 
 
 .. code-block:: python
 
-   !wget https://github.com/PatBall1/detectree2/raw/master/model_garden/230103_randresize_full.pth
+   !wget https://zenodo.org/records/10522461/files/230103_randresize_full.pth
 
 Then set up the configurations as before but with the trained model also supplied:
 
