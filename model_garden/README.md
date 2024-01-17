@@ -20,7 +20,7 @@ cfg = setup_cfg(update_model=trained_model)
 ## 220723_withParacouUAV.pth
 
 A model trained with a range of tropical data including aeroplane and UAV
-mounted cameras.
+mounted cameras. Sites: Paracou, Danum, Sepilok.
 
 * Appropriate tile size ~ 100 m
 
@@ -28,6 +28,7 @@ mounted cameras.
 
 An updated model trained across a range of tropical sites with better scale
 transferability owing to random resize augmentation during training.
+Sites: Paracou, Danum, Sepilok.
 
 * Appropriate tile size ~ 100 m (with some tolerance)
 
