@@ -20,7 +20,7 @@ Detectree2是一个基于Mask R-CNN的自动树冠检测与分割的Python包。
 
 <br/><br/>
 > [!NOTE]
-> To save bandwidth trained models have been moved to [Zenodo](https://zenodo.org/records/10522461). Download with `wget` or equivalent.
+> To save bandwidth trained models have been moved to [Zenodo](https://zenodo.org/records/10522461). Download models directly with `wget` or equivalent.
 
 
 ## Citation
