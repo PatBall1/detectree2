@@ -1,12 +1,13 @@
 # Model garden
 
-Welcome to the model garden. Here lives the pretrained models. Please feel free
-to pick what is ripe for your tree crown delineation problem.
+Welcome to the model garden. Here live the pretrained models (now hosted on 
+[Zenodo](https://zenodo.org/records/10522461)). Please feel free to pick what
+is ripe for your tree crown delineation problem.
 
 Download with e.g.
 
 ```
-!wget https://github.com/PatBall1/detectree2/raw/master/model_garden/230103_randresize_full.pth
+!wget https://zenodo.org/records/10522461/files/230103_randresize_full.pth
 ```
 
 and load with:
@@ -19,7 +20,7 @@ cfg = setup_cfg(update_model=trained_model)
 ## 220723_withParacouUAV.pth
 
 A model trained with a range of tropical data including aeroplane and UAV
-mounted cameras.
+mounted cameras. Sites: Paracou, Danum, Sepilok.
 
 * Appropriate tile size ~ 100 m
 
@@ -27,6 +28,7 @@ mounted cameras.
 
 An updated model trained across a range of tropical sites with better scale
 transferability owing to random resize augmentation during training.
+Sites: Paracou, Danum, Sepilok.
 
 * Appropriate tile size ~ 100 m (with some tolerance)
 
