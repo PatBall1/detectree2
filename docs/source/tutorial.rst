@@ -331,7 +331,7 @@ To download a pre-trained model from the ``model_garden`` you can run ``wget`` o
 
 .. code-block:: python
    
-   !wget https://github.com/PatBall1/detectree2/raw/master/model_garden/230103_randresize_full.pth
+   !wget https://zenodo.org/records/10522461/files/230103_randresize_full.pth
 
 
 Point to a trained model, set up the configuration state and make predictions on the tiles.
@@ -375,7 +375,7 @@ the coordinate reference system of the GeoSeries (meters when working with UTM).
 
 .. code-block:: python
    
-   clean = clean.set_geometry(crowns.simplify(0.3))
+   clean = clean.set_geometry(clean.simplify(0.3))
 
 Once we're happy with the crown map, save the crowns to file.
 
