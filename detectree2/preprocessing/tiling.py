@@ -166,12 +166,13 @@ def tile_data(
     print("Tiling complete")
 
 
-def process_tile_train(data,
+def process_tile_train(
+    data: DatasetReader,
     out_dir: str,
-    buffer,
-    tile_width,
-    tile_height,
-    dtype_bool,
+    buffer: int,
+    tile_width: int,
+    tile_height: int,
+    dtype_bool: bool,
     minx,
     miny,
     crs,
