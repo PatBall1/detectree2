@@ -20,6 +20,7 @@ import numpy as np
 import rasterio
 from fiona.crs import from_epsg  # noqa: F401
 from rasterio.crs import CRS
+from rasterio.errors import RasterioIOError
 from rasterio.io import DatasetReader
 from rasterio.mask import mask
 from rasterio.windows import from_bounds
