@@ -285,6 +285,7 @@ def process_tile_train(
 
     cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()), rgb_rescaled)
 
+    overlapping_crowns = overlapping_crowns.explode(index_parts=True)
     moved = overlapping_crowns.translate(-minx + buffer, -miny + buffer)
     scalingx = 1 / (data.transform[0])
     scalingy = -1 / (data.transform[4])
