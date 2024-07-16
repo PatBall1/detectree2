@@ -96,7 +96,7 @@ def process_tile(
     try:
         out_img, out_transform = mask(data, shapes=coords, crop=True)
     except RasterioIOError as e:
-        logger.error(f"RasterioIOError: {e}")
+        logger.error(f"RasterioIOError while applying mask {coords}: {e}")
         return
 
     #out_img, out_transform = mask(data, shapes=coords, crop=True)
@@ -184,7 +184,7 @@ def tile_data(
 
 
 def process_tile_train(
-    data: DatasetReader,
+    img_path: str,
     out_dir: str,
     buffer: int,
     tile_width: int,
@@ -218,6 +218,7 @@ def process_tile_train(
     Returns:
         None
     """
+    data = rasterio.open(img_path)
 
     out_path = Path(out_dir)
     out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
@@ -241,7 +242,7 @@ def process_tile_train(
     try:
         out_img, out_transform = mask(data, shapes=coords, crop=True)
     except RasterioIOError as e:
-        logger.error(f"RasterioIOError: {e}")
+        logger.error(f"RasterioIOError while applying mask {coords}: {e}")
         return
 
     #out_img, out_transform = mask(data, shapes=coords, crop=True)
@@ -304,7 +305,7 @@ def process_tile_train(
         return
 
 def tile_data_train(  # noqa: C901
-    data: DatasetReader,
+    img_path: str,
     out_dir: str,
     buffer: int = 30,
     tile_width: int = 200,
@@ -342,7 +343,7 @@ def tile_data_train(  # noqa: C901
     crs = CRS.from_string(data.crs.wkt).to_epsg()
 
     tile_args = [
-        (data, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold, nan_threshold)
+        (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold, nan_threshold)
         for minx in np.arange(ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, int)
         for miny in np.arange(ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, int)
     ]
