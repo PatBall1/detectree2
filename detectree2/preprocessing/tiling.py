@@ -91,16 +91,16 @@ def process_tile(
     coords = get_features(geo)
     
     # Create a window corresponding to the bounding box
-    window = from_bounds(minx - buffer, miny - buffer, minx + tile_width + buffer, miny + tile_height + buffer, data.transform)
+    #window = from_bounds(minx - buffer, miny - buffer, minx + tile_width + buffer, miny + tile_height + buffer, data.transform)
     
-    try:
-        out_img = data.read(window=window)
-        out_transform = data.window_transform(window)
-    except RasterioIOError as e:
-        logger.error(f"RasterioIOError while reading window {window}: {e}")
-        return
+    #try:
+    #    out_img = data.read(window=window)
+    #    out_transform = data.window_transform(window)
+    #except RasterioIOError as e:
+    #    logger.error(f"RasterioIOError while reading window {window}: {e}")
+    #    return
 
-    #out_img, out_transform = mask(data, shapes=coords, crop=True)
+    out_img, out_transform = mask(data, shapes=coords, crop=True)
 
     out_sumbands = np.sum(out_img, 0)
     zero_mask = np.where(out_sumbands == 0, 1, 0)
@@ -237,17 +237,16 @@ def process_tile_train(
         return
 
     # Create a window corresponding to the bounding box
-    window = from_bounds(minx - buffer, miny - buffer, minx + tile_width + buffer, miny + tile_height + buffer, data.transform)
+    #window = from_bounds(minx - buffer, miny - buffer, minx + tile_width + buffer, miny + tile_height + buffer, data.transform)
     
-    try:
-        out_img = data.read(window=window)
-        out_transform = data.window_transform(window)
-    except RasterioIOError as e:
-        logger.error(f"RasterioIOError while reading window {window}: {e}")
-        return
+    #try:
+    #    out_img = data.read(window=window)
+    #    out_transform = data.window_transform(window)
+    #except RasterioIOError as e:
+    #    logger.error(f"RasterioIOError while reading window {window}: {e}")
+    #    return
 
-
-    #out_img, out_transform = mask(data, shapes=coords, crop=True)
+    out_img, out_transform = mask(data, shapes=coords, crop=True)
     
     out_sumbands = np.sum(out_img, 0)
     zero_mask = np.where(out_sumbands == 0, 1, 0)
