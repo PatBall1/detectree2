@@ -56,7 +56,7 @@ def get_features(gdf: gpd.GeoDataFrame):
 
 
 def process_tile(
-    data: DatasetReader,
+    img_path: str,
     out_dir: str,
     buffer: int,
     tile_width: int,
@@ -65,8 +65,11 @@ def process_tile(
     minx,
     miny,
     crs,
-    tilename
-) -> None:
+    tilename,
+    crowns: gpd.GeoDataFrame = None,
+    threshold: float = 0,
+    nan_threshold: float = 0,
+):
     """Process a single tile for making predictions.
 
     Args:
@@ -84,15 +87,25 @@ def process_tile(
     Returns:
         None
     """
+    data = rasterio.open(img_path)
+
     out_path = Path(out_dir)
     out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
-    bbox = box(minx - buffer, miny - buffer, minx + tile_width + buffer, miny + tile_height + buffer)
+
+    minx_buffered = minx - buffer
+    miny_buffered = miny - buffer
+    maxx_buffered = minx + tile_width + buffer
+    maxy_buffered = miny + tile_height + buffer
+
+    bbox = box(minx_buffered, miny_buffered, maxx_buffered, maxy_buffered)
     geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=data.crs)
     coords = get_features(geo)
     
-    # Create a window corresponding to the bounding box
-    #window = from_bounds(minx - buffer, miny - buffer, minx + tile_width + buffer, miny + tile_height + buffer, data.transform)
-    
+    if crowns is not None:
+        overlapping_crowns = gpd.clip(crowns, geo)
+        if overlapping_crowns.empty or (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
+            return
+
     try:
         out_img, out_transform = mask(data, shapes=coords, crop=True)
     except RasterioIOError as e:
@@ -109,7 +122,7 @@ def process_tile(
     totalpix = out_img.shape[1] * out_img.shape[2]
 
     # If the tile is mostly empty or mostly nan, don't save it
-    if sumzero > 0.25 * totalpix or sumnan > 0.25 * totalpix:
+    if sumzero > nan_threshold * totalpix or sumnan > nan_threshold * totalpix:
         return
 
     out_meta = data.meta.copy()
@@ -139,6 +152,9 @@ def process_tile(
         rgb_rescaled = rgb
 
     cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()), rgb_rescaled)
+    if overlapping_crowns is not None:
+        return  data, out_path_root, overlapping_crowns, minx, miny, buffer 
+
 
 
 def tile_data(
@@ -194,7 +210,7 @@ def process_tile_train(
     miny,
     crs,
     tilename,
-    crowns,
+    crowns: gpd.GeoDataFrame,
     threshold,
     nan_threshold
 ) -> None:
@@ -218,72 +234,7 @@ def process_tile_train(
     Returns:
         None
     """
-    data = rasterio.open(img_path)
-
-    out_path = Path(out_dir)
-    out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
-
-    minx_buffered = minx - buffer
-    miny_buffered = miny - buffer
-    maxx_buffered = minx + tile_width + buffer
-    maxy_buffered = miny + tile_height + buffer
-
-    bbox = box(minx_buffered, miny_buffered, maxx_buffered, maxy_buffered)
-    geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=data.crs)
-    coords = get_features(geo)
-
-    overlapping_crowns = gpd.clip(crowns, geo)
-    if overlapping_crowns.empty or (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
-        return
-
-    # Create a window corresponding to the bounding box
-    #window = from_bounds(minx - buffer, miny - buffer, minx + tile_width + buffer, miny + tile_height + buffer, data.transform)
-    
-    try:
-        out_img, out_transform = mask(data, shapes=coords, crop=True)
-    except RasterioIOError as e:
-        logger.error(f"RasterioIOError while applying mask {coords}: {e}")
-        return
-
-    #out_img, out_transform = mask(data, shapes=coords, crop=True)
-    
-    out_sumbands = np.sum(out_img, 0)
-    zero_mask = np.where(out_sumbands == 0, 1, 0)
-    nan_mask = np.where(out_sumbands == 765, 1, 0)
-    sumzero = zero_mask.sum()
-    sumnan = nan_mask.sum()
-    totalpix = out_img.shape[1] * out_img.shape[2]
-    # If the tile is mostly empty or mostly nan, don't save it
-    if sumzero > nan_threshold * totalpix or sumnan > nan_threshold * totalpix:
-        return
-
-    out_meta = data.meta.copy()
-    out_meta.update({
-        "driver": "GTiff",
-        "height": out_img.shape[1],
-        "width": out_img.shape[2],
-        "transform": out_transform,
-        "nodata": None,
-    })
-    if dtype_bool:
-        out_meta.update({"dtype": "uint8"})
-
-    out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tif")
-    with rasterio.open(out_tif, "w", **out_meta) as dest:
-        dest.write(out_img)
-
-    clipped = rasterio.open(out_tif)
-    arr = clipped.read()
-    r, g, b = arr[0], arr[1], arr[2]
-    rgb = np.dstack((b, g, r))
-
-    # Rescale if necessary
-    if np.max(g) > 255:
-        rgb_rescaled = 255 * rgb / 65535
-    else:
-        rgb_rescaled = rgb
-
-    cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()), rgb_rescaled)
+    data, out_path_root, overlapping_crowns, minx, miny, buffer = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold, nan_threshold)
 
     overlapping_crowns = overlapping_crowns.explode(index_parts=True)
     moved = overlapping_crowns.translate(-minx + buffer, -miny + buffer)
