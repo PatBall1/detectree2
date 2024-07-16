@@ -6,6 +6,7 @@ of models and making landscape predictions.
 
 import concurrent.futures
 import json
+import logging
 import os
 import random
 import shutil
@@ -21,6 +22,7 @@ from fiona.crs import from_epsg  # noqa: F401
 from rasterio.crs import CRS
 from rasterio.io import DatasetReader
 from rasterio.mask import mask
+from rasterio.windows import from_bounds
 from shapely.geometry import box
 
 # class img_data(DatasetReader):
@@ -82,7 +84,18 @@ def process_tile(
     bbox = box(minx - buffer, miny - buffer, minx + tile_width + buffer, miny + tile_height + buffer)
     geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=data.crs)
     coords = get_features(geo)
-    out_img, out_transform = mask(data, shapes=coords, crop=True)
+    
+    # Create a window corresponding to the bounding box
+    window = from_bounds(minx - buffer, miny - buffer, minx + tile_width + buffer, miny + tile_height + buffer, data.transform)
+    
+    try:
+        out_img = data.read(window=window)
+        out_transform = data.window_transform(window)
+    except RasterioIOError as e:
+        logger.error(f"RasterioIOError while reading window {window}: {e}")
+        return
+
+    #out_img, out_transform = mask(data, shapes=coords, crop=True)
 
     out_sumbands = np.sum(out_img, 0)
     zero_mask = np.where(out_sumbands == 0, 1, 0)
@@ -218,7 +231,19 @@ def process_tile_train(
     if overlapping_crowns.empty or (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
         return
 
-    out_img, out_transform = mask(data, shapes=coords, crop=True)
+    # Create a window corresponding to the bounding box
+    window = from_bounds(minx - buffer, miny - buffer, minx + tile_width + buffer, miny + tile_height + buffer, data.transform)
+    
+    try:
+        out_img = data.read(window=window)
+        out_transform = data.window_transform(window)
+    except RasterioIOError as e:
+        logger.error(f"RasterioIOError while reading window {window}: {e}")
+        return
+
+
+    #out_img, out_transform = mask(data, shapes=coords, crop=True)
+    
     out_sumbands = np.sum(out_img, 0)
     zero_mask = np.where(out_sumbands == 0, 1, 0)
     nan_mask = np.where(out_sumbands == 765, 1, 0)
