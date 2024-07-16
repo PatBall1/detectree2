@@ -339,7 +339,7 @@ def tile_data_train(  # noqa: C901
     # TODO: Tighten up epsg handling
     out_path = Path(out_dir)
     os.makedirs(out_path, exist_ok=True)
-    tilename = Path(data.name).stem
+    tilename = Path(img_path).stem
     crs = CRS.from_string(data.crs.wkt).to_epsg()
 
     tile_args = [
