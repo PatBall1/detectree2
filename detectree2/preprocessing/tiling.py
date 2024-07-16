@@ -96,7 +96,7 @@ def process_tile(
     try:
         out_img, out_transform = mask(data, shapes=coords, crop=True)
     except RasterioIOError as e:
-        logger.error(f"RasterioIOError while reading window {window}: {e}")
+        logger.error(f"RasterioIOError: {e}")
         return
 
     #out_img, out_transform = mask(data, shapes=coords, crop=True)
@@ -241,7 +241,7 @@ def process_tile_train(
     try:
         out_img, out_transform = mask(data, shapes=coords, crop=True)
     except RasterioIOError as e:
-        logger.error(f"RasterioIOError while reading window {window}: {e}")
+        logger.error(f"RasterioIOError: {e}")
         return
 
     #out_img, out_transform = mask(data, shapes=coords, crop=True)
