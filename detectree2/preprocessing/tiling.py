@@ -340,6 +340,7 @@ def tile_data_train(  # noqa: C901
     out_path = Path(out_dir)
     os.makedirs(out_path, exist_ok=True)
     tilename = Path(img_path).stem
+    data = rasterio.open(img_path)
     crs = CRS.from_string(data.crs.wkt).to_epsg()
 
     tile_args = [
