@@ -26,6 +26,10 @@ from rasterio.mask import mask
 from rasterio.windows import from_bounds
 from shapely.geometry import box
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # class img_data(DatasetReader):
 #    """
 #    Class for image data to be processed for tiling
