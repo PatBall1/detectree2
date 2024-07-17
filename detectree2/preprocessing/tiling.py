@@ -87,120 +87,78 @@ def process_tile(
     Returns:
         None
     """
-    data = rasterio.open(img_path)
-
-    out_path = Path(out_dir)
-    out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
-
-    minx_buffered = minx - buffer
-    miny_buffered = miny - buffer
-    maxx_buffered = minx + tile_width + buffer
-    maxy_buffered = miny + tile_height + buffer
-
-    bbox = box(minx_buffered, miny_buffered, maxx_buffered, maxy_buffered)
-    geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=data.crs)
-    coords = get_features(geo)
-
-    overlapping_crowns = None
-    if crowns is not None:
-        overlapping_crowns = gpd.clip(crowns, geo)
-        if overlapping_crowns.empty or (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
-            return
-
     try:
         with rasterio.open(img_path) as data:
+            out_path = Path(out_dir)
+            out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
+
+            minx_buffered = minx - buffer
+            miny_buffered = miny - buffer
+            maxx_buffered = minx + tile_width + buffer
+            maxy_buffered = miny + tile_height + buffer
+
+            bbox = box(minx_buffered, miny_buffered, maxx_buffered, maxy_buffered)
+            geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=data.crs)
+            coords = get_features(geo)
+
+            overlapping_crowns = None
+            if crowns is not None:
+                overlapping_crowns = gpd.clip(crowns, geo)
+                if overlapping_crowns.empty or (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
+                    return None
+
             out_img, out_transform = mask(data, shapes=coords, crop=True)
         
-        out_sumbands = np.sum(out_img, axis=0)
-        zero_mask = np.where(out_sumbands == 0, 1, 0)
-        nan_mask = np.where(out_sumbands == 765, 1, 0)
-        sumzero = zero_mask.sum()
-        sumnan = nan_mask.sum()
-        totalpix = out_img.shape[1] * out_img.shape[2]
+            out_sumbands = np.sum(out_img, axis=0)
+            zero_mask = np.where(out_sumbands == 0, 1, 0)
+            nan_mask = np.where(out_sumbands == 765, 1, 0)
+            sumzero = zero_mask.sum()
+            sumnan = nan_mask.sum()
+            totalpix = out_img.shape[1] * out_img.shape[2]
 
-        # If the tile is mostly empty or mostly nan, don't save it
-        if sumzero > nan_threshold * totalpix or sumnan > nan_threshold * totalpix:
-            return None
+            # If the tile is mostly empty or mostly nan, don't save it
+            if sumzero > nan_threshold * totalpix or sumnan > nan_threshold * totalpix:
+                return None
 
-        out_meta = data.meta.copy()
-        out_meta.update({
-            "driver": "GTiff",
-            "height": out_img.shape[1],
-            "width": out_img.shape[2],
-            "transform": out_transform,
-            "nodata": None,
-        })
-        if dtype_bool:
-            out_meta.update({"dtype": "uint8"})
+            out_meta = data.meta.copy()
+            out_meta.update({
+                "driver": "GTiff",
+                "height": out_img.shape[1],
+                "width": out_img.shape[2],
+                "transform": out_transform,
+                "nodata": None,
+            })
+            if dtype_bool:
+                out_meta.update({"dtype": "uint8"})
 
-        out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tif")
-        with rasterio.open(out_tif, "w", **out_meta) as dest:
-            dest.write(out_img)
+            out_tif = out_path_root.with_suffix(".tif")
+            with rasterio.open(out_tif, "w", **out_meta) as dest:
+                dest.write(out_img)
 
-        with rasterio.open(out_tif) as clipped:
-            arr = clipped.read()
-            r, g, b = arr[0], arr[1], arr[2]
-            rgb = np.dstack((b, g, r))
+            with rasterio.open(out_tif) as clipped:
+                arr = clipped.read()
+                r, g, b = arr[0], arr[1], arr[2]
+                rgb = np.dstack((b, g, r))
 
-            # Rescale to 0-255 if necessary
-            if np.max(g) > 255:
-                rgb_rescaled = 255 * rgb / 65535
-            else:
-                rgb_rescaled = rgb
+                # Rescale to 0-255 if necessary
+                if np.max(g) > 255:
+                    rgb_rescaled = 255 * rgb / 65535
+                else:
+                    rgb_rescaled = rgb
 
-            cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()), rgb_rescaled)
+                cv2.imwrite(str(out_path_root.with_suffix(".png").resolve()), rgb_rescaled)
 
-        if overlapping_crowns is not None:
-            return data, out_path_root, overlapping_crowns, minx, miny, buffer
-        
-        return data, out_path_root, None, minx, miny, buffer
+            if overlapping_crowns is not None:
+                return data, out_path_root, overlapping_crowns, minx, miny, buffer
+            
+            return data, out_path_root, None, minx, miny, buffer
 
     except RasterioIOError as e:
         logger.error(f"RasterioIOError while applying mask {coords}: {e}")
         return None
-
-
-
-def tile_data(
-    data: DatasetReader,
-    out_dir: str,
-    buffer: int = 30,
-    tile_width: int = 200,
-    tile_height: int = 200,
-    dtype_bool: bool = False,
-) -> None:
-    """Tiles up orthomosaic for making predictions on.
-
-    Tiles up full othomosaic into managable chunks to make predictions on. Use tile_data_train to generate tiled
-    training data. A bug exists on some input raster types whereby outputed tiles are completely black - the dtype_bool
-    argument should be switched if this is the case.
-
-    Args:
-        data: Orthomosaic as a rasterio object in a UTM type projection
-        buffer: Overlapping buffer of tiles in meters (UTM)
-        tile_width: Tile width in meters
-        tile_height: Tile height in meters
-        dtype_bool: Flag to edit dtype to prevent black tiles
-
-    Returns:
-        None
-    """
-    out_path = Path(out_dir)
-    os.makedirs(out_path, exist_ok=True)
-    crs = CRS.from_string(data.crs.wkt).to_epsg()
-    tilename = Path(data.name).stem
-    total_tiles = int(((data.bounds[2] - data.bounds[0]) / tile_width) * ((data.bounds[3] - data.bounds[1]) / tile_height))
-
-    tile_args = [
-        (data, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename)
-        for minx in np.arange(data.bounds[0], data.bounds[2] - tile_width, tile_width, int)
-        for miny in np.arange(data.bounds[1], data.bounds[3] - tile_height, tile_height, int)
-    ]
-
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        list(executor.map(lambda args: process_tile(*args), tile_args))
-
-    print("Tiling complete")
+    except Exception as e:
+        logger.error(f"Error processing tile {tilename} at ({minx}, {miny}): {e}")
+        return None
 
 
 def process_tile_train(
@@ -221,7 +179,7 @@ def process_tile_train(
     """Process a single tile for training data.
 
     Args:
-        data: Orthomosaic as a rasterio object in a UTM type projection
+        img_path: Path to the orthomosaic
         out_dir: Output directory
         buffer: Overlapping buffer of tiles in meters (UTM)
         tile_width: Tile width in meters
@@ -238,17 +196,23 @@ def process_tile_train(
     Returns:
         None
     """
-    data, out_path_root, overlapping_crowns, minx, miny, buffer = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold, nan_threshold)
+    result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold, nan_threshold)
+    
+    if result is None:
+        #logger.warning(f"Skipping tile at ({minx}, {miny}) due to insufficient data.")
+        return
+
+    data, out_path_root, overlapping_crowns, minx, miny, buffer = result
 
     overlapping_crowns = overlapping_crowns.explode(index_parts=True)
     moved = overlapping_crowns.translate(-minx + buffer, -miny + buffer)
     scalingx = 1 / (data.transform[0])
     scalingy = -1 / (data.transform[4])
     moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
-    impath = {"imagePath": out_path_root.with_suffix(out_path_root.suffix + ".png").as_posix()}
+    impath = {"imagePath": out_path_root.with_suffix(".png").as_posix()}
 
     try:
-        filename = out_path_root.with_suffix(out_path_root.suffix + ".geojson")
+        filename = out_path_root.with_suffix(".geojson")
         moved_scaled = overlapping_crowns.set_geometry(moved_scaled)
         moved_scaled.to_file(driver="GeoJSON", filename=filename)
         with open(filename, "r") as f:
@@ -257,10 +221,14 @@ def process_tile_train(
         with open(filename, "w") as f:
             json.dump(shp, f)
     except ValueError:
-        print("Cannot write empty DataFrame to file.")
+        logger.warning("Cannot write empty DataFrame to file.")
         return
 
-def tile_data_train(  # noqa: C901
+# Define a top-level helper function
+def process_tile_train_helper(args):
+    return process_tile_train(*args)
+
+def tile_data(
     img_path: str,
     out_dir: str,
     buffer: int = 30,
@@ -271,13 +239,14 @@ def tile_data_train(  # noqa: C901
     nan_threshold: float = 0.1,
     dtype_bool: bool = False,
 ) -> None:
-    """Tiles up orthomosaic and corresponding crowns into training tiles.
+    """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
     A threshold can be used to ensure a good coverage of crowns across a tile. Tiles that do not have sufficient
     coverage are rejected.
 
     Args:
-        data: Orthomosaic as a rasterio object in a UTM type projection
+        img_path: Path to the orthomosaic
+        out_dir: Output directory
         buffer: Overlapping buffer of tiles in meters (UTM)
         tile_width: Tile width in meters
         tile_height: Tile height in meters
@@ -290,25 +259,22 @@ def tile_data_train(  # noqa: C901
         None
 
     """
-
-    # TODO: Clip data to crowns straight away to speed things up
-    # TODO: Tighten up epsg handling
     out_path = Path(out_dir)
     os.makedirs(out_path, exist_ok=True)
     tilename = Path(img_path).stem
-    data = rasterio.open(img_path)
-    crs = CRS.from_string(data.crs.wkt).to_epsg()
+    with rasterio.open(img_path) as data:
+        crs = data.crs.to_string()  # Update CRS handling to avoid deprecated syntax
 
-    tile_args = [
-        (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold, nan_threshold)
-        for minx in np.arange(ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, int)
-        for miny in np.arange(ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, int)
-    ]
+        tile_args = [
+            (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold, nan_threshold)
+            for minx in np.arange(ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, int)
+            for miny in np.arange(ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, int)
+        ]
 
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        list(executor.map(lambda args: process_tile_train(*args), tile_args))
+        with concurrent.futures.ProcessPoolExecutor() as executor:  # Use ProcessPoolExecutor here
+            list(executor.map(process_tile_train_helper, tile_args))
 
-    print("Tiling complete")
+    logger.info("Tiling complete")
 
 
 def image_details(fileroot):
@@ -490,5 +456,5 @@ if __name__ == "__main__":
     tile_width = 200
     tile_height = 200
 
-    tile_data_train(data, out_dir, buffer, tile_width, tile_height, crowns)
+    tile_data(data, out_dir, buffer, tile_width, tile_height, crowns)
     to_traintest_folders(folds=5)
