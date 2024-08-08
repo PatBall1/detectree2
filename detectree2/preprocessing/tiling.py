@@ -160,6 +160,112 @@ def process_tile(
         logger.error(f"Error processing tile {tilename} at ({minx}, {miny}): {e}")
         return None
 
+def process_tile_ms(
+    img_path: str,
+    out_dir: str,
+    buffer: int,
+    tile_width: int,
+    tile_height: int,
+    dtype_bool: bool,
+    minx,
+    miny,
+    crs,
+    tilename,
+    crowns: gpd.GeoDataFrame = None,
+    threshold: float = 0,
+    nan_threshold: float = 0,
+):
+    """Process a single tile for making predictions.
+
+    Args:
+        img_path: Path to the orthomosaic
+        out_dir: Output directory
+        buffer: Overlapping buffer of tiles in meters (UTM)
+        tile_width: Tile width in meters
+        tile_height: Tile height in meters
+        dtype_bool: Flag to edit dtype to prevent black tiles
+        minx: Minimum x coordinate of tile
+        miny: Minimum y coordinate of tile
+        crs: Coordinate reference system
+        tilename: Name of the tile
+    
+    Returns:
+        None
+    """
+    try:
+        with rasterio.open(img_path) as data:
+            out_path = Path(out_dir)
+            out_path_root = out_path / f"{tilename}_{minx}_{miny}_{tile_width}_{buffer}_{crs}"
+
+            minx_buffered = minx - buffer
+            miny_buffered = miny - buffer
+            maxx_buffered = minx + tile_width + buffer
+            maxy_buffered = miny + tile_height + buffer
+
+            bbox = box(minx_buffered, miny_buffered, maxx_buffered, maxy_buffered)
+            geo = gpd.GeoDataFrame({"geometry": [bbox]}, index=[0], crs=data.crs)
+            coords = [geo.geometry[0].__geo_interface__]
+
+            overlapping_crowns = None
+            if crowns is not None:
+                overlapping_crowns = gpd.clip(crowns, geo)
+                if overlapping_crowns.empty or (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
+                    return None
+
+            out_img, out_transform = mask(data, shapes=coords, crop=True)
+
+            out_sumbands = np.sum(out_img, axis=0)
+            zero_mask = np.where(out_sumbands == 0, 1, 0)
+            nan_mask = np.isnan(out_sumbands)
+            sumzero = zero_mask.sum()
+            sumnan = nan_mask.sum()
+            totalpix = out_img.shape[1] * out_img.shape[2]
+
+            # If the tile is mostly empty or mostly nan, don't save it
+            if sumzero > nan_threshold * totalpix or sumnan > nan_threshold * totalpix:
+                return None
+
+            out_meta = data.meta.copy()
+            out_meta.update({
+                "driver": "GTiff",
+                "height": out_img.shape[1],
+                "width": out_img.shape[2],
+                "transform": out_transform,
+                "nodata": None,
+            })
+            if dtype_bool:
+                out_meta.update({"dtype": "uint8"})
+
+            out_tif = out_path_root.with_suffix(".tif")
+            with rasterio.open(out_tif, "w", **out_meta) as dest:
+                dest.write(out_img)
+
+            # Save all bands as an image if needed (not just the first 3 bands)
+            band_images = []
+            for band_index in range(out_img.shape[0]):
+                band_image = out_img[band_index, :, :]
+                if np.max(band_image) > 255:
+                    band_image = 255 * band_image / np.max(band_image)
+                band_images.append(band_image.astype(np.uint8))
+
+            # Stack the bands into a single image array
+            full_image = np.stack(band_images, axis=-1)
+
+            # Save the full image with potentially more than 3 bands
+            full_image_path = out_path_root.with_suffix(".png")
+            cv2.imwrite(str(full_image_path.resolve()), full_image)
+
+            if overlapping_crowns is not None:
+                return data, out_path_root, overlapping_crowns, minx, miny, buffer
+            
+            return data, out_path_root, None, minx, miny, buffer
+
+    except RasterioIOError as e:
+        logger.error(f"RasterioIOError while applying mask {coords}: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Error processing tile {tilename} at ({minx}, {miny}): {e}")
+        return None
 
 def process_tile_train(
     img_path: str,
@@ -174,7 +280,8 @@ def process_tile_train(
     tilename,
     crowns: gpd.GeoDataFrame,
     threshold,
-    nan_threshold
+    nan_threshold,
+    mode: str = "rgb",
 ) -> None:
     """Process a single tile for training data.
 
@@ -196,7 +303,12 @@ def process_tile_train(
     Returns:
         None
     """
-    result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold, nan_threshold)
+    if mode == "rgb":
+        result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, 
+                            crowns, threshold, nan_threshold)
+    elif mode == "ms":
+        result = process_tile_ms(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, 
+                            crowns, threshold, nan_threshold)
     
     if result is None:
         #logger.warning(f"Skipping tile at ({minx}, {miny}) due to insufficient data.")
@@ -241,8 +353,10 @@ def tile_data(
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
-    A threshold can be used to ensure a good coverage of crowns across a tile. Tiles that do not have sufficient
-    coverage are rejected.
+    Tiles up large rasters into managable tiles for training and prediction. If crowns are not supplied the function 
+    will tile up the entire landscape for prediction. If crowns are supplied the function will tile these with the image 
+    and skip tiles without a minimum coverage of crowns. The 'threshold' can be varied to ensure a good coverage of
+    crowns across a traing tile. Tiles that do not have sufficient coverage are skipped.
 
     Args:
         img_path: Path to the orthomosaic
@@ -266,9 +380,11 @@ def tile_data(
         crs = data.crs.to_string()  # Update CRS handling to avoid deprecated syntax
 
         tile_args = [
-            (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold, nan_threshold)
+            (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, 
+             threshold, nan_threshold)
             for minx in np.arange(ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, int)
-            for miny in np.arange(ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, int)
+            for miny in np.arange(ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, 
+                                  int)
         ]
 
         with concurrent.futures.ProcessPoolExecutor() as executor:  # Use ProcessPoolExecutor here

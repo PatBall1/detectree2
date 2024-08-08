@@ -69,7 +69,7 @@ We call functions to from ``detectree2``'s tiling and training modules.
 
 .. code-block:: python
    
-   from detectree2.preprocessing.tiling import tile_data_train, to_traintest_folders
+   from detectree2.preprocessing.tiling import tile_data, to_traintest_folders
    from detectree2.models.train import register_train_data, MyTrainer, setup_cfg
    import rasterio
    import geopandas as gpd
@@ -112,22 +112,24 @@ The tile size will depend on:
 The total tile size here is 100 m x 100 m (a 40 m x 40 m core area with a surrounding 30 m buffer that overlaps with
 surrounding tiles). Including a buffer is recommended as it allows for tiles that include more training crowns.
 
-Next we tile the data. The ``tile_data_train`` function will only retain tiles that contain more than the given
-``threshold`` coverage of training data (here 60%). This helps to reduce the chance that the network is trained with
-tiles that contain a large number of unlabelled crowns (which would reduce its sensitivity).
+Next we tile the data. The ``tile_data`` function, when ``crowns`` is supplied, will only retain tiles that contain more
+than the given ``threshold`` coverage of training data (here 60%). This helps to reduce the chance that the network is 
+trained with tiles that contain a large number of unlabelled crowns (which would reduce its sensitivity).
 
 .. code-block:: python
    
-   tile_data_train(data, out_dir, buffer, tile_width, tile_height, crowns, threshold)
+   tile_data(img_path, out_dir, buffer, tile_width, tile_height, crowns, threshold)
 
 .. warning::
-   If tiles are outputing as blank images set ``dtype_bool = True`` in the ``tile_data_train`` function. This is a bug
-   and we are working on fixing it.
+   If tiles are outputing as blank images set ``dtype_bool = True`` in the ``tile_data`` function. This is a bug
+   and we are working on fixing it. Supplying crown polygons will cause the function to tile for
+   training (as opposed to landscape prediction which is described below).
 
 .. note::
-   You will want to relax the ``threshold`` value if your trees are sparsely distributed across your landscape.
-   Remember, ``detectree2`` was initially designed for dense, closed canopy forests so some of the default assumptions 
-   will reflect that.
+   You will want to relax the ``threshold`` value if your trees are sparsely distributed across your landscape or if you
+   want to include non-forest areas (e.g. river, roads). Remember, ``detectree2`` was initially designed for dense,
+   closed canopy forests so some of the default assumptions will reflect that and parameters will need to be adjusted
+   for different systems.
 
 Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder.
 
@@ -141,7 +143,7 @@ Send geojsons to train folder (with sub-folders for k-fold cross validation) and
    that have any overlap with test tiles (including the buffers), ensuring strict spatial separation of the test data.
    However, this can remove a significant proportion of the data available to train on so if validation accuracy is a 
    sufficient test of model performance ``test_frac`` can be set to ``0`` or set ``strict=False`` (which allows for 
-   some overlap in the buffers between test and train/val tiles).
+   overlap in the buffers between test and train/val tiles).
 
 
 The data has now been tiled and partitioned for model training, tuning and evaluation.
@@ -161,8 +163,8 @@ The data has now been tiled and partitioned for model training, tuning and evalu
            └── test                                (test data folder)
  
 
-It is advisable to do a visual inspection on the tiles to ensure that the tiling has worked as expected and that crowns
-and images align. This can be done quickly with the inbuilt ``detectron2`` visualisation tools.
+It is recommended to visually inspect the tiles before training to ensure that the tiling has worked as expected and
+that crowns and images align. This can be done quickly with the inbuilt ``detectron2`` visualisation tools.
 
 .. code-block:: python
    
@@ -325,7 +327,8 @@ can discard partial the crowns predicted at the edge of tiles.
 
 .. warning::
    If tiles are outputing as blank images set ``dtype_bool = True`` in the ``tile_data`` function. This is a bug
-   and we are working on fixing it.
+   and we are working on fixing it. Avoid supplying crown polygons otherwise the function will run as if it is tiling
+   for training.
 
 To download a pre-trained model from the ``model_garden`` you can run ``wget`` on the package repo
 
