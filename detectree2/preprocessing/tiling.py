@@ -138,7 +138,7 @@ def process_tile(
             with rasterio.open(out_tif) as clipped:
                 arr = clipped.read()
                 r, g, b = arr[0], arr[1], arr[2]
-                rgb = np.dstack((b, g, r))
+                rgb = np.dstack((b, g, r)) # Reorder for cv2 (BGRA)
 
                 # Rescale to 0-255 if necessary
                 if np.max(g) > 255:
@@ -249,6 +249,7 @@ def process_tile_ms(
                 band_images.append(band_image.astype(np.uint8))
 
             # Stack the bands into a single image array
+            # Does the band order need to be reversed as in the RGB case?
             full_image = np.stack(band_images, axis=-1)
 
             # Save the full image with potentially more than 3 bands
@@ -350,6 +351,7 @@ def tile_data(
     threshold: float = 0,
     nan_threshold: float = 0.1,
     dtype_bool: bool = False,
+    mode: str = "rgb",
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
@@ -381,7 +383,7 @@ def tile_data(
 
         tile_args = [
             (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, 
-             threshold, nan_threshold)
+             threshold, nan_threshold, mode)
             for minx in np.arange(ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, int)
             for miny in np.arange(ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, 
                                   int)
