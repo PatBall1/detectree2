@@ -509,7 +509,8 @@ def to_traintest_folders(  # noqa: C901
     Path(out_dir / "train").mkdir(parents=True, exist_ok=True)
     Path(out_dir / "test").mkdir(parents=True, exist_ok=True)
 
-    file_names = tiles_dir.glob("*.png")
+    #file_names = tiles_dir.glob("*.png")
+    file_names = tiles_dir.glob("*.geojson")
     file_roots = [item.stem for item in file_names]
 
     num = list(range(0, len(file_roots)))
