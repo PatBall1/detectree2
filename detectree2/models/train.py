@@ -17,6 +17,7 @@ import cv2
 import detectron2.data.transforms as T  # noqa:N812
 import detectron2.utils.comm as comm
 import numpy as np
+import rasterio
 import torch
 from detectron2 import model_zoo
 from detectron2.checkpoint import DetectionCheckpointer  # noqa:F401
@@ -28,6 +29,7 @@ from detectron2.data import (
     build_detection_test_loader,
     build_detection_train_loader,
 )
+from detectron2.data import detection_utils as utils
 from detectron2.engine import DefaultTrainer
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator, verify_results
@@ -42,15 +44,28 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 # from PIL import Image
 
 
-class MultiBandDatasetMapper:
+class FlexibleDatasetMapper:
     def __init__(self, cfg, is_train=True, augmentations=None):
+        self.cfg = cfg
         self.is_train = is_train
         self.augmentations = T.AugmentationList(augmentations) if augmentations else None
+        self.rgb_mapper = DatasetMapper(cfg, is_train=is_train, augmentations=self.augmentations)
 
     def __call__(self, dataset_dict):
+        # Determine the number of bands
+        with rasterio.open(dataset_dict["file_name"]) as src:
+            num_bands = src.count
+
+        if num_bands == 3:
+            # Use the standard RGB DatasetMapper
+            return self.rgb_mapper(dataset_dict)
+        else:
+            # Use the custom multi-band mapper
+            return self.multi_band_mapper(dataset_dict)
+
+    def multi_band_mapper(self, dataset_dict):
         dataset_dict = dataset_dict.copy()  # Make a copy of the dataset dict
-        image = utils.read_image(dataset_dict["file_name"], format="BGR")  # This reads the image
-        image = self.load_all_bands(dataset_dict["file_name"])  # Custom method to load all bands
+        image = self.load_image(dataset_dict["file_name"])  # Custom method to load image (multi-band)
 
         if self.augmentations:
             image, transforms = T.apply_augmentations(self.augmentations, image)
@@ -58,6 +73,7 @@ class MultiBandDatasetMapper:
         else:
             dataset_dict["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
 
+        # Transform annotations
         annos = [
             utils.transform_instance_annotations(annotation, transforms, image.shape[:2])
             for annotation in dataset_dict.pop("annotations")
@@ -65,14 +81,12 @@ class MultiBandDatasetMapper:
         dataset_dict["instances"] = utils.annotations_to_instances(annos, image.shape[:2])
         return dataset_dict
 
-    def load_all_bands(self, image_path):
-        """Load all bands of the image using rasterio and return as a numpy array."""
+    def load_image(self, image_path):
+        """Load multi-band image."""
         with rasterio.open(image_path) as src:
-            image = src.read()  # This will read all bands
-            # Normalize the bands if necessary
-            image = image.astype(np.float32) / 255.0
-            # Transpose to HWC format
-            image = np.transpose(image, (1, 2, 0))
+            image = src.read()  # This will read all bands (multi-band support)
+            image = image.transpose(1, 2, 0)  # Convert to HWC format
+            image = image.astype(np.float32)  # Convert to float32 for consistency
         return image
 
 class LossEvalHook(HookBase):
@@ -286,7 +300,7 @@ class MyTrainer(DefaultTrainer):
 
 
 def build_train_loader(cls, cfg):
-    """Summary.
+    """Build the train loader with flexibility for RGB and multi-band images.
 
     Args:
         cfg (_type_): _description_
@@ -307,21 +321,38 @@ def build_train_loader(cls, cfg):
     if cfg.RESIZE:
         augmentations.append(T.Resize((1000, 1000)))
     elif cfg.RESIZE == "random":
+        size = None
         for i, datas in enumerate(DatasetCatalog.get(cfg.DATASETS.TRAIN[0])):
             location = datas['file_name']
-            size = cv2.imread(location).shape[0]
+            try:
+                # Try to read with cv2 (for RGB images)
+                img = cv2.imread(location)
+                if img is not None:
+                    size = img.shape[0]
+                else:
+                    # Fall back to rasterio for multi-band images
+                    with rasterio.open(location) as src:
+                        size = src.height  # Assuming square images
+            except Exception as e:
+                # Handle any errors that occur during loading
+                print(f"Error loading image {location}: {e}")
+                continue
             break
-        print("ADD RANDOM RESIZE WITH SIZE = ", size)
-        augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
+        
+        if size:
+            print("ADD RANDOM RESIZE WITH SIZE = ", size)
+            augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
+        else:
+            raise ValueError("Failed to determine image size for random resize")
+
     return build_detection_train_loader(
         cfg,
-        mapper=DatasetMapper(
+        mapper=FlexibleDatasetMapper(
             cfg,
             is_train=True,
             augmentations=augmentations,
         ),
     )
-
 
 def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = None) -> List[Dict]:
     """Get the tree dictionaries.
