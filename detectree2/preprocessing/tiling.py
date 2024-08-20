@@ -240,21 +240,22 @@ def process_tile_ms(
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
 
+            # Images withmore than 4 bands are not supported by cv2
             # Save all bands as an image if needed (not just the first 3 bands)
-            band_images = []
-            for band_index in range(out_img.shape[0]):
-                band_image = out_img[band_index, :, :]
-                if np.max(band_image) > 255:
-                    band_image = 255 * band_image / np.max(band_image)
-                band_images.append(band_image.astype(np.uint8))
+            #band_images = []
+            #for band_index in range(out_img.shape[0]):
+            #    band_image = out_img[band_index, :, :]
+            #    if np.max(band_image) > 255:
+            #        band_image = 255 * band_image / np.max(band_image)
+            #    band_images.append(band_image.astype(np.uint8))
 
             # Stack the bands into a single image array
             # Does the band order need to be reversed as in the RGB case?
-            full_image = np.stack(band_images, axis=-1)
+            #full_image = np.stack(band_images, axis=-1)
 
             # Save the full image with potentially more than 3 bands
-            full_image_path = out_path_root.with_suffix(".png")
-            cv2.imwrite(str(full_image_path.resolve()), full_image)
+            #full_image_path = out_path_root.with_suffix(".png")
+            #cv2.imwrite(str(full_image_path.resolve()), full_image)
 
             if overlapping_crowns is not None:
                 return data, out_path_root, overlapping_crowns, minx, miny, buffer
@@ -322,7 +323,11 @@ def process_tile_train(
     scalingx = 1 / (data.transform[0])
     scalingy = -1 / (data.transform[4])
     moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
-    impath = {"imagePath": out_path_root.with_suffix(".png").as_posix()}
+
+    if mode == "rgb":
+        impath = {"imagePath": out_path_root.with_suffix(".png").as_posix()}
+    elif mode == "ms":
+        impath = {"imagePath": out_path_root.with_suffix(".tif").as_posix()}
 
     try:
         filename = out_path_root.with_suffix(".geojson")
@@ -454,6 +459,9 @@ def record_data(crowns,
     """
 
     list_of_classes = crowns[column].unique().tolist()
+
+    # Sort the list of classes in alphabetical order
+    list_of_classes.sort()
 
     print("**The list of classes are:**")
     print(list_of_classes)

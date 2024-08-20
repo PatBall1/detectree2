@@ -42,6 +42,39 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 # from PIL import Image
 
 
+class MultiBandDatasetMapper:
+    def __init__(self, cfg, is_train=True, augmentations=None):
+        self.is_train = is_train
+        self.augmentations = T.AugmentationList(augmentations) if augmentations else None
+
+    def __call__(self, dataset_dict):
+        dataset_dict = dataset_dict.copy()  # Make a copy of the dataset dict
+        image = utils.read_image(dataset_dict["file_name"], format="BGR")  # This reads the image
+        image = self.load_all_bands(dataset_dict["file_name"])  # Custom method to load all bands
+
+        if self.augmentations:
+            image, transforms = T.apply_augmentations(self.augmentations, image)
+            dataset_dict["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
+        else:
+            dataset_dict["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
+
+        annos = [
+            utils.transform_instance_annotations(annotation, transforms, image.shape[:2])
+            for annotation in dataset_dict.pop("annotations")
+        ]
+        dataset_dict["instances"] = utils.annotations_to_instances(annos, image.shape[:2])
+        return dataset_dict
+
+    def load_all_bands(self, image_path):
+        """Load all bands of the image using rasterio and return as a numpy array."""
+        with rasterio.open(image_path) as src:
+            image = src.read()  # This will read all bands
+            # Normalize the bands if necessary
+            image = image.astype(np.float32) / 255.0
+            # Transpose to HWC format
+            image = np.transpose(image, (1, 2, 0))
+        return image
+
 class LossEvalHook(HookBase):
     """Do inference and get the loss metric.
 
@@ -244,7 +277,7 @@ class MyTrainer(DefaultTrainer):
                 build_detection_test_loader(
                     self.cfg,
                     self.cfg.DATASETS.TEST,
-                    DatasetMapper(self.cfg, True)
+                    DatasetMapper(self.cfg, True) # Need to edit this for custom dataset
                 ),
                 self.patience,
             ),
@@ -331,7 +364,13 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
         filename = img_anns["imagePath"]
 
         # Make sure we have the correct height and width
-        height, width = cv2.imread(filename).shape[:2]
+        # If image path ends in .png use cv2 to get height and width
+        if filename.endswith(".png"):
+            height, width = cv2.imread(filename).shape[:2] # Need to change this to rasterio
+        # else if image path ends in .tif use rasterio to get height and width
+        elif filename.endswith(".tif"):
+            with rasterio.open(filename) as src:
+                height, width = src.shape
 
         record["file_name"] = filename
         record["height"] = height
@@ -459,9 +498,9 @@ def register_train_data(train_location,
 def read_data(out_dir):
     """Function that will read the classes that are recorded during tiling."""
     list = []
-    out_tif = out_dir + 'classes.txt'
+    classes_txt = out_dir + 'classes.txt'
     # open file and read the content in a list
-    with open(out_tif, 'r') as fp:
+    with open(classes_txt, 'r') as fp:
         for line in fp:
             # remove linebreak from a current name
             # linebreak is the last character of each line
