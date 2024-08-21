@@ -43,51 +43,42 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 # from IPython.display import display
 # from PIL import Image
 
-
 class FlexibleDatasetMapper:
     def __init__(self, cfg, is_train=True, augmentations=None):
         self.cfg = cfg
         self.is_train = is_train
-        self.augmentations = T.AugmentationList(augmentations) if augmentations else None
-        self.rgb_mapper = DatasetMapper(cfg, is_train=is_train, augmentations=self.augmentations)
+        self.rgb_mapper = DatasetMapper(cfg, is_train=is_train)
 
     def __call__(self, dataset_dict):
-        # Determine the number of bands
-        with rasterio.open(dataset_dict["file_name"]) as src:
-            num_bands = src.count
+        # First, try to open the image using rasterio to determine the number of bands
+        try:
+            with rasterio.open(dataset_dict["file_name"]) as src:
+                num_bands = src.count
+        except rasterio.errors.RasterioIOError as e:
+            raise ValueError(f"Error opening image file: {dataset_dict['file_name']}") from e
 
+        # If the image has 3 bands, use the standard RGB DatasetMapper
         if num_bands == 3:
-            # Use the standard RGB DatasetMapper
             return self.rgb_mapper(dataset_dict)
         else:
-            # Use the custom multi-band mapper
+            # Otherwise, handle the image with the custom multi-band mapper
             return self.multi_band_mapper(dataset_dict)
 
     def multi_band_mapper(self, dataset_dict):
         dataset_dict = dataset_dict.copy()  # Make a copy of the dataset dict
-        image = self.load_image(dataset_dict["file_name"])  # Custom method to load image (multi-band)
+        with rasterio.open(dataset_dict["file_name"]) as src:
+            img = src.read()  # Read all bands
+            img = np.transpose(img, (1, 2, 0))  # Convert to HWC format
 
-        if self.augmentations:
-            image, transforms = T.apply_augmentations(self.augmentations, image)
-            dataset_dict["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
-        else:
-            dataset_dict["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
-
-        # Transform annotations
-        annos = [
-            utils.transform_instance_annotations(annotation, transforms, image.shape[:2])
-            for annotation in dataset_dict.pop("annotations")
-        ]
-        dataset_dict["instances"] = utils.annotations_to_instances(annos, image.shape[:2])
+        dataset_dict["image"] = torch.as_tensor(img.transpose(2, 0, 1).astype("float32"))
+        
+        # Ensure ground truth instances (annotations) are included
+        annos = dataset_dict.pop("annotations", [])
+        instances = utils.annotations_to_instances(annos, dataset_dict["image"].shape[1:])
+        dataset_dict["instances"] = utils.filter_empty_instances(instances)
+        
         return dataset_dict
 
-    def load_image(self, image_path):
-        """Load multi-band image."""
-        with rasterio.open(image_path) as src:
-            image = src.read()  # This will read all bands (multi-band support)
-            image = image.transpose(1, 2, 0)  # Convert to HWC format
-            image = image.astype(np.float32)  # Convert to float32 for consistency
-        return image
 
 class LossEvalHook(HookBase):
     """Do inference and get the loss metric.
@@ -202,6 +193,9 @@ class LossEvalHook(HookBase):
         self.trainer.storage.put_scalars(timetest=12)
 
     def after_train(self):
+        if not self.trainer.APs:
+            print("No APs were recorded during training. Skipping model selection.")
+            return
         # Select the model with the best AP50
         index = self.trainer.APs.index(max(self.trainer.APs)) + 1
         # Error in demo:
@@ -225,8 +219,9 @@ class MyTrainer(DefaultTrainer):
 
     def __init__(self, cfg, patience):  # noqa: D107
         self.patience = patience
-        # self.resize = resize
         super().__init__(cfg)
+        #self.data_loader = build_train_loader(cfg) # Use custom data loader
+
 
     def train(self):
         """Run training.
@@ -291,68 +286,71 @@ class MyTrainer(DefaultTrainer):
                 build_detection_test_loader(
                     self.cfg,
                     self.cfg.DATASETS.TEST,
-                    DatasetMapper(self.cfg, True) # Need to edit this for custom dataset
+                    FlexibleDatasetMapper(self.cfg, True) # Need to edit this for custom dataset
                 ),
                 self.patience,
             ),
         )
         return hooks
 
+    @classmethod
+    def build_train_loader(cls, cfg):
+        """Build the train loader with flexibility for RGB and multi-band images.
 
-def build_train_loader(cls, cfg):
-    """Build the train loader with flexibility for RGB and multi-band images.
+        Args:
+            cfg (_type_): _description_
 
-    Args:
-        cfg (_type_): _description_
+        Returns:
+            _type_: _description_
+        """
+        augmentations = [
+            T.RandomRotation(angle=[90, 90], expand=False),
+            T.RandomLighting(0.7),
+            T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
+            T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
+        ]
 
-    Returns:
-        _type_: _description_
-    """
-    augmentations = [
-        T.RandomBrightness(0.8, 1.8),
-        T.RandomContrast(0.6, 1.3),
-        T.RandomSaturation(0.8, 1.4),
-        T.RandomRotation(angle=[90, 90], expand=False),
-        T.RandomLighting(0.7),
-        T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
-        T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
-    ]
+        # Some augmentations are only applicable to 3-band images
+        if cfg.IMGMODE == "rgb":
+            augmentations.append(T.RandomBrightness(0.8, 1.8),
+                                 T.RandomContrast(0.6, 1.3),
+                                 T.RandomSaturation(0.8, 1.4))
 
-    if cfg.RESIZE:
-        augmentations.append(T.Resize((1000, 1000)))
-    elif cfg.RESIZE == "random":
-        size = None
-        for i, datas in enumerate(DatasetCatalog.get(cfg.DATASETS.TRAIN[0])):
-            location = datas['file_name']
-            try:
-                # Try to read with cv2 (for RGB images)
-                img = cv2.imread(location)
-                if img is not None:
-                    size = img.shape[0]
-                else:
-                    # Fall back to rasterio for multi-band images
-                    with rasterio.open(location) as src:
-                        size = src.height  # Assuming square images
-            except Exception as e:
-                # Handle any errors that occur during loading
-                print(f"Error loading image {location}: {e}")
-                continue
-            break
-        
-        if size:
-            print("ADD RANDOM RESIZE WITH SIZE = ", size)
-            augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
-        else:
-            raise ValueError("Failed to determine image size for random resize")
+        if cfg.RESIZE:
+            augmentations.append(T.Resize((1000, 1000)))
+        elif cfg.RESIZE == "random":
+            size = None
+            for i, datas in enumerate(DatasetCatalog.get(cfg.DATASETS.TRAIN[0])):
+                location = datas['file_name']
+                try:
+                    # Try to read with cv2 (for RGB images)
+                    img = cv2.imread(location)
+                    if img is not None:
+                        size = img.shape[0]
+                    else:
+                        # Fall back to rasterio for multi-band images
+                        with rasterio.open(location) as src:
+                            size = src.height  # Assuming square images
+                except Exception as e:
+                    # Handle any errors that occur during loading
+                    print(f"Error loading image {location}: {e}")
+                    continue
+                break
+            
+            if size:
+                print("ADD RANDOM RESIZE WITH SIZE = ", size)
+                augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
+            else:
+                raise ValueError("Failed to determine image size for random resize")
 
-    return build_detection_train_loader(
-        cfg,
-        mapper=FlexibleDatasetMapper(
+        return build_detection_train_loader(
             cfg,
-            is_train=True,
-            augmentations=augmentations,
-        ),
-    )
+            mapper=FlexibleDatasetMapper(
+                cfg,
+                is_train=True,
+                augmentations=augmentations,
+            ),
+        )
 
 def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = None) -> List[Dict]:
     """Get the tree dictionaries.
@@ -366,23 +364,13 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
         List of dictionaries corresponding to segmentations of trees. Each dictionary includes
         bounding box around tree and points tracing a polygon around a tree.
     """
-    # filepath = '/content/drive/MyDrive/forestseg/paracou_data/Panayiotis_Outputs/220303_AllSpLabelled.gpkg'
-    # datagpd = gpd.read_file(filepath)
-    # List_Genus = datagpd.Genus_Species.to_list()
-    # Genus_Species_UniqueList = list(set(List_Genus))
-
-    #
     if classes is not None:
         # list_of_classes = crowns[variable].unique().tolist()
         classes = classes
     else:
         classes = ["tree"]
-    # classes = Genus_Species_UniqueList #['tree'] # genus_species list
+
     dataset_dicts = []
-    # for root, dirs, files in os.walk(train_location):
-    #    for file in files:
-    #        if file.endswith(".geojson"):
-    #            print(os.path.join(root, file))
 
     for filename in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
         json_file = os.path.join(directory, filename)
@@ -395,10 +383,9 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
         filename = img_anns["imagePath"]
 
         # Make sure we have the correct height and width
-        # If image path ends in .png use cv2 to get height and width
+        # If image path ends in .png use cv2 to get height and width else if image path ends in .tif use rasterio
         if filename.endswith(".png"):
-            height, width = cv2.imread(filename).shape[:2] # Need to change this to rasterio
-        # else if image path ends in .tif use rasterio to get height and width
+            height, width = cv2.imread(filename).shape[:2]
         elif filename.endswith(".tif"):
             with rasterio.open(filename) as src:
                 height, width = src.shape
@@ -587,6 +574,7 @@ def setup_cfg(
     eval_period=100,
     out_dir="./train_outputs",
     resize=True,
+    imgmode="rgb",
 ):
     """Set up config object # noqa: D417.
 
@@ -636,6 +624,7 @@ def setup_cfg(
     cfg.TEST.EVAL_PERIOD = eval_period
     cfg.RESIZE = resize
     cfg.INPUT.MIN_SIZE_TRAIN = 1000
+    cfg.IMGMODE = imgmode
     return cfg
 
 
