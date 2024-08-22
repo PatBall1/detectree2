@@ -43,42 +43,151 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 # from IPython.display import display
 # from PIL import Image
 
-class FlexibleDatasetMapper:
+#class FlexibleDatasetMapper:
+#    def __init__(self, cfg, is_train=True, augmentations=None):
+#        self.cfg = cfg
+#        self.is_train = is_train
+#        # Ensure augmentations is always a list
+#        if augmentations is None:
+#            augmentations = []
+#        self.augmentations = augmentations
+#        self.rgb_mapper = DatasetMapper(cfg, is_train=is_train, augmentations=augmentations)
+#
+#    def __call__(self, dataset_dict):
+#        # First, try to open the image using rasterio to determine the number of bands
+#        try:
+#            with rasterio.open(dataset_dict["file_name"]) as src:
+#                num_bands = src.count
+#        except rasterio.errors.RasterioIOError as e:
+#            raise ValueError(f"Error opening image file: {dataset_dict['file_name']}") from e
+#
+#        # If the image has 3 bands, use the standard RGB DatasetMapper
+#        if num_bands == 3:
+#            print("Using RGB mapper")
+#            return self.rgb_mapper(dataset_dict)
+#        else:
+#            # Otherwise, handle the image with the custom multi-band mapper
+#            print("Using multi-band mapper")
+#            return self.multi_band_mapper(dataset_dict)
+#
+#    def multi_band_mapper(self, dataset_dict):
+#        dataset_dict = dataset_dict.copy()  # Make a copy of the dataset dict
+#        
+#        # Load the image using rasterio
+#        with rasterio.open(dataset_dict["file_name"]) as src:
+#            img = src.read()  # Read all bands
+#            img = np.transpose(img, (1, 2, 0))  # Convert to HWC format (Height, Width, Channels)
+#            
+#            # Convert the image to float32
+#            img = img.astype("float32")
+#            
+#            # Normalize the image if necessary (optional step)
+#            # Example: normalize to [0, 1] if the original image has high dynamic range values
+#            img /= 65535.0  # Assuming the original range is [0, 65535] for 16-bit images
+#        
+#        # Apply augmentations if provided
+#        if self.augmentations:
+#            aug_input = T.AugInput(img)
+#            all_transforms = []
+#
+#            # Apply each augmentation in the list
+#            for aug in self.augmentations:
+#                transform = aug(aug_input)
+#                all_transforms.append(transform)
+#            img = aug_input.image
+#
+#            # Combine all the transformations into a TransformList
+#            transforms = T.TransformList(all_transforms)
+#
+#            # If there are annotations, apply the same transforms to them
+#            if "annotations" in dataset_dict:
+#                annos = dataset_dict.pop("annotations")
+#                for anno in annos:
+#                    bbox = anno["bbox"]
+#                    anno["bbox"] = transforms.apply_box(bbox)
+#                    # Ensure the bounding box has the correct shape [N, 4]
+#                    bbox = transforms.apply_box(np.array(bbox).reshape(1, 4)).squeeze(0)  # Ensure shape [4]
+#                    anno["bbox"] = bbox.tolist()  # Convert back to list
+#
+#                    # Transform segmentation masks
+#                    if "segmentation" in anno:
+#                        segm = anno["segmentation"]
+#                        if isinstance(segm, list):  # Polygon format
+#                            transformed_segm = []
+#                            for poly in segm:
+#                                poly = np.array(poly).reshape(-1, 2)  # Ensure shape (N, 2)
+#                                transformed_poly = transforms.apply_polygons([poly])[0]  # Apply and get the first element
+#                                transformed_segm.append(transformed_poly.tolist())
+#                            anno["segmentation"] = transformed_segm
+#                        else:
+#                            raise ValueError("Unexpected segmentation format.")
+#
+#                instances = utils.annotations_to_instances(annos, img.shape[:2])
+#                dataset_dict["instances"] = utils.filter_empty_instances(instances)
+#
+#        dataset_dict["image"] = torch.as_tensor(img.transpose(2, 0, 1).astype("float32"))
+#
+#        return dataset_dict
+
+class FlexibleDatasetMapper(DatasetMapper):
     def __init__(self, cfg, is_train=True, augmentations=None):
+        if augmentations is None:
+            augmentations = []
+
+        # Wrap the augmentations list in AugmentationList inside the call to the superclass
+        super().__init__(
+            is_train=is_train,
+            augmentations=augmentations,
+            image_format=cfg.INPUT.FORMAT,
+            use_instance_mask=cfg.MODEL.MASK_ON,
+            use_keypoint=cfg.MODEL.KEYPOINT_ON,
+            instance_mask_format=cfg.INPUT.MASK_FORMAT,
+            keypoint_hflip_indices=None,
+            precomputed_proposal_topk=None,
+            recompute_boxes=False
+        )
         self.cfg = cfg
         self.is_train = is_train
-        self.rgb_mapper = DatasetMapper(cfg, is_train=is_train)
 
     def __call__(self, dataset_dict):
-        # First, try to open the image using rasterio to determine the number of bands
+        if dataset_dict is None:
+            print("Received None for dataset_dict, skipping this entry.")
+            return None
+
         try:
+            # If idx is passed with dataset_dict, capture it
+            #idx = dataset_dict.get("index", "unknown")
+            #print(f"Processing entry at index {idx}: {dataset_dict}")
+            # Handle multi-band image loading
             with rasterio.open(dataset_dict["file_name"]) as src:
-                num_bands = src.count
-        except rasterio.errors.RasterioIOError as e:
-            raise ValueError(f"Error opening image file: {dataset_dict['file_name']}") from e
+                img = src.read()
+                img = np.transpose(img, (1, 2, 0)).astype("float32")
 
-        # If the image has 3 bands, use the standard RGB DatasetMapper
-        if num_bands == 3:
-            return self.rgb_mapper(dataset_dict)
-        else:
-            # Otherwise, handle the image with the custom multi-band mapper
-            return self.multi_band_mapper(dataset_dict)
+            # If it's a 3-band image, use the inherited behavior
+            if img.shape[-1] == 3:
+                return super().__call__(dataset_dict)
 
-    def multi_band_mapper(self, dataset_dict):
-        dataset_dict = dataset_dict.copy()  # Make a copy of the dataset dict
-        with rasterio.open(dataset_dict["file_name"]) as src:
-            img = src.read()  # Read all bands
-            img = np.transpose(img, (1, 2, 0))  # Convert to HWC format
+            # Otherwise, handle custom multi-band logic
+            aug_input = T.AugInput(img)
+            transforms = self.augmentations(aug_input)  # Apply the augmentations
+            img = aug_input.image
 
-        dataset_dict["image"] = torch.as_tensor(img.transpose(2, 0, 1).astype("float32"))
+            dataset_dict["image"] = torch.as_tensor(img.transpose(2, 0, 1).astype("float32"))
+
+            if "annotations" in dataset_dict:
+                # Apply transforms to the annotations in the original dataset_dict
+                dataset_dict = super()._transform_annotations(dataset_dict, transforms, img.shape[:2])
+
+            return dataset_dict
         
-        # Ensure ground truth instances (annotations) are included
-        annos = dataset_dict.pop("annotations", [])
-        instances = utils.annotations_to_instances(annos, dataset_dict["image"].shape[1:])
-        dataset_dict["instances"] = utils.filter_empty_instances(instances)
-        
-        return dataset_dict
-
+        except Exception as e:
+            # Handle and log the error
+            if dataset_dict is not None:
+                file_name = dataset_dict.get('file_name', 'unknown')
+                print(f"Error processing {file_name}: {e}")
+            else:
+                print(f"Error processing an entry: {e}")
+            return None
 
 class LossEvalHook(HookBase):
     """Do inference and get the loss metric.
@@ -222,7 +331,6 @@ class MyTrainer(DefaultTrainer):
         super().__init__(cfg)
         #self.data_loader = build_train_loader(cfg) # Use custom data loader
 
-
     def train(self):
         """Run training.
 
@@ -305,7 +413,6 @@ class MyTrainer(DefaultTrainer):
         """
         augmentations = [
             T.RandomRotation(angle=[90, 90], expand=False),
-            T.RandomLighting(0.7),
             T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
             T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
         ]
@@ -313,6 +420,7 @@ class MyTrainer(DefaultTrainer):
         # Some augmentations are only applicable to 3-band images
         if cfg.IMGMODE == "rgb":
             augmentations.append(T.RandomBrightness(0.8, 1.8),
+                                 T.RandomLighting(0.7),
                                  T.RandomContrast(0.6, 1.3),
                                  T.RandomSaturation(0.8, 1.4))
 
@@ -351,6 +459,10 @@ class MyTrainer(DefaultTrainer):
                 augmentations=augmentations,
             ),
         )
+    
+    @classmethod
+    def build_test_loader(cls, cfg, dataset_name):
+        return build_detection_test_loader(cfg, dataset_name, mapper=FlexibleDatasetMapper(cfg, is_train=False))
 
 def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = None) -> List[Dict]:
     """Get the tree dictionaries.
@@ -413,8 +525,7 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
                     "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
                     "bbox_mode": BoxMode.XYXY_ABS,
                     "segmentation": [poly],
-                    "category_id": classes.index(features["properties"][classes_at]),  # id
-                    # "category_id": 0,  #id
+                    "category_id": classes.index(features["properties"][classes_at]),
                     "iscrowd": 0,
                 }
             else:

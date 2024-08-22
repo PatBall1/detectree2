@@ -240,23 +240,6 @@ def process_tile_ms(
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
 
-            # Images withmore than 4 bands are not supported by cv2
-            # Save all bands as an image if needed (not just the first 3 bands)
-            #band_images = []
-            #for band_index in range(out_img.shape[0]):
-            #    band_image = out_img[band_index, :, :]
-            #    if np.max(band_image) > 255:
-            #        band_image = 255 * band_image / np.max(band_image)
-            #    band_images.append(band_image.astype(np.uint8))
-
-            # Stack the bands into a single image array
-            # Does the band order need to be reversed as in the RGB case?
-            #full_image = np.stack(band_images, axis=-1)
-
-            # Save the full image with potentially more than 3 bands
-            #full_image_path = out_path_root.with_suffix(".png")
-            #cv2.imwrite(str(full_image_path.resolve()), full_image)
-
             if overlapping_crowns is not None:
                 return data, out_path_root, overlapping_crowns, minx, miny, buffer
             
