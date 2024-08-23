@@ -134,7 +134,7 @@ class FlexibleDatasetMapper(DatasetMapper):
         if augmentations is None:
             augmentations = []
 
-        # Wrap the augmentations list in AugmentationList inside the call to the superclass
+        # Pass the raw list of augmentations (do not wrap it in T.AugmentationList here)
         super().__init__(
             is_train=is_train,
             augmentations=augmentations,
@@ -148,20 +148,28 @@ class FlexibleDatasetMapper(DatasetMapper):
         )
         self.cfg = cfg
         self.is_train = is_train
+        self.logger = logging.getLogger(__name__)
+        mode = "training" if is_train else "inference"
+        self.logger.info(f"[FlexibleDatasetMapper] Augmentations used in {mode}: {augmentations}")
 
     def __call__(self, dataset_dict):
         if dataset_dict is None:
-            print("Received None for dataset_dict, skipping this entry.")
+            self.logger.warning("Received None for dataset_dict, skipping this entry.")
             return None
 
         try:
-            # If idx is passed with dataset_dict, capture it
-            #idx = dataset_dict.get("index", "unknown")
-            #print(f"Processing entry at index {idx}: {dataset_dict}")
             # Handle multi-band image loading
             with rasterio.open(dataset_dict["file_name"]) as src:
                 img = src.read()
+                if img is None:
+                    raise ValueError(f"Image data is None for file: {dataset_dict['file_name']}")
                 img = np.transpose(img, (1, 2, 0)).astype("float32")
+
+            # Size check similar to utils.check_image_size
+            if img.shape[:2] != (dataset_dict.get("height"), dataset_dict.get("width")):
+                self.logger.warning(
+                    f"Image size {img.shape[:2]} does not match expected size {(dataset_dict.get('height'), dataset_dict.get('width'))}."
+                )
 
             # If it's a 3-band image, use the inherited behavior
             if img.shape[-1] == 3:
@@ -172,21 +180,22 @@ class FlexibleDatasetMapper(DatasetMapper):
             transforms = self.augmentations(aug_input)  # Apply the augmentations
             img = aug_input.image
 
-            dataset_dict["image"] = torch.as_tensor(img.transpose(2, 0, 1).astype("float32"))
+            dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(img.transpose(2, 0, 1)))
+
+            # Handle semantic segmentation if present
+            if "sem_seg_file_name" in dataset_dict:
+                sem_seg_gt = utils.read_image(dataset_dict.pop("sem_seg_file_name"), "L").squeeze(2)
+                dataset_dict["sem_seg"] = torch.as_tensor(sem_seg_gt.astype("long"))
 
             if "annotations" in dataset_dict:
                 # Apply transforms to the annotations in the original dataset_dict
-                dataset_dict = super()._transform_annotations(dataset_dict, transforms, img.shape[:2])
+                self._transform_annotations(dataset_dict, transforms, img.shape[:2])
 
             return dataset_dict
-        
+
         except Exception as e:
-            # Handle and log the error
-            if dataset_dict is not None:
-                file_name = dataset_dict.get('file_name', 'unknown')
-                print(f"Error processing {file_name}: {e}")
-            else:
-                print(f"Error processing an entry: {e}")
+            file_name = dataset_dict.get('file_name', 'unknown') if dataset_dict else 'unknown'
+            self.logger.error(f"Error processing {file_name}: {e}")
             return None
 
 class LossEvalHook(HookBase):
@@ -419,12 +428,12 @@ class MyTrainer(DefaultTrainer):
 
         # Some augmentations are only applicable to 3-band images
         if cfg.IMGMODE == "rgb":
-            augmentations.append(T.RandomBrightness(0.8, 1.8),
+            augmentations.extend(T.RandomBrightness(0.8, 1.8),
                                  T.RandomLighting(0.7),
                                  T.RandomContrast(0.6, 1.3),
                                  T.RandomSaturation(0.8, 1.4))
 
-        if cfg.RESIZE:
+        if cfg.RESIZE == "fixed":
             augmentations.append(T.Resize((1000, 1000)))
         elif cfg.RESIZE == "random":
             size = None
@@ -684,7 +693,7 @@ def setup_cfg(
     num_classes=1,
     eval_period=100,
     out_dir="./train_outputs",
-    resize=True,
+    resize="fixed", # fixed or random
     imgmode="rgb",
 ):
     """Set up config object # noqa: D417.
