@@ -183,16 +183,22 @@ class FlexibleDatasetMapper(DatasetMapper):
             dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(img.transpose(2, 0, 1)))
 
             # Handle semantic segmentation if present
-            # THIS CAN BE HANDLED BY INHERITING FROM DatasetMapper?
-            #if "sem_seg_file_name" in dataset_dict:
-            #    sem_seg_gt = utils.read_image(dataset_dict.pop("sem_seg_file_name"), "L").squeeze(2)
-            #    dataset_dict["sem_seg"] = torch.as_tensor(sem_seg_gt.astype("long"))
+            # Can this be handled by inheriting from DatasetMapper?
+            if "sem_seg_file_name" in dataset_dict:
+                sem_seg_gt = utils.read_image(dataset_dict.pop("sem_seg_file_name"), "L").squeeze(2)
+                dataset_dict["sem_seg"] = torch.as_tensor(sem_seg_gt.astype("long"))
 
-            #if "annotations" in dataset_dict:
-            #    # Apply transforms to the annotations in the original dataset_dict
-            #    self._transform_annotations(dataset_dict, transforms, img.shape[:2])
+            if not self.is_train:
+                # USER: Modify this if you want to keep them for some reason.
+                dataset_dict.pop("annotations", None)
+                dataset_dict.pop("sem_seg_file_name", None)
+                return dataset_dict
 
-            return super().__call__(dataset_dict)
+            if "annotations" in dataset_dict:
+                # Apply transforms to the annotations in the original dataset_dict
+                self._transform_annotations(dataset_dict, transforms, img.shape[:2])
+
+            return dataset_dict
 
         except Exception as e:
             file_name = dataset_dict.get('file_name', 'unknown') if dataset_dict else 'unknown'
