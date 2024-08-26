@@ -183,15 +183,16 @@ class FlexibleDatasetMapper(DatasetMapper):
             dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(img.transpose(2, 0, 1)))
 
             # Handle semantic segmentation if present
-            if "sem_seg_file_name" in dataset_dict:
-                sem_seg_gt = utils.read_image(dataset_dict.pop("sem_seg_file_name"), "L").squeeze(2)
-                dataset_dict["sem_seg"] = torch.as_tensor(sem_seg_gt.astype("long"))
+            # THIS CAN BE HANDLED BY INHERITING FROM DatasetMapper?
+            #if "sem_seg_file_name" in dataset_dict:
+            #    sem_seg_gt = utils.read_image(dataset_dict.pop("sem_seg_file_name"), "L").squeeze(2)
+            #    dataset_dict["sem_seg"] = torch.as_tensor(sem_seg_gt.astype("long"))
 
-            if "annotations" in dataset_dict:
-                # Apply transforms to the annotations in the original dataset_dict
-                self._transform_annotations(dataset_dict, transforms, img.shape[:2])
+            #if "annotations" in dataset_dict:
+            #    # Apply transforms to the annotations in the original dataset_dict
+            #    self._transform_annotations(dataset_dict, transforms, img.shape[:2])
 
-            return dataset_dict
+            return super().__call__(dataset_dict)
 
         except Exception as e:
             file_name = dataset_dict.get('file_name', 'unknown') if dataset_dict else 'unknown'
@@ -428,10 +429,12 @@ class MyTrainer(DefaultTrainer):
 
         # Some augmentations are only applicable to 3-band images
         if cfg.IMGMODE == "rgb":
-            augmentations.extend(T.RandomBrightness(0.8, 1.8),
-                                 T.RandomLighting(0.7),
-                                 T.RandomContrast(0.6, 1.3),
-                                 T.RandomSaturation(0.8, 1.4))
+            augmentations.extend([
+                T.RandomBrightness(0.8, 1.8),
+                T.RandomLighting(0.7),
+                T.RandomContrast(0.6, 1.3),
+                T.RandomSaturation(0.8, 1.4)
+            ])
 
         if cfg.RESIZE == "fixed":
             augmentations.append(T.Resize((1000, 1000)))
