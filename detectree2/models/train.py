@@ -399,9 +399,9 @@ class MyTrainer(DefaultTrainer):
 
     def build_hooks(self):
         hooks = super().build_hooks()
-        if cfg.RESIZE == "random":
+        if self.cfg.RESIZE == "random":
             size = None
-            for i, datas in enumerate(DatasetCatalog.get(cfg.DATASETS.TRAIN[0])):
+            for i, datas in enumerate(DatasetCatalog.get(self.cfg.DATASETS.TRAIN[0])):
                 location = datas['file_name']
                 try:
                     # Try to read with cv2 (for RGB images)
