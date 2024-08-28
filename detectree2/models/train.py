@@ -399,9 +399,27 @@ class MyTrainer(DefaultTrainer):
 
     def build_hooks(self):
         hooks = super().build_hooks()
-        # augmentations = [T.ResizeShortestEdge(short_edge_length=(1000, 1000),
-        #                                     max_size=1333,
-        #                                     sample_style='choice')]
+        if cfg.RESIZE == "random":
+            size = None
+            for i, datas in enumerate(DatasetCatalog.get(cfg.DATASETS.TRAIN[0])):
+                location = datas['file_name']
+                try:
+                    # Try to read with cv2 (for RGB images)
+                    img = cv2.imread(location)
+                    if img is not None:
+                        size = img.shape[0]
+                    else:
+                        # Fall back to rasterio for multi-band images
+                        with rasterio.open(location) as src:
+                            size = src.height  # Assuming square images
+                except Exception as e:
+                    # Handle any errors that occur during loading
+                    print(f"Error loading image {location}: {e}")
+                    continue
+                break
+            augmentations = [T.ResizeShortestEdge([size, size], size+300)]
+        else:
+            augmentations = [T.ResizeShortestEdge([1000, 1000], 1333)]
         hooks.insert(
             -1,
             LossEvalHook(
@@ -410,7 +428,7 @@ class MyTrainer(DefaultTrainer):
                 build_detection_test_loader(
                     self.cfg,
                     self.cfg.DATASETS.TEST,
-                    FlexibleDatasetMapper(self.cfg, True) # Need to edit this for custom dataset
+                    FlexibleDatasetMapper(self.cfg, True, augmentations=augmentations)
                 ),
                 self.patience,
             ),
@@ -436,14 +454,14 @@ class MyTrainer(DefaultTrainer):
         # Some augmentations are only applicable to 3-band images
         if cfg.IMGMODE == "rgb":
             augmentations.extend([
-                T.RandomBrightness(0.8, 1.8),
+                T.RandomBrightness(0.7, 1.5),
                 T.RandomLighting(0.7),
                 T.RandomContrast(0.6, 1.3),
                 T.RandomSaturation(0.8, 1.4)
             ])
 
         if cfg.RESIZE == "fixed":
-            augmentations.append(T.Resize((1000, 1000)))
+            augmentations.append(T.ResizeShortestEdge([1000, 1000], 1333))
         elif cfg.RESIZE == "random":
             size = None
             for i, datas in enumerate(DatasetCatalog.get(cfg.DATASETS.TRAIN[0])):
@@ -465,9 +483,14 @@ class MyTrainer(DefaultTrainer):
             
             if size:
                 print("ADD RANDOM RESIZE WITH SIZE = ", size)
+                #min_size = int(size * 0.6)
+                #max_size = int(size * 1.4)
+                #augmentations.append(T.RandomResize(min_size=(min_size, min_size), max_size=max_size))
                 augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
             else:
                 raise ValueError("Failed to determine image size for random resize")
+        elif cfg.RESIZE == "rand_fixed":
+            augmentations.append(T.ResizeScale(0.6, 1.4, 1000, 1000))
 
         return build_detection_train_loader(
             cfg,
