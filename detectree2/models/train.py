@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import random
+import re
 import time
 from pathlib import Path
 from typing import Any, Dict, List
@@ -19,6 +20,7 @@ import detectron2.utils.comm as comm
 import numpy as np
 import rasterio
 import torch
+import torch.nn as nn
 from detectron2 import model_zoo
 from detectron2.checkpoint import DetectionCheckpointer  # noqa:F401
 from detectron2.config import get_cfg
@@ -40,101 +42,31 @@ from detectron2.utils.events import EventStorage
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
 
-# from IPython.display import display
-# from PIL import Image
-
-#class FlexibleDatasetMapper:
-#    def __init__(self, cfg, is_train=True, augmentations=None):
-#        self.cfg = cfg
-#        self.is_train = is_train
-#        # Ensure augmentations is always a list
-#        if augmentations is None:
-#            augmentations = []
-#        self.augmentations = augmentations
-#        self.rgb_mapper = DatasetMapper(cfg, is_train=is_train, augmentations=augmentations)
-#
-#    def __call__(self, dataset_dict):
-#        # First, try to open the image using rasterio to determine the number of bands
-#        try:
-#            with rasterio.open(dataset_dict["file_name"]) as src:
-#                num_bands = src.count
-#        except rasterio.errors.RasterioIOError as e:
-#            raise ValueError(f"Error opening image file: {dataset_dict['file_name']}") from e
-#
-#        # If the image has 3 bands, use the standard RGB DatasetMapper
-#        if num_bands == 3:
-#            print("Using RGB mapper")
-#            return self.rgb_mapper(dataset_dict)
-#        else:
-#            # Otherwise, handle the image with the custom multi-band mapper
-#            print("Using multi-band mapper")
-#            return self.multi_band_mapper(dataset_dict)
-#
-#    def multi_band_mapper(self, dataset_dict):
-#        dataset_dict = dataset_dict.copy()  # Make a copy of the dataset dict
-#        
-#        # Load the image using rasterio
-#        with rasterio.open(dataset_dict["file_name"]) as src:
-#            img = src.read()  # Read all bands
-#            img = np.transpose(img, (1, 2, 0))  # Convert to HWC format (Height, Width, Channels)
-#            
-#            # Convert the image to float32
-#            img = img.astype("float32")
-#            
-#            # Normalize the image if necessary (optional step)
-#            # Example: normalize to [0, 1] if the original image has high dynamic range values
-#            img /= 65535.0  # Assuming the original range is [0, 65535] for 16-bit images
-#        
-#        # Apply augmentations if provided
-#        if self.augmentations:
-#            aug_input = T.AugInput(img)
-#            all_transforms = []
-#
-#            # Apply each augmentation in the list
-#            for aug in self.augmentations:
-#                transform = aug(aug_input)
-#                all_transforms.append(transform)
-#            img = aug_input.image
-#
-#            # Combine all the transformations into a TransformList
-#            transforms = T.TransformList(all_transforms)
-#
-#            # If there are annotations, apply the same transforms to them
-#            if "annotations" in dataset_dict:
-#                annos = dataset_dict.pop("annotations")
-#                for anno in annos:
-#                    bbox = anno["bbox"]
-#                    anno["bbox"] = transforms.apply_box(bbox)
-#                    # Ensure the bounding box has the correct shape [N, 4]
-#                    bbox = transforms.apply_box(np.array(bbox).reshape(1, 4)).squeeze(0)  # Ensure shape [4]
-#                    anno["bbox"] = bbox.tolist()  # Convert back to list
-#
-#                    # Transform segmentation masks
-#                    if "segmentation" in anno:
-#                        segm = anno["segmentation"]
-#                        if isinstance(segm, list):  # Polygon format
-#                            transformed_segm = []
-#                            for poly in segm:
-#                                poly = np.array(poly).reshape(-1, 2)  # Ensure shape (N, 2)
-#                                transformed_poly = transforms.apply_polygons([poly])[0]  # Apply and get the first element
-#                                transformed_segm.append(transformed_poly.tolist())
-#                            anno["segmentation"] = transformed_segm
-#                        else:
-#                            raise ValueError("Unexpected segmentation format.")
-#
-#                instances = utils.annotations_to_instances(annos, img.shape[:2])
-#                dataset_dict["instances"] = utils.filter_empty_instances(instances)
-#
-#        dataset_dict["image"] = torch.as_tensor(img.transpose(2, 0, 1).astype("float32"))
-#
-#        return dataset_dict
 
 class FlexibleDatasetMapper(DatasetMapper):
+    """
+    A flexible dataset mapper that extends the standard DatasetMapper to handle multi-band images 
+    and custom augmentations.
+
+    This class is designed to work with datasets that may contain images with more than three channels 
+    (e.g., multispectral images) and allows for custom augmentations to be applied. It also handles 
+    semantic segmentation data if provided in the dataset.
+
+    Args:
+        cfg (CfgNode): Configuration object containing dataset and model configurations.
+        is_train (bool): Flag indicating whether the mapper is being used for training. Default is True.
+        augmentations (list, optional): List of augmentations to be applied. Default is an empty list.
+
+    Attributes:
+        cfg (CfgNode): Stores the configuration object for later use.
+        is_train (bool): Indicates whether the mapper is in training mode.
+        logger (Logger): Logger instance for logging messages.
+    """
     def __init__(self, cfg, is_train=True, augmentations=None):
         if augmentations is None:
             augmentations = []
 
-        # Pass the raw list of augmentations (do not wrap it in T.AugmentationList here)
+        # Initialize the base DatasetMapper class with provided parameters
         super().__init__(
             is_train=is_train,
             augmentations=augmentations,
@@ -153,16 +85,27 @@ class FlexibleDatasetMapper(DatasetMapper):
         self.logger.info(f"[FlexibleDatasetMapper] Augmentations used in {mode}: {augmentations}")
 
     def __call__(self, dataset_dict):
+        """
+        Process a single dataset dictionary, applying the necessary transformations and augmentations.
+
+        Args:
+            dataset_dict (dict): A dictionary containing data for a single dataset item, including 
+                                 file names and metadata.
+
+        Returns:
+            dict: The processed dataset dictionary, or None if there was an error.
+        """
         if dataset_dict is None:
             self.logger.warning("Received None for dataset_dict, skipping this entry.")
             return None
 
         try:
-            # Handle multi-band image loading
+            # Handle multi-band image loading using rasterio
             with rasterio.open(dataset_dict["file_name"]) as src:
                 img = src.read()
                 if img is None:
                     raise ValueError(f"Image data is None for file: {dataset_dict['file_name']}")
+                # Transpose image dimensions to match expected format (H, W, C)
                 img = np.transpose(img, (1, 2, 0)).astype("float32")
 
             # Size check similar to utils.check_image_size
@@ -171,7 +114,7 @@ class FlexibleDatasetMapper(DatasetMapper):
                     f"Image size {img.shape[:2]} does not match expected size {(dataset_dict.get('height'), dataset_dict.get('width'))}."
                 )
 
-            # If it's a 3-band image, use the inherited behavior
+            # If it's a 3-band image, delegate processing to the parent class
             if img.shape[-1] == 3:
                 return super().__call__(dataset_dict)
 
@@ -183,19 +126,18 @@ class FlexibleDatasetMapper(DatasetMapper):
             dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(img.transpose(2, 0, 1)))
 
             # Handle semantic segmentation if present
-            # Can this be handled by inheriting from DatasetMapper?
             if "sem_seg_file_name" in dataset_dict:
                 sem_seg_gt = utils.read_image(dataset_dict.pop("sem_seg_file_name"), "L").squeeze(2)
                 dataset_dict["sem_seg"] = torch.as_tensor(sem_seg_gt.astype("long"))
 
             if not self.is_train:
-                # USER: Modify this if you want to keep them for some reason.
+                # If not in training mode, remove annotations and segmentation file names
                 dataset_dict.pop("annotations", None)
                 dataset_dict.pop("sem_seg_file_name", None)
                 return dataset_dict
 
             if "annotations" in dataset_dict:
-                # Apply transforms to the annotations in the original dataset_dict
+                # Apply the transformations to the annotations
                 self._transform_annotations(dataset_dict, transforms, img.shape[:2])
 
             return dataset_dict
@@ -206,24 +148,34 @@ class FlexibleDatasetMapper(DatasetMapper):
             return None
 
 class LossEvalHook(HookBase):
-    """Do inference and get the loss metric.
+    """
+    A custom hook for evaluating loss during training and managing model checkpoints based on evaluation metrics.
 
-    Class to:
-    - Do inference of dataset like an Evaluator does
-    - Get the loss metric like the trainer does
-    https://github.com/facebookresearch/detectron2/blob/master/detectron2/evaluation/evaluator.py
-    https://github.com/facebookresearch/detectron2/blob/master/detectron2/engine/train_loop.py
-    See https://gist.github.com/ortegatron/c0dad15e49c2b74de8bb09a5615d9f6b
+    This hook is designed to:
+    - Perform inference on a dataset similarly to an Evaluator.
+    - Calculate and log the loss metric during training.
+    - Save the best model checkpoint based on a specified evaluation metric (e.g., AP50).
+    - Implement early stopping if the evaluation metric does not improve over a specified number of evaluations.
 
     Attributes:
-        model: model to train
-        period: number of iterations between evaluations
-        data_loader: data loader to use for evaluation
-        patience: number of evaluation periods to wait for improvement
+        _model: The model to evaluate.
+        _period: Number of iterations between evaluations.
+        _data_loader: The data loader used for evaluation.
+        patience: Number of evaluation periods to wait before early stopping.
+        iter: Tracks the number of evaluations since the last improvement in the evaluation metric.
+        max_ap: The best evaluation metric (e.g., AP50) achieved during training.
+        best_iter: The iteration at which the best evaluation metric was achieved.
     """
-
     def __init__(self, eval_period, model, data_loader, patience):
-        """Inits LossEvalHook."""
+        """
+        Initialize the LossEvalHook.
+
+        Args:
+            eval_period (int): The number of iterations between evaluations.
+            model (torch.nn.Module): The model to evaluate.
+            data_loader (torch.utils.data.DataLoader): The data loader for evaluation.
+            patience (int): The number of evaluation periods to wait for improvement before early stopping.
+        """
         self._model = model
         self._period = eval_period
         self._data_loader = data_loader
@@ -233,10 +185,14 @@ class LossEvalHook(HookBase):
         self.best_iter = 0
 
     def _do_loss_eval(self):
-        """Copying inference_on_dataset from evaluator.py.
+        """
+        Perform inference on the dataset and calculate the average loss.
+
+        This method is adapted from `inference_on_dataset` in Detectron2's evaluator.
+        It also calculates and logs the AP50 metric and updates the best model checkpoint if needed.
 
         Returns:
-            _type_: _description_
+            list: A list of loss values for each batch in the dataset.
         """
         total = len(self._data_loader)
         num_warmup = min(5, total - 1)
@@ -246,6 +202,7 @@ class LossEvalHook(HookBase):
         losses = []
         for idx, inputs in enumerate(self._data_loader):
             if idx == num_warmup:
+                # Reset the start time after the warm-up phase
                 start_time = time.perf_counter()
                 total_compute_time = 0
             start_compute_time = time.perf_counter()
@@ -255,6 +212,7 @@ class LossEvalHook(HookBase):
             iters_after_start = idx + 1 - num_warmup * int(idx >= num_warmup)
             seconds_per_img = total_compute_time / iters_after_start
             if idx >= num_warmup * 2 or seconds_per_img > 5:
+                # Log progress and estimated time remaining
                 total_seconds_per_img = (time.perf_counter() - start_time) / iters_after_start
                 eta = datetime.timedelta(seconds=int(total_seconds_per_img * (total - idx - 1)))
                 log_every_n_seconds(
@@ -263,11 +221,13 @@ class LossEvalHook(HookBase):
                                                                                     str(eta)),
                     n=5,
                 )
+            # Calculate loss for the current batch
             loss_batch = self._get_loss(inputs)
             losses.append(loss_batch)
+        
         mean_loss = np.mean(losses)
-        # print(self.trainer.cfg.DATASETS.TEST)
-        # Combine the AP50s of the different datasets
+
+        # Calculate the average AP50 across datasets if multiple datasets are used for testing
         if len(self.trainer.cfg.DATASETS.TEST) > 1:
             APs = []
             for dataset in self.trainer.cfg.DATASETS.TEST:
@@ -275,7 +235,10 @@ class LossEvalHook(HookBase):
             AP = sum(APs) / len(APs)
         else:
             AP = self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]
-        print("Av. AP50 =", AP)
+
+        print("Av. segm AP50 =", AP)
+
+        # Store the calculated loss and AP50 in the trainer's storage
         self.trainer.APs.append(AP)
         self.trainer.storage.put_scalar("validation_loss", mean_loss)
         self.trainer.storage.put_scalar("validation_ap", AP)
@@ -284,15 +247,17 @@ class LossEvalHook(HookBase):
         return losses
 
     def _get_loss(self, data):
-        """Calculate loss in train_loop.
+        """
+        Compute the loss for a given batch of data.
 
         Args:
-            data (_type_): _description_
+            data (dict): A batch of input data.
 
         Returns:
-            _type_: _description_
+            float: The total loss for the batch.
         """
         metrics_dict = self._model(data)
+        # Detach and move to CPU for logging
         metrics_dict = {
             k: v.detach().cpu().item() if isinstance(v, torch.Tensor) else float(v)
             for k, v in metrics_dict.items()
@@ -301,60 +266,74 @@ class LossEvalHook(HookBase):
         return total_losses_reduced
 
     def after_step(self):
+        """
+        Hook to be called after each training iteration to evaluate the model and manage checkpoints.
+
+        - Evaluates the model at regular intervals.
+        - Saves the best model checkpoint based on the AP50 metric.
+        - Implements early stopping if the AP50 does not improve after a set number of evaluations.
+        """
         next_iter = self.trainer.iter + 1
         is_final = next_iter == self.trainer.max_iter
         if is_final or (self._period > 0 and next_iter % self._period == 0):
             self._do_loss_eval()
+            # Check if the current AP50 is the best so far
             if self.max_ap < self.trainer.APs[-1]:
                 self.iter = 0
                 self.max_ap = self.trainer.APs[-1]
+                # Save the current best model
                 self.trainer.checkpointer.save("model_" + str(len(self.trainer.APs)))
                 self.best_iter = self.trainer.iter
             else:
                 self.iter += 1
         if self.iter == self.patience:
+            # Early stopping condition met
             self.trainer.early_stop = True
             print("Early stopping occurs in iter {}, max ap is {}".format(self.best_iter, self.max_ap))
         self.trainer.storage.put_scalars(timetest=12)
 
     def after_train(self):
+        """
+        Hook to be called after training is complete to load the best model checkpoint based on AP50.
+
+        - Selects and loads the model checkpoint with the best AP50.
+        """
         if not self.trainer.APs:
             print("No APs were recorded during training. Skipping model selection.")
             return
         # Select the model with the best AP50
         index = self.trainer.APs.index(max(self.trainer.APs)) + 1
-        # Error in demo:
-        # AssertionError: Checkpoint /__w/detectree2/detectree2/detectree2-data/paracou-out/train_outputs-1/model_1.pth
-        # not found!
-        # Therefore sleep is attempt to allow CI to pass, but it often still fails.
+        # Error handling for checkpoint loading, with a sleep to ensure file availability in CI environments
         time.sleep(15)
         self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' + str(index) + '.pth')
 
 
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
 class MyTrainer(DefaultTrainer):
-    """Summary.
+    """
+    Custom Trainer class that extends the DefaultTrainer.
+
+    This trainer adds flexibility for handling different image types (e.g., RGB and multi-band images) 
+    and custom training behavior, such as early stopping and specialized data augmentation strategies.
 
     Args:
-        DefaultTrainer (_type_): _description_
-
-    Returns:
-        _type_: _description_
+        cfg (CfgNode): Configuration object containing the model and dataset configurations.
+        patience (int): Number of evaluation periods to wait for improvement before early stopping.
     """
 
     def __init__(self, cfg, patience):  # noqa: D107
         self.patience = patience
         super().__init__(cfg)
-        #self.data_loader = build_train_loader(cfg) # Use custom data loader
 
     def train(self):
-        """Run training.
+        """
+        Run the training loop.
 
-        Args:
-            start_iter, max_iter (int): See docs above
+        This method overrides the DefaultTrainer's train method to include early stopping and 
+        custom logging of Average Precision (AP) metrics.
 
         Returns:
-            OrderedDict of results, if evaluation is enabled. Otherwise None.
+            OrderedDict: Results from evaluation, if evaluation is enabled. Otherwise, None.
         """
 
         start_iter = self.start_iter
@@ -385,6 +364,7 @@ class MyTrainer(DefaultTrainer):
                 raise
             finally:
                 self.after_train()
+        # Verify the results if testing is enabled and this is the main process
         if len(self.cfg.TEST.EXPECTED_RESULTS) and comm.is_main_process():
             assert hasattr(self, "_last_eval_results"), "No evaluation results obtained during training!"
             verify_results(self.cfg, self._last_eval_results)
@@ -392,19 +372,42 @@ class MyTrainer(DefaultTrainer):
 
     @classmethod
     def build_evaluator(cls, cfg, dataset_name, output_folder=None):
+        """
+        Build the evaluator for the model.
+
+        Args:
+            cfg (CfgNode): Configuration object.
+            dataset_name (str): Name of the dataset to evaluate.
+            output_folder (str, optional): Directory to save evaluation results. Defaults to "eval".
+
+        Returns:
+            COCOEvaluator: An evaluator for COCO-style datasets.
+        """
         if output_folder is None:
             os.makedirs("eval", exist_ok=True)
             output_folder = "eval"
         return COCOEvaluator(dataset_name, cfg, True, output_folder)
 
     def build_hooks(self):
+        """
+        Build the training hooks, including the custom LossEvalHook.
+
+        This method adds a custom hook for evaluating the model's loss during training, with support for 
+        early stopping based on the AP50 metric.
+
+        Returns:
+            list: A list of hooks to be used during training.
+        """
         hooks = super().build_hooks()
+
+        # Determine the appropriate resize strategy based on the configuration
         if self.cfg.RESIZE == "random":
             size = None
+            # Attempt to determine the image size from the training dataset
             for i, datas in enumerate(DatasetCatalog.get(self.cfg.DATASETS.TRAIN[0])):
                 location = datas['file_name']
                 try:
-                    # Try to read with cv2 (for RGB images)
+                    # Attempt to read the image with OpenCV (for RGB images)
                     img = cv2.imread(location)
                     if img is not None:
                         size = img.shape[0]
@@ -417,9 +420,13 @@ class MyTrainer(DefaultTrainer):
                     print(f"Error loading image {location}: {e}")
                     continue
                 break
+            # Define augmentation based on the determined size
             augmentations = [T.ResizeShortestEdge([size, size], size+300)]
         else:
+            # Use fixed size resizing as a default
             augmentations = [T.ResizeShortestEdge([1000, 1000], 1333)]
+
+        # Insert the custom LossEvalHook before the last hook (typically the evaluation hook)
         hooks.insert(
             -1,
             LossEvalHook(
@@ -437,21 +444,27 @@ class MyTrainer(DefaultTrainer):
 
     @classmethod
     def build_train_loader(cls, cfg):
-        """Build the train loader with flexibility for RGB and multi-band images.
+        """
+        Build the training data loader with support for custom augmentations and image types.
+
+        This method configures the data loader to apply specific augmentations depending on the image mode 
+        (RGB or multi-band) and resize strategy defined in the configuration.
 
         Args:
-            cfg (_type_): _description_
+            cfg (CfgNode): Configuration object.
 
         Returns:
-            _type_: _description_
+            DataLoader: A data loader for the training dataset.
         """
+
+        # Define basic augmentations including rotation and flipping
         augmentations = [
             T.RandomRotation(angle=[90, 90], expand=False),
             T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
             T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
         ]
 
-        # Some augmentations are only applicable to 3-band images
+        # Additional augmentations for RGB images
         if cfg.IMGMODE == "rgb":
             augmentations.extend([
                 T.RandomBrightness(0.7, 1.5),
@@ -460,6 +473,7 @@ class MyTrainer(DefaultTrainer):
                 T.RandomSaturation(0.8, 1.4)
             ])
 
+        # Add resizing augmentations based on the resize strategy
         if cfg.RESIZE == "fixed":
             augmentations.append(T.ResizeShortestEdge([1000, 1000], 1333))
         elif cfg.RESIZE == "random":
@@ -503,6 +517,19 @@ class MyTrainer(DefaultTrainer):
     
     @classmethod
     def build_test_loader(cls, cfg, dataset_name):
+        """
+        Build the test data loader.
+
+        This method configures the data loader for evaluation, using the FlexibleDatasetMapper 
+        to handle custom augmentations and image types.
+
+        Args:
+            cfg (CfgNode): Configuration object.
+            dataset_name (str): Name of the dataset to load for testing.
+
+        Returns:
+            DataLoader: A data loader for the test dataset.
+        """
         return build_detection_test_loader(cfg, dataset_name, mapper=FlexibleDatasetMapper(cfg, is_train=False))
 
 def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = None) -> List[Dict]:
@@ -590,24 +617,42 @@ def combine_dicts(root_dir: str,
                   mode: str = "train",
                   classes: List[str] = None,
                   classes_at: str = None) -> List[Dict]:
-    """Join tree dicts from different directories.
+    """
+    Combine dictionaries from different directories based on the specified mode.
+
+    This function aggregates tree dictionaries from multiple directories within a root directory.
+    Depending on the mode, it either combines dictionaries from all directories, 
+    all except a specified validation directory, or only from the validation directory.
 
     Args:
-        root_dir:
-        val_dir:
+        root_dir (str): The root directory containing subdirectories with tree dictionaries.
+        val_dir (int): The index (1-based) of the validation directory to exclude or use depending on the mode.
+        mode (str, optional): The mode of operation. Can be "train", "val", or "full". 
+                              "train" excludes the validation directory, 
+                              "val" includes only the validation directory, 
+                              and "full" includes all directories. Defaults to "train".
+        classes (List[str], optional): A list of classes to filter the dictionaries by. Defaults to None.
+        classes_at (str, optional): A key to specify where the classes are located within the dictionary structure. Defaults to None.
 
     Returns:
-        Concatenated array of dictionaries over all directories
+        List[Dict]: A list of combined dictionaries from the specified directories.
     """
+    # Get a list of all directories within the root directory
     train_dirs = [os.path.join(root_dir, dir) for dir in os.listdir(root_dir)]
+
+    # Handle the different modes for combining dictionaries
     if mode == "train":
+        # Exclude the validation directory from the list of directories
         del train_dirs[(val_dir - 1)]
         tree_dicts = []
         for d in train_dirs:
+            # Combine dictionaries from all directories except the validation directory
             tree_dicts += get_tree_dicts(d, classes=classes, classes_at=classes_at)
     elif mode == "val":
+        # Use only the validation directory
         tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)], classes=classes, classes_at=classes_at)
     elif mode == "full":
+        # Combine dictionaries from all directories, including the validation directory
         tree_dicts = []
         for d in train_dirs:
             tree_dicts += get_tree_dicts(d, classes=classes, classes_at=classes_at)
@@ -645,6 +690,8 @@ def register_train_data(train_location,
         name: string to name data
         val_fold: fold assigned for validation and tuning. If not given,
         will take place on all folds.
+        classes: list of classes to include
+        classes_at: column name for classes
     """
     if val_fold is not None:
         for d in ["train", "val"]:
@@ -665,8 +712,15 @@ def register_train_data(train_location,
             MetadataCatalog.get(name + "_" + "full").set(thing_classes=classes)
 
 
-def read_data(out_dir):
-    """Function that will read the classes that are recorded during tiling."""
+def get_classes(out_dir):
+    """Function that will read the classes that are recorded during tiling.
+    
+    Args:
+        out_dir: directory where classes.txt is located
+
+    Returns:
+        list of classes
+    """
     list = []
     classes_txt = out_dir + 'classes.txt'
     # open file and read the content in a list
@@ -692,14 +746,23 @@ def remove_registered_data(name="tree"):
 
 
 def register_test_data(test_location, name="tree"):
-    """Register data for testing."""
+    """Register data for testing.
+    
+    Args:
+        test_location: directory containing test data
+        name: string to name data
+    """
     d = "test"
     DatasetCatalog.register(name + "_" + d, lambda d=d: get_tree_dicts(test_location))
     MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
 
 
 def load_json_arr(json_path):
-    """Load json array."""
+    """Load json array.
+    
+    Args:
+        json_path: path to json file
+    """
     lines = []
     with open(json_path, "r") as f:
         for line in f:
@@ -725,8 +788,9 @@ def setup_cfg(
     num_classes=1,
     eval_period=100,
     out_dir="./train_outputs",
-    resize="fixed", # fixed or random
+    resize="fixed", # fixed or random or rand_fixed
     imgmode="rgb",
+    num_bands=3,
 ):
     """Set up config object # noqa: D417.
 
@@ -749,6 +813,11 @@ def setup_cfg(
         eval_period: number of iterations between evaluations
         out_dir: directory to save outputs
     """
+
+    # Validate the resize parameter
+    if resize not in {"fixed", "random", "rand_fixed"}:
+        raise ValueError(f"Invalid resize option '{resize}'. Must be 'fixed', 'random', or 'rand_fixed'.")
+
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(base_model))
     cfg.DATASETS.TRAIN = trains
@@ -776,7 +845,16 @@ def setup_cfg(
     cfg.TEST.EVAL_PERIOD = eval_period
     cfg.RESIZE = resize
     cfg.INPUT.MIN_SIZE_TRAIN = 1000
-    cfg.IMGMODE = imgmode
+    cfg.IMGMODE = imgmode # rgb or multispectral
+    if num_bands > 3:
+        # Adjust PIXEL_MEAN and PIXEL_STD for the number of bands
+        default_pixel_mean = cfg.MODEL.PIXEL_MEAN
+        default_pixel_std = cfg.MODEL.PIXEL_STD
+        # Extend or truncate the PIXEL_MEAN and PIXEL_STD based on num_bands
+        cfg.MODEL.PIXEL_MEAN = (default_pixel_mean * (num_bands // len(default_pixel_mean)) + 
+                                default_pixel_mean[:num_bands % len(default_pixel_mean)])
+        cfg.MODEL.PIXEL_STD = (default_pixel_std * (num_bands // len(default_pixel_std)) + 
+                               default_pixel_std[:num_bands % len(default_pixel_std)])
     return cfg
 
 
@@ -787,7 +865,17 @@ def predictions_on_data(directory=None,
                         scale=1,
                         geos_exist=True,
                         num_predictions=0):
-    """Prediction produced from a test folder and outputted to predictions folder."""
+    """Prediction produced from a test folder and outputted to predictions folder.
+    
+    Args:
+        directory: directory containing test data
+        predictor: predictor object
+        trees_metadata: metadata for trees
+        save: boolean to save predictions
+        scale: scale of image
+        geos_exist: boolean to determine if geojson files exist
+        num_predictions: number of predictions to make
+    """
 
     test_location = directory + "/test"
     pred_dir = test_location + "/predictions"
@@ -832,6 +920,69 @@ def predictions_on_data(directory=None,
             evaluations = instances_to_coco_json(outputs["instances"].to("cpu"), d["file_name"])
             with open(output_file, "w") as dest:
                 json.dump(evaluations, dest)
+
+def modify_conv1_weights(model, num_input_channels):
+    """
+    Modify the weights of the first convolutional layer (conv1) to accommodate a different number of input channels.
+
+    This function adjusts the weights of the `conv1` layer in the model's backbone to support a custom number 
+    of input channels. It creates a new weight tensor with the desired number of input channels, 
+    and initializes it by repeating the weights of the original channels.
+
+    Args:
+        model (torch.nn.Module): The model containing the convolutional layer to modify.
+        num_input_channels (int): The number of input channels for the new conv1 layer.
+
+    """
+    with torch.no_grad():
+        # Retrieve the original weights of the conv1 layer
+        old_weights = model.backbone.bottom_up.stem.conv1.weight
+
+        # Create a new weight tensor with the desired number of input channels
+        # The shape is (out_channels, in_channels, height, width)
+        new_weights = torch.zeros((old_weights.size(0), num_input_channels, *old_weights.shape[2:]))
+
+        # Initialize the new weights by repeating the original weights across the new channels
+        # This example repeats the first 3 channels if num_input_channels > 3
+        for i in range(num_input_channels):
+            new_weights[:, i, :, :] = old_weights[:, i % 3, :, :]
+
+        # Create a new conv1 layer with the updated number of input channels
+        model.backbone.bottom_up.stem.conv1 = nn.Conv2d(
+            num_input_channels, old_weights.size(0), kernel_size=7, stride=2, padding=3, bias=False
+        )
+
+        # Copy the modified weights into the new conv1 layer        
+        model.backbone.bottom_up.stem.conv1.weight.copy_(new_weights)
+
+
+def get_latest_model_path(output_dir: str) -> str:
+    """
+    Find the model file with the highest index in the specified output directory.
+
+    Args:
+        output_dir (str): The directory where the model files are stored.
+
+    Returns:
+        str: The path to the model file with the highest index.
+    """
+    # Regular expression to match model files with the pattern "model_X.pth"
+    model_pattern = re.compile(r"model_(\d+)\.pth")
+
+    # List all files in the output directory
+    files = os.listdir(output_dir)
+
+    # Find all files that match the pattern and extract their indices
+    model_files = [(f, int(model_pattern.search(f).group(1))) for f in files if model_pattern.search(f)]
+
+    if not model_files:
+        raise FileNotFoundError(f"No model files found in the directory {output_dir}")
+
+    # Sort the files by index in descending order and select the highest one
+    latest_model_file = max(model_files, key=lambda x: x[1])[0]
+
+    # Return the full path to the latest model file
+    return os.path.join(output_dir, latest_model_file)
 
 
 if __name__ == "__main__":

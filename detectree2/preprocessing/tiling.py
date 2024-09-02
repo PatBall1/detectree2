@@ -427,10 +427,10 @@ def is_overlapping_box(test_boxes_array, train_box):
     return False
 
 
-def record_data(crowns,
+def record_classes(crowns,
                 out_dir,
                 column='status'):
-    """Function that will record a list of classes into a file that can be readed during training.
+    """Function that will record a list of classes into a file that can be read during training.
 
     Args:
         crowns: gpd dataframe with the crowns
