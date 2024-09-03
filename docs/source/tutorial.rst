@@ -490,7 +490,7 @@ to plot the training and validation loss. The following code can be used to plot
 
 .. image:: ../../report/figures/train_val_loss.png 
    :width: 400
-   :alt: Training tile 1
+   :alt: Traina and validation loss
    :align: center
 
 |
@@ -502,7 +502,26 @@ To understand how the segmentation performance improves through training, it is 
 over the iterations. This can be done with the following code:
 
 
+.. code-block:: python
 
+   plt.plot(
+      [x['iteration'] for x in experiment_metrics if 'validation_loss' in x],
+      [x['validation_loss'] for x in experiment_metrics if 'validation_loss' in x], label='Total Validation Loss', color='red')
+   plt.plot(
+      [x['iteration'] for x in experiment_metrics if 'total_loss' in x],
+      [x['total_loss'] for x in experiment_metrics if 'total_loss' in x], label='Total Training Loss')
+
+   plt.legend(loc='upper right')
+   plt.title('Comparison of the training and validation loss of detectree2')
+   plt.ylabel('Total Loss')
+   plt.xlabel('Number of Iterations')
+   plt.show()
+
+.. image:: ../../report/figures/AP50.png
+   :width: 400
+   :alt: AP50 score
+   :align: center
+|
 
 
 Evaluating model performance
