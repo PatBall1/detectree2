@@ -2,9 +2,10 @@ Tutorial
 ========
 
 This tutorial goes through the steps of single class (tree) detection and 
-delineation. A guide to multiclass prediction (e.g. species mapping,
-disease mapping) is coming soon. Example data that can be used in
-this tutorial is available `here <https://zenodo.org/records/8136161>`_.
+delineation from RGB and multispectral data. A guide to multiclass prediction
+(e.g. species mapping, disease mapping) is coming soon. Example data that can
+be used in this tutorial is available
+`here <https://zenodo.org/records/8136161>`_.
 
 The key steps are:
 
@@ -40,9 +41,15 @@ If you would just like to make predictions on an orthomosaic with a pre-trained
 model from the ``model_garden``, skip to part 4 (Generating landscape
 predictions).
 
+The data preparation and training process for both RGB and multispectral data 
+is presented here. The process is similar for both data types but there are 
+some key differences that are highlighted. Training a single model on both RGB
+and multispectral data at the same time is not currently supported. Stick to 
+one data type per model (or stack the RGB bands with the multispectral bands
+and treat as in the case of multispectral data).
 
-Preparing data
---------------
+Preparing data (RGB and multispectral)
+--------------------------------------
 
 An example of the recommended file structure when training a new model is as follows:
 
@@ -58,12 +65,19 @@ An example of the recommended file structure when training a new model is as fol
        ├── rgb                                     
        │   ├── Paracou_RGB_2016_10cm.tif           (RGB orthomosaic in local UTM CRS)
        │   └── Paracou_RGB_2019.tif                (RGB orthomosaic in local UTM CRS)
+       ├── ms
+       │   └── Paracou_MS_2016.tif                 (Multispectral orthomosaic in local UTM CRS)
        └── crowns
            └── UpdatedCrowns8.gpkg                 (Crown polygons readable by geopandas e.g. Geopackage, shapefile)
 
 Here we have two sites available to train on (Danum and Paracou). Several site directories can be 
 included in the training and testing phase (but only a single site directory is required).
 If available, several RGB orthomosaics can be included in a single site directory (see e.g ``Paracou -> RGB``).
+
+For Paracou, we also have a multispectral scan available (5-bands). For this data, the ``mode`` parameter in the 
+``tile_data`` function should be set to ``"ms"``. This calls a different routine for tiling the data that retains the
+``.tif`` format instead of converting to ``.png`` as in the case of ``rgb``. This comes at a slight expense of speed
+later on but is necessary to retain all the multispectral information.
 
 We call functions to from ``detectree2``'s tiling and training modules.
 
@@ -83,9 +97,6 @@ Set up the paths to the orthomosaic and corresponding manual crown data.
    img_path = site_path + "/rgb/2016/Paracou_RGB_2016_10cm.tif"
    crown_path = site_path + "/crowns/220619_AllSpLabelled.gpkg"
 
-   # Read in the tiff file
-   data = rasterio.open(img_path)
-   
    # Read in crowns (then filter by an attribute if required)
    crowns = gpd.read_file(crown_path)
    crowns = crowns.to_crs(data.crs.data) # making sure CRS match
@@ -98,6 +109,8 @@ The tile size will depend on:
 * Available computational resources.
 * The detail required on the crown outline.
 * If using a pre-trained model, the tile size used in training should roughly match the tile size of predictions.
+* The ``mode`` depends on whether you are tiling 3-band RGB (``mode="rgb"``) data of multispectral data of 4 or more
+bands (``mode="ms"``).
 
 .. code-block:: python
 
@@ -114,11 +127,13 @@ surrounding tiles). Including a buffer is recommended as it allows for tiles tha
 
 Next we tile the data. The ``tile_data`` function, when ``crowns`` is supplied, will only retain tiles that contain more
 than the given ``threshold`` coverage of training data (here 60%). This helps to reduce the chance that the network is 
-trained with tiles that contain a large number of unlabelled crowns (which would reduce its sensitivity).
+trained with tiles that contain a large number of unlabelled crowns (which would reduce its sensitivity). This value
+should be adjusted depending on the density of crowns in the landscape (e.g. 10% may be more appropriate for savannah
+type systems or urban environments).
 
 .. code-block:: python
    
-   tile_data(img_path, out_dir, buffer, tile_width, tile_height, crowns, threshold)
+   tile_data(img_path, out_dir, buffer, tile_width, tile_height, crowns, threshold, mode="rgb")
 
 .. warning::
    If tiles are outputing as blank images set ``dtype_bool = True`` in the ``tile_data`` function. This is a bug
@@ -131,7 +146,7 @@ trained with tiles that contain a large number of unlabelled crowns (which would
    closed canopy forests so some of the default assumptions will reflect that and parameters will need to be adjusted
    for different systems.
 
-Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder.
+Send geojsons to train folder (with sub-folders for k-fold cross validation) and a test folder.
 
 .. code-block:: python
    
@@ -164,7 +179,8 @@ The data has now been tiled and partitioned for model training, tuning and evalu
  
 
 It is recommended to visually inspect the tiles before training to ensure that the tiling has worked as expected and
-that crowns and images align. This can be done quickly with the inbuilt ``detectron2`` visualisation tools.
+that crowns and images align. This can be done with the inbuilt ``detectron2`` visualisation tools. For RGB tiles
+(``.png``), the following code can be used to visualise the training data.
 
 .. code-block:: python
    
@@ -201,8 +217,61 @@ that crowns and images align. This can be done quickly with the inbuilt ``detect
 
 
 |
-Training a model
-----------------
+Alternatively, with some adaptation the ``detectron2`` visualisation tools can also be used to visualise the
+multispectral (``.tif``) tiles.
+
+.. code-block:: python
+   
+   import rasterio
+   from detectron2.utils.visualizer import Visualizer
+   from detectree2.models.train import combine_dicts
+   from detectron2.data import DatasetCatalog, MetadataCatalog
+   from PIL import Image
+   import numpy as np
+   import cv2
+   import matplotlib.pyplot as plt
+   from IPython.display import display
+
+   val_fold = 1
+   name = "Paracou"
+   tiles = "/tilesMS_" + appends + "/train"
+   train_location = "/content/drive/MyDrive/WORK/detectree2/data/" + name + tiles
+   dataset_dicts = combine_dicts(train_location, val_fold)
+   trees_metadata = MetadataCatalog.get(name + "_train")
+
+   # Function to normalize and convert multi-band image to RGB if needed
+   def prepare_image_for_visualization(image):
+      if image.shape[2] == 3:
+         # If the image has 3 bands, assume it's RGB
+         image = np.stack([
+               cv2.normalize(image[:, :, i], None, 0, 255, cv2.NORM_MINMAX)
+               for i in range(3)
+         ], axis=-1).astype(np.uint8)
+      else:
+         # If the image has more than 3 bands, choose the first 3 for visualization
+         image = image[:, :, :3]  # Or select specific bands
+         image = np.stack([
+               cv2.normalize(image[:, :, i], None, 0, 255, cv2.NORM_MINMAX)
+               for i in range(3)
+         ], axis=-1).astype(np.uint8)
+
+      return image
+
+   # Visualize each image in the dataset
+   for d in dataset_dicts:
+      with rasterio.open(d["file_name"]) as src:
+         img = src.read()  # Read all bands
+         img = np.transpose(img, (1, 2, 0))  # Convert to HWC format
+         img = prepare_image_for_visualization(img)  # Normalize and prepare for visualization
+
+      visualizer = Visualizer(img[:, :, ::-1]*10, metadata=trees_metadata, scale=0.5)
+      out = visualizer.draw_dataset_dict(d)
+      image = out.get_image()[:, :, ::-1]
+      display(Image.fromarray(image))
+
+
+Training a model (RGB)
+----------------------
 
 Before training can commence, it is necessary to register the training data. It is possible to set a validation fold for
 model evaluation (which can be helpful for tuning models). The validation fold can be changed over different training 
@@ -233,7 +302,7 @@ datasets should be tuples containing strings. If just a single site is being use
    trains = ("Paracou_train", "Danum_train", "SepilokEast_train", "SepilokWest_train") # Registered train data
    tests = ("Paracou_val", "Danum_val", "SepilokEast_val", "SepilokWest_val") # Registered validation data
    
-   out_dir = "/content/drive/Shareddrives/detectree2/220809_train_outputs"
+   out_dir = "/content/drive/Shareddrives/detectree2/240809_train_outputs"
    
    cfg = setup_cfg(base_model, trains, tests, workers = 4, eval_period=100, max_iter=3000, out_dir=out_dir) # update_model arg can be used to load in trained  model
 
@@ -259,7 +328,7 @@ Then set up the configurations as before but with the trained model also supplie
    trains = ("Paracou_train", "Danum_train", "SepilokEast_train", "SepilokWest_train") # Registered train data
    tests = ("Paracou_val", "Danum_val", "SepilokEast_val", "SepilokWest_val") # Registered validation data
    
-   out_dir = "/content/drive/Shareddrives/detectree2/220809_train_outputs"
+   out_dir = "/content/drive/Shareddrives/detectree2/240809_train_outputs"
    
    cfg = setup_cfg(base_model, trains, tests, trained_model, workers = 4, eval_period=100, max_iter=3000, out_dir=out_dir) # update_model arg used to load in trained model
 
@@ -269,7 +338,11 @@ Then set up the configurations as before but with the trained model also supplie
    model training will converge given the particularities of the data supplied and computational resources available.
 
 Once we are all set up, we can get commence model training. Training will continue until a specified number of
-iterations (``max_iter``) or until model performance is no longer improving ("early stopping" via ``patience``).
+iterations (``max_iter``) or until model performance is no longer improving ("early stopping" via ``patience``). The
+``patience`` parameter sets the number of training epochs to wait for an improvement in validation accuracy before
+stopping training. This is useful for preventing overfitting and saving time. Each time an improved model is found it is
+saved to the output directory.
+
 Training outputs, including model weights and training metrics, will be stored in ``out_dir``.
 
 .. code-block::
@@ -282,6 +355,154 @@ Training outputs, including model weights and training metrics, will be stored i
 
    Early stopping is implemented and will be triggered by a sustained failure to improve on the performance of
    predictions on the validation fold. This is measured as the AP50 score of the validation predictions.
+
+Training a model (multispectral)
+--------------------------------
+
+The process for training a multispectral model is similar to that for RGB data but there are some key steps that are
+different. Data will be read from ``.tif`` files of 4 or more bands instead of the 3-band ``.png`` files.
+
+Data should be registered as before:
+
+.. code-block:: python
+
+   from detectree2.models.train import register_train_data, remove_registered_data
+   val_fold = 5
+   appends = "40_30_0.6"
+   site_path = "/content/drive/SharedDrive/detectree2/data/Paracou"
+   train_location = site_path + "/tilesMS_" + appends + "/train/"
+   register_train_data(train_location, "ParacouMS", val_fold)
+
+The number of bands can be checked with rasterio:
+
+.. code-block:: python
+
+   import rasterio
+   import os
+   import glob
+
+   # Read in geotif and assess mean and sd for each band
+   #site_path = "/content/drive/MyDrive/WORK/detectree2/data/Paracou"
+   folder_path = site_path + "/tilesMS_" + appends + "/"
+
+   # Select path of first .tif file
+   img_paths = glob.glob(folder_path + "*.tif")
+   img_path = img_paths[0]
+
+   # Open the raster file
+   with rasterio.open(img_path) as dataset:
+      # Get the number of bands
+      num_bands = dataset.count
+
+   # Print the number of bands
+   print(f'The raster has {num_bands} bands.')
+
+
+Due to the additional bands, we must modify the weights of the first convolutional layer (conv1) to accommodate a
+different number of input channels. This is done with the ``modify_conv1_weights`` function. The extension of the 
+``cfg.MODEL.PIXEL_MEAN`` and ``cfg.MODEL.PIXEL_STD`` lists to include the additional bands happens within the 
+``setup_cfg`` function when ``num_bands`` is set to a value greater than 3. ``imgmode`` should be set to ``"ms"`` to
+ensure the correct training routines are called.
+
+.. code-block:: python
+
+   from datetime import date
+   from detectron2.modeling import build_model
+   import torch.nn as nn
+   import torch.nn.init as init
+   from detectron2.modeling.roi_heads.fast_rcnn import FastRCNNOutputLayers
+   import numpy as np
+   from detectree2.models.train import modify_conv1_weights, MyTrainer, setup_cfg
+
+   # Good idea to keep track of the date if producing multiple models
+   today = date.today()
+   today = today.strftime("%y%m%d")
+
+   names = ["ParacouMS",]
+
+   trains = (names[0] + "_train",)
+   tests = (names[0] + "_val",)
+   out_dir = "/content/drive/SharedDrive/detectree2/models/" + today + "_ParacouMS"
+
+   base_model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"  # Path to the model config
+
+   # Set up the configuration
+   cfg = setup_cfg(base_model, trains, tests, workers = 2, eval_period=50,
+                  base_lr = 0.0003, backbone_freeze=0, gamma = 0.9,
+                  max_iter=500000, out_dir=out_dir, resize = "rand_fixed", imgmode="ms",
+                  num_bands= num_bands) # update_model arg can be used to load in trained  model
+
+   # Build the model
+   model = build_model(cfg)
+
+   # Adjust input layer to accept correct number of channels
+   modify_conv1_weights(model, num_input_channels=num_bands)
+
+
+With additional bands, more data is being passed through the network per image so it may be neessary to reduce the 
+number of images per batch. Only do this is you a getting warnings/errors about memory usage (e.g.
+``CUDA out of memory``) as it will slow down training.
+
+.. code-block:: python
+
+   cfg.SOLVER.IMS_PER_BATCH = 1
+
+
+Training can now commence as before:
+
+.. code-block::
+
+   trainer = MyTrainer(cfg, patience = 5) 
+   trainer.resume_or_load(resume=False)
+   trainer.train()
+
+
+Post-training (check training convergence)
+------------------------------------------
+
+It is important to check that the model has converged and is not overfitting. This can be done by plotting the training
+and validation loss over time. The ``detectron2`` training routine will output a ``metrics.json`` file that can be used
+to plot the training and validation loss. The following code can be used to plot the loss:
+
+.. code-block:: python
+
+   import json
+   import matplotlib.pyplot as plt
+   from detectree2.models.train import load_json_arr
+
+   #out_dir = "/content/drive/Shareddrives/detectree2/models/230103_resize_full"
+   experiment_folder = out_dir
+
+   experiment_metrics = load_json_arr(experiment_folder + '/metrics.json')
+
+   plt.plot(
+      [x['iteration'] for x in experiment_metrics if 'validation_loss' in x],
+      [x['validation_loss'] for x in experiment_metrics if 'validation_loss' in x], label='Total Validation Loss', color='red')
+   plt.plot(
+      [x['iteration'] for x in experiment_metrics if 'total_loss' in x],
+      [x['total_loss'] for x in experiment_metrics if 'total_loss' in x], label='Total Training Loss')
+
+   plt.legend(loc='upper right')
+   plt.title('Comparison of the training and validation loss of detectree2')
+   plt.ylabel('Total Loss')
+   plt.xlabel('Number of Iterations')
+   plt.show()
+
+.. image:: ../../report/figures/train_val_loss.png 
+   :width: 400
+   :alt: Training tile 1
+   :align: center
+
+|
+Training loss and validation loss decreased over time. As training continued, the validation loss flattened whereas the
+training loss continued to decrease. The ``patience`` mechanism prevented training from continuing after 3000 iterations
+preventing overfitting. If validation loss is substantially higher than training loss, the model may be overfitted.
+
+To understand how the segmentation performance improves through training, it is also possible to plot the AP50 score
+over the iterations. This can be done with the following code:
+
+
+
 
 
 Evaluating model performance
@@ -314,8 +535,7 @@ can discard partial the crowns predicted at the edge of tiles.
    site_path = "/content/drive/Shareddrives/detectree2/data/BCI_50ha"
    img_path = site_path + "/rgb/2015.06.10_07cm_ORTHO.tif"
    tiles_path = site_path + "/tilespred/"
-   # Read in the geotiff
-   data = rasterio.open(img_path)
+
    # Location of trained model
    model_path = "/content/drive/Shareddrives/detectree2/models/220629_ParacouSepilokDanum_JB.pth"
 
@@ -323,7 +543,7 @@ can discard partial the crowns predicted at the edge of tiles.
    buffer = 30
    tile_width = 40
    tile_height = 40
-   tile_data(data, tiles_path, buffer, tile_width, tile_height, dtype_bool = True)
+   tile_data(img_path, tiles_path, buffer, tile_width, tile_height, dtype_bool = True)
 
 .. warning::
    If tiles are outputing as blank images set ``dtype_bool = True`` in the ``tile_data`` function. This is a bug
