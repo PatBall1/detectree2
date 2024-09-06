@@ -379,7 +379,6 @@ def tile_data(
 
     Returns:
         None
-
     """
     out_path = Path(out_dir)
     os.makedirs(out_path, exist_ok=True)
