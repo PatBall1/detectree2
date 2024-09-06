@@ -21,6 +21,7 @@ import numpy as np
 import rasterio
 import torch
 import torch.nn as nn
+from detectree2.preprocessing.tiling import load_class_mapping
 from detectron2 import model_zoo
 from detectron2.checkpoint import DetectionCheckpointer  # noqa:F401
 from detectron2.config import get_cfg
@@ -718,29 +719,6 @@ def get_classes(out_dir):
             # add current item to the list
             list.append(x)
     return (list)
-
-
-def load_class_mapping(file_path: str):
-    """Function to load class-to-index mapping from a file.
-
-    Args:
-        file_path: Path to the file (json or pickle)
-
-    Returns:
-        class_to_idx: Loaded class-to-index mapping
-    """
-    file_ext = Path(file_path).suffix
-
-    if file_ext == '.json':
-        with open(file_path, 'r') as f:
-            class_to_idx = json.load(f)
-    elif file_ext == '.pkl':
-        with open(file_path, 'rb') as f:
-            class_to_idx = pickle.load(f)
-    else:
-        raise ValueError("Unsupported file format. Use '.json' or '.pkl'.")
-
-    return class_to_idx
 
 
 def remove_registered_data(name="tree"):

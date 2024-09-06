@@ -8,6 +8,7 @@ import concurrent.futures
 import json
 import logging
 import os
+import pickle
 import random
 import shutil
 import warnings
@@ -53,6 +54,29 @@ def get_features(gdf: gpd.GeoDataFrame):
       json style data
     """
     return [json.loads(gdf.to_json())["features"][0]["geometry"]]
+
+
+def load_class_mapping(file_path: str):
+    """Function to load class-to-index mapping from a file.
+
+    Args:
+        file_path: Path to the file (json or pickle)
+
+    Returns:
+        class_to_idx: Loaded class-to-index mapping
+    """
+    file_ext = Path(file_path).suffix
+
+    if file_ext == '.json':
+        with open(file_path, 'r') as f:
+            class_to_idx = json.load(f)
+    elif file_ext == '.pkl':
+        with open(file_path, 'rb') as f:
+            class_to_idx = pickle.load(f)
+    else:
+        raise ValueError("Unsupported file format. Use '.json' or '.pkl'.")
+
+    return class_to_idx
 
 
 def process_tile(
@@ -565,29 +589,62 @@ def to_traintest_folders(  # noqa: C901
 
 
 if __name__ == "__main__":
-    # Right let"s test this first with Sepilok 10cm resolution, then I need to try it with 50cm resolution.
-    img_path = "/content/drive/Shareddrives/detectreeRGB/benchmark/Ortho2015_benchmark/P4_Ortho_2015.tif"
-    crown_path = "gdrive/MyDrive/JamesHirst/NY/Buffalo/Buffalo_raw_data/all_crowns.shp"
-    out_dir = "./"
-    # Read in the tiff file
-    # data = img_data.open(img_path)
-    # Read in crowns
-    data = rasterio.open(img_path)
+    # Define paths to the input data
+    img_path = "/path/to/your/orthomosaic.tif"  # Path to your input orthomosaic file
+    crown_path = "/path/to/your/crown_shapefile.shp"  # Path to the shapefile containing crowns
+    out_dir = "/path/to/output/directory"  # Directory where you want to save the tiled output
+
+    # Optional parameters for tiling and processing
+    buffer = 30  # Overlap between tiles (in meters)
+    tile_width = 200  # Tile width (in meters)
+    tile_height = 200  # Tile height (in meters)
+    nan_threshold = 0.1  # Max proportion of tile that can be NaN before it's discarded
+    threshold = 0.5  # Minimum crown coverage per tile for it to be kept (0-1)
+    dtype_bool = False  # Change dtype to uint8 to avoid black tiles
+    mode = "rgb"  # Use 'rgb' for regular 3-channel imagery, 'ms' for multispectral
+    class_column = "species"  # Column in the crowns file to use as the class label
+
+    # Read in the crowns
     crowns = gpd.read_file(crown_path)
-    print(
-        "shape =",
-        data.shape,
-        ",",
-        data.bounds,
-        "and number of bands =",
-        data.count,
-        ", crs =",
-        data.crs,
+
+    # Record the classes and save the class mapping
+    record_classes(
+        crowns=crowns,  # Geopandas dataframe with crowns
+        out_dir=out_dir,  # Output directory to save class mapping
+        column=class_column,  # Column used for classes
+        save_format='json'  # Choose between 'json' or 'pickle'
     )
 
-    buffer = 20
-    tile_width = 200
-    tile_height = 200
+    # Load the class-to-index mapping from the recorded classes
+    class_mapping_file = os.path.join(out_dir, "class_to_idx.json")
+    with open(class_mapping_file, 'r') as f:
+        class_to_idx = json.load(f)
 
-    tile_data(data, out_dir, buffer, tile_width, tile_height, crowns)
-    to_traintest_folders(folds=5)
+    # Perform the tiling, ensuring the selected class column is used
+    tile_data(
+        img_path=img_path,
+        out_dir=out_dir,
+        buffer=buffer,
+        tile_width=tile_width,
+        tile_height=tile_height,
+        crowns=crowns,
+        threshold=threshold,
+        nan_threshold=nan_threshold,
+        dtype_bool=dtype_bool,
+        mode=mode,
+        class_column=class_column,  # Use the selected class column (e.g., 'species', 'status')
+        class_mapping_file=None  # We're now passing None since we don't need an external file
+    )
+
+    # Split the data into training and validation sets (optional)
+    # This can be used for train/test folder creation based on the generated tiles
+    to_traintest_folders(
+        tiles_folder=out_dir,  # Directory where tiles are saved
+        out_folder="/path/to/final/data/output",  # Final directory for train/test data
+        test_frac=0.2,  # Fraction of data to be used for testing
+        folds=5,  # Number of folds (optional, can be set to 1 for no fold splitting)
+        strict=True,  # Ensure no overlap between train/test tiles
+        seed=42  # Set seed for reproducibility
+    )
+
+    logger.info("Tiling process completed successfully!")
