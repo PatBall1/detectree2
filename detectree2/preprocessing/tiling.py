@@ -267,6 +267,8 @@ def process_tile_train(
     threshold,
     nan_threshold,
     mode: str = "rgb",
+    class_column: str = 'status',  # Allow user to specify class column
+    class_mapping_file: str = None 
 ) -> None:
     """Process a single tile for training data.
 
@@ -288,6 +290,9 @@ def process_tile_train(
     Returns:
         None
     """
+    # Load the class-to-index mapping
+    class_to_idx = load_class_mapping(class_mapping_file) if class_mapping_file else None
+
     if mode == "rgb":
         result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, 
                             crowns, threshold, nan_threshold)
@@ -315,7 +320,18 @@ def process_tile_train(
     try:
         filename = out_path_root.with_suffix(".geojson")
         moved_scaled = overlapping_crowns.set_geometry(moved_scaled)
+
+        # Ensure we map the selected column to the 'status' field
+        moved_scaled['status'] = moved_scaled[class_column]
+
+        if class_to_idx:
+            moved_scaled["category_id"] = moved_scaled["status"].map(class_to_idx)
+
+        # Save the result as GeoJSON, replacing the original class column with 'status'
+        moved_scaled = moved_scaled[['geometry', 'status']]  # Keep only 'status' and geometry
         moved_scaled.to_file(driver="GeoJSON", filename=filename)
+
+        # Add image path info to the GeoJSON file
         with open(filename, "r") as f:
             shp = json.load(f)
             shp.update(impath)
@@ -340,6 +356,8 @@ def tile_data(
     nan_threshold: float = 0.1,
     dtype_bool: bool = False,
     mode: str = "rgb",
+    class_column: str = "status",  # Allow class column to be passed here
+    class_mapping_file: str = None  # Allow optional class mapping
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
@@ -371,7 +389,7 @@ def tile_data(
 
         tile_args = [
             (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, 
-             threshold, nan_threshold, mode)
+             threshold, nan_threshold, mode, class_column, class_mapping_file)
             for minx in np.arange(ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, int)
             for miny in np.arange(ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, 
                                   int)
@@ -427,35 +445,41 @@ def is_overlapping_box(test_boxes_array, train_box):
     return False
 
 
-def record_classes(crowns,
-                out_dir,
-                column='status'):
-    """Function that will record a list of classes into a file that can be read during training.
+def record_classes(crowns: gpd.GeoDataFrame, out_dir: str, column: str = 'status', save_format: str = 'json'):
+    """Function that records a list of classes into a file that can be read during training.
 
     Args:
         crowns: gpd dataframe with the crowns
         out_dir: directory to save the file
         column: column name to get the classes from
+        save_format: format to save the file ('json' or 'pickle')
 
     Returns:
         None
     """
-
+    # Extract unique class names from the specified column
     list_of_classes = crowns[column].unique().tolist()
-
+    
     # Sort the list of classes in alphabetical order
     list_of_classes.sort()
 
-    print("**The list of classes are:**")
-    print(list_of_classes)
-    print("**The list has been saved to the out_dir**")
+    # Create a dictionary for class-to-index mapping
+    class_to_idx = {class_name: idx for idx, class_name in enumerate(list_of_classes)}
+    
+    # Save the class-to-index mapping to disk
+    out_path = Path(out_dir)
+    os.makedirs(out_path, exist_ok=True)
 
-    # Write it into file "classes.txt"
-    out_tif = out_dir + 'classes.txt'
-    f = open(out_tif, "w")
-    for i in list_of_classes:
-        f.write("%s\n" % i)
-    f.close()
+    if save_format == 'json':
+        with open(out_path / 'class_to_idx.json', 'w') as f:
+            json.dump(class_to_idx, f)
+    elif save_format == 'pickle':
+        with open(out_path / 'class_to_idx.pkl', 'wb') as f:
+            pickle.dump(class_to_idx, f)
+    else:
+        raise ValueError("Unsupported save format. Use 'json' or 'pickle'.")
+
+    print(f"Classes saved as {save_format} file: {class_to_idx}")
 
 
 def to_traintest_folders(  # noqa: C901

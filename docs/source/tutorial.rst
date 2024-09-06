@@ -490,7 +490,7 @@ to plot the training and validation loss. The following code can be used to plot
 
 .. image:: ../../report/figures/train_val_loss.png 
    :width: 400
-   :alt: Traina and validation loss
+   :alt: Train and validation loss
    :align: center
 
 |
@@ -499,7 +499,7 @@ training loss continued to decrease. The ``patience`` mechanism prevented traini
 preventing overfitting. If validation loss is substantially higher than training loss, the model may be overfitted.
 
 To understand how the segmentation performance improves through training, it is also possible to plot the AP50 score
-over the iterations. This can be done with the following code:
+(see below for definition) over the iterations. This can be done with the following code:
 
 
 .. code-block:: python
@@ -517,17 +517,55 @@ over the iterations. This can be done with the following code:
    plt.xlabel('Number of Iterations')
    plt.show()
 
-.. image:: ../../report/figures/AP50.png
+.. image:: ../../report/figures/val_AP50.png
    :width: 400
    :alt: AP50 score
    :align: center
 |
+
+Performance metrics
+-------------------
+
+In instance segmentation, **AP50** refers to the **Average Precision** at an Intersection over Union (IoU) threshold of
+**50%**.
+
+- **Precision**: Precision is the ratio of correctly predicted positive objects (true positives) to all predicted
+  bjects (both true positives and false positives).
+  
+  - Formula: :math:`\text{Precision} = \frac{\text{True Positives}}{\text{True Positives} + \text{False Positives}}`
+
+- **Recall**: Recall is the ratio of correctly predicted positive objects (true positives) to all actual positive
+objects in the ground truth (true positives and false negatives).
+  
+  - Formula: :math:`\text{Recall} = \frac{\text{True Positives}}{\text{True Positives} + \text{False Negatives}}`
+
+- **Average Precision (AP)**: AP is a common metric used to evaluate the performance of object detection and instance 
+segmentation models. It represents the precision of the model across various recall levels. In simpler terms, it is a 
+combination of the model's ability to correctly detect objects and how complete those detections are.
+
+- **IoU (Intersection over Union)**: IoU measures the overlap between the predicted segmentation mask (or bounding box
+in object detection) and the ground truth mask. It is calculated as the area of overlap divided by the area of union
+between the predicted and true masks.
+
+- **AP50**: Specifically, **AP50** computes the average precision for all object classes at a threshold of **50% IoU**. 
+This means that a predicted object is considered correct (a true positive) if the IoU between the predicted and ground
+truth masks is greater than or equal to 0.5 (50%). It is a relatively lenient threshold, focusing on whether the
+detected objects overlap reasonably with the ground truth, even if the boundaries aren't perfectly aligned.
+
+In summary, AP50 evaluates how well a model detects objects with a 50% overlap between the predicted and ground truth
+masks in instance segmentation tasks.
+
+.. image:: ../../report/figures/IoU_AP.png 
+   :width: 400
+   :alt: IoU and AP illustration
+   :align: center
 
 
 Evaluating model performance
 ----------------------------
 
 Coming soon! See Colab notebook for example routine (``detectree2/notebooks/colab/evaluationJB.ipynb``).
+
 
 Generating landscape predictions
 --------------------------------

@@ -532,7 +532,7 @@ class MyTrainer(DefaultTrainer):
         """
         return build_detection_test_loader(cfg, dataset_name, mapper=FlexibleDatasetMapper(cfg, is_train=False))
 
-def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = None) -> List[Dict]:
+def get_tree_dicts(directory: str, class_mapping: Dict[str, int] = None) -> List[Dict]:
     """Get the tree dictionaries.
 
     Args:
@@ -544,22 +544,14 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
         List of dictionaries corresponding to segmentations of trees. Each dictionary includes
         bounding box around tree and points tracing a polygon around a tree.
     """
-    if classes is not None:
-        # list_of_classes = crowns[variable].unique().tolist()
-        classes = classes
-    else:
-        classes = ["tree"]
-
     dataset_dicts = []
 
     for filename in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
         json_file = os.path.join(directory, filename)
         with open(json_file) as f:
             img_anns = json.load(f)
-        # Turn off type checking for annotations until we have a better solution
-        record: Dict[str, Any] = {}
 
-        # filename = os.path.join(directory, img_anns["imagePath"])
+        record = {}
         filename = img_anns["imagePath"]
 
         # Make sure we have the correct height and width
@@ -580,43 +572,37 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
         objs = []
         for features in img_anns["features"]:
             anno = features["geometry"]
-            # pdb.set_trace()
-            # GenusSpecies = features['properties']['Genus_Species']
             px = [a[0] for a in anno["coordinates"][0]]
             py = [np.array(height) - a[1] for a in anno["coordinates"][0]]
-            # print("### HERE IS PY ###", py)
             poly = [(x, y) for x, y in zip(px, py)]
             poly = [p for x in poly for p in x]
-            # print("#### HERE ARE SOME POLYS #####", poly)
-            if classes != ["tree"]:
-                obj = {
-                    "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
-                    "bbox_mode": BoxMode.XYXY_ABS,
-                    "segmentation": [poly],
-                    "category_id": classes.index(features["properties"][classes_at]),
-                    "iscrowd": 0,
-                }
+
+            # If class mapping is provided, use it; otherwise, default to "tree"
+            if class_mapping:
+                category_id = class_mapping[features["properties"]["status"]]
             else:
-                obj = {
-                    "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
-                    "bbox_mode": BoxMode.XYXY_ABS,
-                    "segmentation": [poly],
-                    "category_id": 0,  # id
-                    "iscrowd": 0,
-                }
-            # pdb.set_trace()
+                category_id = 0  # Default to "tree" if no class mapping is provided
+
+            obj = {
+                "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
+                "bbox_mode": BoxMode.XYXY_ABS,
+                "segmentation": [poly],
+                "category_id": category_id,
+                "iscrowd": 0,
+            }
+
             objs.append(obj)
-            # print("#### HERE IS OBJS #####", objs)
+
         record["annotations"] = objs
         dataset_dicts.append(record)
+
     return dataset_dicts
 
 
 def combine_dicts(root_dir: str,
                   val_dir: int,
                   mode: str = "train",
-                  classes: List[str] = None,
-                  classes_at: str = None) -> List[Dict]:
+                  class_mapping: Dict[str, int] = None) -> List[Dict]:
     """
     Combine dictionaries from different directories based on the specified mode.
 
@@ -631,11 +617,10 @@ def combine_dicts(root_dir: str,
                               "train" excludes the validation directory, 
                               "val" includes only the validation directory, 
                               and "full" includes all directories. Defaults to "train".
-        classes (List[str], optional): A list of classes to filter the dictionaries by. Defaults to None.
-        classes_at (str, optional): A key to specify where the classes are located within the dictionary structure. Defaults to None.
+        class_mapping: A dictionary mapping class labels to category indices (optional).
 
     Returns:
-        List[Dict]: A list of combined dictionaries from the specified directories.
+        List of combined dictionaries from the specified directories.
     """
     # Get a list of all directories within the root directory
     train_dirs = [os.path.join(root_dir, dir) for dir in os.listdir(root_dir)]
@@ -647,15 +632,15 @@ def combine_dicts(root_dir: str,
         tree_dicts = []
         for d in train_dirs:
             # Combine dictionaries from all directories except the validation directory
-            tree_dicts += get_tree_dicts(d, classes=classes, classes_at=classes_at)
+            tree_dicts += get_tree_dicts(d, class_mapping=class_mapping)
     elif mode == "val":
         # Use only the validation directory
-        tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)], classes=classes, classes_at=classes_at)
+        tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)], class_mapping=class_mapping)
     elif mode == "full":
         # Combine dictionaries from all directories, including the validation directory
         tree_dicts = []
         for d in train_dirs:
-            tree_dicts += get_tree_dicts(d, classes=classes, classes_at=classes_at)
+            tree_dicts += get_tree_dicts(d, class_mapping=class_mapping)
     return tree_dicts
 
 
@@ -681,35 +666,36 @@ def get_filenames(directory: str):
 def register_train_data(train_location,
                         name: str = "tree",
                         val_fold=None,
-                        classes=None,
-                        classes_at=None):
+                        class_mapping_file=None):
     """Register data for training and (optionally) validation.
 
     Args:
-        train_location: directory containing training folds
-        name: string to name data
-        val_fold: fold assigned for validation and tuning. If not given,
-        will take place on all folds.
-        classes: list of classes to include
-        classes_at: column name for classes
+        train_location: Directory containing training folds.
+        name: Name to register the dataset.
+        val_fold: Validation fold index (optional).
+        class_mapping_file: Path to the class mapping file (json or pickle).
     """
+    # Load the class mapping from file if provided
+    if class_mapping_file:
+        classes = load_class_mapping(class_mapping_file)
+        classes = list(classes.keys())  # Convert dictionary to list of class names
+    else:
+        class_mapping = None
+        thing_classes = ["tree"]
+
     if val_fold is not None:
         for d in ["train", "val"]:
-            DatasetCatalog.register(name + "_" + d, lambda d=d: combine_dicts(train_location,
-                                                                              val_fold, d,
-                                                                              classes=classes, classes_at=classes_at))
-            if classes is None:
-                MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
-            else:
-                MetadataCatalog.get(name + "_" + d).set(thing_classes=classes)
+            DatasetCatalog.register(
+                name + "_" + d,
+                lambda d=d: combine_dicts(train_location, val_fold, d, class_mapping=class_mapping)
+            )
+            MetadataCatalog.get(name + "_" + d).set(thing_classes=thing_classes)
     else:
-        DatasetCatalog.register(name + "_" + "full", lambda d=d: combine_dicts(train_location,
-                                                                               0, "full",
-                                                                               classes=classes, classes_at=classes_at))
-        if classes is None:
-            MetadataCatalog.get(name + "_" + "full").set(thing_classes=["tree"])
-        else:
-            MetadataCatalog.get(name + "_" + "full").set(thing_classes=classes)
+        DatasetCatalog.register(
+            name + "_" + "full",
+            lambda d=d: combine_dicts(train_location, 0, "full", class_mapping=class_mapping)
+        )
+        MetadataCatalog.get(name + "_" + "full").set(thing_classes=thing_classes)
 
 
 def get_classes(out_dir):
@@ -732,6 +718,29 @@ def get_classes(out_dir):
             # add current item to the list
             list.append(x)
     return (list)
+
+
+def load_class_mapping(file_path: str):
+    """Function to load class-to-index mapping from a file.
+
+    Args:
+        file_path: Path to the file (json or pickle)
+
+    Returns:
+        class_to_idx: Loaded class-to-index mapping
+    """
+    file_ext = Path(file_path).suffix
+
+    if file_ext == '.json':
+        with open(file_path, 'r') as f:
+            class_to_idx = json.load(f)
+    elif file_ext == '.pkl':
+        with open(file_path, 'rb') as f:
+            class_to_idx = pickle.load(f)
+    else:
+        raise ValueError("Unsupported file format. Use '.json' or '.pkl'.")
+
+    return class_to_idx
 
 
 def remove_registered_data(name="tree"):
@@ -986,45 +995,25 @@ def get_latest_model_path(output_dir: str) -> str:
 
 
 if __name__ == "__main__":
-    train_location = "/content/drive/Shareddrives/detectree2/data/Paracou/tiles/train/"
-    register_train_data(train_location, "Paracou", 1)  # folder, name, validation fold
+    # Define paths to training data and optional class mapping file
+    train_location = "/path/to/your/train/location"
+    class_mapping_file = "/path/to/your/class_to_idx.json"  # Optional, can be None
 
-    name = "Paracou2019"
-    train_location = "/content/drive/Shareddrives/detectree2/data/Paracou/tiles2019/train/"
-    dataset_dicts = combine_dicts(train_location, 1)
-    trees_metadata = MetadataCatalog.get(name + "_train")
-    # dataset_dicts = get_tree_dicts("./")
-    for d in dataset_dicts:
-        img = cv2.imread(d["file_name"])
-        visualizer = Visualizer(img[:, :, ::-1], metadata=trees_metadata, scale=0.5)
-        out = visualizer.draw_dataset_dict(d)
-        image = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
-        # display(Image.fromarray(image))
-    # Set the base (pre-trained) model from the detectron2 model_zoo
-    model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
-    # Set the names of the registered train and test sets
-    # pretrained model?
-    # trained_model = "/content/drive/Shareddrives/detectree2/models/220629_ParacouSepilokDanum_JB.pth"
-    trains = (
-        "Paracou_train",
-        "Paracou2019_train",
-        "ParacouUAV_train",
-        "Danum_train",
-        "SepilokEast_train",
-        "SepilokWest_train",
-    )
-    tests = (
-        "Paracou_val",
-        "Paracou2019_val",
-        "ParacouUAV_val",
-        "Danum_val",
-        "SepilokEast_val",
-        "SepilokWest_val",
-    )
-    out_dir = "/content/drive/Shareddrives/detectree2/220703_train_outputs"
+    # Register the training and validation datasets using the class mapping
+    # If class_mapping_file is not provided, defaults to "tree"
+    register_train_data(train_location, "MyDataset", val_fold=1, class_mapping_file=class_mapping_file)
 
-    # update_model arg can be used to load in trained  model
-    cfg = setup_cfg(model, trains, tests, eval_period=100, max_iter=3000, out_dir=out_dir)
+    # Set up model configuration, using the class mapping to determine the number of classes
+    cfg = setup_cfg(
+        base_model="COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
+        trains=("MyDataset_train", ),
+        tests=("MyDataset_val", ),
+        max_iter=3000,
+        out_dir="/path/to/output",
+        class_mapping_file=class_mapping_file  # Optional
+    )
+
+    # Train the model
     trainer = MyTrainer(cfg, patience=4)
     trainer.resume_or_load(resume=False)
     trainer.train()
