@@ -408,7 +408,7 @@ def tile_data(
     os.makedirs(out_path, exist_ok=True)
     tilename = Path(img_path).stem
     with rasterio.open(img_path) as data:
-        crs = data.crs.to_string()  # Update CRS handling to avoid deprecated syntax
+        crs = data.crs.to_epsg()  # Update CRS handling to avoid deprecated syntax
 
         tile_args = [
             (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, 
