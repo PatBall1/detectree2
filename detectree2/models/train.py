@@ -679,7 +679,7 @@ def register_train_data(train_location,
     # Load the class mapping from file if provided
     if class_mapping_file:
         classes = load_class_mapping(class_mapping_file)
-        classes = list(classes.keys())  # Convert dictionary to list of class names
+        thing_classes = list(classes.keys())  # Convert dictionary to list of class names
     else:
         class_mapping = None
         thing_classes = ["tree"]
