@@ -753,8 +753,17 @@ def register_test_data(test_location, name="tree"):
         name: string to name data
     """
     d = "test"
-    DatasetCatalog.register(name + "_" + d, lambda d=d: get_tree_dicts(test_location))
-    MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
+
+    class_mapping = None
+    if class_mapping_file:
+        class_mapping = load_class_mapping(class_mapping_file)
+        thing_classes = list(class_mapping.keys())  # Convert dictionary to list of class names
+        print(f"Class mapping loaded: {class_mapping}")  # Debugging step
+    else:
+        thing_classes = ["tree"]
+
+    DatasetCatalog.register(name + "_" + d, lambda d=d: get_tree_dicts(test_location, class_mapping))
+    MetadataCatalog.get(name + "_" + d).set(thing_classes=thing_classes)
 
 
 def load_json_arr(json_path):
