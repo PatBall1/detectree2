@@ -100,7 +100,7 @@ class FlexibleDatasetMapper(DatasetMapper):
             self.logger.warning("Received None for dataset_dict, skipping this entry.")
             return None
 
-        if cfg.IMGMODE == "rgb":
+        if self.cfg.IMGMODE == "rgb":
             return super().__call__(dataset_dict)
 
         try:
@@ -548,6 +548,8 @@ def get_tree_dicts(directory: str, class_mapping: Dict[str, int] = None) -> List
         List of dictionaries corresponding to segmentations of trees. Each dictionary includes
         bounding box around tree and points tracing a polygon around a tree.
     """
+    #print("get ", class_mapping)
+    
     dataset_dicts = []
 
     for filename in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
@@ -629,7 +631,7 @@ def combine_dicts(root_dir: str,
     # Get a list of all directories within the root directory
     # train_dirs = [os.path.join(root_dir, dir) for dir in os.listdir(root_dir)]
 
-    print(class_mapping)
+    #print(class_mapping)
 
     train_dirs = [
             os.path.join(root_dir, dir)
