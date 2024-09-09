@@ -100,6 +100,9 @@ class FlexibleDatasetMapper(DatasetMapper):
             self.logger.warning("Received None for dataset_dict, skipping this entry.")
             return None
 
+        if cfg.IMGMODE == "rgb":
+            return super().__call__(dataset_dict)
+
         try:
             # Handle multi-band image loading using rasterio
             with rasterio.open(dataset_dict["file_name"]) as src:
@@ -116,8 +119,8 @@ class FlexibleDatasetMapper(DatasetMapper):
                 )
 
             # If it's a 3-band image, delegate processing to the parent class
-            if img.shape[-1] == 3:
-                return super().__call__(dataset_dict)
+            #if img.shape[-1] == 3:
+            #    return super().__call__(dataset_dict)
 
             # Otherwise, handle custom multi-band logic
             aug_input = T.AugInput(img)
@@ -624,8 +627,15 @@ def combine_dicts(root_dir: str,
         List of combined dictionaries from the specified directories.
     """
     # Get a list of all directories within the root directory
-    train_dirs = [os.path.join(root_dir, dir) for dir in os.listdir(root_dir)]
+    # train_dirs = [os.path.join(root_dir, dir) for dir in os.listdir(root_dir)]
 
+    print(class_mapping)
+
+    train_dirs = [
+            os.path.join(root_dir, dir)
+            for dir in os.listdir(root_dir)
+            if os.path.isdir(os.path.join(root_dir, dir))
+        ]
     # Handle the different modes for combining dictionaries
     if mode == "train":
         # Exclude the validation directory from the list of directories
@@ -677,11 +687,12 @@ def register_train_data(train_location,
         class_mapping_file: Path to the class mapping file (json or pickle).
     """
     # Load the class mapping from file if provided
+    class_mapping = None
     if class_mapping_file:
-        classes = load_class_mapping(class_mapping_file)
-        thing_classes = list(classes.keys())  # Convert dictionary to list of class names
+        class_mapping = load_class_mapping(class_mapping_file)
+        thing_classes = list(class_mapping.keys())  # Convert dictionary to list of class names
+        print(f"Class mapping loaded: {class_mapping}")  # Debugging step
     else:
-        class_mapping = None
         thing_classes = ["tree"]
 
     if val_fold is not None:
