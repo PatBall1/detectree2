@@ -772,12 +772,12 @@ def setup_cfg(
     base_lr=0.0003389,
     weight_decay=0.001,
     max_iter=1000,
-    num_classes=1,
     eval_period=100,
     out_dir="./train_outputs",
     resize="fixed", # fixed or random or rand_fixed
     imgmode="rgb",
     num_bands=3,
+    class_mapping_file=None,
 ):
     """Set up config object # noqa: D417.
 
@@ -799,7 +799,18 @@ def setup_cfg(
         num_classes: number of classes
         eval_period: number of iterations between evaluations
         out_dir: directory to save outputs
+        resize: resize strategy for images
+        imgmode: image mode (rgb or multispectral)
+        num_bands: number of bands in the image
+        class_mapping_file: path to class mapping file
     """
+
+    # Load the class mapping if provided
+    if class_mapping_file:
+        class_mapping = load_class_mapping(class_mapping_file)
+        num_classes = len(class_mapping)  # Set the number of classes based on the mapping
+    else:
+        num_classes = 1  # Default to 1 class if no mapping is provided
 
     # Validate the resize parameter
     if resize not in {"fixed", "random", "rand_fixed"}:
