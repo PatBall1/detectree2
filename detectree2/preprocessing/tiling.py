@@ -291,8 +291,7 @@ def process_tile_train(
     threshold,
     nan_threshold,
     mode: str = "rgb",
-    class_column: str = 'status',  # Allow user to specify class column
-    class_mapping_file: str = None 
+    class_column: str = None,  # Allow user to specify class column
 ) -> None:
     """Process a single tile for training data.
 
@@ -314,9 +313,6 @@ def process_tile_train(
     Returns:
         None
     """
-    # Load the class-to-index mapping
-    class_to_idx = load_class_mapping(class_mapping_file) if class_mapping_file else None
-
     if mode == "rgb":
         result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, 
                             crowns, threshold, nan_threshold)
@@ -345,14 +341,16 @@ def process_tile_train(
         filename = out_path_root.with_suffix(".geojson")
         moved_scaled = overlapping_crowns.set_geometry(moved_scaled)
 
-        # Ensure we map the selected column to the 'status' field
-        moved_scaled['status'] = moved_scaled[class_column]
+        if class_column is not None:
+            # Ensure we map the selected column to the 'status' field
+            moved_scaled['status'] = moved_scaled[class_column]
+            # Keep only 'status' and geometry
+            moved_scaled = moved_scaled[['geometry', 'status']]
+        else:
+            # Keep only geometry
+            moved_scaled = moved_scaled[['geometry']]
 
-        if class_to_idx:
-            moved_scaled["category_id"] = moved_scaled["status"].map(class_to_idx)
-
-        # Save the result as GeoJSON, replacing the original class column with 'status'
-        moved_scaled = moved_scaled[['geometry', 'status']]  # Keep only 'status' and geometry
+        # Save the result as GeoJSON  
         moved_scaled.to_file(driver="GeoJSON", filename=filename)
 
         # Add image path info to the GeoJSON file
