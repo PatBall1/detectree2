@@ -378,8 +378,7 @@ def tile_data(
     nan_threshold: float = 0.1,
     dtype_bool: bool = False,
     mode: str = "rgb",
-    class_column: str = "status",  # Allow class column to be passed here
-    class_mapping_file: str = None  # Allow optional class mapping
+    class_column: str = None,  # Allow class column to be passed here
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
@@ -410,7 +409,7 @@ def tile_data(
 
         tile_args = [
             (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, 
-             threshold, nan_threshold, mode, class_column, class_mapping_file)
+             threshold, nan_threshold, mode, class_column)
             for minx in np.arange(ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, int)
             for miny in np.arange(ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, 
                                   int)
