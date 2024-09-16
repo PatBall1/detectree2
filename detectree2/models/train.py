@@ -608,7 +608,7 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
 def combine_dicts(root_dir: str,
                   val_dir: int,
                   mode: str = "train",
-                  class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:``
+                  class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:
     """
     Combine dictionaries from different directories based on the specified mode.
 
