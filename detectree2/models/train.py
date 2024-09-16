@@ -12,7 +12,7 @@ import random
 import re
 import time
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import cv2
 import detectron2.data.transforms as T  # noqa:N812
