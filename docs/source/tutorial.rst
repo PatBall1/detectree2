@@ -494,7 +494,8 @@ lighting of the images. These augmentations are only available for RGB images an
 There are three resizing modes for the input data (1) ``fixed``, (2) ``random``, and (3) ``rand_fixed``. This are set
 in the configuration file (``cfg``) with the `setup_cfg` function.
 
-The ``fixed`` mode will resize the input data to a images width of 1000 pixelwise
+The ``fixed`` mode will resize the input data to a images width/height of 1000 pixels. This is efficient but may not
+lead to models that transfer well across scales (e.g. if the model is to be used on a range of different resolutions).
 
 .. code-block:: python
 
