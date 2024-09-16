@@ -536,7 +536,7 @@ class MyTrainer(DefaultTrainer):
         """
         return build_detection_test_loader(cfg, dataset_name, mapper=FlexibleDatasetMapper(cfg, is_train=False))
 
-def get_tree_dicts(directory: str, class_mapping: Dict[str, int] = None) -> List[Dict]:
+def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:
     """Get the tree dictionaries.
 
     Args:
@@ -572,7 +572,7 @@ def get_tree_dicts(directory: str, class_mapping: Dict[str, int] = None) -> List
         record["height"] = height
         record["width"] = width
         record["image_id"] = filename[0:400]
-        # record["annotations"] = {}
+        record["annotations"] = {}
         # print(filename[0:400])
 
         objs = []
@@ -608,7 +608,7 @@ def get_tree_dicts(directory: str, class_mapping: Dict[str, int] = None) -> List
 def combine_dicts(root_dir: str,
                   val_dir: int,
                   mode: str = "train",
-                  class_mapping: Dict[str, int] = None) -> List[Dict]:
+                  class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:``
     """
     Combine dictionaries from different directories based on the specified mode.
 
