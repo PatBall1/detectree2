@@ -347,7 +347,7 @@ def process_tile_train(
             # Keep only 'status' and geometry
             moved_scaled = moved_scaled[['geometry', 'status']]
         else:
-            # Keep only geometry
+            # Keep only geometry to reduce file size
             moved_scaled = moved_scaled[['geometry']]
 
         # Save the result as GeoJSON  
