@@ -572,7 +572,7 @@ def get_tree_dicts(directory: str, class_mapping: Dict[str, int] = None) -> List
         record["height"] = height
         record["width"] = width
         record["image_id"] = filename[0:400]
-        record["annotations"] = []
+        # record["annotations"] = {}
         # print(filename[0:400])
 
         objs = []
