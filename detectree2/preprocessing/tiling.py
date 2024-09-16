@@ -612,11 +612,6 @@ if __name__ == "__main__":
         save_format='json'  # Choose between 'json' or 'pickle'
     )
 
-    # Load the class-to-index mapping from the recorded classes
-    class_mapping_file = os.path.join(out_dir, "class_to_idx.json")
-    with open(class_mapping_file, 'r') as f:
-        class_to_idx = json.load(f)
-
     # Perform the tiling, ensuring the selected class column is used
     tile_data(
         img_path=img_path,
@@ -629,8 +624,7 @@ if __name__ == "__main__":
         nan_threshold=nan_threshold,
         dtype_bool=dtype_bool,
         mode=mode,
-        class_column=class_column,  # Use the selected class column (e.g., 'species', 'status')
-        class_mapping_file=None  # We're now passing None since we don't need an external file
+        class_column=class_column  # Use the selected class column (e.g., 'species', 'status')
     )
 
     # Split the data into training and validation sets (optional)
