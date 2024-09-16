@@ -457,6 +457,94 @@ Training can now commence as before:
    trainer.train()
 
 
+Data augmentation
+-----------------
+
+Data augmentation is a technique used to artificially increase the size of the training dataset by applying random
+transformations to the input data. This can help improve the generalization of the model and reduce overfitting. The
+``detectron2`` library provides a range of data augmentation options that can be used during training. These include
+random flipping, scaling, rotation, and color jittering.
+
+Additionally, resizing of the input data can be applied as an augmentation technique. This can be useful when training
+a model that should be flexible with respect to tile size and resolution.
+
+By default, random rotations and flips will be performed on input images.
+
+.. code-block:: python
+
+   augmentations = [
+      T.RandomRotation(angle=[90, 90], expand=False),
+      T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
+      T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
+   ]
+
+If the input data is RGB, additional augmentations will be applied to adjust the brightness, contrast, saturation, and
+lighting of the images. These augmentations are only available for RGB images and will not be applied to multispectral.
+
+.. code-block:: python
+   # Additional augmentations for RGB images
+   if cfg.IMGMODE == "rgb":
+      augmentations.extend([
+            T.RandomBrightness(0.7, 1.5),
+            T.RandomLighting(0.7),
+            T.RandomContrast(0.6, 1.3),
+            T.RandomSaturation(0.8, 1.4)
+      ])
+
+There are three resizing modes for the input data (1) ``fixed``, (2) ``random``, and (3) ``rand_fixed``. This are set
+in the configuration file (``cfg``) with the `setup_cfg` function.
+
+The ``fixed`` mode will resize the input data to a images width of 1000 pixelwise
+
+.. code-block:: python
+
+   if cfg.RESIZE == "fixed":
+      augmentations.append(T.ResizeShortestEdge([1000, 1000], 1333))
+
+The ``random`` mode will randomly resize (and resample to change the resolutions) the input data to between 0.6 and 1.4
+times the original height/width. This can help the model learn to detect objects at different scales and from images of
+different resolutions (and sensors).
+
+.. code-block:: python
+
+   elif cfg.RESIZE == "random":
+      size = None
+      for i, datas in enumerate(DatasetCatalog.get(cfg.DATASETS.TRAIN[0])):
+            location = datas['file_name']
+            try:
+               # Try to read with cv2 (for RGB images)
+               img = cv2.imread(location)
+               if img is not None:
+                  size = img.shape[0]
+               else:
+                  # Fall back to rasterio for multi-band images
+                  with rasterio.open(location) as src:
+                        size = src.height  # Assuming square images
+            except Exception as e:
+               # Handle any errors that occur during loading
+               print(f"Error loading image {location}: {e}")
+               continue
+            break
+      
+      if size:
+            print("ADD RANDOM RESIZE WITH SIZE = ", size)
+            augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
+
+The ``rand_fixed`` mode constrains the random resizing to a fixed pixel width/height range (regardless of the resolution
+of the input data). This can help to speed up training if the input tiles are high resolution and pushing up against
+available memory limits. It retains the benefits of random resizing but constrains the range of possible sizes.
+
+.. code-block:: python
+
+   elif cfg.RESIZE == "rand_fixed":
+         augmentations.append(T.ResizeScale(0.6, 1.4, 1000, 1000))
+
+Which resizing option is selected depends on the problem at hand. A more precise delineation can be generated if high
+resolution images are retained but this comes at the cost of increased memory usage and slower training times. If the
+model is to be used on a range of different resolutions, random resizing can help the model learn to detect objects at
+different scales.
+
+
 Post-training (check training convergence)
 ------------------------------------------
 

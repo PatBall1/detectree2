@@ -69,7 +69,6 @@ the classes in the training.
         save_format='json'  # Choose between 'json' or 'pickle'
     )
 
-    class_mapping_file = os.path.join(out_dir, "class_to_idx.json")
 
 The class mapping has been saved in the output directory as a json file called
 ``class_to_idx.json``. This file can now be accessed to encode the classes in
@@ -106,3 +105,73 @@ class case except now we point to the column name of the classes.
 Training models
 ---------------
 
+To train with multiple classes, we need to ensure that the classes are
+registered correctly in the dataset catalogue. This can be done with the class
+mapping file that was saved in the previous step. The class mapping file will
+set the classes and their indices.
+
+.. code-block:: python
+
+    from detectree2.models.train import register_train_data, remove_registered_data, setup_cfg, MyTrainer
+    from detectree2.preprocessing.tiling import load_class_mapping
+
+    # Set validation fold
+    val_fold = 5
+
+    site_path = base_dir + "/data/Danum_lianas"
+    train_dir = site_path + "/tilesClass_40_30_0.6/train"
+    class_mapping_file =  site_path + "/tilesClass_40_30_0.6/" + "/class_to_idx.json"
+    data_name = "DanumLiana"
+
+    register_train_data(train_dir, data_name, val_fold=val_fold, class_mapping_file=class_mapping_file)
+
+
+Now the data is registered, should generate the configuration (`cfg`) and train
+the model. By passing the class mapping file to the configuration set up, the
+`cfg` will be register the number of classes.
+
+.. code-block:: python
+
+    from detectron2.modeling import build_model
+    from detectron2.modeling.roi_heads.fast_rcnn import FastRCNNOutputLayers
+    import numpy as np
+    from datetime import date
+
+
+    today = date.today()
+    today = today.strftime("%y%m%d")
+
+    names = [data_name,]
+
+    trains = (names[0] + "_train",)
+    tests = (names[0] + "_val",)
+    out_dir = "/content/drive/MyDrive/WORK/detectree2/models/" + today + "_Danum_lianas"
+
+    base_model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"  # Path to the model config
+
+    # When you increase the number of channels (i.e., the number of filters) in a Convolutional Neural Network (CNN), the general recommendation is to decrease the learning rate
+    lrs = [0.03, 0.003, 0.0003, 0.00003]
+
+    # Set up model configuration, using the class mapping to determine the number of classes
+    cfg = setup_cfg(
+        base_model="COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
+        trains=trains,
+        tests=tests,
+        max_iter=500000,
+        eval_period=50,
+        base_lr=lrs[0],
+        out_dir=out_dir,
+        resize="rand_fixed",
+        class_mapping_file=class_mapping_file  # Optional
+    )
+
+    # Train the model
+    trainer = MyTrainer(cfg, patience=5)
+    trainer.resume_or_load(resume=False)
+    trainer.train()
+
+
+Landscape predictions
+---------------------
+
+COMING SOON
