@@ -993,7 +993,11 @@ def get_latest_model_path(output_dir: str) -> str:
     files = os.listdir(output_dir)
 
     # Find all files that match the pattern and extract their indices
-    model_files = [(f, int(model_pattern.search(f).group(1))) for f in files if model_pattern.search(f)]
+    model_files = []
+    for f in files:
+        match = model_pattern.search(f)
+        if match:
+            model_files.append((f, int(match.group(1))))
 
     if not model_files:
         raise FileNotFoundError(f"No model files found in the directory {output_dir}")
