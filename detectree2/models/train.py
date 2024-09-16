@@ -557,7 +557,7 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
         with open(json_file) as f:
             img_anns = json.load(f)
 
-        record = {}
+        record: Dict[str, Any] = {}
         filename = img_anns["imagePath"]
 
         # Make sure we have the correct height and width
@@ -599,7 +599,7 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
 
             objs.append(obj)
 
-        record["annotations"] = objs
+        record["annotations"] = objs if objs else []
         dataset_dicts.append(record)
 
     return dataset_dicts
