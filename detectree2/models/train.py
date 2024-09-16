@@ -21,7 +21,6 @@ import numpy as np
 import rasterio
 import torch
 import torch.nn as nn
-from detectree2.preprocessing.tiling import load_class_mapping
 from detectron2 import model_zoo
 from detectron2.checkpoint import DetectionCheckpointer  # noqa:F401
 from detectron2.config import get_cfg
@@ -42,6 +41,8 @@ from detectron2.utils.events import get_event_storage  # noqa:F401
 from detectron2.utils.events import EventStorage
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
+
+from detectree2.preprocessing.tiling import load_class_mapping
 
 
 class FlexibleDatasetMapper(DatasetMapper):

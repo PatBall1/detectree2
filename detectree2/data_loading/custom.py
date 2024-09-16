@@ -1,10 +1,11 @@
-import rasterio
-import numpy as np
-import torch
-from torch.utils.data import Dataset
-import detectron2.data.transforms as T
-from detectron2.structures import BoxMode, Instances, BitMasks
 import cv2
+import detectron2.data.transforms as T
+import numpy as np
+import rasterio
+import torch
+from detectron2.structures import BitMasks, BoxMode, Instances
+from torch.utils.data import Dataset
+
 
 class CustomTIFFDataset(Dataset):
     def __init__(self, annotations, transforms=None):
