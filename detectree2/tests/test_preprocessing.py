@@ -62,11 +62,11 @@ class TestCase(unittest.TestCase):
         tile_height = 40
         threshold = 0.2
 
-        from detectree2.preprocessing.tiling import tile_data_train
+        from detectree2.preprocessing.tiling import tile_data
 
         out_dir = os.path.join(out_dir, "tiles")
 
-        tile_data_train(data, out_dir, buffer, tile_width, tile_height, crowns, threshold)
+        tile_data(img_path, out_dir, buffer, tile_width, tile_height, crowns, threshold)
 
     # TODO: install pytest-depends to automatically order
 
