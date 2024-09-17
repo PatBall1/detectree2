@@ -11,7 +11,7 @@ import os
 import pickle
 import random
 import shutil
-import warnings
+import warnings  # noqa: F401
 from math import ceil
 from pathlib import Path
 
@@ -20,11 +20,11 @@ import geopandas as gpd
 import numpy as np
 import rasterio
 from fiona.crs import from_epsg  # noqa: F401
-from rasterio.crs import CRS
+# from rasterio.crs import CRS
 from rasterio.errors import RasterioIOError
-from rasterio.io import DatasetReader
+# from rasterio.io import DatasetReader
 from rasterio.mask import mask
-from rasterio.windows import from_bounds
+# from rasterio.windows import from_bounds
 from shapely.geometry import box
 
 # Configure logging
@@ -107,7 +107,7 @@ def process_tile(
         miny: Minimum y coordinate of tile
         crs: Coordinate reference system
         tilename: Name of the tile
-    
+
     Returns:
         None
     """
@@ -132,7 +132,7 @@ def process_tile(
                     return None
 
             out_img, out_transform = mask(data, shapes=coords, crop=True)
-        
+
             out_sumbands = np.sum(out_img, axis=0)
             zero_mask = np.where(out_sumbands == 0, 1, 0)
             nan_mask = np.where(out_sumbands == 765, 1, 0)
@@ -162,7 +162,7 @@ def process_tile(
             with rasterio.open(out_tif) as clipped:
                 arr = clipped.read()
                 r, g, b = arr[0], arr[1], arr[2]
-                rgb = np.dstack((b, g, r)) # Reorder for cv2 (BGRA)
+                rgb = np.dstack((b, g, r))  # Reorder for cv2 (BGRA)
 
                 # Rescale to 0-255 if necessary
                 if np.max(g) > 255:
@@ -174,7 +174,7 @@ def process_tile(
 
             if overlapping_crowns is not None:
                 return data, out_path_root, overlapping_crowns, minx, miny, buffer
-            
+
             return data, out_path_root, None, minx, miny, buffer
 
     except RasterioIOError as e:
@@ -183,6 +183,7 @@ def process_tile(
     except Exception as e:
         logger.error(f"Error processing tile {tilename} at ({minx}, {miny}): {e}")
         return None
+
 
 def process_tile_ms(
     img_path: str,
@@ -212,7 +213,7 @@ def process_tile_ms(
         miny: Minimum y coordinate of tile
         crs: Coordinate reference system
         tilename: Name of the tile
-    
+
     Returns:
         None
     """
@@ -266,7 +267,7 @@ def process_tile_ms(
 
             if overlapping_crowns is not None:
                 return data, out_path_root, overlapping_crowns, minx, miny, buffer
-            
+
             return data, out_path_root, None, minx, miny, buffer
 
     except RasterioIOError as e:
@@ -275,6 +276,7 @@ def process_tile_ms(
     except Exception as e:
         logger.error(f"Error processing tile {tilename} at ({minx}, {miny}): {e}")
         return None
+
 
 def process_tile_train(
     img_path: str,
@@ -309,19 +311,19 @@ def process_tile_train(
         crowns: Crown polygons as a geopandas dataframe
         threshold: Min proportion of the tile covered by crowns to be accepted {0,1}
         nan_theshold: Max proportion of tile covered by nans
-    
+
     Returns:
         None
     """
     if mode == "rgb":
-        result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, 
-                            crowns, threshold, nan_threshold)
+        result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs,
+                              tilename, crowns, threshold, nan_threshold)
     elif mode == "ms":
-        result = process_tile_ms(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, 
-                            crowns, threshold, nan_threshold)
-    
+        result = process_tile_ms(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs,
+                                 tilename, crowns, threshold, nan_threshold)
+
     if result is None:
-        #logger.warning(f"Skipping tile at ({minx}, {miny}) due to insufficient data.")
+        # logger.warning(f"Skipping tile at ({minx}, {miny}) due to insufficient data.")
         return
 
     data, out_path_root, overlapping_crowns, minx, miny, buffer = result
@@ -350,7 +352,7 @@ def process_tile_train(
             # Keep only geometry to reduce file size
             moved_scaled = moved_scaled[['geometry']]
 
-        # Save the result as GeoJSON  
+        # Save the result as GeoJSON
         moved_scaled.to_file(driver="GeoJSON", filename=filename)
 
         # Add image path info to the GeoJSON file
@@ -363,9 +365,11 @@ def process_tile_train(
         logger.warning("Cannot write empty DataFrame to file.")
         return
 
+
 # Define a top-level helper function
 def process_tile_train_helper(args):
     return process_tile_train(*args)
+
 
 def tile_data(
     img_path: str,
@@ -382,8 +386,8 @@ def tile_data(
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
-    Tiles up large rasters into managable tiles for training and prediction. If crowns are not supplied the function 
-    will tile up the entire landscape for prediction. If crowns are supplied the function will tile these with the image 
+    Tiles up large rasters into managable tiles for training and prediction. If crowns are not supplied the function
+    will tile up the entire landscape for prediction. If crowns are supplied the function will tile these with the image
     and skip tiles without a minimum coverage of crowns. The 'threshold' can be varied to ensure a good coverage of
     crowns across a traing tile. Tiles that do not have sufficient coverage are skipped.
 
@@ -408,10 +412,10 @@ def tile_data(
         crs = data.crs.to_epsg()  # Update CRS handling to avoid deprecated syntax
 
         tile_args = [
-            (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, 
+            (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns,
              threshold, nan_threshold, mode, class_column)
             for minx in np.arange(ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, int)
-            for miny in np.arange(ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, 
+            for miny in np.arange(ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height,
                                   int)
         ]
 
@@ -479,13 +483,13 @@ def record_classes(crowns: gpd.GeoDataFrame, out_dir: str, column: str = 'status
     """
     # Extract unique class names from the specified column
     list_of_classes = crowns[column].unique().tolist()
-    
+
     # Sort the list of classes in alphabetical order
     list_of_classes.sort()
 
     # Create a dictionary for class-to-index mapping
     class_to_idx = {class_name: idx for idx, class_name in enumerate(list_of_classes)}
-    
+
     # Save the class-to-index mapping to disk
     out_path = Path(out_dir)
     os.makedirs(out_path, exist_ok=True)
@@ -536,7 +540,7 @@ def to_traintest_folders(  # noqa: C901
     Path(out_dir / "train").mkdir(parents=True, exist_ok=True)
     Path(out_dir / "test").mkdir(parents=True, exist_ok=True)
 
-    #file_names = tiles_dir.glob("*.png")
+    # file_names = tiles_dir.glob("*.png")
     file_names = tiles_dir.glob("*.geojson")
     file_roots = [item.stem for item in file_names]
 

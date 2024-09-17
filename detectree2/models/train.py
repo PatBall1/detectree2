@@ -47,12 +47,13 @@ from detectree2.preprocessing.tiling import load_class_mapping
 
 class FlexibleDatasetMapper(DatasetMapper):
     """
-    A flexible dataset mapper that extends the standard DatasetMapper to handle multi-band images 
-    and custom augmentations.
+    A flexible dataset mapper that extends the standard DatasetMapper to handle
+    multi-band images and custom augmentations.
 
-    This class is designed to work with datasets that may contain images with more than three channels 
-    (e.g., multispectral images) and allows for custom augmentations to be applied. It also handles 
-    semantic segmentation data if provided in the dataset.
+    This class is designed to work with datasets that may contain images with
+    more than three channels (e.g., multispectral images) and allows for custom
+    augmentations to be applied. It also handles semantic segmentation data if
+    provided in the dataset.
 
     Args:
         cfg (CfgNode): Configuration object containing dataset and model configurations.
@@ -91,7 +92,7 @@ class FlexibleDatasetMapper(DatasetMapper):
         Process a single dataset dictionary, applying the necessary transformations and augmentations.
 
         Args:
-            dataset_dict (dict): A dictionary containing data for a single dataset item, including 
+            dataset_dict (dict): A dictionary containing data for a single dataset item, including
                                  file names and metadata.
 
         Returns:
@@ -116,12 +117,9 @@ class FlexibleDatasetMapper(DatasetMapper):
             # Size check similar to utils.check_image_size
             if img.shape[:2] != (dataset_dict.get("height"), dataset_dict.get("width")):
                 self.logger.warning(
-                    f"Image size {img.shape[:2]} does not match expected size {(dataset_dict.get('height'), dataset_dict.get('width'))}."
+                    f"""Image size {img.shape[:2]} does not match expected size {(dataset_dict.get('height'),
+                                                                                dataset_dict.get('width'))}."""
                 )
-
-            # If it's a 3-band image, delegate processing to the parent class
-            #if img.shape[-1] == 3:
-            #    return super().__call__(dataset_dict)
 
             # Otherwise, handle custom multi-band logic
             aug_input = T.AugInput(img)
@@ -151,6 +149,7 @@ class FlexibleDatasetMapper(DatasetMapper):
             file_name = dataset_dict.get('file_name', 'unknown') if dataset_dict else 'unknown'
             self.logger.error(f"Error processing {file_name}: {e}")
             return None
+
 
 class LossEvalHook(HookBase):
     """
@@ -229,7 +228,7 @@ class LossEvalHook(HookBase):
             # Calculate loss for the current batch
             loss_batch = self._get_loss(inputs)
             losses.append(loss_batch)
-        
+
         mean_loss = np.mean(losses)
 
         # Calculate the average AP50 across datasets if multiple datasets are used for testing
@@ -318,7 +317,7 @@ class MyTrainer(DefaultTrainer):
     """
     Custom Trainer class that extends the DefaultTrainer.
 
-    This trainer adds flexibility for handling different image types (e.g., RGB and multi-band images) 
+    This trainer adds flexibility for handling different image types (e.g., RGB and multi-band images)
     and custom training behavior, such as early stopping and specialized data augmentation strategies.
 
     Args:
@@ -334,7 +333,7 @@ class MyTrainer(DefaultTrainer):
         """
         Run the training loop.
 
-        This method overrides the DefaultTrainer's train method to include early stopping and 
+        This method overrides the DefaultTrainer's train method to include early stopping and
         custom logging of Average Precision (AP) metrics.
 
         Returns:
@@ -397,7 +396,7 @@ class MyTrainer(DefaultTrainer):
         """
         Build the training hooks, including the custom LossEvalHook.
 
-        This method adds a custom hook for evaluating the model's loss during training, with support for 
+        This method adds a custom hook for evaluating the model's loss during training, with support for
         early stopping based on the AP50 metric.
 
         Returns:
@@ -452,7 +451,7 @@ class MyTrainer(DefaultTrainer):
         """
         Build the training data loader with support for custom augmentations and image types.
 
-        This method configures the data loader to apply specific augmentations depending on the image mode 
+        This method configures the data loader to apply specific augmentations depending on the image mode
         (RGB or multi-band) and resize strategy defined in the configuration.
 
         Args:
@@ -499,12 +498,9 @@ class MyTrainer(DefaultTrainer):
                     print(f"Error loading image {location}: {e}")
                     continue
                 break
-            
+
             if size:
                 print("ADD RANDOM RESIZE WITH SIZE = ", size)
-                #min_size = int(size * 0.6)
-                #max_size = int(size * 1.4)
-                #augmentations.append(T.RandomResize(min_size=(min_size, min_size), max_size=max_size))
                 augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
             else:
                 raise ValueError("Failed to determine image size for random resize")
@@ -519,13 +515,13 @@ class MyTrainer(DefaultTrainer):
                 augmentations=augmentations,
             ),
         )
-    
+
     @classmethod
     def build_test_loader(cls, cfg, dataset_name):
         """
         Build the test data loader.
 
-        This method configures the data loader for evaluation, using the FlexibleDatasetMapper 
+        This method configures the data loader for evaluation, using the FlexibleDatasetMapper
         to handle custom augmentations and image types.
 
         Args:
@@ -536,6 +532,7 @@ class MyTrainer(DefaultTrainer):
             DataLoader: A data loader for the test dataset.
         """
         return build_detection_test_loader(cfg, dataset_name, mapper=FlexibleDatasetMapper(cfg, is_train=False))
+
 
 def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:
     """Get the tree dictionaries.
@@ -549,8 +546,7 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
         List of dictionaries corresponding to segmentations of trees. Each dictionary includes
         bounding box around tree and points tracing a polygon around a tree.
     """
-    #print("get ", class_mapping)
-    
+
     dataset_dicts = []
 
     for filename in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
@@ -614,26 +610,22 @@ def combine_dicts(root_dir: str,
     Combine dictionaries from different directories based on the specified mode.
 
     This function aggregates tree dictionaries from multiple directories within a root directory.
-    Depending on the mode, it either combines dictionaries from all directories, 
+    Depending on the mode, it either combines dictionaries from all directories,
     all except a specified validation directory, or only from the validation directory.
 
     Args:
         root_dir (str): The root directory containing subdirectories with tree dictionaries.
         val_dir (int): The index (1-based) of the validation directory to exclude or use depending on the mode.
-        mode (str, optional): The mode of operation. Can be "train", "val", or "full". 
-                              "train" excludes the validation directory, 
-                              "val" includes only the validation directory, 
+        mode (str, optional): The mode of operation. Can be "train", "val", or "full".
+                              "train" excludes the validation directory,
+                              "val" includes only the validation directory,
                               and "full" includes all directories. Defaults to "train".
         class_mapping: A dictionary mapping class labels to category indices (optional).
 
     Returns:
         List of combined dictionaries from the specified directories.
     """
-    # Get a list of all directories within the root directory
-    # train_dirs = [os.path.join(root_dir, dir) for dir in os.listdir(root_dir)]
-
-    #print(class_mapping)
-
+    # Get the list of directories within the root directory
     train_dirs = [
             os.path.join(root_dir, dir)
             for dir in os.listdir(root_dir)
@@ -715,7 +707,7 @@ def register_train_data(train_location,
 
 def get_classes(out_dir):
     """Function that will read the classes that are recorded during tiling.
-    
+
     Args:
         out_dir: directory where classes.txt is located
 
@@ -748,7 +740,7 @@ def remove_registered_data(name="tree"):
 
 def register_test_data(test_location, name="tree"):
     """Register data for testing.
-    
+
     Args:
         test_location: directory containing test data
         name: string to name data
@@ -769,7 +761,7 @@ def register_test_data(test_location, name="tree"):
 
 def load_json_arr(json_path):
     """Load json array.
-    
+
     Args:
         json_path: path to json file
     """
@@ -797,7 +789,7 @@ def setup_cfg(
     max_iter=1000,
     eval_period=100,
     out_dir="./train_outputs",
-    resize="fixed", # fixed or random or rand_fixed
+    resize="fixed",  # "fixed" or "random" or "rand_fixed"
     imgmode="rgb",
     num_bands=3,
     class_mapping_file=None,
@@ -866,15 +858,15 @@ def setup_cfg(
     cfg.TEST.EVAL_PERIOD = eval_period
     cfg.RESIZE = resize
     cfg.INPUT.MIN_SIZE_TRAIN = 1000
-    cfg.IMGMODE = imgmode # rgb or multispectral
+    cfg.IMGMODE = imgmode  # "rgb" or "ms" (multispectral)
     if num_bands > 3:
         # Adjust PIXEL_MEAN and PIXEL_STD for the number of bands
         default_pixel_mean = cfg.MODEL.PIXEL_MEAN
         default_pixel_std = cfg.MODEL.PIXEL_STD
         # Extend or truncate the PIXEL_MEAN and PIXEL_STD based on num_bands
-        cfg.MODEL.PIXEL_MEAN = (default_pixel_mean * (num_bands // len(default_pixel_mean)) + 
+        cfg.MODEL.PIXEL_MEAN = (default_pixel_mean * (num_bands // len(default_pixel_mean)) +
                                 default_pixel_mean[:num_bands % len(default_pixel_mean)])
-        cfg.MODEL.PIXEL_STD = (default_pixel_std * (num_bands // len(default_pixel_std)) + 
+        cfg.MODEL.PIXEL_STD = (default_pixel_std * (num_bands // len(default_pixel_std)) +
                                default_pixel_std[:num_bands % len(default_pixel_std)])
     return cfg
 
@@ -887,7 +879,7 @@ def predictions_on_data(directory=None,
                         geos_exist=True,
                         num_predictions=0):
     """Prediction produced from a test folder and outputted to predictions folder.
-    
+
     Args:
         directory: directory containing test data
         predictor: predictor object
@@ -942,12 +934,13 @@ def predictions_on_data(directory=None,
             with open(output_file, "w") as dest:
                 json.dump(evaluations, dest)
 
+
 def modify_conv1_weights(model, num_input_channels):
     """
     Modify the weights of the first convolutional layer (conv1) to accommodate a different number of input channels.
 
-    This function adjusts the weights of the `conv1` layer in the model's backbone to support a custom number 
-    of input channels. It creates a new weight tensor with the desired number of input channels, 
+    This function adjusts the weights of the `conv1` layer in the model's backbone to support a custom number
+    of input channels. It creates a new weight tensor with the desired number of input channels,
     and initializes it by repeating the weights of the original channels.
 
     Args:
@@ -973,7 +966,7 @@ def modify_conv1_weights(model, num_input_channels):
             num_input_channels, old_weights.size(0), kernel_size=7, stride=2, padding=3, bias=False
         )
 
-        # Copy the modified weights into the new conv1 layer        
+        # Copy the modified weights into the new conv1 layer
         model.backbone.bottom_up.stem.conv1.weight.copy_(new_weights)
 
 
