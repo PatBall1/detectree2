@@ -1,6 +1,7 @@
 Tutorial
 ========
 
+
 This tutorial goes through the steps of single class (tree) detection and 
 delineation from RGB and multispectral data. A guide to multiclass prediction
 (e.g. species mapping, disease mapping) is coming soon. Example data that can

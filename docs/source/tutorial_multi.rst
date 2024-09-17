@@ -17,7 +17,6 @@ The key steps are:
 4. Making landscape level predictions
 
 
-
 Preparing data (RGB and multispectral)
 --------------------------------------
 
