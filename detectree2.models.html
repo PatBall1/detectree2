@@ -16,7 +16,7 @@
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=aec50437"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -47,8 +47,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">2. Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">3. Contributing guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="using-git.html">4. Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_multi.html">3. Tutorial (multiclass)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">4. Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">5. Git/Github</a></li>
 </ul>
 
         </div>
@@ -515,33 +516,65 @@ Another copy is produced to overlay with pngs.</p>
 <p>Classes and functions to train a model based on othomosaics and corresponding
 manual crown data.</p>
 <dl class="py class">
+<dt class="sig sig-object py" id="detectree2.models.train.FlexibleDatasetMapper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">FlexibleDatasetMapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_train</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">augmentations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.FlexibleDatasetMapper" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DatasetMapper</span></code></p>
+<p>A flexible dataset mapper that extends the standard DatasetMapper to handle
+multi-band images and custom augmentations.</p>
+<p>This class is designed to work with datasets that may contain images with
+more than three channels (e.g., multispectral images) and allows for custom
+augmentations to be applied. It also handles semantic segmentation data if
+provided in the dataset.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>cfg (CfgNode): Configuration object containing dataset and model configurations.
+is_train (bool): Flag indicating whether the mapper is being used for training. Default is True.
+augmentations (list, optional): List of augmentations to be applied. Default is an empty list.</p>
+</dd>
+<dt>Attributes:</dt><dd><p>cfg (CfgNode): Stores the configuration object for later use.
+is_train (bool): Indicates whether the mapper is in training mode.
+logger (Logger): Logger instance for logging messages.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="detectree2.models.train.LossEvalHook">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">LossEvalHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_period</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.LossEvalHook" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">HookBase</span></code></p>
-<p>Do inference and get the loss metric.</p>
-<p>Class to:
-- Do inference of dataset like an Evaluator does
-- Get the loss metric like the trainer does
-<a class="reference external" href="https://github.com/facebookresearch/detectron2/blob/master/detectron2/evaluation/evaluator.py">https://github.com/facebookresearch/detectron2/blob/master/detectron2/evaluation/evaluator.py</a>
-<a class="reference external" href="https://github.com/facebookresearch/detectron2/blob/master/detectron2/engine/train_loop.py">https://github.com/facebookresearch/detectron2/blob/master/detectron2/engine/train_loop.py</a>
-See <a class="reference external" href="https://gist.github.com/ortegatron/c0dad15e49c2b74de8bb09a5615d9f6b">https://gist.github.com/ortegatron/c0dad15e49c2b74de8bb09a5615d9f6b</a></p>
+<p>A custom hook for evaluating loss during training and managing model checkpoints based on evaluation metrics.</p>
+<p>This hook is designed to:
+- Perform inference on a dataset similarly to an Evaluator.
+- Calculate and log the loss metric during training.
+- Save the best model checkpoint based on a specified evaluation metric (e.g., AP50).
+- Implement early stopping if the evaluation metric does not improve over a specified number of evaluations.</p>
 <dl class="simple">
-<dt>Attributes:</dt><dd><p>model: model to train
-period: number of iterations between evaluations
-data_loader: data loader to use for evaluation
-patience: number of evaluation periods to wait for improvement</p>
+<dt>Attributes:</dt><dd><p>_model: The model to evaluate.
+_period: Number of iterations between evaluations.
+_data_loader: The data loader used for evaluation.
+patience: Number of evaluation periods to wait before early stopping.
+iter: Tracks the number of evaluations since the last improvement in the evaluation metric.
+max_ap: The best evaluation metric (e.g., AP50) achieved during training.
+best_iter: The iteration at which the best evaluation metric was achieved.</p>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="detectree2.models.train.LossEvalHook.after_step">
 <span class="sig-name descname"><span class="pre">after_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.LossEvalHook.after_step" title="Link to this definition"></a></dt>
-<dd><p>Called after each iteration.</p>
+<dd><p>Hook to be called after each training iteration to evaluate the model and manage checkpoints.</p>
+<ul class="simple">
+<li><p>Evaluates the model at regular intervals.</p></li>
+<li><p>Saves the best model checkpoint based on the AP50 metric.</p></li>
+<li><p>Implements early stopping if the AP50 does not improve after a set number of evaluations.</p></li>
+</ul>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="detectree2.models.train.LossEvalHook.after_train">
 <span class="sig-name descname"><span class="pre">after_train</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.LossEvalHook.after_train" title="Link to this definition"></a></dt>
-<dd><p>Called after the last iteration.</p>
+<dd><p>Hook to be called after training is complete to load the best model checkpoint based on AP50.</p>
+<ul class="simple">
+<li><p>Selects and loads the model checkpoint with the best AP50.</p></li>
+</ul>
 </dd></dl>
 
 </dd></dl>
@@ -550,30 +583,65 @@ patience: number of evaluation periods to wait for improvement</p>
 <dt class="sig sig-object py" id="detectree2.models.train.MyTrainer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">MyTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.MyTrainer" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DefaultTrainer</span></code></p>
-<p>Summary.</p>
+<p>Custom Trainer class that extends the DefaultTrainer.</p>
+<p>This trainer adds flexibility for handling different image types (e.g., RGB and multi-band images)
+and custom training behavior, such as early stopping and specialized data augmentation strategies.</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>DefaultTrainer (_type_): _description_</p>
-</dd>
-<dt>Returns:</dt><dd><p>_type_: _description_</p>
+<dt>Args:</dt><dd><p>cfg (CfgNode): Configuration object containing the model and dataset configurations.
+patience (int): Number of evaluation periods to wait for improvement before early stopping.</p>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="detectree2.models.train.MyTrainer.build_evaluator">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_evaluator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.MyTrainer.build_evaluator" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Returns:</dt><dd><p>DatasetEvaluator or None</p>
+<dd><p>Build the evaluator for the model.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>cfg (CfgNode): Configuration object.
+dataset_name (str): Name of the dataset to evaluate.
+output_folder (str, optional): Directory to save evaluation results. Defaults to “eval”.</p>
+</dd>
+<dt>Returns:</dt><dd><p>COCOEvaluator: An evaluator for COCO-style datasets.</p>
 </dd>
 </dl>
-<p>It is not implemented by default.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="detectree2.models.train.MyTrainer.build_hooks">
 <span class="sig-name descname"><span class="pre">build_hooks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.MyTrainer.build_hooks" title="Link to this definition"></a></dt>
-<dd><p>Build a list of default hooks, including timing, evaluation,
-checkpointing, lr scheduling, precise BN, writing events.</p>
+<dd><p>Build the training hooks, including the custom LossEvalHook.</p>
+<p>This method adds a custom hook for evaluating the model’s loss during training, with support for
+early stopping based on the AP50 metric.</p>
 <dl class="simple">
-<dt>Returns:</dt><dd><p>list[HookBase]:</p>
+<dt>Returns:</dt><dd><p>list: A list of hooks to be used during training.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="detectree2.models.train.MyTrainer.build_test_loader">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_test_loader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.MyTrainer.build_test_loader" title="Link to this definition"></a></dt>
+<dd><p>Build the test data loader.</p>
+<p>This method configures the data loader for evaluation, using the FlexibleDatasetMapper
+to handle custom augmentations and image types.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>cfg (CfgNode): Configuration object.
+dataset_name (str): Name of the dataset to load for testing.</p>
+</dd>
+<dt>Returns:</dt><dd><p>DataLoader: A data loader for the test dataset.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="detectree2.models.train.MyTrainer.build_train_loader">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_train_loader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.MyTrainer.build_train_loader" title="Link to this definition"></a></dt>
+<dd><p>Build the training data loader with support for custom augmentations and image types.</p>
+<p>This method configures the data loader to apply specific augmentations depending on the image mode
+(RGB or multi-band) and resize strategy defined in the configuration.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>cfg (CfgNode): Configuration object.</p>
+</dd>
+<dt>Returns:</dt><dd><p>DataLoader: A data loader for the training dataset.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -581,38 +649,48 @@ checkpointing, lr scheduling, precise BN, writing events.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="detectree2.models.train.MyTrainer.train">
 <span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.MyTrainer.train" title="Link to this definition"></a></dt>
-<dd><p>Run training.</p>
+<dd><p>Run the training loop.</p>
+<p>This method overrides the DefaultTrainer’s train method to include early stopping and
+custom logging of Average Precision (AP) metrics.</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>start_iter, max_iter (int): See docs above</p>
-</dd>
-<dt>Returns:</dt><dd><p>OrderedDict of results, if evaluation is enabled. Otherwise None.</p>
+<dt>Returns:</dt><dd><p>OrderedDict: Results from evaluation, if evaluation is enabled. Otherwise, None.</p>
 </dd>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="detectree2.models.train.build_train_loader">
-<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">build_train_loader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.build_train_loader" title="Link to this definition"></a></dt>
-<dd><p>Summary.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>cfg (_type_): _description_</p>
-</dd>
-<dt>Returns:</dt><dd><p>_type_: _description_</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.train.combine_dicts">
-<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">combine_dicts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'train'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classes_at</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#detectree2.models.train.combine_dicts" title="Link to this definition"></a></dt>
-<dd><p>Join tree dicts from different directories.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>root_dir:
-val_dir:</p>
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">combine_dicts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'train'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#detectree2.models.train.combine_dicts" title="Link to this definition"></a></dt>
+<dd><p>Combine dictionaries from different directories based on the specified mode.</p>
+<p>This function aggregates tree dictionaries from multiple directories within a root directory.
+Depending on the mode, it either combines dictionaries from all directories,
+all except a specified validation directory, or only from the validation directory.</p>
+<dl>
+<dt>Args:</dt><dd><p>root_dir (str): The root directory containing subdirectories with tree dictionaries.
+val_dir (int): The index (1-based) of the validation directory to exclude or use depending on the mode.
+mode (str, optional): The mode of operation. Can be “train”, “val”, or “full”.</p>
+<blockquote>
+<div><p>“train” excludes the validation directory,
+“val” includes only the validation directory,
+and “full” includes all directories. Defaults to “train”.</p>
+</div></blockquote>
+<p>class_mapping: A dictionary mapping class labels to category indices (optional).</p>
 </dd>
-<dt>Returns:</dt><dd><p>Concatenated array of dictionaries over all directories</p>
+<dt>Returns:</dt><dd><p>List of combined dictionaries from the specified directories.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.train.get_classes">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">get_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.get_classes" title="Link to this definition"></a></dt>
+<dd><p>Function that will read the classes that are recorded during tiling.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>out_dir: directory where classes.txt is located</p>
+</dd>
+<dt>Returns:</dt><dd><p>list of classes</p>
 </dd>
 </dl>
 </dd></dl>
@@ -629,8 +707,20 @@ val_dir:</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.train.get_latest_model_path">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">get_latest_model_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#detectree2.models.train.get_latest_model_path" title="Link to this definition"></a></dt>
+<dd><p>Find the model file with the highest index in the specified output directory.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>output_dir (str): The directory where the model files are stored.</p>
+</dd>
+<dt>Returns:</dt><dd><p>str: The path to the model file with the highest index.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.train.get_tree_dicts">
-<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">get_tree_dicts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classes_at</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#detectree2.models.train.get_tree_dicts" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">get_tree_dicts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#detectree2.models.train.get_tree_dicts" title="Link to this definition"></a></dt>
 <dd><p>Get the tree dictionaries.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>directory: Path to directory
@@ -647,35 +737,62 @@ bounding box around tree and points tracing a polygon around a tree.</p>
 <dt class="sig sig-object py" id="detectree2.models.train.load_json_arr">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">load_json_arr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.load_json_arr" title="Link to this definition"></a></dt>
 <dd><p>Load json array.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>json_path: path to json file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="detectree2.models.train.modify_conv1_weights">
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">modify_conv1_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_input_channels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.modify_conv1_weights" title="Link to this definition"></a></dt>
+<dd><p>Modify the weights of the first convolutional layer (conv1) to accommodate a different number of input channels.</p>
+<p>This function adjusts the weights of the <cite>conv1</cite> layer in the model’s backbone to support a custom number
+of input channels. It creates a new weight tensor with the desired number of input channels,
+and initializes it by repeating the weights of the original channels.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>model (torch.nn.Module): The model containing the convolutional layer to modify.
+num_input_channels (int): The number of input channels for the new conv1 layer.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.train.predictions_on_data">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">predictions_on_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictor=&lt;class</span> <span class="pre">'detectron2.engine.defaults.DefaultTrainer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trees_metadata=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geos_exist=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_predictions=0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.predictions_on_data" title="Link to this definition"></a></dt>
 <dd><p>Prediction produced from a test folder and outputted to predictions folder.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="detectree2.models.train.read_data">
-<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">read_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.read_data" title="Link to this definition"></a></dt>
-<dd><p>Function that will read the classes that are recorded during tiling.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>directory: directory containing test data
+predictor: predictor object
+trees_metadata: metadata for trees
+save: boolean to save predictions
+scale: scale of image
+geos_exist: boolean to determine if geojson files exist
+num_predictions: number of predictions to make</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.train.register_test_data">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">register_test_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_location</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tree'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.register_test_data" title="Link to this definition"></a></dt>
 <dd><p>Register data for testing.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>test_location: directory containing test data
+name: string to name data</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.train.register_train_data">
-<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">register_train_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_location</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'tree'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_fold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classes_at</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.register_train_data" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">register_train_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_location</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'tree'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_fold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_mapping_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.register_train_data" title="Link to this definition"></a></dt>
 <dd><p>Register data for training and (optionally) validation.</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>train_location: directory containing training folds
-name: string to name data
-val_fold: fold assigned for validation and tuning. If not given,
-will take place on all folds.</p>
+<dt>Args:</dt><dd><p>train_location: Directory containing training folds.
+name: Name to register the dataset.
+val_fold: Validation fold index (optional).
+class_mapping_file: Path to the class mapping file (json or pickle).</p>
 </dd>
 </dl>
 </dd></dl>
@@ -692,7 +809,7 @@ will take place on all folds.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.train.setup_cfg">
-<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">setup_cfg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trains</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('trees_train',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tests</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('trees_val',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ims_per_batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backbone_freeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warm_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size_per_im</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0003389</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./train_outputs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.setup_cfg" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">setup_cfg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trains</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('trees_train',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tests</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('trees_val',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ims_per_batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backbone_freeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warm_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size_per_im</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0003389</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./train_outputs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fixed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imgmode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rgb'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bands</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_mapping_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.setup_cfg" title="Link to this definition"></a></dt>
 <dd><p>Set up config object # noqa: D417.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>base_model: base pre-trained model from detectron2 model_zoo
@@ -711,7 +828,11 @@ weight_decay: weight decay for optimizer
 max_iter: maximum number of iterations
 num_classes: number of classes
 eval_period: number of iterations between evaluations
-out_dir: directory to save outputs</p>
+out_dir: directory to save outputs
+resize: resize strategy for images
+imgmode: image mode (rgb or multispectral)
+num_bands: number of bands in the image
+class_mapping_file: path to class mapping file</p>
 </dd>
 </dl>
 </dd></dl>

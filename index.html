@@ -16,9 +16,11 @@
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=aec50437"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -48,8 +50,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">2. Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">3. Contributing guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="using-git.html">4. Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_multi.html">3. Tutorial (multiclass)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">4. Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">5. Git/Github</a></li>
 </ul>
 
         </div>
@@ -103,25 +106,35 @@ Accurate delineation of individual tree crowns in tropical forests from aerial R
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">2. Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#preparing-data">2.1. Preparing data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#training-a-model">2.2. Training a model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#evaluating-model-performance">2.3. Evaluating model performance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#generating-landscape-predictions">2.4. Generating landscape predictions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#preparing-data-rgb-and-multispectral">2.1. Preparing data (RGB and multispectral)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#training-a-model-rgb">2.2. Training a model (RGB)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#training-a-model-multispectral">2.3. Training a model (multispectral)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#data-augmentation">2.4. Data augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#post-training-check-training-convergence">2.5. Post-training (check training convergence)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#performance-metrics">2.6. Performance metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#evaluating-model-performance">2.7. Evaluating model performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#generating-landscape-predictions">2.8. Generating landscape predictions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">3. Contributing guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#contributing-to-detectree2">3.1. Contributing to Detectree2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#detectree2-setup-for-developers">3.2. Detectree2 setup for developers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#continuous-integration">3.3. Continuous integration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#automatic-documentation">3.4. Automatic Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#tests">3.5. Tests</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#building-detectree2">3.6. Building Detectree2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#python-development-environment">3.7. Python development environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_multi.html">3. Tutorial (multiclass)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_multi.html#preparing-data-rgb-and-multispectral">3.1. Preparing data (RGB and multispectral)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_multi.html#training-models">3.2. Training models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_multi.html#landscape-predictions">3.3. Landscape predictions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="using-git.html">4. Git/Github</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="using-git.html#overview">4.1. Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="using-git.html#more-advanced-git-practices">4.2. More advanced Git Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">4. Contributing guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#contributing-to-detectree2">4.1. Contributing to Detectree2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#detectree2-setup-for-developers">4.2. Detectree2 setup for developers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#continuous-integration">4.3. Continuous integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#automatic-documentation">4.4. Automatic Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#tests">4.5. Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#building-detectree2">4.6. Building Detectree2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#python-development-environment">4.7. Python development environment</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">5. Git/Github</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="using-git.html#overview">5.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using-git.html#more-advanced-git-practices">5.2. More advanced Git Practices</a></li>
 </ul>
 </li>
 </ul>

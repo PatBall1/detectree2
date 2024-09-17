@@ -16,7 +16,7 @@
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=aec50437"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -47,8 +47,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">2. Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">3. Contributing guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="using-git.html">4. Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_multi.html">3. Tutorial (multiclass)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">4. Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">5. Git/Github</a></li>
 </ul>
 
         </div>
@@ -79,6 +80,22 @@
 <h1>detectree2.data_loading package<a class="headerlink" href="#detectree2-data-loading-package" title="Link to this heading"></a></h1>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-detectree2.data_loading.custom">
+<span id="detectree2-data-loading-custom-module"></span><h2>detectree2.data_loading.custom module<a class="headerlink" href="#module-detectree2.data_loading.custom" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="detectree2.data_loading.custom.CustomTIFFDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">detectree2.data_loading.custom.</span></span><span class="sig-name descname"><span class="pre">CustomTIFFDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transforms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.data_loading.custom.CustomTIFFDataset" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="detectree2.data_loading.custom.CustomTIFFDataset.get_detectron_instances">
+<span class="sig-name descname"><span class="pre">get_detectron_instances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.data_loading.custom.CustomTIFFDataset.get_detectron_instances" title="Link to this definition"></a></dt>
+<dd><p>Converts annotations into Detectron2’s format.
+This example assumes annotations are in COCO format, and you’ll need to adapt it for your needs.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="detectree2-data-loading-gdrive-module">
 <h2>detectree2.data_loading.gdrive module<a class="headerlink" href="#detectree2-data-loading-gdrive-module" title="Link to this heading"></a></h2>

@@ -16,13 +16,15 @@
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=aec50437"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="3. Contributing guide" href="contributing.html" />
+    <link rel="next" title="3. Tutorial (multiclass)" href="tutorial_multi.html" />
     <link rel="prev" title="1. Installation" href="installation.html" /> 
 </head>
 
@@ -49,14 +51,19 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">2. Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#preparing-data">2.1. Preparing data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#training-a-model">2.2. Training a model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#evaluating-model-performance">2.3. Evaluating model performance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#generating-landscape-predictions">2.4. Generating landscape predictions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#preparing-data-rgb-and-multispectral">2.1. Preparing data (RGB and multispectral)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#training-a-model-rgb">2.2. Training a model (RGB)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#training-a-model-multispectral">2.3. Training a model (multispectral)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-augmentation">2.4. Data augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#post-training-check-training-convergence">2.5. Post-training (check training convergence)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#performance-metrics">2.6. Performance metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluating-model-performance">2.7. Evaluating model performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#generating-landscape-predictions">2.8. Generating landscape predictions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">3. Contributing guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="using-git.html">4. Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_multi.html">3. Tutorial (multiclass)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">4. Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">5. Git/Github</a></li>
 </ul>
 
         </div>
@@ -86,9 +93,10 @@
   <section id="tutorial">
 <h1><span class="section-number">2. </span>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
 <p>This tutorial goes through the steps of single class (tree) detection and
-delineation. A guide to multiclass prediction (e.g. species mapping,
-disease mapping) is coming soon. Example data that can be used in
-this tutorial is available <a class="reference external" href="https://zenodo.org/records/8136161">here</a>.</p>
+delineation from RGB and multispectral data. A guide to multiclass prediction
+(e.g. species mapping, disease mapping) is coming soon. Example data that can
+be used in this tutorial is available
+<a class="reference external" href="https://zenodo.org/records/8136161">here</a>.</p>
 <p>The key steps are:</p>
 <ol class="arabic simple">
 <li><p>Preparing data</p></li>
@@ -116,8 +124,14 @@ below for an example of the required input crowns and image.</p>
 <p>If you would just like to make predictions on an orthomosaic with a pre-trained
 model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code>, skip to part 4 (Generating landscape
 predictions).</p>
-<section id="preparing-data">
-<h2><span class="section-number">2.1. </span>Preparing data<a class="headerlink" href="#preparing-data" title="Link to this heading"></a></h2>
+<p>The data preparation and training process for both RGB and multispectral data
+is presented here. The process is similar for both data types but there are
+some key differences that are highlighted. Training a single model on both RGB
+and multispectral data at the same time is not currently supported. Stick to
+one data type per model (or stack the RGB bands with the multispectral bands
+and treat as in the case of multispectral data).</p>
+<section id="preparing-data-rgb-and-multispectral">
+<h2><span class="section-number">2.1. </span>Preparing data (RGB and multispectral)<a class="headerlink" href="#preparing-data-rgb-and-multispectral" title="Link to this heading"></a></h2>
 <p>An example of the recommended file structure when training a new model is as follows:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>├──<span class="w"> </span>Danum<span class="w">                                       </span><span class="o">(</span>site<span class="w"> </span>directory<span class="o">)</span>
 │<span class="w">   </span>├──<span class="w"> </span>rgb
@@ -129,6 +143,8 @@ predictions).</p>
 <span class="w">    </span>├──<span class="w"> </span>rgb
 <span class="w">    </span>│<span class="w">   </span>├──<span class="w"> </span>Paracou_RGB_2016_10cm.tif<span class="w">           </span><span class="o">(</span>RGB<span class="w"> </span>orthomosaic<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">local</span><span class="w"> </span>UTM<span class="w"> </span>CRS<span class="o">)</span>
 <span class="w">    </span>│<span class="w">   </span>└──<span class="w"> </span>Paracou_RGB_2019.tif<span class="w">                </span><span class="o">(</span>RGB<span class="w"> </span>orthomosaic<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">local</span><span class="w"> </span>UTM<span class="w"> </span>CRS<span class="o">)</span>
+<span class="w">    </span>├──<span class="w"> </span>ms
+<span class="w">    </span>│<span class="w">   </span>└──<span class="w"> </span>Paracou_MS_2016.tif<span class="w">                 </span><span class="o">(</span>Multispectral<span class="w"> </span>orthomosaic<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">local</span><span class="w"> </span>UTM<span class="w"> </span>CRS<span class="o">)</span>
 <span class="w">    </span>└──<span class="w"> </span>crowns
 <span class="w">        </span>└──<span class="w"> </span>UpdatedCrowns8.gpkg<span class="w">                 </span><span class="o">(</span>Crown<span class="w"> </span>polygons<span class="w"> </span>readable<span class="w"> </span>by<span class="w"> </span>geopandas<span class="w"> </span>e.g.<span class="w"> </span>Geopackage,<span class="w"> </span>shapefile<span class="o">)</span>
 </pre></div>
@@ -136,8 +152,12 @@ predictions).</p>
 <p>Here we have two sites available to train on (Danum and Paracou). Several site directories can be
 included in the training and testing phase (but only a single site directory is required).
 If available, several RGB orthomosaics can be included in a single site directory (see e.g <code class="docutils literal notranslate"><span class="pre">Paracou</span> <span class="pre">-&gt;</span> <span class="pre">RGB</span></code>).</p>
+<p>For Paracou, we also have a multispectral scan available (5-bands). For this data, the <code class="docutils literal notranslate"><span class="pre">mode</span></code> parameter in the
+<code class="docutils literal notranslate"><span class="pre">tile_data</span></code> function should be set to <code class="docutils literal notranslate"><span class="pre">&quot;ms&quot;</span></code>. This calls a different routine for tiling the data that retains the
+<code class="docutils literal notranslate"><span class="pre">.tif</span></code> format instead of converting to <code class="docutils literal notranslate"><span class="pre">.png</span></code> as in the case of <code class="docutils literal notranslate"><span class="pre">rgb</span></code>. This comes at a slight expense of speed
+later on but is necessary to retain all the multispectral information.</p>
 <p>We call functions to from <code class="docutils literal notranslate"><span class="pre">detectree2</span></code>’s tiling and training modules.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data_train</span><span class="p">,</span> <span class="n">to_traintest_folders</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data</span><span class="p">,</span> <span class="n">to_traintest_folders</span>
 <span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">register_train_data</span><span class="p">,</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
 <span class="kn">import</span> <span class="nn">rasterio</span>
 <span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
@@ -148,9 +168,6 @@ If available, several RGB orthomosaics can be included in a single site director
 <span class="n">site_path</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/Paracou&quot;</span>
 <span class="n">img_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/rgb/2016/Paracou_RGB_2016_10cm.tif&quot;</span>
 <span class="n">crown_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/crowns/220619_AllSpLabelled.gpkg&quot;</span>
-
-<span class="c1"># Read in the tiff file</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
 
 <span class="c1"># Read in crowns (then filter by an attribute if required)</span>
 <span class="n">crowns</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">crown_path</span><span class="p">)</span>
@@ -164,7 +181,9 @@ If available, several RGB orthomosaics can be included in a single site director
 <li><p>Available computational resources.</p></li>
 <li><p>The detail required on the crown outline.</p></li>
 <li><p>If using a pre-trained model, the tile size used in training should roughly match the tile size of predictions.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">mode</span></code> depends on whether you are tiling 3-band RGB (<code class="docutils literal notranslate"><span class="pre">mode=&quot;rgb&quot;</span></code>) data of multispectral data of 4 or more</p></li>
 </ul>
+<p>bands (<code class="docutils literal notranslate"><span class="pre">mode=&quot;ms&quot;</span></code>).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set tiling parameters</span>
 <span class="n">buffer</span> <span class="o">=</span> <span class="mi">30</span>
 <span class="n">tile_width</span> <span class="o">=</span> <span class="mi">40</span>
@@ -176,24 +195,28 @@ If available, several RGB orthomosaics can be included in a single site director
 </div>
 <p>The total tile size here is 100 m x 100 m (a 40 m x 40 m core area with a surrounding 30 m buffer that overlaps with
 surrounding tiles). Including a buffer is recommended as it allows for tiles that include more training crowns.</p>
-<p>Next we tile the data. The <code class="docutils literal notranslate"><span class="pre">tile_data_train</span></code> function will only retain tiles that contain more than the given
-<code class="docutils literal notranslate"><span class="pre">threshold</span></code> coverage of training data (here 60%). This helps to reduce the chance that the network is trained with
-tiles that contain a large number of unlabelled crowns (which would reduce its sensitivity).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tile_data_train</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">crowns</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
+<p>Next we tile the data. The <code class="docutils literal notranslate"><span class="pre">tile_data</span></code> function, when <code class="docutils literal notranslate"><span class="pre">crowns</span></code> is supplied, will only retain tiles that contain more
+than the given <code class="docutils literal notranslate"><span class="pre">threshold</span></code> coverage of training data (here 60%). This helps to reduce the chance that the network is
+trained with tiles that contain a large number of unlabelled crowns (which would reduce its sensitivity). This value
+should be adjusted depending on the density of crowns in the landscape (e.g. 10% may be more appropriate for savannah
+type systems or urban environments).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tile_data</span><span class="p">(</span><span class="n">img_path</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">crowns</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rgb&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>If tiles are outputing as blank images set <code class="docutils literal notranslate"><span class="pre">dtype_bool</span> <span class="pre">=</span> <span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">tile_data_train</span></code> function. This is a bug
-and we are working on fixing it.</p>
+<p>If tiles are outputing as blank images set <code class="docutils literal notranslate"><span class="pre">dtype_bool</span> <span class="pre">=</span> <span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">tile_data</span></code> function. This is a bug
+and we are working on fixing it. Supplying crown polygons will cause the function to tile for
+training (as opposed to landscape prediction which is described below).</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>You will want to relax the <code class="docutils literal notranslate"><span class="pre">threshold</span></code> value if your trees are sparsely distributed across your landscape.
-Remember, <code class="docutils literal notranslate"><span class="pre">detectree2</span></code> was initially designed for dense, closed canopy forests so some of the default assumptions
-will reflect that.</p>
+<p>You will want to relax the <code class="docutils literal notranslate"><span class="pre">threshold</span></code> value if your trees are sparsely distributed across your landscape or if you
+want to include non-forest areas (e.g. river, roads). Remember, <code class="docutils literal notranslate"><span class="pre">detectree2</span></code> was initially designed for dense,
+closed canopy forests so some of the default assumptions will reflect that and parameters will need to be adjusted
+for different systems.</p>
 </div>
-<p>Send geojsons to train folder (with sub-folders for k-fold cross validation) and test folder.</p>
+<p>Send geojsons to train folder (with sub-folders for k-fold cross validation) and a test folder.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data_folder</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="c1"># data_folder is the folder where the .png, .tif, .geojson tiles have been stored</span>
 <span class="n">to_traintest_folders</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">test_frac</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
@@ -204,7 +227,7 @@ will reflect that.</p>
 that have any overlap with test tiles (including the buffers), ensuring strict spatial separation of the test data.
 However, this can remove a significant proportion of the data available to train on so if validation accuracy is a
 sufficient test of model performance <code class="docutils literal notranslate"><span class="pre">test_frac</span></code> can be set to <code class="docutils literal notranslate"><span class="pre">0</span></code> or set <code class="docutils literal notranslate"><span class="pre">strict=False</span></code> (which allows for
-some overlap in the buffers between test and train/val tiles).</p>
+overlap in the buffers between test and train/val tiles).</p>
 </div>
 <p>The data has now been tiled and partitioned for model training, tuning and evaluation.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>└── Danum                                       (site directory)
@@ -220,8 +243,9 @@ some overlap in the buffers between test and train/val tiles).</p>
         └── test                                (test data folder)
 </pre></div>
 </div>
-<p>It is advisable to do a visual inspection on the tiles to ensure that the tiling has worked as expected and that crowns
-and images align. This can be done quickly with the inbuilt <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> visualisation tools.</p>
+<p>It is recommended to visually inspect the tiles before training to ensure that the tiling has worked as expected and
+that crowns and images align. This can be done with the inbuilt <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> visualisation tools. For RGB tiles
+(<code class="docutils literal notranslate"><span class="pre">.png</span></code>), the following code can be used to visualise the training data.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectron2.data</span> <span class="kn">import</span> <span class="n">DatasetCatalog</span><span class="p">,</span> <span class="n">MetadataCatalog</span>
 <span class="kn">from</span> <span class="nn">detectron2.utils.visualizer</span> <span class="kn">import</span> <span class="n">Visualizer</span>
 <span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">combine_dicts</span><span class="p">,</span> <span class="n">register_train_data</span>
@@ -250,9 +274,59 @@ and images align. This can be done quickly with the inbuilt <code class="docutil
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
+<p>Alternatively, with some adaptation the <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> visualisation tools can also be used to visualise the
+multispectral (<code class="docutils literal notranslate"><span class="pre">.tif</span></code>) tiles.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rasterio</span>
+<span class="kn">from</span> <span class="nn">detectron2.utils.visualizer</span> <span class="kn">import</span> <span class="n">Visualizer</span>
+<span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">combine_dicts</span>
+<span class="kn">from</span> <span class="nn">detectron2.data</span> <span class="kn">import</span> <span class="n">DatasetCatalog</span><span class="p">,</span> <span class="n">MetadataCatalog</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
+
+<span class="n">val_fold</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Paracou&quot;</span>
+<span class="n">tiles</span> <span class="o">=</span> <span class="s2">&quot;/tilesMS_&quot;</span> <span class="o">+</span> <span class="n">appends</span> <span class="o">+</span> <span class="s2">&quot;/train&quot;</span>
+<span class="n">train_location</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/MyDrive/WORK/detectree2/data/&quot;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="n">tiles</span>
+<span class="n">dataset_dicts</span> <span class="o">=</span> <span class="n">combine_dicts</span><span class="p">(</span><span class="n">train_location</span><span class="p">,</span> <span class="n">val_fold</span><span class="p">)</span>
+<span class="n">trees_metadata</span> <span class="o">=</span> <span class="n">MetadataCatalog</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_train&quot;</span><span class="p">)</span>
+
+<span class="c1"># Function to normalize and convert multi-band image to RGB if needed</span>
+<span class="k">def</span> <span class="nf">prepare_image_for_visualization</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+   <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+      <span class="c1"># If the image has 3 bands, assume it&#39;s RGB</span>
+      <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">NORM_MINMAX</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+      <span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+   <span class="k">else</span><span class="p">:</span>
+      <span class="c1"># If the image has more than 3 bands, choose the first 3 for visualization</span>
+      <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>  <span class="c1"># Or select specific bands</span>
+      <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">NORM_MINMAX</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+      <span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+   <span class="k">return</span> <span class="n">image</span>
+
+<span class="c1"># Visualize each image in the dataset</span>
+<span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dataset_dicts</span><span class="p">:</span>
+   <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;file_name&quot;</span><span class="p">])</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+      <span class="n">img</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>  <span class="c1"># Read all bands</span>
+      <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>  <span class="c1"># Convert to HWC format</span>
+      <span class="n">img</span> <span class="o">=</span> <span class="n">prepare_image_for_visualization</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>  <span class="c1"># Normalize and prepare for visualization</span>
+
+   <span class="n">visualizer</span> <span class="o">=</span> <span class="n">Visualizer</span><span class="p">(</span><span class="n">img</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">trees_metadata</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+   <span class="n">out</span> <span class="o">=</span> <span class="n">visualizer</span><span class="o">.</span><span class="n">draw_dataset_dict</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+   <span class="n">image</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">get_image</span><span class="p">()[:,</span> <span class="p">:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+   <span class="n">display</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">image</span><span class="p">))</span>
+</pre></div>
+</div>
 </section>
-<section id="training-a-model">
-<h2><span class="section-number">2.2. </span>Training a model<a class="headerlink" href="#training-a-model" title="Link to this heading"></a></h2>
+<section id="training-a-model-rgb">
+<h2><span class="section-number">2.2. </span>Training a model (RGB)<a class="headerlink" href="#training-a-model-rgb" title="Link to this heading"></a></h2>
 <p>Before training can commence, it is necessary to register the training data. It is possible to set a validation fold for
 model evaluation (which can be helpful for tuning models). The validation fold can be changed over different training
 steps to expose the model to the full range of available training data. Register as many different folders as necessary</p>
@@ -276,7 +350,7 @@ datasets should be tuples containing strings. If just a single site is being use
 <span class="n">trains</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Paracou_train&quot;</span><span class="p">,</span> <span class="s2">&quot;Danum_train&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokEast_train&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokWest_train&quot;</span><span class="p">)</span> <span class="c1"># Registered train data</span>
 <span class="n">tests</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Paracou_val&quot;</span><span class="p">,</span> <span class="s2">&quot;Danum_val&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokEast_val&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokWest_val&quot;</span><span class="p">)</span> <span class="c1"># Registered validation data</span>
 
-<span class="n">out_dir</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/220809_train_outputs&quot;</span>
+<span class="n">out_dir</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/240809_train_outputs&quot;</span>
 
 <span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">workers</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">eval_period</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="n">out_dir</span><span class="p">)</span> <span class="c1"># update_model arg can be used to load in trained  model</span>
 </pre></div>
@@ -297,7 +371,7 @@ especially useful if you only have limited training data available. To retrieve 
 <span class="n">trains</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Paracou_train&quot;</span><span class="p">,</span> <span class="s2">&quot;Danum_train&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokEast_train&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokWest_train&quot;</span><span class="p">)</span> <span class="c1"># Registered train data</span>
 <span class="n">tests</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Paracou_val&quot;</span><span class="p">,</span> <span class="s2">&quot;Danum_val&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokEast_val&quot;</span><span class="p">,</span> <span class="s2">&quot;SepilokWest_val&quot;</span><span class="p">)</span> <span class="c1"># Registered validation data</span>
 
-<span class="n">out_dir</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/220809_train_outputs&quot;</span>
+<span class="n">out_dir</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/240809_train_outputs&quot;</span>
 
 <span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">trained_model</span><span class="p">,</span> <span class="n">workers</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">eval_period</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="n">out_dir</span><span class="p">)</span> <span class="c1"># update_model arg used to load in trained model</span>
 </pre></div>
@@ -308,8 +382,11 @@ especially useful if you only have limited training data available. To retrieve 
 model training will converge given the particularities of the data supplied and computational resources available.</p>
 </div>
 <p>Once we are all set up, we can get commence model training. Training will continue until a specified number of
-iterations (<code class="docutils literal notranslate"><span class="pre">max_iter</span></code>) or until model performance is no longer improving (“early stopping” via <code class="docutils literal notranslate"><span class="pre">patience</span></code>).
-Training outputs, including model weights and training metrics, will be stored in <code class="docutils literal notranslate"><span class="pre">out_dir</span></code>.</p>
+iterations (<code class="docutils literal notranslate"><span class="pre">max_iter</span></code>) or until model performance is no longer improving (“early stopping” via <code class="docutils literal notranslate"><span class="pre">patience</span></code>). The
+<code class="docutils literal notranslate"><span class="pre">patience</span></code> parameter sets the number of training epochs to wait for an improvement in validation accuracy before
+stopping training. This is useful for preventing overfitting and saving time. Each time an improved model is found it is
+saved to the output directory.</p>
+<p>Training outputs, including model weights and training metrics, will be stored in <code class="docutils literal notranslate"><span class="pre">out_dir</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span> <span class="o">=</span> <span class="n">MyTrainer</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">patience</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
 <span class="n">trainer</span><span class="o">.</span><span class="n">resume_or_load</span><span class="p">(</span><span class="n">resume</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
@@ -321,12 +398,258 @@ Training outputs, including model weights and training metrics, will be stored i
 predictions on the validation fold. This is measured as the AP50 score of the validation predictions.</p>
 </div>
 </section>
+<section id="training-a-model-multispectral">
+<h2><span class="section-number">2.3. </span>Training a model (multispectral)<a class="headerlink" href="#training-a-model-multispectral" title="Link to this heading"></a></h2>
+<p>The process for training a multispectral model is similar to that for RGB data but there are some key steps that are
+different. Data will be read from <code class="docutils literal notranslate"><span class="pre">.tif</span></code> files of 4 or more bands instead of the 3-band <code class="docutils literal notranslate"><span class="pre">.png</span></code> files.</p>
+<p>Data should be registered as before:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">register_train_data</span><span class="p">,</span> <span class="n">remove_registered_data</span>
+<span class="n">val_fold</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">appends</span> <span class="o">=</span> <span class="s2">&quot;40_30_0.6&quot;</span>
+<span class="n">site_path</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/SharedDrive/detectree2/data/Paracou&quot;</span>
+<span class="n">train_location</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/tilesMS_&quot;</span> <span class="o">+</span> <span class="n">appends</span> <span class="o">+</span> <span class="s2">&quot;/train/&quot;</span>
+<span class="n">register_train_data</span><span class="p">(</span><span class="n">train_location</span><span class="p">,</span> <span class="s2">&quot;ParacouMS&quot;</span><span class="p">,</span> <span class="n">val_fold</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The number of bands can be checked with rasterio:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rasterio</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+
+<span class="c1"># Read in geotif and assess mean and sd for each band</span>
+<span class="c1">#site_path = &quot;/content/drive/MyDrive/WORK/detectree2/data/Paracou&quot;</span>
+<span class="n">folder_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/tilesMS_&quot;</span> <span class="o">+</span> <span class="n">appends</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+
+<span class="c1"># Select path of first .tif file</span>
+<span class="n">img_paths</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">folder_path</span> <span class="o">+</span> <span class="s2">&quot;*.tif&quot;</span><span class="p">)</span>
+<span class="n">img_path</span> <span class="o">=</span> <span class="n">img_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># Open the raster file</span>
+<span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">dataset</span><span class="p">:</span>
+   <span class="c1"># Get the number of bands</span>
+   <span class="n">num_bands</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">count</span>
+
+<span class="c1"># Print the number of bands</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The raster has </span><span class="si">{</span><span class="n">num_bands</span><span class="si">}</span><span class="s1"> bands.&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Due to the additional bands, we must modify the weights of the first convolutional layer (conv1) to accommodate a
+different number of input channels. This is done with the <code class="docutils literal notranslate"><span class="pre">modify_conv1_weights</span></code> function. The extension of the
+<code class="docutils literal notranslate"><span class="pre">cfg.MODEL.PIXEL_MEAN</span></code> and <code class="docutils literal notranslate"><span class="pre">cfg.MODEL.PIXEL_STD</span></code> lists to include the additional bands happens within the
+<code class="docutils literal notranslate"><span class="pre">setup_cfg</span></code> function when <code class="docutils literal notranslate"><span class="pre">num_bands</span></code> is set to a value greater than 3. <code class="docutils literal notranslate"><span class="pre">imgmode</span></code> should be set to <code class="docutils literal notranslate"><span class="pre">&quot;ms&quot;</span></code> to
+ensure the correct training routines are called.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span> <span class="nn">detectron2.modeling</span> <span class="kn">import</span> <span class="n">build_model</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.init</span> <span class="k">as</span> <span class="nn">init</span>
+<span class="kn">from</span> <span class="nn">detectron2.modeling.roi_heads.fast_rcnn</span> <span class="kn">import</span> <span class="n">FastRCNNOutputLayers</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">modify_conv1_weights</span><span class="p">,</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
+
+<span class="c1"># Good idea to keep track of the date if producing multiple models</span>
+<span class="n">today</span> <span class="o">=</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
+<span class="n">today</span> <span class="o">=</span> <span class="n">today</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ParacouMS&quot;</span><span class="p">,]</span>
+
+<span class="n">trains</span> <span class="o">=</span> <span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_train&quot;</span><span class="p">,)</span>
+<span class="n">tests</span> <span class="o">=</span> <span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_val&quot;</span><span class="p">,)</span>
+<span class="n">out_dir</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/SharedDrive/detectree2/models/&quot;</span> <span class="o">+</span> <span class="n">today</span> <span class="o">+</span> <span class="s2">&quot;_ParacouMS&quot;</span>
+
+<span class="n">base_model</span> <span class="o">=</span> <span class="s2">&quot;COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml&quot;</span>  <span class="c1"># Path to the model config</span>
+
+<span class="c1"># Set up the configuration</span>
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">workers</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">eval_period</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+               <span class="n">base_lr</span> <span class="o">=</span> <span class="mf">0.0003</span><span class="p">,</span> <span class="n">backbone_freeze</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span>
+               <span class="n">max_iter</span><span class="o">=</span><span class="mi">500000</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="n">out_dir</span><span class="p">,</span> <span class="n">resize</span> <span class="o">=</span> <span class="s2">&quot;rand_fixed&quot;</span><span class="p">,</span> <span class="n">imgmode</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span>
+               <span class="n">num_bands</span><span class="o">=</span> <span class="n">num_bands</span><span class="p">)</span> <span class="c1"># update_model arg can be used to load in trained  model</span>
+
+<span class="c1"># Build the model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">build_model</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+
+<span class="c1"># Adjust input layer to accept correct number of channels</span>
+<span class="n">modify_conv1_weights</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">num_input_channels</span><span class="o">=</span><span class="n">num_bands</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>With additional bands, more data is being passed through the network per image so it may be neessary to reduce the
+number of images per batch. Only do this is you a getting warnings/errors about memory usage (e.g.
+<code class="docutils literal notranslate"><span class="pre">CUDA</span> <span class="pre">out</span> <span class="pre">of</span> <span class="pre">memory</span></code>) as it will slow down training.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">IMS_PER_BATCH</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Training can now commence as before:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span> <span class="o">=</span> <span class="n">MyTrainer</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">patience</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">resume_or_load</span><span class="p">(</span><span class="n">resume</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="data-augmentation">
+<h2><span class="section-number">2.4. </span>Data augmentation<a class="headerlink" href="#data-augmentation" title="Link to this heading"></a></h2>
+<p>Data augmentation is a technique used to artificially increase the size of the training dataset by applying random
+transformations to the input data. This can help improve the generalization of the model and reduce overfitting. The
+<code class="docutils literal notranslate"><span class="pre">detectron2</span></code> library provides a range of data augmentation options that can be used during training. These include
+random flipping, scaling, rotation, and color jittering.</p>
+<p>Additionally, resizing of the input data can be applied as an augmentation technique. This can be useful when training
+a model that should be flexible with respect to tile size and resolution.</p>
+<p>By default, random rotations and flips will be performed on input images.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">augmentations</span> <span class="o">=</span> <span class="p">[</span>
+   <span class="n">T</span><span class="o">.</span><span class="n">RandomRotation</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="p">[</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+   <span class="n">T</span><span class="o">.</span><span class="n">RandomFlip</span><span class="p">(</span><span class="n">prob</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">horizontal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">vertical</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+   <span class="n">T</span><span class="o">.</span><span class="n">RandomFlip</span><span class="p">(</span><span class="n">prob</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">horizontal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">vertical</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>If the input data is RGB, additional augmentations will be applied to adjust the brightness, contrast, saturation, and
+lighting of the images. These augmentations are only available for RGB images and will not be applied to multispectral.</p>
+<p>There are three resizing modes for the input data (1) <code class="docutils literal notranslate"><span class="pre">fixed</span></code>, (2) <code class="docutils literal notranslate"><span class="pre">random</span></code>, and (3) <code class="docutils literal notranslate"><span class="pre">rand_fixed</span></code>. This are set
+in the configuration file (<code class="docutils literal notranslate"><span class="pre">cfg</span></code>) with the <cite>setup_cfg</cite> function.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">fixed</span></code> mode will resize the input data to a images width/height of 1000 pixels. This is efficient but may not
+lead to models that transfer well across scales (e.g. if the model is to be used on a range of different resolutions).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">RESIZE</span> <span class="o">==</span> <span class="s2">&quot;fixed&quot;</span><span class="p">:</span>
+   <span class="n">augmentations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ResizeShortestEdge</span><span class="p">([</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span> <span class="mi">1333</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">random</span></code> mode will randomly resize (and resample to change the resolutions) the input data to between 0.6 and 1.4
+times the original height/width. This can help the model learn to detect objects at different scales and from images of
+different resolutions (and sensors).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">elif</span> <span class="n">cfg</span><span class="o">.</span><span class="n">RESIZE</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span><span class="p">:</span>
+   <span class="n">size</span> <span class="o">=</span> <span class="kc">None</span>
+   <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">datas</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">DatasetCatalog</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">DATASETS</span><span class="o">.</span><span class="n">TRAIN</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+         <span class="n">location</span> <span class="o">=</span> <span class="n">datas</span><span class="p">[</span><span class="s1">&#39;file_name&#39;</span><span class="p">]</span>
+         <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Try to read with cv2 (for RGB images)</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">img</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+               <span class="n">size</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+               <span class="c1"># Fall back to rasterio for multi-band images</span>
+               <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">location</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+                     <span class="n">size</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">height</span>  <span class="c1"># Assuming square images</span>
+         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Handle any errors that occur during loading</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading image </span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+         <span class="k">break</span>
+
+   <span class="k">if</span> <span class="n">size</span><span class="p">:</span>
+         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ADD RANDOM RESIZE WITH SIZE = &quot;</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+         <span class="n">augmentations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ResizeScale</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">rand_fixed</span></code> mode constrains the random resizing to a fixed pixel width/height range (regardless of the resolution
+of the input data). This can help to speed up training if the input tiles are high resolution and pushing up against
+available memory limits. It retains the benefits of random resizing but constrains the range of possible sizes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">elif</span> <span class="n">cfg</span><span class="o">.</span><span class="n">RESIZE</span> <span class="o">==</span> <span class="s2">&quot;rand_fixed&quot;</span><span class="p">:</span>
+      <span class="n">augmentations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ResizeScale</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Which resizing option is selected depends on the problem at hand. A more precise delineation can be generated if high
+resolution images are retained but this comes at the cost of increased memory usage and slower training times. If the
+model is to be used on a range of different resolutions, random resizing can help the model learn to detect objects at
+different scales.</p>
+</section>
+<section id="post-training-check-training-convergence">
+<h2><span class="section-number">2.5. </span>Post-training (check training convergence)<a class="headerlink" href="#post-training-check-training-convergence" title="Link to this heading"></a></h2>
+<p>It is important to check that the model has converged and is not overfitting. This can be done by plotting the training
+and validation loss over time. The <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> training routine will output a <code class="docutils literal notranslate"><span class="pre">metrics.json</span></code> file that can be used
+to plot the training and validation loss. The following code can be used to plot the loss:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">load_json_arr</span>
+
+<span class="c1">#out_dir = &quot;/content/drive/Shareddrives/detectree2/models/230103_resize_full&quot;</span>
+<span class="n">experiment_folder</span> <span class="o">=</span> <span class="n">out_dir</span>
+
+<span class="n">experiment_metrics</span> <span class="o">=</span> <span class="n">load_json_arr</span><span class="p">(</span><span class="n">experiment_folder</span> <span class="o">+</span> <span class="s1">&#39;/metrics.json&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+   <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;iteration&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">experiment_metrics</span> <span class="k">if</span> <span class="s1">&#39;validation_loss&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">],</span>
+   <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;validation_loss&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">experiment_metrics</span> <span class="k">if</span> <span class="s1">&#39;validation_loss&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Total Validation Loss&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+   <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;iteration&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">experiment_metrics</span> <span class="k">if</span> <span class="s1">&#39;total_loss&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">],</span>
+   <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;total_loss&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">experiment_metrics</span> <span class="k">if</span> <span class="s1">&#39;total_loss&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Total Training Loss&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Comparison of the training and validation loss of detectree2&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Total Loss&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Number of Iterations&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/train_val_loss.png"><img alt="Train and validation loss" class="align-center" src="_images/train_val_loss.png" style="width: 400px;" /></a>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>Training loss and validation loss decreased over time. As training continued, the validation loss flattened whereas the
+training loss continued to decrease. The <code class="docutils literal notranslate"><span class="pre">patience</span></code> mechanism prevented training from continuing after 3000 iterations
+preventing overfitting. If validation loss is substantially higher than training loss, the model may be overfitted.</p>
+<p>To understand how the segmentation performance improves through training, it is also possible to plot the AP50 score
+(see below for definition) over the iterations. This can be done with the following code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+   <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;iteration&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">experiment_metrics</span> <span class="k">if</span> <span class="s1">&#39;validation_loss&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">],</span>
+   <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;validation_loss&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">experiment_metrics</span> <span class="k">if</span> <span class="s1">&#39;validation_loss&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Total Validation Loss&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+   <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;iteration&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">experiment_metrics</span> <span class="k">if</span> <span class="s1">&#39;total_loss&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">],</span>
+   <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;total_loss&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">experiment_metrics</span> <span class="k">if</span> <span class="s1">&#39;total_loss&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Total Training Loss&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Comparison of the training and validation loss of detectree2&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Total Loss&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Number of Iterations&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/val_AP50.png"><img alt="AP50 score" class="align-center" src="_images/val_AP50.png" style="width: 400px;" /></a>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+<section id="performance-metrics">
+<h2><span class="section-number">2.6. </span>Performance metrics<a class="headerlink" href="#performance-metrics" title="Link to this heading"></a></h2>
+<p>In instance segmentation, <strong>AP50</strong> refers to the <strong>Average Precision</strong> at an Intersection over Union (IoU) threshold of
+<strong>50%</strong>.</p>
+<ul class="simple">
+<li><p><strong>Precision</strong>: Precision is the ratio of correctly predicted positive objects (true positives) to all predicted
+bjects (both true positives and false positives).</p>
+<ul>
+<li><p>Formula: <span class="math notranslate nohighlight">\(\text{Precision} = \frac{\text{True Positives}}{\text{True Positives} + \text{False Positives}}\)</span></p></li>
+</ul>
+</li>
+<li><p><strong>Recall</strong>: Recall is the ratio of correctly predicted positive objects (true positives) to all actual positive</p></li>
+</ul>
+<p>objects in the ground truth (true positives and false negatives).</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Formula: <span class="math notranslate nohighlight">\(\text{Recall} = \frac{\text{True Positives}}{\text{True Positives} + \text{False Negatives}}\)</span></p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p><strong>Average Precision (AP)</strong>: AP is a common metric used to evaluate the performance of object detection and instance</p></li>
+</ul>
+<p>segmentation models. It represents the precision of the model across various recall levels. In simpler terms, it is a
+combination of the model’s ability to correctly detect objects and how complete those detections are.</p>
+<ul class="simple">
+<li><p><strong>IoU (Intersection over Union)</strong>: IoU measures the overlap between the predicted segmentation mask (or bounding box</p></li>
+</ul>
+<p>in object detection) and the ground truth mask. It is calculated as the area of overlap divided by the area of union
+between the predicted and true masks.</p>
+<ul class="simple">
+<li><p><strong>AP50</strong>: Specifically, <strong>AP50</strong> computes the average precision for all object classes at a threshold of <strong>50% IoU</strong>.</p></li>
+</ul>
+<p>This means that a predicted object is considered correct (a true positive) if the IoU between the predicted and ground
+truth masks is greater than or equal to 0.5 (50%). It is a relatively lenient threshold, focusing on whether the
+detected objects overlap reasonably with the ground truth, even if the boundaries aren’t perfectly aligned.</p>
+<p>In summary, AP50 evaluates how well a model detects objects with a 50% overlap between the predicted and ground truth
+masks in instance segmentation tasks.</p>
+<a class="reference internal image-reference" href="_images/IoU_AP.png"><img alt="IoU and AP illustration" class="align-center" src="_images/IoU_AP.png" style="width: 400px;" /></a>
+</section>
 <section id="evaluating-model-performance">
-<h2><span class="section-number">2.3. </span>Evaluating model performance<a class="headerlink" href="#evaluating-model-performance" title="Link to this heading"></a></h2>
+<h2><span class="section-number">2.7. </span>Evaluating model performance<a class="headerlink" href="#evaluating-model-performance" title="Link to this heading"></a></h2>
 <p>Coming soon! See Colab notebook for example routine (<code class="docutils literal notranslate"><span class="pre">detectree2/notebooks/colab/evaluationJB.ipynb</span></code>).</p>
 </section>
 <section id="generating-landscape-predictions">
-<h2><span class="section-number">2.4. </span>Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Link to this heading"></a></h2>
+<h2><span class="section-number">2.8. </span>Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Link to this heading"></a></h2>
 <p>Here we call the necessary functions.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data</span>
 <span class="kn">from</span> <span class="nn">detectree2.models.outputs</span> <span class="kn">import</span> <span class="n">project_to_geojson</span><span class="p">,</span> <span class="n">stitch_crowns</span><span class="p">,</span> <span class="n">clean_crowns</span>
@@ -343,8 +666,7 @@ can discard partial the crowns predicted at the edge of tiles.</p>
 <span class="n">site_path</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/BCI_50ha&quot;</span>
 <span class="n">img_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/rgb/2015.06.10_07cm_ORTHO.tif&quot;</span>
 <span class="n">tiles_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/tilespred/&quot;</span>
-<span class="c1"># Read in the geotiff</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+
 <span class="c1"># Location of trained model</span>
 <span class="n">model_path</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/models/220629_ParacouSepilokDanum_JB.pth&quot;</span>
 
@@ -352,13 +674,14 @@ can discard partial the crowns predicted at the edge of tiles.</p>
 <span class="n">buffer</span> <span class="o">=</span> <span class="mi">30</span>
 <span class="n">tile_width</span> <span class="o">=</span> <span class="mi">40</span>
 <span class="n">tile_height</span> <span class="o">=</span> <span class="mi">40</span>
-<span class="n">tile_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tiles_path</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">dtype_bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">tile_data</span><span class="p">(</span><span class="n">img_path</span><span class="p">,</span> <span class="n">tiles_path</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">dtype_bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>If tiles are outputing as blank images set <code class="docutils literal notranslate"><span class="pre">dtype_bool</span> <span class="pre">=</span> <span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">tile_data</span></code> function. This is a bug
-and we are working on fixing it.</p>
+and we are working on fixing it. Avoid supplying crown polygons otherwise the function will run as if it is tiling
+for training.</p>
 </div>
 <p>To download a pre-trained model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code> you can run <code class="docutils literal notranslate"><span class="pre">wget</span></code> on the package repo</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="err">!</span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">zenodo</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">records</span><span class="o">/</span><span class="mi">10522461</span><span class="o">/</span><span class="n">files</span><span class="o">/</span><span class="mi">230103</span><span class="n">_randresize_full</span><span class="o">.</span><span class="n">pth</span>
@@ -411,7 +734,7 @@ and so tweaking of the above parameters may be necessary to get a satisfactory o
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="installation.html" class="btn btn-neutral float-left" title="1. Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="contributing.html" class="btn btn-neutral float-right" title="3. Contributing guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="tutorial_multi.html" class="btn btn-neutral float-right" title="3. Tutorial (multiclass)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

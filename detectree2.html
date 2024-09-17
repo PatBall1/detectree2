@@ -16,7 +16,7 @@
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=aec50437"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -47,8 +47,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">2. Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">3. Contributing guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="using-git.html">4. Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_multi.html">3. Tutorial (multiclass)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">4. Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">5. Git/Github</a></li>
 </ul>
 
         </div>
@@ -83,6 +84,13 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="detectree2.data_loading.html">detectree2.data_loading package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="detectree2.data_loading.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="detectree2.data_loading.html#module-detectree2.data_loading.custom">detectree2.data_loading.custom module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="detectree2.data_loading.html#detectree2.data_loading.custom.CustomTIFFDataset"><code class="docutils literal notranslate"><span class="pre">CustomTIFFDataset</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="detectree2.data_loading.html#detectree2.data_loading.custom.CustomTIFFDataset.get_detectron_instances"><code class="docutils literal notranslate"><span class="pre">CustomTIFFDataset.get_detectron_instances()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="detectree2.data_loading.html#detectree2-data-loading-gdrive-module">detectree2.data_loading.gdrive module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="detectree2.data_loading.html#module-detectree2.data_loading.gdrive_load">detectree2.data_loading.gdrive_load module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="detectree2.data_loading.html#detectree2-data-loading-gee-download-module">detectree2.data_loading.gee_download module</a></li>
@@ -160,6 +168,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="detectree2.models.html#module-detectree2.models.test">detectree2.models.test module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="detectree2.models.html#module-detectree2.models.train">detectree2.models.train module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.FlexibleDatasetMapper"><code class="docutils literal notranslate"><span class="pre">FlexibleDatasetMapper</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.LossEvalHook"><code class="docutils literal notranslate"><span class="pre">LossEvalHook</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.LossEvalHook.after_step"><code class="docutils literal notranslate"><span class="pre">LossEvalHook.after_step()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.LossEvalHook.after_train"><code class="docutils literal notranslate"><span class="pre">LossEvalHook.after_train()</span></code></a></li>
@@ -168,16 +177,19 @@
 <li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.MyTrainer"><code class="docutils literal notranslate"><span class="pre">MyTrainer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.MyTrainer.build_evaluator"><code class="docutils literal notranslate"><span class="pre">MyTrainer.build_evaluator()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.MyTrainer.build_hooks"><code class="docutils literal notranslate"><span class="pre">MyTrainer.build_hooks()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.MyTrainer.build_test_loader"><code class="docutils literal notranslate"><span class="pre">MyTrainer.build_test_loader()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.MyTrainer.build_train_loader"><code class="docutils literal notranslate"><span class="pre">MyTrainer.build_train_loader()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.MyTrainer.train"><code class="docutils literal notranslate"><span class="pre">MyTrainer.train()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.build_train_loader"><code class="docutils literal notranslate"><span class="pre">build_train_loader()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.combine_dicts"><code class="docutils literal notranslate"><span class="pre">combine_dicts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.get_classes"><code class="docutils literal notranslate"><span class="pre">get_classes()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.get_filenames"><code class="docutils literal notranslate"><span class="pre">get_filenames()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.get_latest_model_path"><code class="docutils literal notranslate"><span class="pre">get_latest_model_path()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.get_tree_dicts"><code class="docutils literal notranslate"><span class="pre">get_tree_dicts()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.load_json_arr"><code class="docutils literal notranslate"><span class="pre">load_json_arr()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.modify_conv1_weights"><code class="docutils literal notranslate"><span class="pre">modify_conv1_weights()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.predictions_on_data"><code class="docutils literal notranslate"><span class="pre">predictions_on_data()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.read_data"><code class="docutils literal notranslate"><span class="pre">read_data()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.register_test_data"><code class="docutils literal notranslate"><span class="pre">register_test_data()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.register_train_data"><code class="docutils literal notranslate"><span class="pre">register_train_data()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="detectree2.models.html#detectree2.models.train.remove_registered_data"><code class="docutils literal notranslate"><span class="pre">remove_registered_data()</span></code></a></li>
@@ -195,9 +207,13 @@
 <li class="toctree-l3"><a class="reference internal" href="detectree2.preprocessing.html#detectree2.preprocessing.tiling.get_features"><code class="docutils literal notranslate"><span class="pre">get_features()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="detectree2.preprocessing.html#detectree2.preprocessing.tiling.image_details"><code class="docutils literal notranslate"><span class="pre">image_details()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="detectree2.preprocessing.html#detectree2.preprocessing.tiling.is_overlapping_box"><code class="docutils literal notranslate"><span class="pre">is_overlapping_box()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="detectree2.preprocessing.html#detectree2.preprocessing.tiling.record_data"><code class="docutils literal notranslate"><span class="pre">record_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="detectree2.preprocessing.html#detectree2.preprocessing.tiling.load_class_mapping"><code class="docutils literal notranslate"><span class="pre">load_class_mapping()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="detectree2.preprocessing.html#detectree2.preprocessing.tiling.process_tile"><code class="docutils literal notranslate"><span class="pre">process_tile()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="detectree2.preprocessing.html#detectree2.preprocessing.tiling.process_tile_ms"><code class="docutils literal notranslate"><span class="pre">process_tile_ms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="detectree2.preprocessing.html#detectree2.preprocessing.tiling.process_tile_train"><code class="docutils literal notranslate"><span class="pre">process_tile_train()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="detectree2.preprocessing.html#detectree2.preprocessing.tiling.process_tile_train_helper"><code class="docutils literal notranslate"><span class="pre">process_tile_train_helper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="detectree2.preprocessing.html#detectree2.preprocessing.tiling.record_classes"><code class="docutils literal notranslate"><span class="pre">record_classes()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="detectree2.preprocessing.html#detectree2.preprocessing.tiling.tile_data"><code class="docutils literal notranslate"><span class="pre">tile_data()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="detectree2.preprocessing.html#detectree2.preprocessing.tiling.tile_data_train"><code class="docutils literal notranslate"><span class="pre">tile_data_train()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="detectree2.preprocessing.html#detectree2.preprocessing.tiling.to_traintest_folders"><code class="docutils literal notranslate"><span class="pre">to_traintest_folders()</span></code></a></li>
 </ul>
 </li>
