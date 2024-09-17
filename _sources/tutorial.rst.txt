@@ -49,7 +49,7 @@ and multispectral data at the same time is not currently supported. Stick to
 one data type per model (or stack the RGB bands with the multispectral bands
 and treat as in the case of multispectral data).
 
-Preparing data (RGB and multispectral)
+Preparing data (RGB/multispectral)
 --------------------------------------
 
 An example of the recommended file structure when training a new model is as follows:
@@ -271,7 +271,7 @@ multispectral (``.tif``) tiles.
       display(Image.fromarray(image))
 
 
-Training a model (RGB)
+Training (RGB)
 ----------------------
 
 Before training can commence, it is necessary to register the training data. It is possible to set a validation fold for
@@ -357,7 +357,7 @@ Training outputs, including model weights and training metrics, will be stored i
    Early stopping is implemented and will be triggered by a sustained failure to improve on the performance of
    predictions on the validation fold. This is measured as the AP50 score of the validation predictions.
 
-Training a model (multispectral)
+Training (multispectral)
 --------------------------------
 
 The process for training a multispectral model is similar to that for RGB data but there are some key steps that are
@@ -547,7 +547,7 @@ model is to be used on a range of different resolutions, random resizing can hel
 different scales.
 
 
-Post-training (check training convergence)
+Post-training (check convergence)
 ------------------------------------------
 
 It is important to check that the model has converged and is not overfitting. This can be done by plotting the training
