@@ -425,7 +425,7 @@ class MyTrainer(DefaultTrainer):
                     continue
                 break
             # Define augmentation based on the determined size
-            augmentations = [T.ResizeShortestEdge([size, size], size+300)]
+            augmentations = [T.ResizeShortestEdge([size, size], size + 300)]
         else:
             # Use fixed size resizing as a default
             augmentations = [T.ResizeShortestEdge([1000, 1000], 1333)]
@@ -627,10 +627,10 @@ def combine_dicts(root_dir: str,
     """
     # Get the list of directories within the root directory
     train_dirs = [
-            os.path.join(root_dir, dir)
-            for dir in os.listdir(root_dir)
-            if os.path.isdir(os.path.join(root_dir, dir))
-        ]
+        os.path.join(root_dir, dir)
+        for dir in os.listdir(root_dir)
+        if os.path.isdir(os.path.join(root_dir, dir))
+    ]
     # Handle the different modes for combining dictionaries
     if mode == "train":
         # Exclude the validation directory from the list of directories
@@ -864,10 +864,14 @@ def setup_cfg(
         default_pixel_mean = cfg.MODEL.PIXEL_MEAN
         default_pixel_std = cfg.MODEL.PIXEL_STD
         # Extend or truncate the PIXEL_MEAN and PIXEL_STD based on num_bands
-        cfg.MODEL.PIXEL_MEAN = (default_pixel_mean * (num_bands // len(default_pixel_mean)) +
-                                default_pixel_mean[:num_bands % len(default_pixel_mean)])
-        cfg.MODEL.PIXEL_STD = (default_pixel_std * (num_bands // len(default_pixel_std)) +
-                               default_pixel_std[:num_bands % len(default_pixel_std)])
+        cfg.MODEL.PIXEL_MEAN = (
+            default_pixel_mean * (num_bands // len(default_pixel_mean))
+            + default_pixel_mean[:num_bands % len(default_pixel_mean)]
+        )
+        cfg.MODEL.PIXEL_STD = (
+            default_pixel_std * (num_bands // len(default_pixel_std))
+            + default_pixel_std[:num_bands % len(default_pixel_std)]
+        )
     return cfg
 
 
