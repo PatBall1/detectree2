@@ -17,8 +17,8 @@ The key steps are:
 4. Making landscape level predictions
 
 
-Preparing data (RGB and multispectral)
---------------------------------------
+Preparing data
+--------------
 
 Data can be prepared in a similar way to the single class case but the classes
 and their order (mapping) need to be saved so that they can be accessed
