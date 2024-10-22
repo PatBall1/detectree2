@@ -371,8 +371,6 @@ def process_tile_train(
         return None  # Handle the case where there are no overlapping crowns
 
 
-
-
 # Define a top-level helper function
 def process_tile_train_helper(args):
     return process_tile_train(*args)
