@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
@@ -6,21 +8,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>2. Tutorial &mdash; detectree2 1.0.8 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=aec50437"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=aec50437"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -117,7 +115,8 @@ predictions across the entirety of the supplied tiles and assumes training
 tiles are comprehensively labelled. If the network is shown scenes that are
 incompletely labelled, it may replicate that in its predictions. See
 below for an example of the required input crowns and image.</p>
-<a class="reference internal image-reference" href="_images/Danum_example_data.png"><img alt="Example Danum training data" class="align-center" src="_images/Danum_example_data.png" style="width: 400px;" /></a>
+<a class="reference internal image-reference" href="_images/Danum_example_data.png"><img alt="Example Danum training data" class="align-center" src="_images/Danum_example_data.png" style="width: 400px;" />
+</a>
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
@@ -266,11 +265,13 @@ that crowns and images align. This can be done with the inbuilt <code class="doc
    <span class="n">display</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">image</span><span class="p">))</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/trees_train1.png"><img alt="Training tile 1" class="align-center" src="_images/trees_train1.png" style="width: 400px;" /></a>
+<a class="reference internal image-reference" href="_images/trees_train1.png"><img alt="Training tile 1" class="align-center" src="_images/trees_train1.png" style="width: 400px;" />
+</a>
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
-<a class="reference internal image-reference" href="_images/trees_train2.png"><img alt="Training tile 2" class="align-center" src="_images/trees_train2.png" style="width: 400px;" /></a>
+<a class="reference internal image-reference" href="_images/trees_train2.png"><img alt="Training tile 2" class="align-center" src="_images/trees_train2.png" style="width: 400px;" />
+</a>
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
@@ -577,7 +578,8 @@ to plot the training and validation loss. The following code can be used to plot
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/train_val_loss.png"><img alt="Train and validation loss" class="align-center" src="_images/train_val_loss.png" style="width: 400px;" /></a>
+<a class="reference internal image-reference" href="_images/train_val_loss.png"><img alt="Train and validation loss" class="align-center" src="_images/train_val_loss.png" style="width: 400px;" />
+</a>
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
@@ -600,7 +602,8 @@ preventing overfitting. If validation loss is substantially higher than training
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/val_AP50.png"><img alt="AP50 score" class="align-center" src="_images/val_AP50.png" style="width: 400px;" /></a>
+<a class="reference internal image-reference" href="_images/val_AP50.png"><img alt="AP50 score" class="align-center" src="_images/val_AP50.png" style="width: 400px;" />
+</a>
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
@@ -642,7 +645,8 @@ truth masks is greater than or equal to 0.5 (50%). It is a relatively lenient th
 detected objects overlap reasonably with the ground truth, even if the boundaries aren’t perfectly aligned.</p>
 <p>In summary, AP50 evaluates how well a model detects objects with a 50% overlap between the predicted and ground truth
 masks in instance segmentation tasks.</p>
-<a class="reference internal image-reference" href="_images/IoU_AP.png"><img alt="IoU and AP illustration" class="align-center" src="_images/IoU_AP.png" style="width: 400px;" /></a>
+<a class="reference internal image-reference" href="_images/IoU_AP.png"><img alt="IoU and AP illustration" class="align-center" src="_images/IoU_AP.png" style="width: 400px;" />
+</a>
 </section>
 <section id="evaluating-model-performance">
 <h2><span class="section-number">2.7. </span>Evaluating model performance<a class="headerlink" href="#evaluating-model-performance" title="Link to this heading"></a></h2>
