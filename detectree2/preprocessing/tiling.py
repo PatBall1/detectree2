@@ -125,11 +125,12 @@ def process_tile(
             geo = gpd.GeoDataFrame({"geometry": bbox}, index=[0], crs=data.crs)
             coords = get_features(geo)
 
-            overlapping_crowns = None
             if crowns is not None:
                 overlapping_crowns = gpd.clip(crowns, geo)
                 if overlapping_crowns.empty or (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
                     return None
+            else:
+                overlapping_crowns = None
 
             out_img, out_transform = mask(data, shapes=coords, crop=True)
 
@@ -231,11 +232,12 @@ def process_tile_ms(
             geo = gpd.GeoDataFrame({"geometry": [bbox]}, index=[0], crs=data.crs)
             coords = [geo.geometry[0].__geo_interface__]
 
-            overlapping_crowns = None
             if crowns is not None:
                 overlapping_crowns = gpd.clip(crowns, geo)
                 if overlapping_crowns.empty or (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
                     return None
+            else:
+                overlapping_crowns = None
 
             out_img, out_transform = mask(data, shapes=coords, crop=True)
 
@@ -328,42 +330,45 @@ def process_tile_train(
 
     data, out_path_root, overlapping_crowns, minx, miny, buffer = result
 
-    overlapping_crowns = overlapping_crowns.explode(index_parts=True)
-    moved = overlapping_crowns.translate(-minx + buffer, -miny + buffer)
-    scalingx = 1 / (data.transform[0])
-    scalingy = -1 / (data.transform[4])
-    moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
+    if overlapping_crowns is not None and not overlapping_crowns.empty:
+        overlapping_crowns = overlapping_crowns.explode(index_parts=True)
+        moved = overlapping_crowns.translate(-minx + buffer, -miny + buffer)
+        scalingx = 1 / (data.transform[0])
+        scalingy = -1 / (data.transform[4])
+        moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
 
-    if mode == "rgb":
-        impath = {"imagePath": out_path_root.with_suffix(".png").as_posix()}
-    elif mode == "ms":
-        impath = {"imagePath": out_path_root.with_suffix(".tif").as_posix()}
+        if mode == "rgb":
+            impath = {"imagePath": out_path_root.with_suffix(".png").as_posix()}
+        elif mode == "ms":
+            impath = {"imagePath": out_path_root.with_suffix(".tif").as_posix()}
 
-    try:
-        filename = out_path_root.with_suffix(".geojson")
-        moved_scaled = overlapping_crowns.set_geometry(moved_scaled)
+        try:
+            filename = out_path_root.with_suffix(".geojson")
+            moved_scaled = overlapping_crowns.set_geometry(moved_scaled)
 
-        if class_column is not None:
-            # Ensure we map the selected column to the 'status' field
-            moved_scaled['status'] = moved_scaled[class_column]
-            # Keep only 'status' and geometry
-            moved_scaled = moved_scaled[['geometry', 'status']]
-        else:
-            # Keep only geometry to reduce file size
-            moved_scaled = moved_scaled[['geometry']]
+            if class_column is not None:
+                # Ensure we map the selected column to the 'status' field
+                moved_scaled['status'] = moved_scaled[class_column]
+                # Keep only 'status' and geometry
+                moved_scaled = moved_scaled[['geometry', 'status']]
+            else:
+                # Keep only geometry to reduce file size
+                moved_scaled = moved_scaled[['geometry']]
 
-        # Save the result as GeoJSON
-        moved_scaled.to_file(driver="GeoJSON", filename=filename)
+            # Save the result as GeoJSON
+            moved_scaled.to_file(driver="GeoJSON", filename=filename)
 
-        # Add image path info to the GeoJSON file
-        with open(filename, "r") as f:
-            shp = json.load(f)
-            shp.update(impath)
-        with open(filename, "w") as f:
-            json.dump(shp, f)
-    except ValueError:
-        logger.warning("Cannot write empty DataFrame to file.")
-        return
+            # Add image path info to the GeoJSON file
+            with open(filename, "r") as f:
+                shp = json.load(f)
+                shp.update(impath)
+            with open(filename, "w") as f:
+                json.dump(shp, f)
+        except ValueError:
+            logger.warning("Cannot write empty DataFrame to file.")
+            return
+    else:
+        return None  # Handle the case where there are no overlapping crowns
 
 
 # Define a top-level helper function
