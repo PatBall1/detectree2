@@ -463,9 +463,8 @@ class MyTrainer(DefaultTrainer):
 
         # Define basic augmentations including rotation and flipping
         augmentations = [
-            T.RandomRotation(angle=[90, 90], expand=False),
-            T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
-            T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
+            T.RandomRotation(angle=[0, 360], expand=False),
+            T.RandomFlip(prob=0.5, horizontal=True, vertical=False),
         ]
 
         # Additional augmentations for RGB images
