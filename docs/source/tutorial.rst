@@ -474,9 +474,8 @@ By default, random rotations and flips will be performed on input images.
 .. code-block:: python
 
    augmentations = [
-      T.RandomRotation(angle=[90, 90], expand=False),
-      T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
-      T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
+      T.RandomRotation(angle=[0, 360], expand=False),
+      T.RandomFlip(prob=0.5, horizontal=True, vertical=False),
    ]
 
 If the input data is RGB, additional augmentations will be applied to adjust the brightness, contrast, saturation, and
