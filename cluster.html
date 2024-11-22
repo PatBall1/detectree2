@@ -1,0 +1,390 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4. Running Jupyter Notebook and Installing Detectree2 on a HPC platform (like CSD3) &mdash; detectree2 1.0.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=aec50437"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="11. Contributing guide" href="contributing.html" />
+    <link rel="prev" title="3. Tutorial (multiclass)" href="tutorial_multi.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            detectree2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">2. Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_multi.html">3. Tutorial (multiclass)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">4. Running Jupyter Notebook and Installing Detectree2 on a HPC platform (like CSD3)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#table-of-contents">5. Table of Contents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#id1">6. 1. Setting Up a Virtual Environment for Jupyter Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#id3">7. 2. Running Jupyter Notebook on the Login Node (CPU Only)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#steps">7.1. Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#id5">8. 3. Running Jupyter Notebook on a Compute Node (CPU or GPU)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id7">8.1. Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#issue">8.2. Issue</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#id8">9. 4. Installing Detectree2</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id10">9.1. Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#id11">10. 5. Running Detectree2 on a GPU Compute Node</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id13">10.1. Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#note">10.2. Note</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">11. Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">12. Git/Github</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">detectree2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">4. </span>Running Jupyter Notebook and Installing Detectree2 on a HPC platform (like CSD3)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cluster.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="running-jupyter-notebook-and-installing-detectree2-on-a-hpc-platform-like-csd3">
+<h1><span class="section-number">4. </span>Running Jupyter Notebook and Installing Detectree2 on a HPC platform (like CSD3)<a class="headerlink" href="#running-jupyter-notebook-and-installing-detectree2-on-a-hpc-platform-like-csd3" title="Link to this heading"></a></h1>
+<p>This example is based on CSD3 for people associated with the University of Cambridge but the workflow can mostly be applied to other clusters as well.</p>
+<p>This guide provides step-by-step instructions on how to set up a virtual environment for Jupyter Notebook on an HPC system, run Jupyter Notebook on both login and compute nodes, install the <code class="docutils literal notranslate"><span class="pre">detectree2</span></code> package, and run it on a GPU compute node.</p>
+<p>—</p>
+</section>
+<section id="table-of-contents">
+<h1><span class="section-number">5. </span>Table of Contents<a class="headerlink" href="#table-of-contents" title="Link to this heading"></a></h1>
+<ol class="arabic simple">
+<li><p>Setting Up a Virtual Environment for Jupyter Notebook</p></li>
+<li><p>Running Jupyter Notebook on the Login Node (CPU Only)</p></li>
+<li><p>Running Jupyter Notebook on a Compute Node (CPU or GPU)</p></li>
+<li><p>Installing Detectree2</p></li>
+<li><p>Running Detectree2 on a GPU Compute Node</p></li>
+</ol>
+<p>—</p>
+</section>
+<section id="id1">
+<span id="id2"></span><h1><span class="section-number">6. </span>1. Setting Up a Virtual Environment for Jupyter Notebook<a class="headerlink" href="#id1" title="Link to this heading"></a></h1>
+<p>First, create a virtual environment to run Jupyter Notebook. This step only needs to be done once.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Load<span class="w"> </span>the<span class="w"> </span>Python<span class="w"> </span>module
+<span class="go">module load python/3.8</span>
+
+<span class="gp"># </span>Create<span class="w"> </span>a<span class="w"> </span>virtual<span class="w"> </span>environment<span class="w"> </span>with<span class="w"> </span>system<span class="w"> </span>site<span class="w"> </span>packages
+<span class="go">virtualenv --system-site-packages ~/jupyter-env</span>
+
+<span class="gp"># </span>Activate<span class="w"> </span>the<span class="w"> </span>virtual<span class="w"> </span>environment
+<span class="go">source ~/jupyter-env/bin/activate</span>
+
+<span class="gp"># </span>Install<span class="w"> </span>Jupyter<span class="w"> </span>Notebook
+<span class="go">pip install jupyter</span>
+</pre></div>
+</div>
+<p>—</p>
+</section>
+<section id="id3">
+<span id="id4"></span><h1><span class="section-number">7. </span>2. Running Jupyter Notebook on the Login Node (CPU Only)<a class="headerlink" href="#id3" title="Link to this heading"></a></h1>
+<p>Follow these steps to run Jupyter Notebook on the login node using CPU resources only.</p>
+<section id="steps">
+<h2><span class="section-number">7.1. </span>Steps<a class="headerlink" href="#steps" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Activate the Virtual Environment:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">source ~/jupyter-env/bin/activate</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Start Jupyter Notebook:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">jupyter notebook --no-browser --ip=127.0.0.1 --port=8081</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>This command will start a Jupyter Notebook server and output a URL that looks like <code class="docutils literal notranslate"><span class="pre">http://127.0.0.1:8081/?token=...</span></code>. Save this URL for later use.</p></li>
+<li><p>If the <code class="docutils literal notranslate"><span class="pre">127.0.0.1</span></code> URL doesn’t work, try using the one that starts with <code class="docutils literal notranslate"><span class="pre">http://localhost</span></code>.</p></li>
+</ul>
+</li>
+<li><p><strong>Set Up SSH Tunneling from Your Local Computer:</strong></p>
+<p>Open a terminal on your local computer and run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">ssh -L 8081:127.0.0.1:8081 -N &lt;CRSid&gt;@&lt;login_hostname&gt;.hpc.cam.ac.uk</span>
+</pre></div>
+</div>
+<ul>
+<li><p>Replace <code class="docutils literal notranslate"><span class="pre">&lt;CRSid&gt;</span></code> with your user ID and <code class="docutils literal notranslate"><span class="pre">&lt;login_hostname&gt;</span></code> with the hostname of the login node (e.g., <code class="docutils literal notranslate"><span class="pre">login-p-1</span></code>).</p></li>
+<li><p>Example:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">ssh -L 8081:127.0.0.1:8081 -N ab123@login-p-1.hpc.cam.ac.uk</span>
+</pre></div>
+</div>
+</li>
+<li><p>Keep this terminal open as long as you want the session to last.</p></li>
+</ul>
+</li>
+<li><p><strong>Access Jupyter Notebook:</strong></p>
+<ul class="simple">
+<li><p>Paste the URL you saved earlier into your web browser to access the Jupyter Notebook interface.</p></li>
+</ul>
+</li>
+</ol>
+<p>—</p>
+</section>
+</section>
+<section id="id5">
+<span id="id6"></span><h1><span class="section-number">8. </span>3. Running Jupyter Notebook on a Compute Node (CPU or GPU)<a class="headerlink" href="#id5" title="Link to this heading"></a></h1>
+<p>To run Jupyter Notebook on a compute node, follow these steps.</p>
+<section id="id7">
+<h2><span class="section-number">8.1. </span>Steps<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Note the Login Node Hostname:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">hostname</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Run this command on the login node and note the hostname (e.g., <code class="docutils literal notranslate"><span class="pre">login-p-1</span></code>).</p></li>
+</ul>
+</li>
+<li><p><strong>Request an Interactive Session:</strong></p>
+<ul>
+<li><p><strong>For GPU Compute Node:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">sintr -A COOMES-SL3-GPU -p ampere -N1 -n1 --gres=gpu:1 -t 1:0:0 --qos=INTR</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>For CPU Compute Node:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">sintr -A COOMES-SL3-CPU -p icelake -N1 -n38 -t 1:0:0 --qos=INTR</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Note that <code class="docutils literal notranslate"><span class="pre">COOMES-SL3-*</span></code> should be replaced with your or your lab’s balance account.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Note the Compute Node Hostname:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">hostname</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Run this command on the compute node and note the hostname (e.g., <code class="docutils literal notranslate"><span class="pre">gpu-q-3</span></code>).</p></li>
+</ul>
+</li>
+<li><p><strong>Activate the Virtual Environment:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">source ~/jupyter-env/bin/activate</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Load Necessary Modules (if required):</strong></p>
+<ul>
+<li><p>For example, to load CUDA:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">module load cuda</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p><strong>Start Jupyter Notebook:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">jupyter notebook --no-browser --ip=* --port=8081</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>This will output a URL starting with <code class="docutils literal notranslate"><span class="pre">http://127.0.0.1:8081/?token=...</span></code>. Save this URL for later.</p></li>
+</ul>
+</li>
+<li><p><strong>Set Up SSH Tunneling from Your Local Computer:</strong></p>
+<p>Open a terminal on your local computer and run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">ssh -L 8081:&lt;compute_hostname&gt;:8081 -N &lt;CRSid&gt;@&lt;login_hostname&gt;.hpc.cam.ac.uk</span>
+</pre></div>
+</div>
+<ul>
+<li><p>Replace <code class="docutils literal notranslate"><span class="pre">&lt;compute_hostname&gt;</span></code> with the hostname from step 3 and <code class="docutils literal notranslate"><span class="pre">&lt;login_hostname&gt;</span></code> from step 1.</p></li>
+<li><p>Example:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">ssh -L 8081:gpu-q-3:8081 -N ab123@login-p-1.hpc.cam.ac.uk</span>
+</pre></div>
+</div>
+</li>
+<li><p>Keep this terminal open as long as you want the session to last.</p></li>
+</ul>
+</li>
+<li><p><strong>Access Jupyter Notebook:</strong></p>
+<ul class="simple">
+<li><p>Paste the URL you saved earlier into your web browser to access the Jupyter Notebook interface.</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="issue">
+<h2><span class="section-number">8.2. </span>Issue<a class="headerlink" href="#issue" title="Link to this heading"></a></h2>
+<p>If you are connected to the cluster via VSCode, it will try to forward the port automatically, which does not work. In that case you might need to shuffle ports around and connect to the new port, like: <code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">-L</span> <span class="pre">8082:gpu-q-3:8081</span> <span class="pre">...</span></code> and then enter the link in your browser by replacing 8081 with 8082.</p>
+<p>—</p>
+</section>
+</section>
+<section id="id8">
+<span id="id9"></span><h1><span class="section-number">9. </span>4. Installing Detectree2<a class="headerlink" href="#id8" title="Link to this heading"></a></h1>
+<p>Follow these steps to install the <code class="docutils literal notranslate"><span class="pre">detectree2</span></code> package on a GPU compute node.</p>
+<section id="id10">
+<h2><span class="section-number">9.1. </span>Steps<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Request a GPU Interactive Session:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">sintr -A COOMES-SL3-GPU -p ampere -N1 -n1 --gres=gpu:1 -t 0:30:0 --qos=INTR</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Load Required Modules:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">module load gcc</span>
+<span class="go">module load cuda/12.1</span>
+<span class="go">module load cudnn/8.9_cuda-12.1</span>
+<span class="go">module load gdal/3.7.0-icl</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Activate the Virtual Environment:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">source ~/jupyter-env/bin/activate</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Install PyTorch with CUDA Support:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Install Additional Python Packages:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install opencv-python</span>
+<span class="go">pip install GDAL==3.7.0</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Set CUDA Environment Variables:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">export CUDA_HOME=/usr/local/software/cuda/12.1</span>
+<span class="go">export PATH=/usr/local/software/cuda/12.1/bin:/usr/local/software/cuda/12.1/cuda-samples-12.1/bin/x86_64/linux/release:/usr/local/software/cuda/12.1/nvvm/bin:/usr/local/software/cuda/12.1/libnvvp:$PATH</span>
+<span class="go">export CPATH=/usr/local/software/cuda/12.1/include:$CPATH</span>
+<span class="go">export FPATH=/usr/local/software/cuda/12.1/include:$FPATH</span>
+<span class="go">export LIBRARY_PATH=/usr/local/software/cuda/12.1/lib64:/usr/local/software/cuda/12.1/lib:/usr/local/software/cuda/12.1/nvvm/lib64:$LIBRARY_PATH</span>
+<span class="go">export LD_LIBRARY_PATH=/usr/local/software/cuda/12.1/lib64:/usr/local/software/cuda/12.1/lib:/usr/local/software/cuda/12.1/nvvm/lib64:$LD_LIBRARY_PATH</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Install Detectree2:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install git+https://github.com/PatBall1/detectree2.git</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>—</p>
+</section>
+</section>
+<section id="id11">
+<span id="id12"></span><h1><span class="section-number">10. </span>5. Running Detectree2 on a GPU Compute Node<a class="headerlink" href="#id11" title="Link to this heading"></a></h1>
+<p>When running any <code class="docutils literal notranslate"><span class="pre">detectree2</span></code> tasks on a GPU compute node, ensure the following modules are loaded and the Python environment is active.</p>
+<section id="id13">
+<h2><span class="section-number">10.1. </span>Steps<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Request a GPU Interactive Session:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">sintr -A COOMES-SL3-GPU -p ampere -N1 -n1 --gres=gpu:1 -t 1:0:0 --qos=INTR</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Load Required Modules:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">module load cuda/12.1</span>
+<span class="go">module load cudnn/8.9_cuda-12.1</span>
+<span class="go">module load gdal/3.7.0-icl</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Activate the Virtual Environment:</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">source ~/jupyter-env/bin/activate</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Run Your Detectree2 Tasks:</strong></p>
+<ul class="simple">
+<li><p>You can now run your Python scripts or Jupyter Notebooks that utilize <code class="docutils literal notranslate"><span class="pre">detectree2</span></code>.</p></li>
+</ul>
+</li>
+</ol>
+<p>—</p>
+</section>
+<section id="note">
+<h2><span class="section-number">10.2. </span>Note<a class="headerlink" href="#note" title="Link to this heading"></a></h2>
+<p>Always ensure that you’re working within the allocated time for interactive sessions and that you comply with the HPC usage policies.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorial_multi.html" class="btn btn-neutral float-left" title="3. Tutorial (multiclass)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="contributing.html" class="btn btn-neutral float-right" title="11. Contributing guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, James Ball.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

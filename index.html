@@ -49,8 +49,15 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">2. Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial_multi.html">3. Tutorial (multiclass)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">4. Contributing guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="using-git.html">5. Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html">4. Running Jupyter Notebook and Installing Detectree2 on a HPC platform (like CSD3)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html#table-of-contents">5. Table of Contents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html#id1">6. 1. Setting Up a Virtual Environment for Jupyter Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html#id3">7. 2. Running Jupyter Notebook on the Login Node (CPU Only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html#id5">8. 3. Running Jupyter Notebook on a Compute Node (CPU or GPU)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html#id8">9. 4. Installing Detectree2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html#id11">10. 5. Running Detectree2 on a GPU Compute Node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">11. Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">12. Git/Github</a></li>
 </ul>
 
         </div>
@@ -121,19 +128,40 @@ Accurate delineation of individual tree crowns in tropical forests from aerial R
 <li class="toctree-l2"><a class="reference internal" href="tutorial_multi.html#landscape-predictions">3.3. Landscape predictions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">4. Contributing guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#contributing-to-detectree2">4.1. Contributing to Detectree2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#detectree2-setup-for-developers">4.2. Detectree2 setup for developers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#continuous-integration">4.3. Continuous integration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#automatic-documentation">4.4. Automatic Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#tests">4.5. Tests</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#building-detectree2">4.6. Building Detectree2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#python-development-environment">4.7. Python development environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html">4. Running Jupyter Notebook and Installing Detectree2 on a HPC platform (like CSD3)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html#table-of-contents">5. Table of Contents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html#id1">6. 1. Setting Up a Virtual Environment for Jupyter Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html#id3">7. 2. Running Jupyter Notebook on the Login Node (CPU Only)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cluster.html#steps">7.1. Steps</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="using-git.html">5. Git/Github</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="using-git.html#overview">5.1. Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="using-git.html#more-advanced-git-practices">5.2. More advanced Git Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html#id5">8. 3. Running Jupyter Notebook on a Compute Node (CPU or GPU)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cluster.html#id7">8.1. Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cluster.html#issue">8.2. Issue</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html#id8">9. 4. Installing Detectree2</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cluster.html#id10">9.1. Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html#id11">10. 5. Running Detectree2 on a GPU Compute Node</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cluster.html#id13">10.1. Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cluster.html#note">10.2. Note</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">11. Contributing guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#contributing-to-detectree2">11.1. Contributing to Detectree2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#detectree2-setup-for-developers">11.2. Detectree2 setup for developers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#continuous-integration">11.3. Continuous integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#automatic-documentation">11.4. Automatic Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#tests">11.5. Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#building-detectree2">11.6. Building Detectree2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#python-development-environment">11.7. Python development environment</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">12. Git/Github</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="using-git.html#overview">12.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using-git.html#more-advanced-git-practices">12.2. More advanced Git Practices</a></li>
 </ul>
 </li>
 </ul>
