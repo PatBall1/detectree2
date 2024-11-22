@@ -1,6 +1,7 @@
 ************
 Installation
 ************
+For a guide on installation and usage on a cluster, see the cluster dedicated page.
 
 To use detectree2, install it using:
 
