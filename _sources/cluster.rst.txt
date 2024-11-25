@@ -1,27 +1,16 @@
 Running Jupyter Notebook and Installing Detectree2 on a HPC platform (like CSD3)
 ===============================================================================
 
-This example is based on CSD3 for people associated with the University of Cambridge but the workflow can mostly be applied to other clusters as well.
+.. note::
+   This example is based on CSD3 for people associated with the University of Cambridge but the workflow can mostly be applied to other clusters as well.
 
 This guide provides step-by-step instructions on how to set up a virtual environment for Jupyter Notebook on an HPC system, run Jupyter Notebook on both login and compute nodes, install the ``detectree2`` package, and run it on a GPU compute node.
 
----
+.. contents::
 
-Table of Contents
-=================
 
-1. `Setting Up a Virtual Environment for Jupyter Notebook <#setting-up-a-virtual-environment-for-jupyter-notebook>`_
-2. `Running Jupyter Notebook on the Login Node (CPU Only) <#running-jupyter-notebook-on-the-login-node-cpu-only>`_
-3. `Running Jupyter Notebook on a Compute Node (CPU or GPU) <#running-jupyter-notebook-on-a-compute-node-cpu-or-gpu>`_
-4. `Installing Detectree2 <#installing-detectree2>`_
-5. `Running Detectree2 on a GPU Compute Node <#running-detectree2-on-a-gpu-compute-node>`_
-
----
-
-.. _setting-up-a-virtual-environment-for-jupyter-notebook:
-
-1. Setting Up a Virtual Environment for Jupyter Notebook
-=========================================================
+Setting Up a Virtual Environment for Jupyter Notebook
+-----------------------------------------------------
 
 First, create a virtual environment to run Jupyter Notebook. This step only needs to be done once.
 
@@ -39,18 +28,15 @@ First, create a virtual environment to run Jupyter Notebook. This step only need
    # Install Jupyter Notebook
    pip install jupyter
 
----
 
-.. _running-jupyter-notebook-on-the-login-node-cpu-only:
 
-2. Running Jupyter Notebook on the Login Node (CPU Only)
-========================================================
+
+Running Jupyter Notebook on the Login Node (CPU Only)
+-----------------------------------------------------
 
 Follow these steps to run Jupyter Notebook on the login node using CPU resources only.
 
-Steps
------
-
+**Steps:**
 1. **Activate the Virtual Environment:**
 
    .. code-block:: console
@@ -87,18 +73,14 @@ Steps
 
    - Paste the URL you saved earlier into your web browser to access the Jupyter Notebook interface.
 
----
 
-.. _running-jupyter-notebook-on-a-compute-node-cpu-or-gpu:
 
-3. Running Jupyter Notebook on a Compute Node (CPU or GPU)
-==========================================================
+Running Jupyter Notebook on a Compute Node (CPU or GPU)
+-------------------------------------------------------
 
 To run Jupyter Notebook on a compute node, follow these steps.
 
-Steps
------
-
+**Steps:**
 1. **Note the Login Node Hostname:**
 
    .. code-block:: console
@@ -174,23 +156,16 @@ Steps
 
    - Paste the URL you saved earlier into your web browser to access the Jupyter Notebook interface.
 
-Issue
------
+.. note::
+   If you are connected to the cluster via VSCode, it will try to forward the port automatically, which does not work. In that case you might need to shuffle ports around and connect to the new port, like: ``ssh -L 8082:gpu-q-3:8081 ...`` and then enter the link in your browser by replacing 8081 with 8082.
 
-If you are connected to the cluster via VSCode, it will try to forward the port automatically, which does not work. In that case you might need to shuffle ports around and connect to the new port, like: ``ssh -L 8082:gpu-q-3:8081 ...`` and then enter the link in your browser by replacing 8081 with 8082.
 
----
-
-.. _installing-detectree2:
-
-4. Installing Detectree2
-========================
+Installing Detectree2
+---------------------
 
 Follow these steps to install the ``detectree2`` package on a GPU compute node.
 
-Steps
------
-
+**Steps:**
 1. **Request a GPU Interactive Session:**
 
    .. code-block:: console
@@ -242,18 +217,14 @@ Steps
 
       pip install git+https://github.com/PatBall1/detectree2.git
 
----
 
-.. _running-detectree2-on-a-gpu-compute-node:
 
-5. Running Detectree2 on a GPU Compute Node
-===========================================
+Running Detectree2 on a GPU Compute Node
+----------------------------------------
 
 When running any ``detectree2`` tasks on a GPU compute node, ensure the following modules are loaded and the Python environment is active.
 
-Steps
------
-
+**Steps:**
 1. **Request a GPU Interactive Session:**
 
    .. code-block:: console
@@ -278,9 +249,6 @@ Steps
 
    - You can now run your Python scripts or Jupyter Notebooks that utilize ``detectree2``.
 
----
 
-Note
-----
-
-Always ensure that you're working within the allocated time for interactive sessions and that you comply with the HPC usage policies.
+.. note::
+   Always ensure that you're working within the allocated time for interactive sessions and that you comply with the HPC usage policies.
