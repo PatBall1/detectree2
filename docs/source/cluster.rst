@@ -1,8 +1,8 @@
-Running Jupyter Notebook and Installing Detectree2 on a HPC platform (like CSD3)
-===============================================================================
+Running in Jupyter Notebook on a HPC platform
+=============================================
 
 .. note::
-   This example is based on CSD3 for people associated with the University of Cambridge but the workflow can mostly be applied to other clusters as well.
+   This example is based on CSD3 for people associated with the University of Cambridge but the workflow can be applied to other HPC clusters.
 
 This guide provides step-by-step instructions on how to set up a virtual environment for Jupyter Notebook on an HPC system, run Jupyter Notebook on both login and compute nodes, install the ``detectree2`` package, and run it on a GPU compute node.
 
