@@ -690,17 +690,29 @@ def combine_dicts(
     return tree_dicts
 
 
-def get_filenames(directory: str):
-    """Get the file names if no geojson is present.
+def get_filenames(directory: str, mode: str = "rgb"):
+    """Get the file names based on the mode.
 
     Allows for predictions where no delineations have been manually produced.
 
     Args:
-        directory (str): directory of images to be predicted on
+        directory (str): Directory of images to be predicted on.
+        mode (str): Image mode, 'rgb' or 'ms' (multispectral).
+
+    Returns:
+        List of dictionaries containing file names.
     """
     dataset_dicts = []
-    # Gather all image files with extensions .png, .jpg, .jpeg, .tif, .tiff
-    image_extensions = ["*.png", "*.jpg", "*.jpeg", "*.tif", "*.tiff"]
+    if mode == "rgb":
+        # For RGB mode, consider common RGB image extensions
+        image_extensions = ["*.png", "*.jpg", "*.jpeg"]
+    elif mode == "ms":
+        # For multispectral mode, consider common multispectral image extensions
+        image_extensions = ["*.tif", "*.tiff"]
+    else:
+        raise ValueError(
+            f"Unknown mode '{mode}'. Supported modes are 'rgb' and 'ms'.")
+
     files = []
     for ext in image_extensions:
         files.extend(glob.glob(os.path.join(directory, ext)))
@@ -954,7 +966,7 @@ def predictions_on_data(
     if geos_exist:
         dataset_dicts = get_tree_dicts(test_location)
     else:
-        dataset_dicts = get_filenames(test_location)
+        dataset_dicts = get_filenames(test_location, mode=mode)
 
     total_files = len(dataset_dicts)
 

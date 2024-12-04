@@ -46,7 +46,7 @@ def predict_on_data(
     if eval:
         dataset_dicts = get_tree_dicts(directory)
     else:
-        dataset_dicts = get_filenames(directory)
+        dataset_dicts = get_filenames(directory, mode=mode)
 
     total_files = len(dataset_dicts)
 
