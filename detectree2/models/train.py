@@ -32,7 +32,7 @@ from detectron2.data import (
     build_detection_train_loader,
 )
 from detectron2.data import detection_utils as utils
-from detectron2.engine import DefaultTrainer
+from detectron2.engine import DefaultPredictor, DefaultTrainer
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator, verify_results
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
