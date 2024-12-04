@@ -502,7 +502,18 @@ Another copy is produced to overlay with pngs.</p>
 <dt class="sig sig-object py" id="detectree2.models.predict.predict_on_data">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.predict.</span></span><span class="sig-name descname"><span class="pre">predict_on_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'./'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_folder:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'predictions'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictor=&lt;class</span> <span class="pre">'detectron2.engine.defaults.DefaultPredictor'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_predictions=0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.predict.predict_on_data" title="Link to this definition"></a></dt>
 <dd><p>Make predictions on tiled data.</p>
-<p>Predicts crowns for all png images present in a directory and outputs masks as jsons.</p>
+<p>Predicts crowns for all images (.png or .tif) present in a directory and outputs masks as JSON files.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>directory (str): Directory containing the images.
+out_folder (str): Output folder for predictions.
+predictor (DefaultPredictor): The predictor object.
+eval (bool): Whether to use evaluation mode.
+save (bool): Whether to save the predictions.
+num_predictions (int): Number of predictions to make.</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -697,10 +708,17 @@ and “full” includes all directories. Defaults to “train”.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.train.get_filenames">
 <span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">get_filenames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.get_filenames" title="Link to this definition"></a></dt>
-<dd><p>Get the file names if no geojson is present.</p>
-<p>Allows for predictions where no delinations have been manually produced.</p>
+<dd><p>Get the file names from the directory, handling both RGB (.png) and multispectral (.tif) images.</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>directory (str): directory of images to be predicted on</p>
+<dt>Args:</dt><dd><p>directory (str): Directory of images to be predicted on.</p>
+</dd>
+<dt>Returns:</dt><dd><dl class="simple">
+<dt>tuple: A tuple containing:</dt><dd><ul class="simple">
+<li><p>dataset_dicts (list): List of dictionaries with ‘file_name’ keys.</p></li>
+<li><p>mode (str): ‘rgb’ if .png files are used, ‘ms’ if .tif files are used.</p></li>
+</ul>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -758,16 +776,18 @@ num_input_channels (int): The number of input channels for the new conv1 layer.<
 
 <dl class="py function">
 <dt class="sig sig-object py" id="detectree2.models.train.predictions_on_data">
-<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">predictions_on_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictor=&lt;class</span> <span class="pre">'detectron2.engine.defaults.DefaultTrainer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trees_metadata=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geos_exist=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_predictions=0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.predictions_on_data" title="Link to this definition"></a></dt>
-<dd><p>Prediction produced from a test folder and outputted to predictions folder.</p>
+<span class="sig-prename descclassname"><span class="pre">detectree2.models.train.</span></span><span class="sig-name descname"><span class="pre">predictions_on_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictor=&lt;class</span> <span class="pre">'detectron2.engine.defaults.DefaultPredictor'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trees_metadata=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geos_exist=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_predictions=0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#detectree2.models.train.predictions_on_data" title="Link to this definition"></a></dt>
+<dd><p>Make predictions on test data and output them to the predictions folder.</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>directory: directory containing test data
-predictor: predictor object
-trees_metadata: metadata for trees
-save: boolean to save predictions
-scale: scale of image
-geos_exist: boolean to determine if geojson files exist
-num_predictions: number of predictions to make</p>
+<dt>Args:</dt><dd><p>directory (str): Directory containing test data.
+predictor (DefaultPredictor): The predictor object.
+trees_metadata: Metadata for trees.
+save (bool): Whether to save the predictions.
+scale (float): Scale of the image for visualization.
+geos_exist (bool): Determines if geojson files exist.
+num_predictions (int): Number of predictions to make.</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
 </dd>
 </dl>
 </dd></dl>
