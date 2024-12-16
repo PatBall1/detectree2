@@ -282,21 +282,21 @@ def process_tile_ms(
 
 
 def process_tile_train(
-    img_path: str,
-    out_dir: str,
-    buffer: int,
-    tile_width: int,
-    tile_height: int,
-    dtype_bool: bool,
-    minx,
-    miny,
-    crs,
-    tilename,
-    crowns: gpd.GeoDataFrame,
-    threshold,
-    nan_threshold,
-    mode: str = "rgb",
-    class_column: str = None,  # Allow user to specify class column
+        img_path: str,
+        out_dir: str,
+        buffer: int,
+        tile_width: int,
+        tile_height: int,
+        dtype_bool: bool,
+        minx,
+        miny,
+        crs,
+        tilename,
+        crowns: gpd.GeoDataFrame,
+        threshold,
+        nan_threshold,
+        mode: str = "rgb",
+        class_column: str = None,  # Allow user to specify class column
 ) -> None:
     """Process a single tile for training data.
 
@@ -319,8 +319,8 @@ def process_tile_train(
         None
     """
     if mode == "rgb":
-        result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs,
-                              tilename, crowns, threshold, nan_threshold)
+        result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename,
+                              crowns, threshold, nan_threshold)
     elif mode == "ms":
         result = process_tile_ms(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs,
                                  tilename, crowns, threshold, nan_threshold)
@@ -389,11 +389,18 @@ def _calculate_tile_placements(
 
     if tile_placement == "grid":
         with rasterio.open(img_path) as data:
-            coordinates = [(minx, miny) for minx in np.arange(math.ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, int) for miny in np.arange(math.ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, int)]
+            coordinates = [
+                (minx, miny) for minx in np.arange(
+                    math.ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, int)
+                for miny in np.arange(
+                    math.ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, int)
+            ]
     elif tile_placement == "adaptive":
 
         if crowns is None:
-            logger.warning('Crowns must be supplied if tile_placement="adaptive" (crowns is None). Assuming tiling for test dataset, and tile placement will be done with tile_placement == "grid" instead.')
+            logger.warning(
+                'Crowns must be supplied if tile_placement="adaptive" (crowns is None). Assuming tiling for test dataset, and tile placement will be done with tile_placement == "grid" instead.'
+            )
             return _calculate_tile_placements(img_path, buffer, tile_width, tile_height)
 
         logger.info("Starting Union of Crowns")
@@ -403,32 +410,36 @@ def _calculate_tile_placements(
             unioned_crowns = crowns.unary_union
         logger.info(f"Finished Union of Crowns")
 
-        area_width = crowns.total_bounds[2]-crowns.total_bounds[0]
-        area_height = crowns.total_bounds[3]-crowns.total_bounds[1]
-        required_tiles_x = math.ceil(area_width/tile_width)
-        required_tiles_y = math.ceil(area_height/tile_height)
-        combined_tiles_width = required_tiles_x*tile_width
-        combined_tiles_height = required_tiles_y*tile_height
-        x_offset = (combined_tiles_width-area_width)/2
-        y_offset = (combined_tiles_height-area_height)/2
-
+        area_width = crowns.total_bounds[2] - crowns.total_bounds[0]
+        area_height = crowns.total_bounds[3] - crowns.total_bounds[1]
+        required_tiles_x = math.ceil(area_width / tile_width)
+        required_tiles_y = math.ceil(area_height / tile_height)
+        combined_tiles_width = required_tiles_x * tile_width
+        combined_tiles_height = required_tiles_y * tile_height
+        x_offset = (combined_tiles_width - area_width) / 2
+        y_offset = (combined_tiles_height - area_height) / 2
 
         logger.info("Starting Tile Placement Generation")
-        coordinates=[]
+        coordinates = []
         for row in range(required_tiles_y):
-            bar = gpd.GeoSeries([box(crowns.total_bounds[0]-x_offset, crowns.total_bounds[1]-y_offset+ row*tile_height,crowns.total_bounds[2]+x_offset, crowns.total_bounds[1]-y_offset+ (row+1)*tile_height)], crs=crowns.crs)
+            bar = gpd.GeoSeries([
+                box(crowns.total_bounds[0] - x_offset, crowns.total_bounds[1] - y_offset + row * tile_height,
+                    crowns.total_bounds[2] + x_offset, crowns.total_bounds[1] - y_offset + (row + 1) * tile_height)
+            ],
+                                crs=crowns.crs)
 
             intersection = unioned_crowns.intersection(bar)
             if intersection.is_empty.all():
                 continue
 
-            intersection_width = intersection.total_bounds[2]-intersection.total_bounds[0]
-            required_intersection_tiles_x = math.ceil(intersection_width/tile_width)
-            combined_intersection_tiles_width = required_intersection_tiles_x*tile_width
-            x_intersection_offset = (combined_intersection_tiles_width-intersection_width)/2
+            intersection_width = intersection.total_bounds[2] - intersection.total_bounds[0]
+            required_intersection_tiles_x = math.ceil(intersection_width / tile_width)
+            combined_intersection_tiles_width = required_intersection_tiles_x * tile_width
+            x_intersection_offset = (combined_intersection_tiles_width - intersection_width) / 2
 
             for col in range(required_intersection_tiles_x):
-                coordinates.append((int(intersection.total_bounds[0]-x_intersection_offset)+col*tile_width, int(crowns.total_bounds[1]-y_offset)+ row*tile_height))
+                coordinates.append((int(intersection.total_bounds[0] - x_intersection_offset) + col * tile_width,
+                                    int(crowns.total_bounds[1] - y_offset) + row * tile_height))
         logger.info(f"Finished Tile Placement Generation")
     else:
         raise ValueError('Unsupported tile_placement method. Must be "grid" or "adaptive"')
@@ -483,11 +494,8 @@ def tile_data(
         crs = data.crs.to_epsg()  # Update CRS handling to avoid deprecated syntax
 
     tile_coordinates = _calculate_tile_placements(img_path, buffer, tile_width, tile_height, crowns, tile_placement)
-    tile_args = [
-        (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold,
-        nan_threshold, mode, class_column)
-        for minx, miny in tile_coordinates
-    ]
+    tile_args = [(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns,
+                  threshold, nan_threshold, mode, class_column) for minx, miny in tile_coordinates]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:  # Use ProcessPoolExecutor here
         list(executor.map(process_tile_train_helper, tile_args))
@@ -627,18 +635,19 @@ def to_traintest_folders(  # noqa: C901
         # copy to test
         if i < len(file_roots) * test_frac:
             test_boxes.append(image_details(file_roots[num[i]]))
-            shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(
-                Path(file_roots[num[i]]).suffix + ".geojson"), out_dir / "test")
+            shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(Path(file_roots[num[i]]).suffix + ".geojson"),
+                        out_dir / "test")
         else:
             # copy to train
             train_box = image_details(file_roots[num[i]])
-            if strict:   # check if there is overlap with test boxes
+            if strict:  # check if there is overlap with test boxes
                 if not is_overlapping_box(test_boxes, train_box):
-                    shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(
-                        Path(file_roots[num[i]]).suffix + ".geojson"), out_dir / "train")
+                    shutil.copy(
+                        (tiles_dir / file_roots[num[i]]).with_suffix(Path(file_roots[num[i]]).suffix + ".geojson"),
+                        out_dir / "train")
             else:
-                shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(
-                    Path(file_roots[num[i]]).suffix + ".geojson"), out_dir / "train")
+                shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(Path(file_roots[num[i]]).suffix + ".geojson"),
+                            out_dir / "train")
 
     # COMMENT NECESSARY HERE
     file_names = (out_dir / "train").glob("*.geojson")
@@ -674,7 +683,7 @@ if __name__ == "__main__":
     dtype_bool = False  # Change dtype to uint8 to avoid black tiles
     mode = "rgb"  # Use 'rgb' for regular 3-channel imagery, 'ms' for multispectral
     class_column = "species"  # Column in the crowns file to use as the class label
-    tile_placement = "adaptive" # Determines the way that tiles are are placed, can be either "grid" or "adaptive"
+    tile_placement = "adaptive"  # Determines the way that tiles are are placed, can be either "grid" or "adaptive"
 
     # Read in the crowns
     crowns = gpd.read_file(crown_path)
@@ -700,8 +709,7 @@ if __name__ == "__main__":
         dtype_bool=dtype_bool,
         mode=mode,
         class_column=class_column,  # Use the selected class column (e.g., 'species', 'status')
-        tile_placement=tile_placement
-    )
+        tile_placement=tile_placement)
 
     # Split the data into training and validation sets (optional)
     # This can be used for train/test folder creation based on the generated tiles
