@@ -152,7 +152,7 @@ Send geojsons to train folder (with sub-folders for k-fold cross validation) and
 .. code-block:: python
    
    data_folder = out_dir # data_folder is the folder where the .png, .tif, .geojson tiles have been stored
-   to_traintest_folders(data_folder, out_dir, test_frac=0.15, strict=True, folds=5)
+   to_traintest_folders(data_folder, out_dir, test_frac=0.15, strict=False, folds=5)
 
 .. note::
    If ``strict=True``, the ``to_traintest_folders`` function will automatically removes training/validation geojsons

@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>2. Tutorial &mdash; detectree2 1.0.8 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
@@ -157,10 +157,10 @@ If available, several RGB orthomosaics can be included in a single site director
 <code class="docutils literal notranslate"><span class="pre">.tif</span></code> format instead of converting to <code class="docutils literal notranslate"><span class="pre">.png</span></code> as in the case of <code class="docutils literal notranslate"><span class="pre">rgb</span></code>. This comes at a slight expense of speed
 later on but is necessary to retain all the multispectral information.</p>
 <p>We call functions to from <code class="docutils literal notranslate"><span class="pre">detectree2</span></code>’s tiling and training modules.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data</span><span class="p">,</span> <span class="n">to_traintest_folders</span>
-<span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">register_train_data</span><span class="p">,</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
-<span class="kn">import</span> <span class="nn">rasterio</span>
-<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.preprocessing.tiling</span><span class="w"> </span><span class="kn">import</span> <span class="n">tile_data</span><span class="p">,</span> <span class="n">to_traintest_folders</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_train_data</span><span class="p">,</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
 </pre></div>
 </div>
 <p>Set up the paths to the orthomosaic and corresponding manual crown data.</p>
@@ -218,7 +218,7 @@ for different systems.</p>
 </div>
 <p>Send geojsons to train folder (with sub-folders for k-fold cross validation) and a test folder.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data_folder</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="c1"># data_folder is the folder where the .png, .tif, .geojson tiles have been stored</span>
-<span class="n">to_traintest_folders</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">test_frac</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">to_traintest_folders</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">test_frac</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -246,12 +246,12 @@ overlap in the buffers between test and train/val tiles).</p>
 <p>It is recommended to visually inspect the tiles before training to ensure that the tiling has worked as expected and
 that crowns and images align. This can be done with the inbuilt <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> visualisation tools. For RGB tiles
 (<code class="docutils literal notranslate"><span class="pre">.png</span></code>), the following code can be used to visualise the training data.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectron2.data</span> <span class="kn">import</span> <span class="n">DatasetCatalog</span><span class="p">,</span> <span class="n">MetadataCatalog</span>
-<span class="kn">from</span> <span class="nn">detectron2.utils.visualizer</span> <span class="kn">import</span> <span class="n">Visualizer</span>
-<span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">combine_dicts</span><span class="p">,</span> <span class="n">register_train_data</span>
-<span class="kn">import</span> <span class="nn">random</span>
-<span class="kn">import</span> <span class="nn">cv2</span>
-<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetCatalog</span><span class="p">,</span> <span class="n">MetadataCatalog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.utils.visualizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Visualizer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">combine_dicts</span><span class="p">,</span> <span class="n">register_train_data</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
 
 <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Danum&quot;</span>
 <span class="n">train_location</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/&quot;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;/tiles_&quot;</span> <span class="o">+</span> <span class="n">appends</span> <span class="o">+</span> <span class="s2">&quot;/train&quot;</span>
@@ -278,15 +278,15 @@ that crowns and images align. This can be done with the inbuilt <code class="doc
 </div>
 <p>Alternatively, with some adaptation the <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> visualisation tools can also be used to visualise the
 multispectral (<code class="docutils literal notranslate"><span class="pre">.tif</span></code>) tiles.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rasterio</span>
-<span class="kn">from</span> <span class="nn">detectron2.utils.visualizer</span> <span class="kn">import</span> <span class="n">Visualizer</span>
-<span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">combine_dicts</span>
-<span class="kn">from</span> <span class="nn">detectron2.data</span> <span class="kn">import</span> <span class="n">DatasetCatalog</span><span class="p">,</span> <span class="n">MetadataCatalog</span>
-<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">cv2</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.utils.visualizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Visualizer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">combine_dicts</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetCatalog</span><span class="p">,</span> <span class="n">MetadataCatalog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
 
 <span class="n">val_fold</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Paracou&quot;</span>
@@ -296,7 +296,7 @@ multispectral (<code class="docutils literal notranslate"><span class="pre">.tif
 <span class="n">trees_metadata</span> <span class="o">=</span> <span class="n">MetadataCatalog</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_train&quot;</span><span class="p">)</span>
 
 <span class="c1"># Function to normalize and convert multi-band image to RGB if needed</span>
-<span class="k">def</span> <span class="nf">prepare_image_for_visualization</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_image_for_visualization</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
    <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
       <span class="c1"># If the image has 3 bands, assume it&#39;s RGB</span>
       <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
@@ -405,7 +405,7 @@ predictions on the validation fold. This is measured as the AP50 score of the va
 <p>The process for training a multispectral model is similar to that for RGB data but there are some key steps that are
 different. Data will be read from <code class="docutils literal notranslate"><span class="pre">.tif</span></code> files of 4 or more bands instead of the 3-band <code class="docutils literal notranslate"><span class="pre">.png</span></code> files.</p>
 <p>Data should be registered as before:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">register_train_data</span><span class="p">,</span> <span class="n">remove_registered_data</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_train_data</span><span class="p">,</span> <span class="n">remove_registered_data</span>
 <span class="n">val_fold</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="n">appends</span> <span class="o">=</span> <span class="s2">&quot;40_30_0.6&quot;</span>
 <span class="n">site_path</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/SharedDrive/detectree2/data/Paracou&quot;</span>
@@ -414,9 +414,9 @@ different. Data will be read from <code class="docutils literal notranslate"><sp
 </pre></div>
 </div>
 <p>The number of bands can be checked with rasterio:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rasterio</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">glob</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
 
 <span class="c1"># Read in geotif and assess mean and sd for each band</span>
 <span class="c1">#site_path = &quot;/content/drive/MyDrive/WORK/detectree2/data/Paracou&quot;</span>
@@ -440,13 +440,13 @@ different number of input channels. This is done with the <code class="docutils 
 <code class="docutils literal notranslate"><span class="pre">cfg.MODEL.PIXEL_MEAN</span></code> and <code class="docutils literal notranslate"><span class="pre">cfg.MODEL.PIXEL_STD</span></code> lists to include the additional bands happens within the
 <code class="docutils literal notranslate"><span class="pre">setup_cfg</span></code> function when <code class="docutils literal notranslate"><span class="pre">num_bands</span></code> is set to a value greater than 3. <code class="docutils literal notranslate"><span class="pre">imgmode</span></code> should be set to <code class="docutils literal notranslate"><span class="pre">&quot;ms&quot;</span></code> to
 ensure the correct training routines are called.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
-<span class="kn">from</span> <span class="nn">detectron2.modeling</span> <span class="kn">import</span> <span class="n">build_model</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">import</span> <span class="nn">torch.nn.init</span> <span class="k">as</span> <span class="nn">init</span>
-<span class="kn">from</span> <span class="nn">detectron2.modeling.roi_heads.fast_rcnn</span> <span class="kn">import</span> <span class="n">FastRCNNOutputLayers</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">modify_conv1_weights</span><span class="p">,</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.modeling</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_model</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.init</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">init</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.modeling.roi_heads.fast_rcnn</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastRCNNOutputLayers</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">modify_conv1_weights</span><span class="p">,</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
 
 <span class="c1"># Good idea to keep track of the date if producing multiple models</span>
 <span class="n">today</span> <span class="o">=</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
@@ -555,9 +555,9 @@ different scales.</p>
 <p>It is important to check that the model has converged and is not overfitting. This can be done by plotting the training
 and validation loss over time. The <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> training routine will output a <code class="docutils literal notranslate"><span class="pre">metrics.json</span></code> file that can be used
 to plot the training and validation loss. The following code can be used to plot the loss:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">load_json_arr</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_json_arr</span>
 
 <span class="c1">#out_dir = &quot;/content/drive/Shareddrives/detectree2/models/230103_resize_full&quot;</span>
 <span class="n">experiment_folder</span> <span class="o">=</span> <span class="n">out_dir</span>
@@ -655,12 +655,12 @@ masks in instance segmentation tasks.</p>
 <section id="generating-landscape-predictions">
 <h2><span class="section-number">2.8. </span>Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Link to this heading"></a></h2>
 <p>Here we call the necessary functions.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">detectree2.preprocessing.tiling</span> <span class="kn">import</span> <span class="n">tile_data</span>
-<span class="kn">from</span> <span class="nn">detectree2.models.outputs</span> <span class="kn">import</span> <span class="n">project_to_geojson</span><span class="p">,</span> <span class="n">stitch_crowns</span><span class="p">,</span> <span class="n">clean_crowns</span>
-<span class="kn">from</span> <span class="nn">detectree2.models.predict</span> <span class="kn">import</span> <span class="n">predict_on_data</span>
-<span class="kn">from</span> <span class="nn">detectree2.models.train</span> <span class="kn">import</span> <span class="n">setup_cfg</span>
-<span class="kn">from</span> <span class="nn">detectron2.engine</span> <span class="kn">import</span> <span class="n">DefaultPredictor</span>
-<span class="kn">import</span> <span class="nn">rasterio</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.preprocessing.tiling</span><span class="w"> </span><span class="kn">import</span> <span class="n">tile_data</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.outputs</span><span class="w"> </span><span class="kn">import</span> <span class="n">project_to_geojson</span><span class="p">,</span> <span class="n">stitch_crowns</span><span class="p">,</span> <span class="n">clean_crowns</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.predict</span><span class="w"> </span><span class="kn">import</span> <span class="n">predict_on_data</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_cfg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">DefaultPredictor</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span>
 </pre></div>
 </div>
 <p>Start by tiling up the entire orthomosaic so that a crown map can be made for the entire landscape. Tiles should be
