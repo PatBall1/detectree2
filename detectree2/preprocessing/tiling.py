@@ -14,7 +14,7 @@ import random
 import shutil
 import warnings  # noqa: F401
 from pathlib import Path
-from typing import List, Tuple, Any
+from typing import Any, List, Tuple
 
 import cv2
 import geopandas as gpd
@@ -169,6 +169,9 @@ def process_tile(img_path: str,
                     out_sumbands).sum() > nan_threshold * totalpix:
                 return None
 
+            # Apply nan mask
+            out_img[np.broadcast_to((nan_mask == 1)[None, :, :], out_img.shape)] = nodata
+
             out_meta = data.meta.copy()
             out_meta.update({
                 "driver": "GTiff",
@@ -262,7 +265,12 @@ def process_tile_ms(img_path: str,
             else:
                 overlapping_crowns = None
 
-            out_img, out_transform = mask(data, shapes=coords, crop=True)
+            if data.nodata is not None:
+                nodata = data.nodata
+            else:
+                nodata = 0
+
+            out_img, out_transform = mask(data, shapes=coords, nodata=nodata, crop=True)
 
             out_sumbands = np.sum(out_img, axis=0)
             zero_mask = np.where(out_sumbands == 0, 1, 0)
@@ -277,13 +285,16 @@ def process_tile_ms(img_path: str,
             if sumzero > nan_threshold * totalpix or sumnan > nan_threshold * totalpix:
                 return None
 
+            # Apply nan mask
+            out_img[np.broadcast_to((nan_mask == 1)[None, :, :], out_img.shape)] = nodata
+
             out_meta = data.meta.copy()
             out_meta.update({
                 "driver": "GTiff",
                 "height": out_img.shape[1],
                 "width": out_img.shape[2],
                 "transform": out_transform,
-                "nodata": None,
+                "nodata": nodata,
             })
             if dtype_bool:
                 out_meta.update({"dtype": "uint8"})
