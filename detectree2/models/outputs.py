@@ -651,7 +651,7 @@ def clean_outputs(crowns: gpd.GeoDataFrame, iou_threshold=0.7):
             print(str(index) + " / " + str(len(crowns)) + " cleaned")
         # if there is not a crown interesects with the row (other than itself)
         if crowns.intersects(row.geometry).sum() == 1:
-            crowns_out = pd.concat(crowns_out, row)  # retain it
+            crowns_out = pd.concat(crowns_out, row)  # type: ignore
         else:
             # Find those crowns that intersect with it
             intersecting = crowns.loc[crowns.intersects(row.geometry)]
