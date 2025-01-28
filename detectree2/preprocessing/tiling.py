@@ -20,15 +20,15 @@ import cv2
 import geopandas as gpd
 import numpy as np
 import rasterio
+# from rasterio.windows import from_bounds
+import rasterio.features
 from fiona.crs import from_epsg  # noqa: F401
 # from rasterio.crs import CRS
 from rasterio.errors import RasterioIOError
 # from rasterio.io import DatasetReader
 from rasterio.mask import mask
-# from rasterio.windows import from_bounds
-import rasterio.features
-from tqdm.auto import tqdm
 from shapely.geometry import box
+from tqdm.auto import tqdm
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -162,7 +162,8 @@ def process_tile(img_path: str,
             totalpix = out_img.shape[1] * out_img.shape[2]
 
             # If the tile is mostly empty or mostly nan, don't save it
-            if sumzero > nan_threshold * totalpix or sumnan > nan_threshold * totalpix:
+            if sumzero > nan_threshold * totalpix or sumnan > nan_threshold * totalpix or np.isnan(
+                    out_sumbands).sum() > nan_threshold * totalpix:
                 return None
 
             out_meta = data.meta.copy()
@@ -186,7 +187,7 @@ def process_tile(img_path: str,
                 rgb = np.dstack((b, g, r))  # Reorder for cv2 (BGRA)
 
                 # Rescale to 0-255 if necessary
-                if np.max(g) > 255:
+                if np.nanmax(g) > 255:
                     rgb_rescaled = 255 * rgb / 65535
                 else:
                     rgb_rescaled = rgb
@@ -507,7 +508,7 @@ def tile_data(
     Returns:
         None
     """
-    mask_gdf = None
+    mask_gdf: gpd.GeoDataFrame = None
     if mask_path is not None:
         mask_gdf = gpd.read_file(mask_path)
     out_path = Path(out_dir)
