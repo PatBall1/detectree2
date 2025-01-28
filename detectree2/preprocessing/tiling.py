@@ -26,6 +26,8 @@ from rasterio.errors import RasterioIOError
 # from rasterio.io import DatasetReader
 from rasterio.mask import mask
 # from rasterio.windows import from_bounds
+import rasterio.features
+from tqdm.auto import tqdm
 from shapely.geometry import box
 
 # Configure logging
@@ -80,21 +82,20 @@ def load_class_mapping(file_path: str):
     return class_to_idx
 
 
-def process_tile(
-    img_path: str,
-    out_dir: str,
-    buffer: int,
-    tile_width: int,
-    tile_height: int,
-    dtype_bool: bool,
-    minx,
-    miny,
-    crs,
-    tilename,
-    crowns: gpd.GeoDataFrame = None,
-    threshold: float = 0,
-    nan_threshold: float = 0,
-):
+def process_tile(img_path: str,
+                 out_dir: str,
+                 buffer: int,
+                 tile_width: int,
+                 tile_height: int,
+                 dtype_bool: bool,
+                 minx,
+                 miny,
+                 crs,
+                 tilename,
+                 crowns: gpd.GeoDataFrame = None,
+                 threshold: float = 0,
+                 nan_threshold: float = 0,
+                 mask_gdf: gpd.GeoDataFrame = None):
     """Process a single tile for making predictions.
 
     Args:
@@ -128,12 +129,30 @@ def process_tile(
 
             if crowns is not None:
                 overlapping_crowns = gpd.clip(crowns, geo)
+                if mask_gdf is not None:
+                    overlapping_crowns = gpd.clip(overlapping_crowns, mask_gdf)
                 if overlapping_crowns.empty or (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
                     return None
             else:
                 overlapping_crowns = None
 
-            out_img, out_transform = mask(data, shapes=coords, crop=True)
+            if data.nodata is not None:
+                nodata = data.nodata
+            else:
+                nodata = 0
+
+            out_img, out_transform = mask(data, shapes=coords, nodata=nodata, crop=True)
+
+            if mask_gdf is not None:
+                #if mask_gdf.crs != data.crs:
+                #    mask_gdf = mask_gdf.to_crs(data.crs) #TODO is this necessary?
+
+                mask_tif = rasterio.features.geometry_mask([geom for geom in mask_gdf.geometry],
+                                                           transform=out_transform,
+                                                           invert=True,
+                                                           out_shape=(out_img.shape[1], out_img.shape[2]))
+
+                out_img[:, ~mask_tif] = nodata
 
             out_sumbands = np.sum(out_img, axis=0)
             zero_mask = np.where(out_sumbands == 0, 1, 0)
@@ -152,7 +171,7 @@ def process_tile(
                 "height": out_img.shape[1],
                 "width": out_img.shape[2],
                 "transform": out_transform,
-                "nodata": None,
+                "nodata": nodata,
             })
             if dtype_bool:
                 out_meta.update({"dtype": "uint8"})
@@ -297,7 +316,7 @@ def process_tile_train(
         nan_threshold,
         mode: str = "rgb",
         class_column: str = None,  # Allow user to specify class column
-) -> None:
+        mask_gdf: gpd.GeoDataFrame = None) -> None:
     """Process a single tile for training data.
 
     Args:
@@ -320,7 +339,7 @@ def process_tile_train(
     """
     if mode == "rgb":
         result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename,
-                              crowns, threshold, nan_threshold)
+                              crowns, threshold, nan_threshold, mask_gdf)
     elif mode == "ms":
         result = process_tile_ms(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs,
                                  tilename, crowns, threshold, nan_threshold)
@@ -448,19 +467,20 @@ def _calculate_tile_placements(
 
 
 def tile_data(
-    img_path: str,
-    out_dir: str,
-    buffer: int = 30,
-    tile_width: int = 200,
-    tile_height: int = 200,
-    crowns: gpd.GeoDataFrame = None,
-    threshold: float = 0,
-    nan_threshold: float = 0.1,
-    dtype_bool: bool = False,
-    mode: str = "rgb",
-    class_column: str = None,  # Allow class column to be passed here
-    tile_placement: str = "grid",
-) -> None:
+        img_path: str,
+        out_dir: str,
+        buffer: int = 30,
+        tile_width: int = 200,
+        tile_height: int = 200,
+        crowns: gpd.GeoDataFrame = None,
+        threshold: float = 0,
+        nan_threshold: float = 0.1,
+        dtype_bool: bool = False,
+        mode: str = "rgb",
+        class_column: str = None,  # Allow class column to be passed here
+        tile_placement: str = "grid",
+        mask_path: str = None,
+        multithreaded: bool = False) -> None:
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
     Tiles up large rasters into manageable tiles for training and prediction. If crowns are not supplied, the function
@@ -487,6 +507,9 @@ def tile_data(
     Returns:
         None
     """
+    mask_gdf = None
+    if mask_path is not None:
+        mask_gdf = gpd.read_file(mask_path)
     out_path = Path(out_dir)
     os.makedirs(out_path, exist_ok=True)
     tilename = Path(img_path).stem
@@ -494,11 +517,28 @@ def tile_data(
         crs = data.crs.to_epsg()  # Update CRS handling to avoid deprecated syntax
 
     tile_coordinates = _calculate_tile_placements(img_path, buffer, tile_width, tile_height, crowns, tile_placement)
-    tile_args = [(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns,
-                  threshold, nan_threshold, mode, class_column) for minx, miny in tile_coordinates]
+    tile_args = [
+        (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold,
+         nan_threshold, mode, class_column, mask_gdf) for minx, miny in tile_coordinates
+        if mask_path is None or (mask_path is not None and mask_gdf.intersects(
+            box(minx, miny, minx + tile_width, miny + tile_height)  #TODO maybe add to_crs here
+        ).any())
+    ]
 
-    with concurrent.futures.ProcessPoolExecutor() as executor:  # Use ProcessPoolExecutor here
-        list(executor.map(process_tile_train_helper, tile_args))
+    if multithreaded:
+        total_tiles = len(tile_args)
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            futures = [executor.submit(process_tile_train_helper, arg) for arg in tile_args]
+            with tqdm(total=total_tiles) as pbar:
+                for future in concurrent.futures.as_completed(futures):
+                    try:
+                        future.result()
+                    except Exception as exc:
+                        print(f'Tile generated an exception: {exc}')
+                    pbar.update(1)
+    else:
+        for args in tqdm(tile_args):
+            process_tile_train_helper(args)
 
     logger.info("Tiling complete")
 
@@ -673,6 +713,7 @@ if __name__ == "__main__":
     img_path = "/path/to/your/orthomosaic.tif"  # Path to your input orthomosaic file
     crown_path = "/path/to/your/crown_shapefile.shp"  # Path to the shapefile containing crowns
     out_dir = "/path/to/output/directory"  # Directory where you want to save the tiled output
+    mask_path = "/media/chris/wd-elements1/data/Harapan_2019/mask_clipped.gpkg"
 
     # Optional parameters for tiling and processing
     buffer = 30  # Overlap between tiles (in meters)
@@ -709,7 +750,8 @@ if __name__ == "__main__":
         dtype_bool=dtype_bool,
         mode=mode,
         class_column=class_column,  # Use the selected class column (e.g., 'species', 'status')
-        tile_placement=tile_placement)
+        tile_placement=tile_placement,
+        mask_path=mask_path)
 
     # Split the data into training and validation sets (optional)
     # This can be used for train/test folder creation based on the generated tiles
