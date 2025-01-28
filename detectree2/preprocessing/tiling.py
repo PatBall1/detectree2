@@ -14,7 +14,7 @@ import random
 import shutil
 import warnings  # noqa: F401
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Any
 
 import cv2
 import geopandas as gpd
@@ -95,7 +95,8 @@ def process_tile(img_path: str,
                  crowns: gpd.GeoDataFrame = None,
                  threshold: float = 0,
                  nan_threshold: float = 0,
-                 mask_gdf: gpd.GeoDataFrame = None):
+                 mask_gdf: gpd.GeoDataFrame = None,
+                 additional_nodata: List[Any] = []):
     """Process a single tile for making predictions.
 
     Args:
@@ -157,6 +158,8 @@ def process_tile(img_path: str,
             out_sumbands = np.sum(out_img, axis=0)
             zero_mask = np.where(out_sumbands == 0, 1, 0)
             nan_mask = np.where(out_sumbands == 765, 1, 0)
+            for nodata_val in additional_nodata:
+                nan_mask = nan_mask | np.where(out_sumbands == nodata_val, 1, 0)
             sumzero = zero_mask.sum()
             sumnan = nan_mask.sum()
             totalpix = out_img.shape[1] * out_img.shape[2]
@@ -207,21 +210,20 @@ def process_tile(img_path: str,
         return None
 
 
-def process_tile_ms(
-    img_path: str,
-    out_dir: str,
-    buffer: int,
-    tile_width: int,
-    tile_height: int,
-    dtype_bool: bool,
-    minx,
-    miny,
-    crs,
-    tilename,
-    crowns: gpd.GeoDataFrame = None,
-    threshold: float = 0,
-    nan_threshold: float = 0,
-):
+def process_tile_ms(img_path: str,
+                    out_dir: str,
+                    buffer: int,
+                    tile_width: int,
+                    tile_height: int,
+                    dtype_bool: bool,
+                    minx,
+                    miny,
+                    crs,
+                    tilename,
+                    crowns: gpd.GeoDataFrame = None,
+                    threshold: float = 0,
+                    nan_threshold: float = 0,
+                    additional_nodata: List[Any] = []):
     """Process a single tile for making predictions.
 
     Args:
@@ -265,6 +267,8 @@ def process_tile_ms(
             out_sumbands = np.sum(out_img, axis=0)
             zero_mask = np.where(out_sumbands == 0, 1, 0)
             nan_mask = np.isnan(out_sumbands)
+            for nodata_val in additional_nodata:
+                nan_mask = nan_mask | np.where(out_sumbands == nodata_val, 1, 0)
             sumzero = zero_mask.sum()
             sumnan = nan_mask.sum()
             totalpix = out_img.shape[1] * out_img.shape[2]
@@ -317,7 +321,8 @@ def process_tile_train(
         nan_threshold,
         mode: str = "rgb",
         class_column: str = None,  # Allow user to specify class column
-        mask_gdf: gpd.GeoDataFrame = None) -> None:
+        mask_gdf: gpd.GeoDataFrame = None,
+        additional_nodata: List[Any] = []) -> None:
     """Process a single tile for training data.
 
     Args:
@@ -340,10 +345,10 @@ def process_tile_train(
     """
     if mode == "rgb":
         result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename,
-                              crowns, threshold, nan_threshold, mask_gdf)
+                              crowns, threshold, nan_threshold, mask_gdf, additional_nodata)
     elif mode == "ms":
         result = process_tile_ms(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs,
-                                 tilename, crowns, threshold, nan_threshold)
+                                 tilename, crowns, threshold, nan_threshold, additional_nodata)
 
     if result is None:
         # logger.warning(f"Skipping tile at ({minx}, {miny}) due to insufficient data.")
@@ -468,21 +473,23 @@ def _calculate_tile_placements(
 
 
 def tile_data(
-        img_path: str,
-        out_dir: str,
-        buffer: int = 30,
-        tile_width: int = 200,
-        tile_height: int = 200,
-        crowns: gpd.GeoDataFrame = None,
-        threshold: float = 0,
-        nan_threshold: float = 0.1,
-        dtype_bool: bool = False,
-        mode: str = "rgb",
-        class_column: str = None,  # Allow class column to be passed here
-        tile_placement: str = "grid",
-        mask_path: str = None,
-        multithreaded: bool = False,
-        random_subset: int = -1) -> None:
+    img_path: str,
+    out_dir: str,
+    buffer: int = 30,
+    tile_width: int = 200,
+    tile_height: int = 200,
+    crowns: gpd.GeoDataFrame = None,
+    threshold: float = 0,
+    nan_threshold: float = 0.1,
+    dtype_bool: bool = False,
+    mode: str = "rgb",
+    class_column: str = None,  # Allow class column to be passed here
+    tile_placement: str = "grid",
+    mask_path: str = None,
+    multithreaded: bool = False,
+    random_subset: int = -1,
+    additional_nodata: List[Any] = [],
+) -> None:
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
     Tiles up large rasters into manageable tiles for training and prediction. If crowns are not supplied, the function
@@ -521,7 +528,7 @@ def tile_data(
     tile_coordinates = _calculate_tile_placements(img_path, buffer, tile_width, tile_height, crowns, tile_placement)
     tile_args = [
         (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold,
-         nan_threshold, mode, class_column, mask_gdf) for minx, miny in tile_coordinates
+         nan_threshold, mode, class_column, mask_gdf, additional_nodata) for minx, miny in tile_coordinates
         if mask_path is None or (mask_path is not None and mask_gdf.intersects(
             box(minx, miny, minx + tile_width, miny + tile_height)  #TODO maybe add to_crs here
         ).any())
