@@ -138,16 +138,22 @@ def process_tile(img_path: str,
     """Process a single tile for making predictions.
 
     Args:
-        img_path: Path to the orthomosaic
-        out_dir: Output directory
-        buffer: Overlapping buffer of tiles in meters (UTM)
-        tile_width: Tile width in meters
-        tile_height: Tile height in meters
-        dtype_bool: Flag to edit dtype to prevent black tiles
-        minx: Minimum x coordinate of tile
-        miny: Minimum y coordinate of tile
-        crs: Coordinate reference system
-        tilename: Name of the tile
+        img_path: Path to the orthomosaic.
+        out_dir: Output directory.
+        buffer: Overlapping buffer of tiles in meters (UTM).
+        tile_width: Tile width in meters.
+        tile_height: Tile height in meters.
+        dtype_bool: Flag to edit dtype to prevent black tiles.
+        minx: Minimum x coordinate of the tile.
+        miny: Minimum y coordinate of the tile.
+        crs: Coordinate reference system.
+        tilename: Name of the tile.
+        crowns: Crown polygons as a GeoDataFrame used to skip tiles if coverage is below `threshold`.
+        threshold: Minimum fraction [0,1] of tile coverage by `crowns` required to avoid skipping the tile.
+        nan_threshold: Maximum proportion [0,1] of the tile that can be nodata or NaN values before skipping.
+        mask_gdf: A GeoDataFrame containing polygons tile act as masks for the tile. Only the interior is kept, the rest of the image will become nodata.
+        additional_nodata: List of additional pixel values to treat as nodata.
+        image_statistics: A list of dictionaries where each dictionary contains information about the pixel distribution of that band. One list element per band.
 
     Returns:
         None
@@ -293,16 +299,22 @@ def process_tile_ms(img_path: str,
     """Process a single tile for making predictions.
 
     Args:
-        img_path: Path to the orthomosaic
-        out_dir: Output directory
-        buffer: Overlapping buffer of tiles in meters (UTM)
-        tile_width: Tile width in meters
-        tile_height: Tile height in meters
-        dtype_bool: Flag to edit dtype to prevent black tiles
-        minx: Minimum x coordinate of tile
-        miny: Minimum y coordinate of tile
-        crs: Coordinate reference system
-        tilename: Name of the tile
+        img_path: Path to the orthomosaic.
+        out_dir: Output directory.
+        buffer: Overlapping buffer of tiles in meters (UTM).
+        tile_width: Tile width in meters.
+        tile_height: Tile height in meters.
+        dtype_bool: Flag to edit dtype to prevent black tiles.
+        minx: Minimum x coordinate of the tile.
+        miny: Minimum y coordinate of the tile.
+        crs: Coordinate reference system.
+        tilename: Name of the tile.
+        crowns: Crown polygons as a GeoDataFrame used to skip tiles if coverage is below `threshold`.
+        threshold: Minimum fraction [0,1] of tile coverage by `crowns` required to avoid skipping the tile.
+        nan_threshold: Maximum proportion [0,1] of the tile that can be nodata or NaN values before skipping.
+        mask_gdf: A GeoDataFrame containing polygons tile act as masks for the tile. Only the interior is kept, the rest of the image will become nodata.
+        additional_nodata: List of additional pixel values to treat as nodata.
+        image_statistics: A list of dictionaries where each dictionary contains information about the pixel distribution of that band. One list element per band.
 
     Returns:
         None
@@ -457,19 +469,24 @@ def process_tile_train(
     """Process a single tile for training data.
 
     Args:
-        img_path: Path to the orthomosaic
-        out_dir: Output directory
-        buffer: Overlapping buffer of tiles in meters (UTM)
-        tile_width: Tile width in meters
-        tile_height: Tile height in meters
-        dtype_bool: Flag to edit dtype to prevent black tiles
-        minx: Minimum x coordinate of tile
-        miny: Minimum y coordinate of tile
-        crs: Coordinate reference system
-        tilename: Name of the tile
-        crowns: Crown polygons as a geopandas dataframe
-        threshold: Min proportion of the tile covered by crowns to be accepted {0,1}
-        nan_theshold: Max proportion of tile covered by nans
+        img_path: Path to the orthomosaic.
+        out_dir: Output directory.
+        buffer: Overlapping buffer of tiles in meters (UTM).
+        tile_width: Tile width in meters.
+        tile_height: Tile height in meters.
+        dtype_bool: Flag to edit dtype to prevent black tiles.
+        minx: Minimum x coordinate of tile.
+        miny: Minimum y coordinate of tile.
+        crs: Coordinate reference system.
+        tilename: Name of the tile.
+        crowns: Crown polygons as a geopandas DataFrame.
+        threshold: Min proportion of the tile covered by crowns to be accepted {0,1}.
+        nan_threshold: Max proportion of tile covered by NaNs.
+        mode: Type of the raster data ("rgb" or "ms").
+        class_column: Name of the column in `crowns` DataFrame for class-based tiling.
+        mask_gdf: A GeoDataFrame containing polygons tile act as masks for the tile. Only the interior is kept, the rest of the image will become nodata.
+        additional_nodata: List of additional pixel values to treat as nodata.
+        image_statistics: A list of dictionaries where each dictionary contains information about the pixel distribution of that band. One list element per band.
 
     Returns:
         None
@@ -625,14 +642,15 @@ def calculate_image_statistics(file_path,
     """
     Calculate statistics for a raster using either whole image or sampled windows.
 
-    Parameters:
-    - file_path: str, path to the raster file.
-    - values_to_ignore: list, values to ignore in statistics (e.g., NaN, custom values).
-    - window_size: int, size of square window for sampling.
-    - min_windows: int, minimum number of valid windows to include in statistics.
+    Args:
+        file_path: str, path to the raster file.
+        values_to_ignore: list, values to ignore in statistics (e.g., NaN, custom values).
+        window_size: int, size of square window for sampling.
+        min_windows: int, minimum number of valid windows to include in statistics.
+        mode: str, type of the raster data ("rgb" or "ms").
 
     Returns:
-    - List of dictionaries containing statistics for each band.
+        List of dictionaries containing statistics for each band.
     """
     if values_to_ignore is None:
         values_to_ignore = []
@@ -769,26 +787,32 @@ def tile_data(
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
-    Tiles up large rasters into manageable tiles for training and prediction. If crowns are not supplied, the function
-    will tile up the entire landscape for prediction. If crowns are supplied, the function will tile these with the image
-    and skip tiles without a minimum coverage of crowns. The 'threshold' can be varied to ensure good coverage of
-    crowns across a training tile. Tiles that do not have sufficient coverage are skipped.
+    Tiles up large rasters into manageable tiles for training and prediction. If crowns are not
+    supplied, the function will tile up the entire landscape for prediction. If crowns are supplied,
+    the function will tile these with the image and skip tiles without a minimum coverage of crowns.
+    The 'threshold' can be varied to ensure good coverage of crowns across a training tile. Tiles
+    that do not have sufficient coverage are skipped.
 
     Args:
-        img_path: Path to the orthomosaic
-        out_dir: Output directory
-        buffer: Overlapping buffer of tiles in meters (UTM)
-        tile_width: Tile width in meters
-        tile_height: Tile height in meters
-        crowns: Crown polygons as a GeoPandas DataFrame
-        threshold: Minimum proportion of the tile covered by crowns to be accepted [0,1]
-        nan_threshold: Maximum proportion of tile covered by NaNs [0,1]
-        dtype_bool: Flag to edit dtype to prevent black tiles
-        mode: Type of the raster data ("rgb" or "ms")
-        class_column: Name of the column in `crowns` DataFrame for class-based tiling
+        img_path: Path to the orthomosaic.
+        out_dir: Output directory.
+        buffer: Overlapping buffer of tiles in meters (UTM).
+        tile_width: Tile width in meters.
+        tile_height: Tile height in meters.
+        crowns: Crown polygons as a GeoDataFrame.
+        threshold: Minimum proportion of the tile covered by crowns to be accepted [0,1].
+        nan_threshold: Maximum proportion of the tile covered by NaNs [0,1].
+        dtype_bool: Flag to edit dtype to prevent black tiles.
+        mode: Type of the raster data ("rgb" or "ms").
+        class_column: Name of the column in `crowns` DataFrame for class-based tiling.
         tile_placement: Strategy for placing tiles.
             "grid" for fixed grid placement based on the bounds of the input image, optimized for speed.
             "adaptive" for dynamic placement of tiles based on crowns, adjusts based on data features for better coverage.
+        mask_path: Path to a mask file to use for tiling.
+        multithreaded: Flag to enable multithreaded processing.
+        random_subset: Number of random tiles it will try to process per image. If -1, all tiles are processed.
+        additional_nodata: List of additional pixel values to treat as nodata.
+        overlapping_tiles: Flag to enable overlapping tiles for more training data generation. More useful for training the detection part of the Mask R-CNN model.
 
     Returns:
         None
