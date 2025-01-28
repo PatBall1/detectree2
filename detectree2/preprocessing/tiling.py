@@ -481,7 +481,8 @@ def tile_data(
         class_column: str = None,  # Allow class column to be passed here
         tile_placement: str = "grid",
         mask_path: str = None,
-        multithreaded: bool = False) -> None:
+        multithreaded: bool = False,
+        random_subset: int = -1) -> None:
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
     Tiles up large rasters into manageable tiles for training and prediction. If crowns are not supplied, the function
@@ -525,6 +526,14 @@ def tile_data(
             box(minx, miny, minx + tile_width, miny + tile_height)  #TODO maybe add to_crs here
         ).any())
     ]
+
+    if random_subset > -1:
+        if random_subset > len(tile_args):
+            logger.warning(
+                f"random_subset is larger than the amount of tile places ({len(tile_args)}>{random_subset}). Using all possible tiles instead."
+            )
+        else:
+            tile_args = random.sample(tile_args, random_subset)
 
     if multithreaded:
         total_tiles = len(tile_args)
