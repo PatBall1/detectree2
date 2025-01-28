@@ -14,7 +14,7 @@ import random
 import shutil
 import warnings  # noqa: F401
 from pathlib import Path
-from typing import Any, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 import cv2
 import geopandas as gpd
@@ -96,7 +96,8 @@ def process_tile(img_path: str,
                  threshold: float = 0,
                  nan_threshold: float = 0,
                  mask_gdf: gpd.GeoDataFrame = None,
-                 additional_nodata: List[Any] = []):
+                 additional_nodata: List[Any] = [],
+                 image_statistics: List[Dict[str, float]] = None):
     """Process a single tile for making predictions.
 
     Args:
@@ -226,7 +227,8 @@ def process_tile_ms(img_path: str,
                     crowns: gpd.GeoDataFrame = None,
                     threshold: float = 0,
                     nan_threshold: float = 0,
-                    additional_nodata: List[Any] = []):
+                    additional_nodata: List[Any] = [],
+                    image_statistics: List[Dict[str, float]] = None):
     """Process a single tile for making predictions.
 
     Args:
@@ -285,8 +287,22 @@ def process_tile_ms(img_path: str,
             if sumzero > nan_threshold * totalpix or sumnan > nan_threshold * totalpix:
                 return None
 
+            # rescale image to 1-255 (0 is reserved for nodata)
+            assert image_statistics is not None, "image_statistics must be provided for multispectral data"
+            min_vals = np.array([stats['min'] for stats in image_statistics]).reshape(-1, 1, 1)
+            max_vals = np.array([stats['max'] for stats in image_statistics]).reshape(-1, 1, 1)
+
+            # making it a bit safer for small numbers
+            if max_vals.min() > 1:
+                out_img = (out_img - min_vals) / (max_vals - min_vals) * 254 + 1
+            else:
+                out_img = (out_img - min_vals) * 254 / (max_vals - min_vals) + 1
+
+            # additional clip to make sure
+            out_img = np.clip(out_img, 1, 255)
+
             # Apply nan mask
-            out_img[np.broadcast_to((nan_mask == 1)[None, :, :], out_img.shape)] = nodata
+            out_img[np.broadcast_to((nan_mask == 1)[None, :, :], out_img.shape)] = 0
 
             out_meta = data.meta.copy()
             out_meta.update({
@@ -294,9 +310,11 @@ def process_tile_ms(img_path: str,
                 "height": out_img.shape[1],
                 "width": out_img.shape[2],
                 "transform": out_transform,
-                "nodata": nodata,
+                "nodata": 0,
             })
             if dtype_bool:
+                raise NotImplementedError(
+                    "dtype_bool not implemented for multispectral data. Pretty sure dtype_bool should be False.")
                 out_meta.update({"dtype": "uint8"})
 
             out_tif = out_path_root.with_suffix(".tif")
@@ -333,7 +351,8 @@ def process_tile_train(
         mode: str = "rgb",
         class_column: str = None,  # Allow user to specify class column
         mask_gdf: gpd.GeoDataFrame = None,
-        additional_nodata: List[Any] = []) -> None:
+        additional_nodata: List[Any] = [],
+        image_statistics: List[Dict[str, float]] = None) -> None:
     """Process a single tile for training data.
 
     Args:
@@ -356,10 +375,10 @@ def process_tile_train(
     """
     if mode == "rgb":
         result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename,
-                              crowns, threshold, nan_threshold, mask_gdf, additional_nodata)
+                              crowns, threshold, nan_threshold, mask_gdf, additional_nodata, image_statistics)
     elif mode == "ms":
         result = process_tile_ms(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs,
-                                 tilename, crowns, threshold, nan_threshold, additional_nodata)
+                                 tilename, crowns, threshold, nan_threshold, additional_nodata, image_statistics)
 
     if result is None:
         # logger.warning(f"Skipping tile at ({minx}, {miny}) due to insufficient data.")
@@ -483,6 +502,104 @@ def _calculate_tile_placements(
     return coordinates
 
 
+def calculate_image_statistics(file_path, values_to_ignore=None, window_size=64, min_windows=100, mode="rgb"):
+    """
+    Calculate statistics for a raster using either whole image or sampled windows.
+
+    Parameters:
+    - file_path: str, path to the raster file.
+    - values_to_ignore: list, values to ignore in statistics (e.g., NaN, custom values).
+    - window_size: int, size of square window for sampling.
+    - min_windows: int, minimum number of valid windows to include in statistics.
+
+    Returns:
+    - List of dictionaries containing statistics for each band.
+    """
+    if values_to_ignore is None:
+        values_to_ignore = []
+    with rasterio.open(file_path) as src:
+        # Get image dimensions
+        width, height = src.width, src.height
+
+        # If the image is smaller than 2000x2000, process the whole image
+        if width * height <= 2000 * 2000:
+            print("Processing entire image...")
+            band_stats = []
+            for band_idx in range(1, src.count + 1):
+                band = src.read(band_idx).astype(float)
+                # Mask out bad values
+                mask = (np.isnan(band) | np.isin(band, values_to_ignore))
+                valid_data = band[~mask]
+
+                if valid_data.size > 0:
+                    stats = {
+                        "mean": np.mean(valid_data),
+                        "min": np.min(valid_data),
+                        "max": np.max(valid_data),
+                        "std_dev": np.std(valid_data),
+                    }
+                else:
+                    stats = {
+                        "mean": None,
+                        "min": None,
+                        "max": None,
+                        "std_dev": None,
+                    }
+                band_stats.append(stats)
+            return band_stats
+
+        windows_sampled = 0
+        band_aggregates = {band: [] for band in range(1, src.count + 1)}
+
+        while windows_sampled < min_windows:
+            # Randomly pick a top-left corner for the window
+            row_start = np.random.randint(0, height - window_size)
+            col_start = np.random.randint(0, width - window_size)
+
+            window = rasterio.windows.Window(col_start, row_start, window_size, window_size)
+
+            # Read the window for each band
+            valid_window = True
+            window_data = {}
+            for band_idx in range(1, src.count + 1) if mode == "ms" else range(1, 4):
+                band = src.read(band_idx, window=window).astype(float)
+                # Mask out bad values
+                mask = (np.isnan(band) | np.isin(band, values_to_ignore))
+                valid_pixels = band[~mask]
+                bad_pixel_ratio = mask.sum() / band.size
+
+                if bad_pixel_ratio > 0.05:  # Exclude windows with >5% bad values
+                    valid_window = False
+                    break
+                window_data[band_idx] = valid_pixels
+
+            if valid_window:
+                for band_idx, valid_pixels in window_data.items():
+                    band_aggregates[band_idx].extend(valid_pixels)
+                windows_sampled += 1
+
+        # Compute statistics for each band
+        band_stats = []
+        for band_idx in range(1, src.count + 1) if mode == "ms" else range(1, 4):
+            valid_data = np.array(band_aggregates[band_idx])
+            if valid_data.size > 0:
+                stats = {
+                    "mean": np.mean(valid_data),
+                    "min": np.min(valid_data),
+                    "max": np.max(valid_data),
+                    "std_dev": np.std(valid_data),
+                }
+            else:
+                stats = {
+                    "mean": None,
+                    "min": None,
+                    "max": None,
+                    "std_dev": None,
+                }
+            band_stats.append(stats)
+        return band_stats
+
+
 def tile_data(
     img_path: str,
     out_dir: str,
@@ -537,10 +654,12 @@ def tile_data(
         crs = data.crs.to_epsg()  # Update CRS handling to avoid deprecated syntax
 
     tile_coordinates = _calculate_tile_placements(img_path, buffer, tile_width, tile_height, crowns, tile_placement)
+    image_statistics = calculate_image_statistics(img_path, values_to_ignore=additional_nodata, mode=mode)
+
     tile_args = [
         (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold,
-         nan_threshold, mode, class_column, mask_gdf, additional_nodata) for minx, miny in tile_coordinates
-        if mask_path is None or (mask_path is not None and mask_gdf.intersects(
+         nan_threshold, mode, class_column, mask_gdf, additional_nodata, image_statistics)
+        for minx, miny in tile_coordinates if mask_path is None or (mask_path is not None and mask_gdf.intersects(
             box(minx, miny, minx + tile_width, miny + tile_height)  #TODO maybe add to_crs here
         ).any())
     ]
