@@ -439,6 +439,7 @@ def _calculate_tile_placements(
     tile_height: int,
     crowns: gpd.GeoDataFrame = None,
     tile_placement: str = "grid",
+    overlapping_tiles: bool = False,
 ) -> List[Tuple[int, int]]:
     """Internal method for calculating the placement of tiles"""
 
@@ -450,6 +451,12 @@ def _calculate_tile_placements(
                 for miny in np.arange(
                     math.ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, int)
             ]
+            if overlapping_tiles:
+                coordinates.extend([(minx, miny) for minx in np.arange(
+                    math.ceil(data.bounds[0]) + buffer + tile_width // 2, data.bounds[2] - tile_width - buffer -
+                    tile_width // 2, tile_width, int) for miny in np.arange(
+                        math.ceil(data.bounds[1]) + buffer + tile_height // 2, data.bounds[3] - tile_height - buffer -
+                        tile_height // 2, tile_height, int)])
     elif tile_placement == "adaptive":
 
         if crowns is None:
@@ -495,6 +502,10 @@ def _calculate_tile_placements(
             for col in range(required_intersection_tiles_x):
                 coordinates.append((int(intersection.total_bounds[0] - x_intersection_offset) + col * tile_width,
                                     int(crowns.total_bounds[1] - y_offset) + row * tile_height))
+                if overlapping_tiles:
+                    coordinates.append(
+                        (int(intersection.total_bounds[0] - x_intersection_offset) + col * tile_width + tile_width // 2,
+                         int(crowns.total_bounds[1] - y_offset) + row * tile_height + tile_height // 2))
         logger.info(f"Finished Tile Placement Generation")
     else:
         raise ValueError('Unsupported tile_placement method. Must be "grid" or "adaptive"')
@@ -617,6 +628,7 @@ def tile_data(
     multithreaded: bool = False,
     random_subset: int = -1,
     additional_nodata: List[Any] = [],
+    overlapping_tiles: bool = False,
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
@@ -653,7 +665,8 @@ def tile_data(
     with rasterio.open(img_path) as data:
         crs = data.crs.to_epsg()  # Update CRS handling to avoid deprecated syntax
 
-    tile_coordinates = _calculate_tile_placements(img_path, buffer, tile_width, tile_height, crowns, tile_placement)
+    tile_coordinates = _calculate_tile_placements(img_path, buffer, tile_width, tile_height, crowns, tile_placement,
+                                                  overlapping_tiles)
     image_statistics = calculate_image_statistics(img_path, values_to_ignore=additional_nodata, mode=mode)
 
     tile_args = [
