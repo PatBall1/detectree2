@@ -39,8 +39,8 @@ below for an example of the required input crowns and image.
 
 |
 If you would just like to make predictions on an orthomosaic with a pre-trained
-model from the ``model_garden``, skip to part 4 (Generating landscape
-predictions).
+model from the ``model_garden``, skip to `part 2.8 (Generating landscape
+predictions) <https://patball1.github.io/detectree2/tutorial.html#generating-landscape-predictions>`_.
 
 The data preparation and training process for both RGB and multispectral data 
 is presented here. The process is similar for both data types but there are 
@@ -727,8 +727,8 @@ predictions with lower confidence).
    crowns = stitch_crowns(tiles_path + "predictions_geo/", 1)
    clean = clean_crowns(crowns, 0.6, confidence=0) # set a confidence>0 to filter out less confident crowns
 
-By default the ``clean_crowns`` function will remove crowns with a condidence of less than 20%. The above 'clean' crowns
-includes crowns of all confidence scores (0%-100%) as ``condidence=0``. It is likely that crowns with very low
+By default the ``clean_crowns`` function will remove crowns with a confidence of less than 20%. The above 'clean' crowns
+includes crowns of all confidence scores (0%-100%) as ``confidence=0``. It is likely that crowns with very low
 confidence will be poor quality so it is usually preferable to filter these out. A suitable threshold can be determined
 by eye in QGIS or implemented as single line in Python. ``Confidence_score`` is a column in the ``crowns`` GeoDataFrame
 and is considered a tunable parameter.
