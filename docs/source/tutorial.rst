@@ -399,21 +399,21 @@ The number of bands can be checked with rasterio:
    print(f'The raster has {num_bands} bands.')
 
 
-Due to the additional bands, we must modify the weights of the first convolutional layer (conv1) to accommodate a
-different number of input channels. This is done with the ``modify_conv1_weights`` function. The extension of the 
-``cfg.MODEL.PIXEL_MEAN`` and ``cfg.MODEL.PIXEL_STD`` lists to include the additional bands happens within the 
-``setup_cfg`` function when ``num_bands`` is set to a value greater than 3. ``imgmode`` should be set to ``"ms"`` to
-ensure the correct training routines are called.
+Due to the additional bands, the weights of the first convolutional layer (conv1) are modified to accommodate a
+different number of input channels. This is automatically done in the case of ``imgmode`` being set to ``"ms"``.
+The first three input weights are multiplied across the new bands. The extension of the ``cfg.MODEL.PIXEL_MEAN``
+and ``cfg.MODEL.PIXEL_STD`` lists to include the additional bands happens within the ``setup_cfg`` function when
+``num_bands`` is set to a value greater than 3. ``imgmode`` should be set to ``"ms"`` to ensure the correct training
+routines are called.
 
 .. code-block:: python
 
    from datetime import date
-   from detectron2.modeling import build_model
    import torch.nn as nn
    import torch.nn.init as init
    from detectron2.modeling.roi_heads.fast_rcnn import FastRCNNOutputLayers
    import numpy as np
-   from detectree2.models.train import modify_conv1_weights, MyTrainer, setup_cfg
+   from detectree2.models.train import MyTrainer, setup_cfg
 
    # Good idea to keep track of the date if producing multiple models
    today = date.today()
@@ -432,12 +432,6 @@ ensure the correct training routines are called.
                   base_lr = 0.0003, backbone_freeze=0, gamma = 0.9,
                   max_iter=500000, out_dir=out_dir, resize = "rand_fixed", imgmode="ms",
                   num_bands= num_bands) # update_model arg can be used to load in trained  model
-
-   # Build the model
-   model = build_model(cfg)
-
-   # Adjust input layer to accept correct number of channels
-   modify_conv1_weights(model, num_input_channels=num_bands)
 
 
 With additional bands, more data is being passed through the network per image so it may be neessary to reduce the 
