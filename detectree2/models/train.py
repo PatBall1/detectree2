@@ -8,6 +8,7 @@ import glob
 import json
 import logging
 import os
+import pickle
 import random
 import re
 import time
@@ -17,8 +18,11 @@ from typing import Any, Dict, List, Optional
 import cv2
 import detectron2.data.transforms as T  # noqa:N812
 import detectron2.utils.comm as comm
+import geopandas as gpd
 import numpy as np
 import rasterio
+import rasterio.features
+import shapely.geometry as geom
 import torch
 import torch.nn as nn
 from detectron2 import model_zoo
@@ -42,6 +46,7 @@ from detectron2.utils.events import EventStorage
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
 
+from detectree2.models.outputs import clean_crowns
 from detectree2.preprocessing.tiling import load_class_mapping
 
 
@@ -311,6 +316,98 @@ class LossEvalHook(HookBase):
         self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' + str(index) + '.pth')
 
 
+class VisualizerHook(HookBase):
+
+    def __init__(self, eval_period, model, data_loader, img_per_dataset=6):
+        """
+        Initialize the VisualizerHook.
+
+        Args:
+            eval_period (int): The number of iterations between evaluations.
+            model (torch.nn.Module): The model to evaluate.
+            data_loader (torch.utils.data.DataLoader): The data loader for evaluation.
+            patience (int): The number of evaluation periods to wait for improvement before early stopping.
+        """
+        self._model = model
+        self._period = eval_period
+        self._data_loader = data_loader
+        self.img_per_dataset = img_per_dataset
+        self.iter = 0
+        self.time_wasted = 0
+
+    def after_step(self):
+        """
+        Hook to be called after each training iteration to evaluate the model and manage checkpoints.
+
+        - Evaluates the model at regular intervals.
+        - Saves the best model checkpoint based on the AP50 metric.
+        - Implements early stopping if the AP50 does not improve after a set number of evaluations.
+        """
+        next_iter = self.trainer.iter + 1
+        is_final = next_iter == self.trainer.max_iter
+        if is_final or (self._period > 0 and next_iter % self._period == 0):
+            storage = get_event_storage()
+            start_time = time.perf_counter()
+            with torch.no_grad():
+                self._model.eval()
+                amounts = {}
+                for batched_inputs in self._data_loader:
+                    for img_data in batched_inputs:
+                        folder_path = "/".join(img_data["file_name"].split('/')[:-1])
+                        if folder_path not in amounts:
+                            amounts[folder_path] = 0
+                        if amounts[folder_path] >= self.img_per_dataset:
+                            continue
+                        amounts[folder_path] += 1
+
+                        output = self._model.inference([img_data])[0]
+                        img = img_data["image"]
+                        img = nn.functional.interpolate(img.unsqueeze(0),
+                                                        size=output["instances"].image_size).squeeze(0)
+                        img = np.transpose(img[:3], (1, 2, 0))
+                        v = Visualizer(img, metadata=MetadataCatalog.get(self.trainer.cfg.DATASETS.TEST[0]), scale=1)
+                        #v = v.draw_instance_predictions(output['instances'][output['instances'].scores > 0.5].to("cpu"))
+
+                        masks = output["instances"].pred_masks.to("cpu").numpy()
+                        scores = output["instances"].scores.to("cpu").numpy()
+
+                        geoms = []
+                        for m in masks:
+                            shapes = list(rasterio.features.shapes(m.astype("uint8")))
+                            polygons = [geom.shape(s[0]) for s in shapes if s[1] == 1]
+                            if len(polygons) > 0:
+                                geoms.append(geom.MultiPolygon(polygons) if len(polygons) > 1 else polygons[0])
+                            else:
+                                geoms.append(None)
+
+                        gdf = gpd.GeoDataFrame(data={
+                            "Confidence_score": scores,
+                            "indices": list(range(len(scores)))
+                        },
+                                               geometry=geoms,
+                                               crs="EPSG:3857")
+
+                        gdf = clean_crowns(gdf, iou_threshold=0.3, confidence=0.3, area_threshold=0, verbose=False)
+
+                        v = v.draw_instance_predictions(output['instances'][list(gdf["indices"])].to("cpu"))
+
+                        image = cv2.cvtColor(v.get_image(), cv2.COLOR_BGR2RGB)
+
+                        if self.trainer.cfg.IMGMODE == "rgb":
+                            image = np.transpose(image.astype("uint8"), (2, 0, 1))
+                        else:  #ms
+                            image = np.transpose(image.astype("uint8"), (2, 0, 1))[[1, 0, 2]]
+
+                        storage.put_image(f"val/prediction/{img_data['file_name'].split('/')[-1]}", image)
+
+                self._model.train()
+            total_time = time.perf_counter() - start_time
+            self.time_wasted += total_time
+            print("Visualizing sample validation images took", total_time, "seconds")
+            storage.put_scalar("time/visualizing_val_imgs", total_time)
+            storage.put_scalar("time/visualizing_val_imgs_total", self.time_wasted)
+
+
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
 class MyTrainer(DefaultTrainer):
     """
@@ -428,6 +525,17 @@ class MyTrainer(DefaultTrainer):
         else:
             # Use fixed size resizing as a default
             augmentations = [T.ResizeShortestEdge([1000, 1000], 1333)]
+
+        if self.cfg.VALIDATION_VIS_PERIOD != 0:
+            hooks.insert(
+                -1,
+                VisualizerHook(
+                    self.cfg.VALIDATION_VIS_PERIOD,
+                    self.model,
+                    build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST,
+                                                FlexibleDatasetMapper(self.cfg, True, augmentations=augmentations)),
+                ),
+            )
 
         # Insert the custom LossEvalHook before the last hook (typically the evaluation hook)
         hooks.insert(
@@ -801,6 +909,7 @@ def setup_cfg(
     imgmode="rgb",
     num_bands=3,
     class_mapping_file=None,
+    visualize_training=False,
 ):
     """Set up config object # noqa: D417.
 
@@ -826,6 +935,7 @@ def setup_cfg(
         imgmode: image mode (rgb or multispectral)
         num_bands: number of bands in the image
         class_mapping_file: path to class mapping file
+        visualize_training: whether to visualize training. Images can be accessed via TensorBoard
     """
 
     # Load the class mapping if provided
@@ -876,6 +986,13 @@ def setup_cfg(
                                 default_pixel_mean[:num_bands % len(default_pixel_mean)])
         cfg.MODEL.PIXEL_STD = (default_pixel_std * (num_bands // len(default_pixel_std)) +
                                default_pixel_std[:num_bands % len(default_pixel_std)])
+    if visualize_training:
+        cfg.VALIDATION_VIS_PERIOD = eval_period
+    else:
+        cfg.VALIDATION_VIS_PERIOD = 0
+
+    cfg.DATALOADER.FILTER_EMPTY_ANNOTATIONS = False
+
     return cfg
 
 

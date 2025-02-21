@@ -400,8 +400,9 @@ def clean_crowns(crowns: gpd.GeoDataFrame,
 
     crowns_out = pd.concat(cleaned_crowns, ignore_index=True)
 
-    # Drop 'iou' column
-    crowns_out = crowns_out.drop("iou", axis=1)
+    # Drop 'iou' column if it exists
+    if "iou" in crowns_out.columns:
+        crowns_out = crowns_out.drop("iou", axis=1)
 
     # Ensuring crowns_out is a GeoDataFrame
     if not isinstance(crowns_out, gpd.GeoDataFrame):
