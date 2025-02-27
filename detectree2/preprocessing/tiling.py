@@ -120,7 +120,8 @@ def process_tile(img_path: str,
                  nan_threshold: float = 0,
                  mask_gdf: gpd.GeoDataFrame = None,
                  additional_nodata: List[Any] = [],
-                 image_statistics: List[Dict[str, float]] = None):
+                 image_statistics: List[Dict[str, float]] = None,
+                 ignore_bands_indices: List[int] = []):
     """Process a single tile for making predictions.
 
     Args:
@@ -166,7 +167,7 @@ def process_tile(img_path: str,
             else:
                 nodata = 0
 
-            out_img, out_transform = mask(data, shapes=coords, nodata=nodata, crop=True)
+            out_img, out_transform = mask(data, shapes=coords, nodata=nodata, crop=True, indexes=[1, 2, 3])
 
             if mask_gdf is not None:
                 #if mask_gdf.crs != data.crs:
@@ -250,8 +251,10 @@ def process_tile_ms(img_path: str,
                     crowns: gpd.GeoDataFrame = None,
                     threshold: float = 0,
                     nan_threshold: float = 0,
+                    mask_gdf: gpd.GeoDataFrame = None,
                     additional_nodata: List[Any] = [],
-                    image_statistics: List[Dict[str, float]] = None):
+                    image_statistics: List[Dict[str, float]] = None,
+                    ignore_bands_indices: List[int] = []):
     """Process a single tile for making predictions.
 
     Args:
@@ -295,7 +298,10 @@ def process_tile_ms(img_path: str,
             else:
                 nodata = 0
 
-            out_img, out_transform = mask(data, shapes=coords, nodata=nodata, crop=True)
+            bands_to_read = [
+                i for i in list(range(1, data.count + 1)) if i not in [i + 1 for i in ignore_bands_indices]
+            ]
+            out_img, out_transform = mask(data, shapes=coords, nodata=nodata, crop=True, indexes=bands_to_read)
 
             out_sumbands = np.sum(out_img, axis=0)
             zero_mask = np.where(out_sumbands == 0, 1, 0)
@@ -375,7 +381,8 @@ def process_tile_train(
         class_column: str = None,  # Allow user to specify class column
         mask_gdf: gpd.GeoDataFrame = None,
         additional_nodata: List[Any] = [],
-        image_statistics: List[Dict[str, float]] = None) -> None:
+        image_statistics: List[Dict[str, float]] = None,
+        ignore_bands_indices: List[int] = []) -> None:
     """Process a single tile for training data.
 
     Args:
@@ -398,10 +405,12 @@ def process_tile_train(
     """
     if mode == "rgb":
         result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename,
-                              crowns, threshold, nan_threshold, mask_gdf, additional_nodata, image_statistics)
+                              crowns, threshold, nan_threshold, mask_gdf, additional_nodata, image_statistics,
+                              ignore_bands_indices)
     elif mode == "ms":
         result = process_tile_ms(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs,
-                                 tilename, crowns, threshold, nan_threshold, additional_nodata, image_statistics)
+                                 tilename, crowns, threshold, nan_threshold, mask_gdf, additional_nodata,
+                                 image_statistics, ignore_bands_indices)
 
     if result is None:
         # logger.warning(f"Skipping tile at ({minx}, {miny}) due to insufficient data.")
@@ -684,6 +693,7 @@ def tile_data(
     random_subset: int = -1,
     additional_nodata: List[Any] = [],
     overlapping_tiles: bool = False,
+    ignore_bands_indices: List[int] = [],
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
@@ -711,6 +721,7 @@ def tile_data(
     Returns:
         None
     """
+
     mask_gdf: gpd.GeoDataFrame = None
     if mask_path is not None:
         mask_gdf = gpd.read_file(mask_path)
@@ -722,11 +733,14 @@ def tile_data(
 
     tile_coordinates = _calculate_tile_placements(img_path, buffer, tile_width, tile_height, crowns, tile_placement,
                                                   overlapping_tiles)
-    image_statistics = calculate_image_statistics(img_path, values_to_ignore=additional_nodata, mode=mode)
+    image_statistics = calculate_image_statistics(img_path,
+                                                  values_to_ignore=additional_nodata,
+                                                  mode=mode,
+                                                  ignore_bands_indices=ignore_bands_indices)
 
     tile_args = [
         (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold,
-         nan_threshold, mode, class_column, mask_gdf, additional_nodata, image_statistics)
+         nan_threshold, mode, class_column, mask_gdf, additional_nodata, image_statistics, ignore_bands_indices)
         for minx, miny in tile_coordinates if mask_path is None or (mask_path is not None and mask_gdf.intersects(
             box(minx, miny, minx + tile_width, miny + tile_height)  #TODO maybe add to_crs here
         ).any())
