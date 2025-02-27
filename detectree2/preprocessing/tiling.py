@@ -1020,6 +1020,13 @@ def create_RGB_from_MS(tile_folder_path: Union[str, Path],
             logger.warning(f" - Size in subdir: {sub_size} bytes")
             logger.warning(f" - Size in out_dir: {main_size} bytes")
 
+    
+    # Copy anything that is not a .tif, .png or .geojson file to the output folder (ignore folders)
+    for file in tile_folder.glob("*"):
+        if file.is_file() and file.suffix not in [".tif", ".png", ".geojson"]:
+            shutil.copy(str(file), str(out_path))
+
+
     logger.info("RGB creation from multispectral complete.")
 
 
