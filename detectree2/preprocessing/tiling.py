@@ -11,10 +11,12 @@ import math
 import os
 import pickle
 import random
+import re
 import shutil
 import warnings  # noqa: F401
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 import cv2
 import geopandas as gpd
@@ -722,6 +724,303 @@ def tile_data(
             process_tile_train_helper(args)
 
     logger.info("Tiling complete")
+
+
+def create_RGB_from_MS(tile_folder_path: Union[str, Path],
+                       out_dir: Union[str, Path, None] = None,
+                       conversion: str = "pca",
+                       memory_limit: float = 3.0) -> None:
+    """
+    Convert a collection of multispectral GeoTIFF tiles into three-band RGB images. By default, uses PCA
+    to reduce all bands to three principal components, or extracts the first three bands if 'first_three'
+    is chosen. The function saves each output as both a three-band GeoTIFF and a PNG preview.
+
+    Args:
+        tile_folder_path (str or Path):
+            Path to the folder containing multispectral .tif files, along with any .geojson, train, or test subdirectories.
+        out_dir (str or Path, optional):
+            Path to the output directory where RGB images will be saved. If None, a default folder with a suffix
+            "_<conversion>-rgb" is created alongside the input tile folder. If `out_dir` already exists and is not empty,
+            we append also append the current date and time to avoid overwriting.
+        conversion (str, optional):
+            The method of converting multispectral imagery to three bands:
+            - "pca": perform a principal-component analysis reduction to three components.
+            - "first-three": simply select the first three bands (i.e., B1 -> R, B2 -> G, B3 -> B).
+        memory_limit (float, optional):
+            Approximate memory limit in gigabytes for loading data to compute PCA.
+            Relevant only if `conversion="pca"`.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError:
+            If no data is found in the tile folder or if an unsupported conversion method is specified.
+        ImportError:
+            If scikit-learn is not installed and `conversion="pca"`.
+        RasterioIOError:
+            If reading any of the .tif files fails.
+    """
+
+    # Ensure we are working with Path objects
+    tile_folder = Path(tile_folder_path).resolve()
+
+    # Determine the default or custom output folder
+    if out_dir is None:
+        # Example: input folder is /home/user/tiles -> out_dir = /home/user/tiles_pca-rgb
+        out_path = tile_folder.parent / f"{tile_folder.name}_{conversion}-rgb"
+    else:
+        out_path = Path(out_dir).resolve()
+        # If user-specified out_dir is non-empty, append the tile_folder name to avoid overwriting
+        if out_path.is_dir() and any(out_path.iterdir()):
+            out_path = out_path / f"{tile_folder.name}_{conversion}-rgb"
+
+    # If the resolved output folder already exists, append a timestamp to avoid overwriting
+    if out_path.exists():
+        out_path = Path(str(out_path) + f"-{datetime.now().strftime('%Y%m%d%H%M%S')}")
+    out_path.mkdir(parents=True, exist_ok=False)
+
+    # Gather a list of all .tif files and shuffle them
+    tif_files = list(tile_folder.glob("*.tif"))
+    random.shuffle(tif_files)
+
+    if not tif_files:
+        raise ValueError(f"No .tif files found in {tile_folder}")
+
+    # ----------------------------------------------------------------------------------------
+    # If conversion == "pca", gather data from the tiles up to the memory limit, compute PCA.
+    # ----------------------------------------------------------------------------------------
+    if conversion == "pca":
+        images = []
+        size_in_gb = 0.0
+
+        # 1. Collect data (up to memory_limit GB) for PCA
+        for tif_file in tqdm(tif_files, desc="Collecting data for PCA"):
+            try:
+                with rasterio.open(tif_file) as src:
+                    data = src.read().reshape(src.count, -1).T  # Shape: (pixels, bands)
+            except RasterioIOError as e:
+                logger.error(f"Failed to read file {tif_file}: {e}")
+                continue
+
+            # Exclude all-zero (nodata) rows to reduce memory usage
+            data_sum = np.sum(data, axis=1)
+            non_zero_mask = data_sum != 0.0
+            filtered_data = data[non_zero_mask]
+            images.append(filtered_data)
+
+            # Track approximate memory usage
+            size_in_gb += filtered_data.nbytes / (1024**3)
+
+            # If we exceed the memory limit, stop collecting
+            if size_in_gb > memory_limit / 2:
+                logger.info(f"Memory limit reached at ~{len(images)} chunks. Proceeding with PCA calculation.")
+                break
+
+        # Make sure we have some data to fit PCA
+        if not images:
+            raise ValueError("No valid data found in the folder for PCA.")
+
+        # 2. Concatenate all non-zero pixel data for PCA
+        images_concatenated = np.concatenate(images, axis=0)
+        del images  # Clean up memory
+
+        # 3. Fit incremental PCA
+        try:
+            from sklearn.decomposition import IncrementalPCA
+        except ImportError:
+            logger.error("scikit-learn is required for PCA conversion. Please install scikit-learn to continue.")
+            raise ImportError("scikit-learn not installed.")
+
+        batch_size = 1_000_000
+        logger.info("Incrementally calculating principal components...")
+        ipca = IncrementalPCA(n_components=3, batch_size=batch_size)
+        ipca_data = ipca.fit_transform(images_concatenated)
+        del images_concatenated  # Freed up once PCA is fit
+
+        # 4. Compute a robust range (1-99 percentile) to map PCA outputs to [1,255]
+        min_vals, max_vals = np.percentile(ipca_data, [1, 99], axis=0)
+        logger.info(f"PCA explained variance ratio: {ipca.explained_variance_ratio_}")
+        del ipca_data  # Freed up once min/max are computed
+
+        # 5. Transform each tile and save as .tif and .png
+        for tif_file in tqdm(tif_files, desc="Applying PCA and saving RGB"):
+            try:
+                with rasterio.open(tif_file) as src:
+                    transform = src.transform
+                    crs = src.crs
+                    out_meta = src.meta.copy()
+                    raw_data = src.read().reshape(src.count, -1).T  # (pixels, bands)
+            except RasterioIOError as e:
+                logger.error(f"Failed to read file {tif_file}: {e}")
+                continue
+
+            width, height = src.width, src.height
+            data_sum = np.sum(raw_data, axis=1)
+            zero_mask = (data_sum == 0.0)
+
+            # Project the tile's data into the PCA components
+            transformed = ipca.transform(raw_data).astype(np.float32)
+            # Rescale to [1,255]
+            transformed = (transformed - min_vals) / (max_vals - min_vals) * 254.0 + 1.0
+            transformed = np.clip(transformed, 1.0, 255.0)
+
+            # Reinstate nodata=0 for zero rows
+            transformed[zero_mask] = 0.0
+
+            # Reshape back into (bands=3, height, width)
+            transformed = transformed.T.reshape(3, height, width)
+
+            # Optional reorder if you want IPCA dimension #1 as R, #2 as G, #3 as B.
+            # The snippet below swaps them to [G, R, B], but feel free to remove or alter.
+            transformed = transformed[[1, 0, 2], :, :]
+
+            # Update meta for writing out
+            out_meta.update({
+                "nodata": 0.0,
+                "dtype": "float32",
+                "count": 3,
+                "width": width,
+                "height": height,
+                "transform": transform,
+                "crs": crs
+            })
+
+            # Write the GeoTIFF
+            output_tif = out_path / tif_file.name
+            with rasterio.open(output_tif, "w", **out_meta) as dest:
+                dest.write(transformed)
+
+            # Write the PNG (we must convert shape to (H, W, 3) and then to uint8)
+            output_png = out_path / f"{tif_file.stem}.png"
+            png_ready = np.moveaxis(transformed, 0, -1).astype(np.uint8)  # (H, W, 3)
+            cv2.imwrite(str(output_png), cv2.cvtColor(png_ready, cv2.COLOR_RGB2BGR))
+
+    elif conversion == "first-three":
+        # ----------------------------------------------------------------------------------------
+        # If conversion == "first_three", simply take the first 3 bands and save them as RGB.
+        # ----------------------------------------------------------------------------------------
+        for tif_file in tqdm(tif_files, desc="Selecting first three bands"):
+            try:
+                with rasterio.open(tif_file) as src:
+                    out_meta = src.meta.copy()
+                    # Read only the first three bands (or fewer if the file has < 3 bands)
+                    data = src.read(indexes=[1, 2, 3])
+                    if np.nanmax(data) > 255:
+                        logger.exception(
+                            "The input folder seems to be an RGB folder and you are taking the first three bands. This will not change the output. Did you choose the wrong folder? Aborting."
+                        )
+                        return
+            except RasterioIOError as e:
+                logger.error(f"Failed to read file {tif_file}: {e}")
+                continue
+
+            # If the file has fewer than 3 bands, we can pad the missing bands with zeros
+            if data.shape[0] < 3:
+                raise ValueError(f"File {tif_file} has fewer than 3 bands.")
+
+            # Update meta to reflect 3 bands, 8-bit
+            out_meta.update({
+                "count": 3,
+            })
+
+            # Write out the new GeoTIFF
+            output_tif = out_path / tif_file.name
+            with rasterio.open(output_tif, 'w', **out_meta) as dest:
+                dest.write(data)
+
+            # Write out the PNG (shape must be (H, W, 3))
+            output_png = out_path / f"{tif_file.stem}.png"
+            # Move axis from (bands, H, W) -> (H, W, bands)
+            png_ready = np.moveaxis(data, 0, -1).astype(np.uint8)
+            # We expect the order to be [band1, band2, band3], so interpret as R,G,B
+            cv2.imwrite(str(output_png), cv2.cvtColor(png_ready, cv2.COLOR_RGB2BGR))
+
+    else:
+        raise ValueError(f"Unsupported conversion method: {conversion}")
+
+    # ------------------------------------------------------------------------------
+    # Copy .geojson files and train/test folders from the source to the out folder
+    # ------------------------------------------------------------------------------
+    for geojson_file in tile_folder.glob("*.geojson"):
+        shutil.copy(str(geojson_file), str(out_path / geojson_file.name))
+
+    # If a 'train' folder exists in the source, copy it to the out_path
+    train_subfolder = tile_folder / "train"
+    if train_subfolder.is_dir():
+        shutil.copytree(str(train_subfolder), str(out_path / "train"))
+
+    # If a 'test' folder exists in the source, copy it to the out_path
+    test_subfolder = tile_folder / "test"
+    if test_subfolder.is_dir():
+        shutil.copytree(str(test_subfolder), str(out_path / "test"))
+
+    # ------------------------------------------------------------------------
+    # Update "imagePath" fields in .geojson to point to new .png (instead of .tif)
+    # ------------------------------------------------------------------------
+    # 1. Collect geojson files directly under out_path
+    direct_geojsons = list(out_path.glob("*.geojson"))
+
+    # 2. Collect geojson files in test subfolder
+    files_in_subdirs = []
+    test_folder = out_path / "test"
+    if test_folder.is_dir():
+        files_in_subdirs.extend(list(test_folder.glob("*.geojson")))
+
+    # 3. Collect geojson files in train/fold_* subfolders
+    train_folder = out_path / "train"
+    if train_folder.is_dir():
+        fold_dirs = list(train_folder.glob("fold_*"))
+        for fold_dir in fold_dirs:
+            if fold_dir.is_dir():
+                files_in_subdirs.extend(list(fold_dir.glob("*.geojson")))
+
+    # Merge all .geojson paths for final processing
+    all_geojsons = direct_geojsons + files_in_subdirs
+
+    pattern = r'"imagePath":\s*"([^"]+)"'
+    for file_path in tqdm(all_geojsons, desc="Updating 'imagePath' in GeoJSONs"):
+        file_path = file_path.resolve()
+        with open(file_path, 'r') as f:
+            content = f.read()
+
+        match = re.search(pattern, content)
+        if match:
+            old_image_path = match.group(1)
+            old_image_filename = Path(old_image_path).name
+            # Replace '.tif' with '.png' if it exists in the name
+            new_image_filename = old_image_filename.replace('.tif', '.png')
+            new_image_path = (out_path / new_image_filename).as_posix()
+
+            # Update the content with the new path
+            new_content = re.sub(pattern, f'"imagePath": "{new_image_path}"', content)
+
+            # Overwrite the geojson file with the updated image path
+            with open(file_path, 'w') as f:
+                f.write(new_content)
+        else:
+            logger.info(f"No 'imagePath' found in {file_path.name}, skipping.")
+
+    # -------------------------------------------------------------------------
+    # Optional verification step: check that .geojson files in subfolders match
+    # any corresponding file in the main directory
+    # -------------------------------------------------------------------------
+    for sub_file in tqdm(files_in_subdirs, desc="Verifying .geojson files in subfolders"):
+        sub_file_name = sub_file.name
+        # Construct the path it might have in the main out_path
+        expected_file = out_path / sub_file_name
+        if not expected_file.is_file():
+            logger.warning(f"Missing .geojson file in main out_dir: {expected_file}")
+            continue
+
+        sub_size = os.path.getsize(str(sub_file))
+        main_size = os.path.getsize(str(expected_file))
+        if sub_size != main_size:
+            logger.warning(f"Size mismatch for {sub_file_name}:")
+            logger.warning(f" - Size in subdir: {sub_size} bytes")
+            logger.warning(f" - Size in out_dir: {main_size} bytes")
+
+    logger.info("RGB creation from multispectral complete.")
 
 
 def image_details(fileroot):
