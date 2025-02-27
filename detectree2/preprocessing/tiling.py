@@ -536,7 +536,12 @@ def _calculate_tile_placements(
     return coordinates
 
 
-def calculate_image_statistics(file_path, values_to_ignore=None, window_size=64, min_windows=100, mode="rgb"):
+def calculate_image_statistics(file_path,
+                               values_to_ignore=None,
+                               window_size=64,
+                               min_windows=100,
+                               mode="rgb",
+                               ignore_bands_indices: List[int] = []):
     """
     Calculate statistics for a raster using either whole image or sampled windows.
 
@@ -551,25 +556,29 @@ def calculate_image_statistics(file_path, values_to_ignore=None, window_size=64,
     """
     if values_to_ignore is None:
         values_to_ignore = []
+    values_to_ignore.append(65535)
     with rasterio.open(file_path) as src:
         # Get image dimensions
         width, height = src.width, src.height
 
-        # If the image is smaller than 2000x2000, process the whole image
-        if width * height <= 2000 * 2000:
-            print("Processing entire image...")
+        def calc_on_everything():
+            logger.info("Processing entire image...")
             band_stats = []
             for band_idx in range(1, src.count + 1):
+                if band_idx - 1 in ignore_bands_indices:
+                    continue
                 band = src.read(band_idx).astype(float)
                 # Mask out bad values
                 mask = (np.isnan(band) | np.isin(band, values_to_ignore))
                 valid_data = band[~mask]
 
                 if valid_data.size > 0:
+                    min_val, max_val = np.percentile(valid_data, [1, 99])
+
                     stats = {
                         "mean": np.mean(valid_data),
-                        "min": np.min(valid_data),
-                        "max": np.max(valid_data),
+                        "min": min_val,
+                        "max": max_val,
                         "std_dev": np.std(valid_data),
                     }
                 else:
@@ -582,10 +591,25 @@ def calculate_image_statistics(file_path, values_to_ignore=None, window_size=64,
                 band_stats.append(stats)
             return band_stats
 
-        windows_sampled = 0
-        band_aggregates = {band: [] for band in range(1, src.count + 1)}
+        # If the image is smaller than 2000x2000, process the whole image
+        if width * height <= 2000 * 2000:
+            return calc_on_everything()
 
+        windows_sampled = 0
+        band_aggregates: Dict[int, List[Union[float, int]]] = {}
+        i = 1
+        for band_idx in range(1, src.count + 1):
+            if band_idx - 1 in ignore_bands_indices:
+                continue
+            band_aggregates[i] = []
+            i += 1
+
+        fails = 0
         while windows_sampled < min_windows:
+            if fails > 100:
+                logger.warning(
+                    "Too many failed windows for caluclating image statistics. Calculating on whole image instead.")
+                return calc_on_everything()
             # Randomly pick a top-left corner for the window
             row_start = np.random.randint(0, height - window_size)
             col_start = np.random.randint(0, width - window_size)
@@ -595,7 +619,10 @@ def calculate_image_statistics(file_path, values_to_ignore=None, window_size=64,
             # Read the window for each band
             valid_window = True
             window_data = {}
+            i = 1
             for band_idx in range(1, src.count + 1) if mode == "ms" else range(1, 4):
+                if band_idx - 1 in ignore_bands_indices:
+                    continue
                 band = src.read(band_idx, window=window).astype(float)
                 # Mask out bad values
                 mask = (np.isnan(band) | np.isin(band, values_to_ignore))
@@ -604,8 +631,12 @@ def calculate_image_statistics(file_path, values_to_ignore=None, window_size=64,
 
                 if bad_pixel_ratio > 0.05:  # Exclude windows with >5% bad values
                     valid_window = False
+                    logger.info(
+                        f"Window {windows_sampled} has too many bad pixels ({bad_pixel_ratio:.2f}). Skipping...")
+                    fails += 1
                     break
-                window_data[band_idx] = valid_pixels
+                window_data[i] = valid_pixels
+                i += 1
 
             if valid_window:
                 for band_idx, valid_pixels in window_data.items():
@@ -614,13 +645,14 @@ def calculate_image_statistics(file_path, values_to_ignore=None, window_size=64,
 
         # Compute statistics for each band
         band_stats = []
-        for band_idx in range(1, src.count + 1) if mode == "ms" else range(1, 4):
+        for band_idx in range(1, len(band_aggregates) + 1) if mode == "ms" else range(1, 4):
             valid_data = np.array(band_aggregates[band_idx])
             if valid_data.size > 0:
+                min_val, max_val = np.percentile(valid_data, [1, 99])
                 stats = {
                     "mean": np.mean(valid_data),
-                    "min": np.min(valid_data),
-                    "max": np.max(valid_data),
+                    "min": min_val,
+                    "max": max_val,
                     "std_dev": np.std(valid_data),
                 }
             else:
