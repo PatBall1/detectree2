@@ -14,6 +14,7 @@ import re
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 import cv2
 import detectron2.data.transforms as T  # noqa:N812
@@ -40,6 +41,7 @@ from detectron2.engine import DefaultPredictor, DefaultTrainer
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator, verify_results
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
+from detectron2.layers.wrappers import Conv2d
 from detectron2.structures import BoxMode
 from detectron2.utils.events import get_event_storage  # noqa:F401
 from detectron2.utils.events import EventStorage
@@ -470,6 +472,66 @@ class MyTrainer(DefaultTrainer):
             verify_results(self.cfg, self._last_eval_results)
             return self._last_eval_results
 
+    def resume_or_load(self, resume=True):
+        """
+        If `resume==True` and `cfg.OUTPUT_DIR` contains the last checkpoint (defined by
+        a `last_checkpoint` file), resume from the file. Resuming means loading all
+        available states (eg. optimizer and scheduler) and update iteration counter
+        from the checkpoint. ``cfg.MODEL.WEIGHTS`` will not be used.
+
+        Otherwise, this is considered as an independent training. The method will load model
+        weights from the file `cfg.MODEL.WEIGHTS` (but will not load other states) and start
+        from iteration 0.
+
+        Args:
+            resume (bool): whether to do resume or not
+        """
+        self.checkpointer.resume_or_load(self.cfg.MODEL.WEIGHTS, resume=resume)
+        if resume and self.checkpointer.has_checkpoint():
+            # The checkpoint stores the training iteration that just finished, thus we start
+            # at the next iteration
+            self.start_iter = self.iter + 1
+
+        if self.cfg.MODEL.WEIGHTS:
+            device = self.model.backbone.bottom_up.stem.conv1.weight.device
+            req_grad = self.model.backbone.bottom_up.stem.conv1.weight.requires_grad
+            d_type = self.model.backbone.bottom_up.stem.conv1.weight.dtype
+
+            path = self.checkpointer.path_manager.get_local_path(
+                urlparse(self.cfg.MODEL.WEIGHTS)._replace(query="").geturl())
+            print("Path to model weights to be loaded: ", path)
+
+            if path.endswith(".pth"):
+                checkpoint = torch.load(
+                    path, map_location=torch.device('cpu'))['model']['backbone.bottom_up.stem.conv1.weight'].to(
+                        self.model.backbone.bottom_up.stem.conv1.weight.device)
+            elif path.endswith(".pkl"):
+                with open(path, "rb") as f:
+                    raw_contents = pickle.load(f)
+                    checkpoint = torch.tensor(raw_contents["model"]["backbone.bottom_up.stem.conv1.weight"],
+                                              dtype=d_type,
+                                              device=device,
+                                              requires_grad=req_grad)
+            else:
+                raise FileNotFoundError(f"Checkpoint file {path} ending not recognized.")
+
+            input_channels_in_checkpoint = checkpoint.shape[1]
+            input_channels_in_model = self.model.backbone.bottom_up.stem.conv1.weight.shape[1]
+            if input_channels_in_checkpoint != input_channels_in_model:
+                logger = logging.getLogger("detectree2")
+                if input_channels_in_checkpoint != 3:
+                    logger.warning(
+                        "Input channel modification only works if checkpoint was trained on RGB images (3 channels). The first three channels will be copied and then repeated in the model."
+                    )
+                logger.warning(
+                    "Mismatch in input channels in checkpoint and model, meaning fvcommon would not have been able to automatically load them. Adjusting weights for 'backbone.bottom_up.stem.conv1.weight' manually."
+                )
+                with torch.no_grad():
+                    self.model.backbone.bottom_up.stem.conv1.weight[:, :3] = checkpoint[:, :3]
+                multiply_conv1_weights(self.model)
+                self.model.backbone.bottom_up.stem.conv1.weight.to(device)
+                self.model.backbone.bottom_up.stem.conv1.weight.requires_grad = req_grad
+
     @classmethod
     def build_evaluator(cls, cfg, dataset_name, output_folder=None):
         """
@@ -678,6 +740,9 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
         objs = []
         for features in img_anns["features"]:
             anno = features["geometry"]
+            if anno["type"] != "Polygon" and anno["type"] != "MultiPolygon":
+                print("Skipping annotation of type", anno["type"], "in file", filename)
+                continue
             px = [a[0] for a in anno["coordinates"][0]]
             py = [np.array(height) - a[1] for a in anno["coordinates"][0]]
             poly = [(x, y) for x, y in zip(px, py)]
@@ -1081,7 +1146,7 @@ def predictions_on_data(
                 json.dump(evaluations, dest)
 
 
-def modify_conv1_weights(model, num_input_channels):
+def multiply_conv1_weights(model):
     """
     Modify the weights of the first convolutional layer (conv1) to accommodate a different number of input channels.
 
@@ -1091,32 +1156,42 @@ def modify_conv1_weights(model, num_input_channels):
 
     Args:
         model (torch.nn.Module): The model containing the convolutional layer to modify.
-        num_input_channels (int): The number of input channels for the new conv1 layer.
 
     """
     with torch.no_grad():
-        # Retrieve the original weights of the conv1 layer
-        old_weights = model.backbone.bottom_up.stem.conv1.weight
 
-        # Create a new weight tensor with the desired number of input channels
-        # The shape is (out_channels, in_channels, height, width)
-        new_weights = torch.zeros((old_weights.size(0), num_input_channels, *old_weights.shape[2:]))
+        old_conv = model.backbone.bottom_up.stem.conv1
+        old_weights = old_conv.weight.clone()  # shape: (out_channels, in_channels, height, width)
 
-        # Initialize the new weights by repeating the original weights across the new channels
-        # This example repeats the first 3 channels if num_input_channels > 3
-        for i in range(num_input_channels):
-            new_weights[:, i, :, :] = old_weights[:, i % 3, :, :]
+        # Preserve device + dtype
+        device = old_weights.device
+        dtype = old_weights.dtype
+        out_channels, in_channels, kh, kw = old_weights.shape
 
-        # Create a new conv1 layer with the updated number of input channels
-        model.backbone.bottom_up.stem.conv1 = nn.Conv2d(num_input_channels,
-                                                        old_weights.size(0),
-                                                        kernel_size=7,
-                                                        stride=2,
-                                                        padding=3,
-                                                        bias=False)
+        # Create a new weight tensor on the same device/dtype
+        new_weights = torch.zeros((out_channels, in_channels, kh, kw), device=device, dtype=dtype)
 
-        # Copy the modified weights into the new conv1 layer
-        model.backbone.bottom_up.stem.conv1.weight.copy_(new_weights)
+        # Multiply weights round-robin
+        for i in range(in_channels):
+            new_weights[:, i, :, :] = old_weights[:, (i + 1) % 3, :, :] / ((in_channels // 3) +
+                                                                           (1 if i % 3 < in_channels % 3 else 0))
+
+        # Create a fresh Conv2d that has the correct shape
+        new_conv = Conv2d(in_channels=in_channels,
+                          out_channels=out_channels,
+                          kernel_size=old_conv.kernel_size,
+                          stride=old_conv.stride,
+                          padding=old_conv.padding,
+                          bias=old_conv.bias,
+                          norm=old_conv.norm)
+        new_conv.activation = old_conv.activation
+
+        # Move the new conv onto the same device just to be sure....
+        new_conv = new_conv.to(device, dtype)
+        new_conv.weight.copy_(new_weights)
+
+        # Replace conv1 in the model
+        model.backbone.bottom_up.stem.conv1 = new_conv
 
 
 def get_latest_model_path(output_dir: str) -> str:
