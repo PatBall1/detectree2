@@ -69,6 +69,18 @@ pyogriologger.addFilter(PyogrioFilter())
 #        self.pixelSizeY = -self.affine[4]
 #
 
+dtype_map = {
+    np.dtype(np.uint8): ("uint8", 0),
+    np.dtype(np.uint16): ("uint16", 0),
+    np.dtype(np.uint32): ("uint32", 0),
+    np.dtype(np.int8): ("int8", 0),
+    np.dtype(np.int16): ("int16", 0),
+    np.dtype(np.int32): ("int32", 0),
+    np.dtype(np.float16): ("float16", 0.0),
+    np.dtype(np.float32): ("float32", 0.0),
+    np.dtype(np.float64): ("float64", 0.0),
+}
+
 
 def get_features(gdf: gpd.GeoDataFrame):
     """Function to parse features from GeoDataFrame in such a manner that rasterio wants them.
@@ -121,7 +133,8 @@ def process_tile(img_path: str,
                  mask_gdf: gpd.GeoDataFrame = None,
                  additional_nodata: List[Any] = [],
                  image_statistics: List[Dict[str, float]] = None,
-                 ignore_bands_indices: List[int] = []):
+                 ignore_bands_indices: List[int] = [],
+                 use_convex_mask: bool = True):
     """Process a single tile for making predictions.
 
     Args:
@@ -169,6 +182,7 @@ def process_tile(img_path: str,
 
             out_img, out_transform = mask(data, shapes=coords, nodata=nodata, crop=True, indexes=[1, 2, 3])
 
+            mask_tif = None
             if mask_gdf is not None:
                 #if mask_gdf.crs != data.crs:
                 #    mask_gdf = mask_gdf.to_crs(data.crs) #TODO is this necessary?
@@ -178,24 +192,44 @@ def process_tile(img_path: str,
                                                            invert=True,
                                                            out_shape=(out_img.shape[1], out_img.shape[2]))
 
-                out_img[:, ~mask_tif] = nodata
+            convex_mask_tif = None
+            if use_convex_mask and crowns is not None:
+                # Create a convex mask around the crown polygons
+                if gpd.__version__.startswith("1."):
+                    unioned_crowns = overlapping_crowns.union_all()
+                else:
+                    unioned_crowns = overlapping_crowns.unary_union
+                convex_mask_tif = rasterio.features.geometry_mask([unioned_crowns.convex_hull.buffer(5)],
+                                                                  transform=out_transform,
+                                                                  invert=True,
+                                                                  out_shape=(out_img.shape[1], out_img.shape[2]))
 
             out_sumbands = np.sum(out_img, axis=0)
             zero_mask = np.where(out_sumbands == 0, 1, 0)
-            nan_mask = np.where(out_sumbands == 765, 1, 0)
+            nan_mask = np.isnan(out_sumbands) | np.where(out_sumbands == 765, 1, 0) | np.where(
+                out_sumbands == 65535 * 3, 1, 0)
             for nodata_val in additional_nodata:
                 nan_mask = nan_mask | np.where(out_sumbands == nodata_val, 1, 0)
-            sumzero = zero_mask.sum()
-            sumnan = nan_mask.sum()
+            if mask_tif is not None:
+                nan_mask = nan_mask | ~mask_tif
+            if convex_mask_tif is not None:
+                nan_mask = nan_mask | ~convex_mask_tif
             totalpix = out_img.shape[1] * out_img.shape[2]
 
             # If the tile is mostly empty or mostly nan, don't save it
-            if sumzero > nan_threshold * totalpix or sumnan > nan_threshold * totalpix or np.isnan(
-                    out_sumbands).sum() > nan_threshold * totalpix:
+            invalid = (zero_mask | nan_mask).sum()
+            if invalid > nan_threshold * totalpix:
+                logger.warning(
+                    f"Skipping tile at ({minx}, {miny}) due to being over nodata threshold. Threshold: {nan_threshold}, nodata ration: {invalid / totalpix}"
+                )
                 return None
 
             # Apply nan mask
-            out_img[np.broadcast_to((nan_mask == 1)[None, :, :], out_img.shape)] = nodata
+            out_img[np.broadcast_to((nan_mask == 1)[None, :, :], out_img.shape)] = 0
+
+            dtype, nodata = dtype_map.get(out_img.dtype, (None, None))
+            if dtype is None:
+                logger.exception(f"Unsupported dtype: {out_img.dtype}")
 
             out_meta = data.meta.copy()
             out_meta.update({
@@ -203,27 +237,27 @@ def process_tile(img_path: str,
                 "height": out_img.shape[1],
                 "width": out_img.shape[2],
                 "transform": out_transform,
+                "count": 3,
                 "nodata": nodata,
+                "dtype": dtype,
             })
-            if dtype_bool:
-                out_meta.update({"dtype": "uint8"})
 
             out_tif = out_path_root.with_suffix(".tif")
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
 
-            with rasterio.open(out_tif) as clipped:
-                arr = clipped.read()
-                r, g, b = arr[0], arr[1], arr[2]
-                rgb = np.dstack((b, g, r))  # Reorder for cv2 (BGRA)
+            r, g, b = out_img[0], out_img[1], out_img[2]
+            rgb = np.dstack((b, g, r))  # Reorder for cv2 (BGRA)
 
-                # Rescale to 0-255 if necessary
-                if np.nanmax(g) > 255:
-                    rgb_rescaled = 255 * rgb / 65535
-                else:
-                    rgb_rescaled = rgb
+            # Rescale to 0-255 if necessary
+            if np.nanmax(g) > 255:
+                rgb_rescaled = rgb / 65535 * 255
+            else:
+                rgb_rescaled = rgb
 
-                cv2.imwrite(str(out_path_root.with_suffix(".png").resolve()), rgb_rescaled)
+            np.clip(rgb_rescaled, 0, 255, out=rgb_rescaled)
+
+            cv2.imwrite(str(out_path_root.with_suffix(".png").resolve()), rgb_rescaled.astype(np.uint8))
 
             if overlapping_crowns is not None:
                 return data, out_path_root, overlapping_crowns, minx, miny, buffer
@@ -254,7 +288,8 @@ def process_tile_ms(img_path: str,
                     mask_gdf: gpd.GeoDataFrame = None,
                     additional_nodata: List[Any] = [],
                     image_statistics: List[Dict[str, float]] = None,
-                    ignore_bands_indices: List[int] = []):
+                    ignore_bands_indices: List[int] = [],
+                    use_convex_mask: bool = True):
     """Process a single tile for making predictions.
 
     Args:
@@ -285,14 +320,14 @@ def process_tile_ms(img_path: str,
             bbox = box(minx_buffered, miny_buffered, maxx_buffered, maxy_buffered)
             geo = gpd.GeoDataFrame({"geometry": [bbox]}, index=[0], crs=data.crs)
             coords = [geo.geometry[0].__geo_interface__]
-
             if crowns is not None:
                 overlapping_crowns = gpd.clip(crowns, geo)
+                if mask_gdf is not None:
+                    overlapping_crowns = gpd.clip(overlapping_crowns, mask_gdf)
                 if overlapping_crowns.empty or (overlapping_crowns.dissolve().area[0] / geo.area[0]) < threshold:
                     return None
             else:
                 overlapping_crowns = None
-
             if data.nodata is not None:
                 nodata = data.nodata
             else:
@@ -303,17 +338,45 @@ def process_tile_ms(img_path: str,
             ]
             out_img, out_transform = mask(data, shapes=coords, nodata=nodata, crop=True, indexes=bands_to_read)
 
+            mask_tif = None
+            if mask_gdf is not None:
+                #if mask_gdf.crs != data.crs:
+                #    mask_gdf = mask_gdf.to_crs(data.crs) #TODO is this necessary?
+
+                mask_tif = rasterio.features.geometry_mask([geom for geom in mask_gdf.geometry],
+                                                           transform=out_transform,
+                                                           invert=True,
+                                                           out_shape=(out_img.shape[1], out_img.shape[2]))
+
+            convex_mask_tif = None
+            if use_convex_mask and crowns is not None:
+                # Create a convex mask around the crown polygons
+                if gpd.__version__.startswith("1."):
+                    unioned_crowns = overlapping_crowns.union_all()
+                else:
+                    unioned_crowns = overlapping_crowns.unary_union
+                convex_mask_tif = rasterio.features.geometry_mask([unioned_crowns.convex_hull.buffer(5)],
+                                                                  transform=out_transform,
+                                                                  invert=True,
+                                                                  out_shape=(out_img.shape[1], out_img.shape[2]))
+
             out_sumbands = np.sum(out_img, axis=0)
             zero_mask = np.where(out_sumbands == 0, 1, 0)
-            nan_mask = np.isnan(out_sumbands)
+            nan_mask = np.isnan(out_sumbands) | np.where(out_sumbands == 65535 * len(bands_to_read), 1, 0)
             for nodata_val in additional_nodata:
                 nan_mask = nan_mask | np.where(out_sumbands == nodata_val, 1, 0)
-            sumzero = zero_mask.sum()
-            sumnan = nan_mask.sum()
+            if mask_tif is not None:
+                nan_mask = nan_mask | ~mask_tif
+            if convex_mask_tif is not None:
+                nan_mask = nan_mask | ~convex_mask_tif
             totalpix = out_img.shape[1] * out_img.shape[2]
 
             # If the tile is mostly empty or mostly nan, don't save it
-            if sumzero > nan_threshold * totalpix or sumnan > nan_threshold * totalpix:
+            invalid = (zero_mask | nan_mask).sum()
+            if invalid > nan_threshold * totalpix:
+                logger.warning(
+                    f"Skipping tile at ({minx}, {miny}) due to being over nodata threshold. Threshold: {nan_threshold}, nodata ration: {invalid / totalpix}"
+                )
                 return None
 
             # rescale image to 1-255 (0 is reserved for nodata)
@@ -328,10 +391,14 @@ def process_tile_ms(img_path: str,
                 out_img = (out_img - min_vals) * 254 / (max_vals - min_vals) + 1
 
             # additional clip to make sure
-            out_img = np.clip(out_img, 1, 255)
+            out_img = np.clip(out_img.astype(np.float32), 1.0, 255.0)
 
             # Apply nan mask
-            out_img[np.broadcast_to((nan_mask == 1)[None, :, :], out_img.shape)] = 0
+            out_img[np.broadcast_to((nan_mask == 1)[None, :, :], out_img.shape)] = 0.0
+
+            dtype, nodata = dtype_map.get(out_img.dtype, (None, None))
+            if dtype is None:
+                logger.exception(f"Unsupported dtype: {out_img.dtype}")
 
             out_meta = data.meta.copy()
             out_meta.update({
@@ -339,16 +406,19 @@ def process_tile_ms(img_path: str,
                 "height": out_img.shape[1],
                 "width": out_img.shape[2],
                 "transform": out_transform,
-                "nodata": 0,
+                "count": out_img.shape[0],
+                "nodata": nodata,
+                "dtype": dtype
             })
-            if dtype_bool:
-                raise NotImplementedError(
-                    "dtype_bool not implemented for multispectral data. Pretty sure dtype_bool should be False.")
-                out_meta.update({"dtype": "uint8"})
 
             out_tif = out_path_root.with_suffix(".tif")
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
+
+            # Uncomment, if pngs of the first three channels of the ms image are needed
+            # r, g, b = out_img[0], out_img[1], out_img[2]
+            # rgb = np.dstack((b, g, r)).astype(np.uint8)  # Reorder for cv2 (BGRA)
+            # cv2.imwrite(str(out_path_root.with_suffix(".png").resolve()), rgb)
 
             if overlapping_crowns is not None:
                 return data, out_path_root, overlapping_crowns, minx, miny, buffer
@@ -382,7 +452,8 @@ def process_tile_train(
         mask_gdf: gpd.GeoDataFrame = None,
         additional_nodata: List[Any] = [],
         image_statistics: List[Dict[str, float]] = None,
-        ignore_bands_indices: List[int] = []) -> None:
+        ignore_bands_indices: List[int] = [],
+        use_convex_mask: bool = True) -> None:
     """Process a single tile for training data.
 
     Args:
@@ -406,11 +477,11 @@ def process_tile_train(
     if mode == "rgb":
         result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename,
                               crowns, threshold, nan_threshold, mask_gdf, additional_nodata, image_statistics,
-                              ignore_bands_indices)
+                              ignore_bands_indices, use_convex_mask)
     elif mode == "ms":
         result = process_tile_ms(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs,
                                  tilename, crowns, threshold, nan_threshold, mask_gdf, additional_nodata,
-                                 image_statistics, ignore_bands_indices)
+                                 image_statistics, ignore_bands_indices, use_convex_mask)
 
     if result is None:
         # logger.warning(f"Skipping tile at ({minx}, {miny}) due to insufficient data.")
@@ -694,6 +765,7 @@ def tile_data(
     additional_nodata: List[Any] = [],
     overlapping_tiles: bool = False,
     ignore_bands_indices: List[int] = [],
+    use_convex_mask: bool = True,
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
@@ -740,8 +812,9 @@ def tile_data(
 
     tile_args = [
         (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold,
-         nan_threshold, mode, class_column, mask_gdf, additional_nodata, image_statistics, ignore_bands_indices)
-        for minx, miny in tile_coordinates if mask_path is None or (mask_path is not None and mask_gdf.intersects(
+         nan_threshold, mode, class_column, mask_gdf, additional_nodata, image_statistics, ignore_bands_indices,
+         use_convex_mask) for minx, miny in tile_coordinates
+        if mask_path is None or (mask_path is not None and mask_gdf.intersects(
             box(minx, miny, minx + tile_width, miny + tile_height)  #TODO maybe add to_crs here
         ).any())
     ]
