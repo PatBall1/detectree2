@@ -84,9 +84,7 @@ class FlexibleDatasetMapper(DatasetMapper):
         self.is_train = is_train
         self.logger = logging.getLogger(__name__)
         mode = "training" if is_train else "inference"
-        self.logger.info(
-            f"[FlexibleDatasetMapper] Augmentations used in {mode}: {augmentations}"
-        )
+        self.logger.info(f"[FlexibleDatasetMapper] Augmentations used in {mode}: {augmentations}")
 
     def __call__(self, dataset_dict):
         """
@@ -100,8 +98,7 @@ class FlexibleDatasetMapper(DatasetMapper):
             dict: The processed dataset dictionary, or None if there was an error.
         """
         if dataset_dict is None:
-            self.logger.warning(
-                "Received None for dataset_dict, skipping this entry.")
+            self.logger.warning("Received None for dataset_dict, skipping this entry.")
             return None
 
         if self.cfg.IMGMODE == "rgb":
@@ -112,35 +109,27 @@ class FlexibleDatasetMapper(DatasetMapper):
             with rasterio.open(dataset_dict["file_name"]) as src:
                 img = src.read()
                 if img is None:
-                    raise ValueError(
-                        f"Image data is None for file: {dataset_dict['file_name']}"
-                    )
+                    raise ValueError(f"Image data is None for file: {dataset_dict['file_name']}")
                 # Transpose image dimensions to match expected format (H, W, C)
                 img = np.transpose(img, (1, 2, 0)).astype("float32")
 
             # Size check similar to utils.check_image_size
-            if img.shape[:2] != (dataset_dict.get("height"),
-                                 dataset_dict.get("width")):
+            if img.shape[:2] != (dataset_dict.get("height"), dataset_dict.get("width")):
                 self.logger.warning(
                     f"""Image size {img.shape[:2]} does not match expected size {(dataset_dict.get('height'),
-                                                                                dataset_dict.get('width'))}."""
-                )
+                                                                                dataset_dict.get('width'))}.""")
 
             # Otherwise, handle custom multi-band logic
             aug_input = T.AugInput(img)
-            transforms = self.augmentations(
-                aug_input)    # Apply the augmentations
+            transforms = self.augmentations(aug_input)  # Apply the augmentations
             img = aug_input.image
 
-            dataset_dict["image"] = torch.as_tensor(
-                np.ascontiguousarray(img.transpose(2, 0, 1)))
+            dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(img.transpose(2, 0, 1)))
 
             # Handle semantic segmentation if present
             if "sem_seg_file_name" in dataset_dict:
-                sem_seg_gt = utils.read_image(
-                    dataset_dict.pop("sem_seg_file_name"), "L").squeeze(2)
-                dataset_dict["sem_seg"] = torch.as_tensor(
-                    sem_seg_gt.astype("long"))
+                sem_seg_gt = utils.read_image(dataset_dict.pop("sem_seg_file_name"), "L").squeeze(2)
+                dataset_dict["sem_seg"] = torch.as_tensor(sem_seg_gt.astype("long"))
 
             if not self.is_train:
                 # If not in training mode, remove annotations and segmentation file names
@@ -150,14 +139,12 @@ class FlexibleDatasetMapper(DatasetMapper):
 
             if "annotations" in dataset_dict:
                 # Apply the transformations to the annotations
-                self._transform_annotations(dataset_dict, transforms,
-                                            img.shape[:2])
+                self._transform_annotations(dataset_dict, transforms, img.shape[:2])
 
             return dataset_dict
 
         except Exception as e:
-            file_name = dataset_dict.get(
-                'file_name', 'unknown') if dataset_dict else 'unknown'
+            file_name = dataset_dict.get('file_name', 'unknown') if dataset_dict else 'unknown'
             self.logger.error(f"Error processing {file_name}: {e}")
             return None
 
@@ -229,14 +216,12 @@ class LossEvalHook(HookBase):
             seconds_per_img = total_compute_time / iters_after_start
             if idx >= num_warmup * 2 or seconds_per_img > 5:
                 # Log progress and estimated time remaining
-                total_seconds_per_img = (time.perf_counter() -
-                                         start_time) / iters_after_start
-                eta = datetime.timedelta(seconds=int(total_seconds_per_img *
-                                                     (total - idx - 1)))
+                total_seconds_per_img = (time.perf_counter() - start_time) / iters_after_start
+                eta = datetime.timedelta(seconds=int(total_seconds_per_img * (total - idx - 1)))
                 log_every_n_seconds(
                     logging.INFO,
-                    "Loss on Validation  done {}/{}. {:.4f} s / img. ETA={}".
-                    format(idx + 1, total, seconds_per_img, str(eta)),
+                    "Loss on Validation  done {}/{}. {:.4f} s / img. ETA={}".format(idx + 1, total, seconds_per_img,
+                                                                                    str(eta)),
                     n=5,
                 )
             # Calculate loss for the current batch
@@ -249,14 +234,10 @@ class LossEvalHook(HookBase):
         if len(self.trainer.cfg.DATASETS.TEST) > 1:
             APs = []
             for dataset in self.trainer.cfg.DATASETS.TEST:
-                APs.append(
-                    self.trainer.test(
-                        self.trainer.cfg,
-                        self.trainer.model)[dataset]["segm"]["AP50"])
+                APs.append(self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset]["segm"]["AP50"])
             AP = sum(APs) / len(APs)
         else:
-            AP = self.trainer.test(self.trainer.cfg,
-                                   self.trainer.model)["segm"]["AP50"]
+            AP = self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]
 
         print("Av. segm AP50 =", AP)
 
@@ -281,9 +262,7 @@ class LossEvalHook(HookBase):
         metrics_dict = self._model(data)
         # Detach and move to CPU for logging
         metrics_dict = {
-            k:
-                v.detach().cpu().item()
-                if isinstance(v, torch.Tensor) else float(v)
+            k: v.detach().cpu().item() if isinstance(v, torch.Tensor) else float(v)
             for k, v in metrics_dict.items()
         }
         total_losses_reduced = sum(loss for loss in metrics_dict.values())
@@ -306,16 +285,14 @@ class LossEvalHook(HookBase):
                 self.iter = 0
                 self.max_ap = self.trainer.APs[-1]
                 # Save the current best model
-                self.trainer.checkpointer.save("model_" +
-                                               str(len(self.trainer.APs)))
+                self.trainer.checkpointer.save("model_" + str(len(self.trainer.APs)))
                 self.best_iter = self.trainer.iter
             else:
                 self.iter += 1
         if self.iter == self.patience:
             # Early stopping condition met
             self.trainer.early_stop = True
-            print("Early stopping occurs in iter {}, max ap is {}".format(
-                self.best_iter, self.max_ap))
+            print("Early stopping occurs in iter {}, max ap is {}".format(self.best_iter, self.max_ap))
         self.trainer.storage.put_scalars(timetest=12)
 
     def after_train(self):
@@ -325,16 +302,13 @@ class LossEvalHook(HookBase):
         - Selects and loads the model checkpoint with the best AP50.
         """
         if not self.trainer.APs:
-            print(
-                "No APs were recorded during training. Skipping model selection."
-            )
+            print("No APs were recorded during training. Skipping model selection.")
             return
         # Select the model with the best AP50
         index = self.trainer.APs.index(max(self.trainer.APs)) + 1
         # Error handling for checkpoint loading, with a sleep to ensure file availability in CI environments
         time.sleep(15)
-        self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' +
-                                       str(index) + '.pth')
+        self.trainer.checkpointer.load(self.trainer.cfg.OUTPUT_DIR + '/model_' + str(index) + '.pth')
 
 
 # See https://jss367.github.io/data-augmentation-in-detectron2.html for data augmentation advice
@@ -350,7 +324,7 @@ class MyTrainer(DefaultTrainer):
         patience (int): Number of evaluation periods to wait for improvement before early stopping.
     """
 
-    def __init__(self, cfg, patience):    # noqa: D107
+    def __init__(self, cfg, patience):  # noqa: D107
         self.patience = patience
         super().__init__(cfg)
 
@@ -395,8 +369,7 @@ class MyTrainer(DefaultTrainer):
                 self.after_train()
         # Verify the results if testing is enabled and this is the main process
         if len(self.cfg.TEST.EXPECTED_RESULTS) and comm.is_main_process():
-            assert hasattr(self, "_last_eval_results"
-                          ), "No evaluation results obtained during training!"
+            assert hasattr(self, "_last_eval_results"), "No evaluation results obtained during training!"
             verify_results(self.cfg, self._last_eval_results)
             return self._last_eval_results
 
@@ -434,8 +407,7 @@ class MyTrainer(DefaultTrainer):
         if self.cfg.RESIZE == "random":
             size = None
             # Attempt to determine the image size from the training dataset
-            for i, datas in enumerate(
-                    DatasetCatalog.get(self.cfg.DATASETS.TRAIN[0])):
+            for i, datas in enumerate(DatasetCatalog.get(self.cfg.DATASETS.TRAIN[0])):
                 location = datas['file_name']
                 try:
                     # Attempt to read the image with OpenCV (for RGB images)
@@ -445,7 +417,7 @@ class MyTrainer(DefaultTrainer):
                     else:
                         # Fall back to rasterio for multi-band images
                         with rasterio.open(location) as src:
-                            size = src.height    # Assuming square images
+                            size = src.height  # Assuming square images
                 except Exception as e:
                     # Handle any errors that occur during loading
                     print(f"Error loading image {location}: {e}")
@@ -463,11 +435,8 @@ class MyTrainer(DefaultTrainer):
             LossEvalHook(
                 self.cfg.TEST.EVAL_PERIOD,
                 self.model,
-                build_detection_test_loader(
-                    self.cfg, self.cfg.DATASETS.TEST,
-                    FlexibleDatasetMapper(self.cfg,
-                                          True,
-                                          augmentations=augmentations)),
+                build_detection_test_loader(self.cfg, self.cfg.DATASETS.TEST,
+                                            FlexibleDatasetMapper(self.cfg, True, augmentations=augmentations)),
                 self.patience,
             ),
         )
@@ -508,8 +477,7 @@ class MyTrainer(DefaultTrainer):
             augmentations.append(T.ResizeShortestEdge([1000, 1000], 1333))
         elif cfg.RESIZE == "random":
             size = None
-            for i, datas in enumerate(DatasetCatalog.get(
-                    cfg.DATASETS.TRAIN[0])):
+            for i, datas in enumerate(DatasetCatalog.get(cfg.DATASETS.TRAIN[0])):
                 location = datas['file_name']
                 try:
                     # Try to read with cv2 (for RGB images)
@@ -519,7 +487,7 @@ class MyTrainer(DefaultTrainer):
                     else:
                         # Fall back to rasterio for multi-band images
                         with rasterio.open(location) as src:
-                            size = src.height    # Assuming square images
+                            size = src.height  # Assuming square images
                 except Exception as e:
                     # Handle any errors that occur during loading
                     print(f"Error loading image {location}: {e}")
@@ -530,8 +498,7 @@ class MyTrainer(DefaultTrainer):
                 print("ADD RANDOM RESIZE WITH SIZE = ", size)
                 augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
             else:
-                raise ValueError(
-                    "Failed to determine image size for random resize")
+                raise ValueError("Failed to determine image size for random resize")
         elif cfg.RESIZE == "rand_fixed":
             augmentations.append(T.ResizeScale(0.6, 1.4, 1000, 1000))
 
@@ -559,15 +526,10 @@ class MyTrainer(DefaultTrainer):
         Returns:
             DataLoader: A data loader for the test dataset.
         """
-        return build_detection_test_loader(cfg,
-                                           dataset_name,
-                                           mapper=FlexibleDatasetMapper(
-                                               cfg, is_train=False))
+        return build_detection_test_loader(cfg, dataset_name, mapper=FlexibleDatasetMapper(cfg, is_train=False))
 
 
-def get_tree_dicts(
-        directory: str,
-        class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:
+def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:
     """Get the tree dictionaries.
 
     Args:
@@ -582,9 +544,7 @@ def get_tree_dicts(
 
     dataset_dicts = []
 
-    for filename in [
-            file for file in os.listdir(directory) if file.endswith(".geojson")
-    ]:
+    for filename in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
         json_file = os.path.join(directory, filename)
         with open(json_file) as f:
             img_anns = json.load(f)
@@ -619,13 +579,10 @@ def get_tree_dicts(
             if class_mapping:
                 category_id = class_mapping[features["properties"]["status"]]
             else:
-                category_id = 0    # Default to "tree" if no class mapping is provided
+                category_id = 0  # Default to "tree" if no class mapping is provided
 
             obj = {
-                "bbox": [np.min(px),
-                         np.min(py),
-                         np.max(px),
-                         np.max(py)],
+                "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
                 "bbox_mode": BoxMode.XYXY_ABS,
                 "segmentation": [poly],
                 "category_id": category_id,
@@ -640,11 +597,10 @@ def get_tree_dicts(
     return dataset_dicts
 
 
-def combine_dicts(
-        root_dir: str,
-        val_dir: int,
-        mode: str = "train",
-        class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:
+def combine_dicts(root_dir: str,
+                  val_dir: int,
+                  mode: str = "train",
+                  class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:
     """
     Combine dictionaries from different directories based on the specified mode.
 
@@ -666,9 +622,7 @@ def combine_dicts(
     """
     # Get the list of directories within the root directory
     train_dirs = [
-        os.path.join(root_dir, dir)
-        for dir in os.listdir(root_dir)
-        if os.path.isdir(os.path.join(root_dir, dir))
+        os.path.join(root_dir, dir) for dir in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, dir))
     ]
     # Handle the different modes for combining dictionaries
     if mode == "train":
@@ -680,8 +634,7 @@ def combine_dicts(
             tree_dicts += get_tree_dicts(d, class_mapping=class_mapping)
     elif mode == "val":
         # Use only the validation directory
-        tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)],
-                                    class_mapping=class_mapping)
+        tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)], class_mapping=class_mapping)
     elif mode == "full":
         # Combine dictionaries from all directories, including the validation directory
         tree_dicts = []
@@ -731,10 +684,7 @@ def get_filenames(directory: str):
     return dataset_dicts, mode
 
 
-def register_train_data(train_location,
-                        name: str = "tree",
-                        val_fold=None,
-                        class_mapping_file=None):
+def register_train_data(train_location, name: str = "tree", val_fold=None, class_mapping_file=None):
     """Register data for training and (optionally) validation.
 
     Args:
@@ -747,26 +697,20 @@ def register_train_data(train_location,
     class_mapping = None
     if class_mapping_file:
         class_mapping = load_class_mapping(class_mapping_file)
-        thing_classes = list(
-            class_mapping.keys())    # Convert dictionary to list of class names
-        print(f"Class mapping loaded: {class_mapping}")    # Debugging step
+        thing_classes = list(class_mapping.keys())  # Convert dictionary to list of class names
+        print(f"Class mapping loaded: {class_mapping}")  # Debugging step
     else:
         thing_classes = ["tree"]
 
     if val_fold is not None:
         for d in ["train", "val"]:
-            DatasetCatalog.register(
-                name + "_" + d,
-                lambda d=d: combine_dicts(
-                    train_location, val_fold, d, class_mapping=class_mapping))
+            DatasetCatalog.register(name + "_" + d,
+                                    lambda d=d: combine_dicts(train_location, val_fold, d, class_mapping=class_mapping))
             MetadataCatalog.get(name + "_" + d).set(thing_classes=thing_classes)
     else:
-        DatasetCatalog.register(
-            name + "_" + "full",
-            lambda d=d: combine_dicts(
-                train_location, 0, "full", class_mapping=class_mapping))
-        MetadataCatalog.get(name + "_" +
-                            "full").set(thing_classes=thing_classes)
+        DatasetCatalog.register(name + "_" + "full",
+                                lambda d=d: combine_dicts(train_location, 0, "full", class_mapping=class_mapping))
+        MetadataCatalog.get(name + "_" + "full").set(thing_classes=thing_classes)
 
 
 def get_classes(out_dir):
@@ -814,15 +758,12 @@ def register_test_data(test_location, name="tree"):
     class_mapping = None
     if class_mapping_file:
         class_mapping = load_class_mapping(class_mapping_file)
-        thing_classes = list(
-            class_mapping.keys())    # Convert dictionary to list of class names
-        print(f"Class mapping loaded: {class_mapping}")    # Debugging step
+        thing_classes = list(class_mapping.keys())  # Convert dictionary to list of class names
+        print(f"Class mapping loaded: {class_mapping}")  # Debugging step
     else:
         thing_classes = ["tree"]
 
-    DatasetCatalog.register(
-        name + "_" + d,
-        lambda d=d: get_tree_dicts(test_location, class_mapping))
+    DatasetCatalog.register(name + "_" + d, lambda d=d: get_tree_dicts(test_location, class_mapping))
     MetadataCatalog.get(name + "_" + d).set(thing_classes=thing_classes)
 
 
@@ -841,8 +782,8 @@ def load_json_arr(json_path):
 
 def setup_cfg(
     base_model: str = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
-    trains=("trees_train",),
-    tests=("trees_val",),
+    trains=("trees_train", ),
+    tests=("trees_val", ),
     update_model=None,
     workers=2,
     ims_per_batch=2,
@@ -856,7 +797,7 @@ def setup_cfg(
     max_iter=1000,
     eval_period=100,
     out_dir="./train_outputs",
-    resize="fixed",    # "fixed" or "random" or "rand_fixed"
+    resize="fixed",  # "fixed" or "random" or "rand_fixed"
     imgmode="rgb",
     num_bands=3,
     class_mapping_file=None,
@@ -890,16 +831,13 @@ def setup_cfg(
     # Load the class mapping if provided
     if class_mapping_file:
         class_mapping = load_class_mapping(class_mapping_file)
-        num_classes = len(
-            class_mapping)    # Set the number of classes based on the mapping
+        num_classes = len(class_mapping)  # Set the number of classes based on the mapping
     else:
-        num_classes = 1    # Default to 1 class if no mapping is provided
+        num_classes = 1  # Default to 1 class if no mapping is provided
 
     # Validate the resize parameter
     if resize not in {"fixed", "random", "rand_fixed"}:
-        raise ValueError(
-            f"Invalid resize option '{resize}'. Must be 'fixed', 'random', or 'rand_fixed'."
-        )
+        raise ValueError(f"Invalid resize option '{resize}'. Must be 'fixed', 'random', or 'rand_fixed'.")
 
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(base_model))
@@ -928,18 +866,16 @@ def setup_cfg(
     cfg.TEST.EVAL_PERIOD = eval_period
     cfg.RESIZE = resize
     cfg.INPUT.MIN_SIZE_TRAIN = 1000
-    cfg.IMGMODE = imgmode    # "rgb" or "ms" (multispectral)
+    cfg.IMGMODE = imgmode  # "rgb" or "ms" (multispectral)
     if num_bands > 3:
         # Adjust PIXEL_MEAN and PIXEL_STD for the number of bands
         default_pixel_mean = cfg.MODEL.PIXEL_MEAN
         default_pixel_std = cfg.MODEL.PIXEL_STD
         # Extend or truncate the PIXEL_MEAN and PIXEL_STD based on num_bands
-        cfg.MODEL.PIXEL_MEAN = (
-            default_pixel_mean * (num_bands // len(default_pixel_mean)) +
-            default_pixel_mean[:num_bands % len(default_pixel_mean)])
-        cfg.MODEL.PIXEL_STD = (
-            default_pixel_std * (num_bands // len(default_pixel_std)) +
-            default_pixel_std[:num_bands % len(default_pixel_std)])
+        cfg.MODEL.PIXEL_MEAN = (default_pixel_mean * (num_bands // len(default_pixel_mean)) +
+                                default_pixel_mean[:num_bands % len(default_pixel_mean)])
+        cfg.MODEL.PIXEL_STD = (default_pixel_std * (num_bands // len(default_pixel_std)) +
+                               default_pixel_std[:num_bands % len(default_pixel_std)])
     return cfg
 
 
@@ -982,8 +918,7 @@ def predictions_on_data(
         dataset_dicts, mode = get_filenames(test_location)
 
     # Decide how many items to predict on
-    num_to_pred = len(
-        dataset_dicts) if num_predictions == 0 else num_predictions
+    num_to_pred = len(dataset_dicts) if num_predictions == 0 else num_predictions
 
     for d in random.sample(dataset_dicts, num_to_pred):
         file_name = d["file_name"]
@@ -1024,8 +959,7 @@ def predictions_on_data(
 
         if save:
             # Save predictions to JSON file
-            evaluations = instances_to_coco_json(outputs["instances"].to("cpu"),
-                                                 file_name)
+            evaluations = instances_to_coco_json(outputs["instances"].to("cpu"), file_name)
             with open(output_file, "w") as dest:
                 json.dump(evaluations, dest)
 
@@ -1049,8 +983,7 @@ def modify_conv1_weights(model, num_input_channels):
 
         # Create a new weight tensor with the desired number of input channels
         # The shape is (out_channels, in_channels, height, width)
-        new_weights = torch.zeros(
-            (old_weights.size(0), num_input_channels, *old_weights.shape[2:]))
+        new_weights = torch.zeros((old_weights.size(0), num_input_channels, *old_weights.shape[2:]))
 
         # Initialize the new weights by repeating the original weights across the new channels
         # This example repeats the first 3 channels if num_input_channels > 3
@@ -1093,8 +1026,7 @@ def get_latest_model_path(output_dir: str) -> str:
             model_files.append((f, int(match.group(1))))
 
     if not model_files:
-        raise FileNotFoundError(
-            f"No model files found in the directory {output_dir}")
+        raise FileNotFoundError(f"No model files found in the directory {output_dir}")
 
     # Sort the files by index in descending order and select the highest one
     latest_model_file = max(model_files, key=lambda x: x[1])[0]
@@ -1106,23 +1038,20 @@ def get_latest_model_path(output_dir: str) -> str:
 if __name__ == "__main__":
     # Define paths to training data and optional class mapping file
     train_location = "/path/to/your/train/location"
-    class_mapping_file = "/path/to/your/class_to_idx.json"    # Optional, can be None
+    class_mapping_file = "/path/to/your/class_to_idx.json"  # Optional, can be None
 
     # Register the training and validation datasets using the class mapping
     # If class_mapping_file is not provided, defaults to "tree"
-    register_train_data(train_location,
-                        "MyDataset",
-                        val_fold=1,
-                        class_mapping_file=class_mapping_file)
+    register_train_data(train_location, "MyDataset", val_fold=1, class_mapping_file=class_mapping_file)
 
     # Set up model configuration, using the class mapping to determine the number of classes
     cfg = setup_cfg(
         base_model="COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
-        trains=("MyDataset_train",),
-        tests=("MyDataset_val",),
+        trains=("MyDataset_train", ),
+        tests=("MyDataset_val", ),
         max_iter=3000,
         out_dir="/path/to/output",
-        class_mapping_file=class_mapping_file    # Optional
+        class_mapping_file=class_mapping_file  # Optional
     )
 
     # Train the model
