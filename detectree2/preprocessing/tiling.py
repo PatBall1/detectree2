@@ -34,6 +34,27 @@ from tqdm.auto import tqdm
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+# Getting rid of unnecessary and confusing errors and warnings
+class GDALFilter(logging.Filter):
+
+    def filter(self, record):
+        return "GDAL signalled an error: err_no=4, msg='" not in record.getMessage()
+
+
+rasterlogger = logging.getLogger("rasterio._env")
+rasterlogger.addFilter(GDALFilter())
+
+
+class PyogrioFilter(logging.Filter):
+
+    def filter(self, record):
+        return "Created " not in record.getMessage()
+
+
+pyogriologger = logging.getLogger("pyogrio._io")
+pyogriologger.addFilter(PyogrioFilter())
+
 # class img_data(DatasetReader):
 #    """
 #    Class for image data to be processed for tiling
@@ -694,7 +715,7 @@ def tile_data(
                     try:
                         future.result()
                     except Exception as exc:
-                        print(f'Tile generated an exception: {exc}')
+                        logger.exception(f'Tile generated an exception: {exc}')
                     pbar.update(1)
     else:
         for args in tqdm(tile_args):
@@ -781,7 +802,7 @@ def record_classes(crowns: gpd.GeoDataFrame, out_dir: str, column: str = 'status
     else:
         raise ValueError("Unsupported save format. Use 'json' or 'pickle'.")
 
-    print(f"Classes saved as {save_format} file: {class_to_idx}")
+    logger.info(f"Classes saved as {save_format} file: {class_to_idx}")
 
 
 def to_traintest_folders(  # noqa: C901
