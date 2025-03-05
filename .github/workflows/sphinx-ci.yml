@@ -1,4 +1,4 @@
-name: Sphinx build
+name: Sphinx Documentation
 
 on:
   push:
@@ -7,37 +7,37 @@ on:
       - chris/sphinx-fix
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
-    - name: Install dependencies
-      run: |
-        sudo apt install -y software-properties-common
-        sudo add-apt-repository -y ppa:ubuntugis/ppa 
-        sudo apt -y update
-        sudo apt install -y libgdal-dev gdal-bin python3-pip git python3-opencv 
-        export CPLUS_INCLUDE_PATH=/usr/include/gdal 
-        export C_INCLUDE_PATH=/usr/include/gdal 
-        pip3 install --upgrade requests
-        pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu \
-        opencv-python wandb numpy==1.23 sphinx
-        python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
-        pip install --upgrade Pygments
-        pip install . 
-        pip install sphinx_rtd_theme nbsphinx 
-        sphinx-apidoc -f -o ./docs/source/ detectree2/
-        sphinx-build -b html docs/source/ docs/build/html
-    # - name: Build HTML
-    #   uses: ammaraskar/sphinx-action@0.4
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: html-docs
-        path: docs/build/html/
-    - name: Deploy
-      uses: peaceiris/actions-gh-pages@v3
-      if: github.ref == 'refs/heads/master' 
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: docs/build/html
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Sphinx and extensions
+        run: |
+          pip install sphinx sphinx_rtd_theme nbsphinx Pygments
+
+      - name: Generate API documentation
+        run: |
+          sphinx-apidoc -f -o ./docs/source/ detectree2/
+
+      - name: Build HTML documentation
+        run: |
+          sphinx-build -b html docs/source/ docs/build/html
+
+      - name: Upload artifact (HTML)
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-docs
+          path: docs/build/html/
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/master'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/build/html
