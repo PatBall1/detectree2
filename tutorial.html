@@ -122,8 +122,8 @@ below for an example of the required input crowns and image.</p>
 <div class="line"><br /></div>
 </div>
 <p>If you would just like to make predictions on an orthomosaic with a pre-trained
-model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code>, skip to part 4 (Generating landscape
-predictions).</p>
+model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code>, skip to <a class="reference external" href="https://patball1.github.io/detectree2/tutorial.html#generating-landscape-predictions">part 2.8 (Generating landscape
+predictions)</a>.</p>
 <p>The data preparation and training process for both RGB and multispectral data
 is presented here. The process is similar for both data types but there are
 some key differences that are highlighted. Training a single model on both RGB
@@ -435,18 +435,19 @@ different. Data will be read from <code class="docutils literal notranslate"><sp
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The raster has </span><span class="si">{</span><span class="n">num_bands</span><span class="si">}</span><span class="s1"> bands.&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Due to the additional bands, we must modify the weights of the first convolutional layer (conv1) to accommodate a
-different number of input channels. This is done with the <code class="docutils literal notranslate"><span class="pre">modify_conv1_weights</span></code> function. The extension of the
-<code class="docutils literal notranslate"><span class="pre">cfg.MODEL.PIXEL_MEAN</span></code> and <code class="docutils literal notranslate"><span class="pre">cfg.MODEL.PIXEL_STD</span></code> lists to include the additional bands happens within the
-<code class="docutils literal notranslate"><span class="pre">setup_cfg</span></code> function when <code class="docutils literal notranslate"><span class="pre">num_bands</span></code> is set to a value greater than 3. <code class="docutils literal notranslate"><span class="pre">imgmode</span></code> should be set to <code class="docutils literal notranslate"><span class="pre">&quot;ms&quot;</span></code> to
-ensure the correct training routines are called.</p>
+<p>Due to the additional bands, the weights of the first convolutional layer (conv1) are modified to accommodate a
+variable number of input channels. This is automatically done in the case of <code class="docutils literal notranslate"><span class="pre">imgmode</span></code> being set to <code class="docutils literal notranslate"><span class="pre">&quot;ms&quot;</span></code>
+and the <code class="docutils literal notranslate"><span class="pre">update_model</span></code>’s input channels not matching the current model’s.
+The first three input weights are repeated across the new bands. The extension of the <code class="docutils literal notranslate"><span class="pre">cfg.MODEL.PIXEL_MEAN</span></code>
+and <code class="docutils literal notranslate"><span class="pre">cfg.MODEL.PIXEL_STD</span></code> lists to include the additional bands happens within the <code class="docutils literal notranslate"><span class="pre">setup_cfg</span></code> function when
+<code class="docutils literal notranslate"><span class="pre">num_bands</span></code> is set to a value greater than 3. <code class="docutils literal notranslate"><span class="pre">imgmode</span></code> should be set to <code class="docutils literal notranslate"><span class="pre">&quot;ms&quot;</span></code> to ensure the correct
+training routines are called.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.modeling</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_model</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.init</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">init</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.modeling.roi_heads.fast_rcnn</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastRCNNOutputLayers</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">modify_conv1_weights</span><span class="p">,</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
 
 <span class="c1"># Good idea to keep track of the date if producing multiple models</span>
 <span class="n">today</span> <span class="o">=</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
@@ -465,12 +466,6 @@ ensure the correct training routines are called.</p>
                <span class="n">base_lr</span> <span class="o">=</span> <span class="mf">0.0003</span><span class="p">,</span> <span class="n">backbone_freeze</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span>
                <span class="n">max_iter</span><span class="o">=</span><span class="mi">500000</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="n">out_dir</span><span class="p">,</span> <span class="n">resize</span> <span class="o">=</span> <span class="s2">&quot;rand_fixed&quot;</span><span class="p">,</span> <span class="n">imgmode</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span>
                <span class="n">num_bands</span><span class="o">=</span> <span class="n">num_bands</span><span class="p">)</span> <span class="c1"># update_model arg can be used to load in trained  model</span>
-
-<span class="c1"># Build the model</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">build_model</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
-
-<span class="c1"># Adjust input layer to accept correct number of channels</span>
-<span class="n">modify_conv1_weights</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">num_input_channels</span><span class="o">=</span><span class="n">num_bands</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>With additional bands, more data is being passed through the network per image so it may be neessary to reduce the
@@ -709,8 +704,8 @@ predictions with lower confidence).</p>
 <span class="n">clean</span> <span class="o">=</span> <span class="n">clean_crowns</span><span class="p">(</span><span class="n">crowns</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># set a confidence&gt;0 to filter out less confident crowns</span>
 </pre></div>
 </div>
-<p>By default the <code class="docutils literal notranslate"><span class="pre">clean_crowns</span></code> function will remove crowns with a condidence of less than 20%. The above ‘clean’ crowns
-includes crowns of all confidence scores (0%-100%) as <code class="docutils literal notranslate"><span class="pre">condidence=0</span></code>. It is likely that crowns with very low
+<p>By default the <code class="docutils literal notranslate"><span class="pre">clean_crowns</span></code> function will remove crowns with a confidence of less than 20%. The above ‘clean’ crowns
+includes crowns of all confidence scores (0%-100%) as <code class="docutils literal notranslate"><span class="pre">confidence=0</span></code>. It is likely that crowns with very low
 confidence will be poor quality so it is usually preferable to filter these out. A suitable threshold can be determined
 by eye in QGIS or implemented as single line in Python. <code class="docutils literal notranslate"><span class="pre">Confidence_score</span></code> is a column in the <code class="docutils literal notranslate"><span class="pre">crowns</span></code> GeoDataFrame
 and is considered a tunable parameter.</p>

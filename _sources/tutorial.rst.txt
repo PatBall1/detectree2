@@ -39,8 +39,8 @@ below for an example of the required input crowns and image.
 
 |
 If you would just like to make predictions on an orthomosaic with a pre-trained
-model from the ``model_garden``, skip to part 4 (Generating landscape
-predictions).
+model from the ``model_garden``, skip to `part 2.8 (Generating landscape
+predictions) <https://patball1.github.io/detectree2/tutorial.html#generating-landscape-predictions>`_.
 
 The data preparation and training process for both RGB and multispectral data 
 is presented here. The process is similar for both data types but there are 
@@ -399,21 +399,22 @@ The number of bands can be checked with rasterio:
    print(f'The raster has {num_bands} bands.')
 
 
-Due to the additional bands, we must modify the weights of the first convolutional layer (conv1) to accommodate a
-different number of input channels. This is done with the ``modify_conv1_weights`` function. The extension of the 
-``cfg.MODEL.PIXEL_MEAN`` and ``cfg.MODEL.PIXEL_STD`` lists to include the additional bands happens within the 
-``setup_cfg`` function when ``num_bands`` is set to a value greater than 3. ``imgmode`` should be set to ``"ms"`` to
-ensure the correct training routines are called.
+Due to the additional bands, the weights of the first convolutional layer (conv1) are modified to accommodate a
+variable number of input channels. This is automatically done in the case of ``imgmode`` being set to ``"ms"``
+and the ``update_model``'s input channels not matching the current model's.
+The first three input weights are repeated across the new bands. The extension of the ``cfg.MODEL.PIXEL_MEAN``
+and ``cfg.MODEL.PIXEL_STD`` lists to include the additional bands happens within the ``setup_cfg`` function when
+``num_bands`` is set to a value greater than 3. ``imgmode`` should be set to ``"ms"`` to ensure the correct
+training routines are called.
 
 .. code-block:: python
 
    from datetime import date
-   from detectron2.modeling import build_model
    import torch.nn as nn
    import torch.nn.init as init
    from detectron2.modeling.roi_heads.fast_rcnn import FastRCNNOutputLayers
    import numpy as np
-   from detectree2.models.train import modify_conv1_weights, MyTrainer, setup_cfg
+   from detectree2.models.train import MyTrainer, setup_cfg
 
    # Good idea to keep track of the date if producing multiple models
    today = date.today()
@@ -432,12 +433,6 @@ ensure the correct training routines are called.
                   base_lr = 0.0003, backbone_freeze=0, gamma = 0.9,
                   max_iter=500000, out_dir=out_dir, resize = "rand_fixed", imgmode="ms",
                   num_bands= num_bands) # update_model arg can be used to load in trained  model
-
-   # Build the model
-   model = build_model(cfg)
-
-   # Adjust input layer to accept correct number of channels
-   modify_conv1_weights(model, num_input_channels=num_bands)
 
 
 With additional bands, more data is being passed through the network per image so it may be neessary to reduce the 
@@ -727,8 +722,8 @@ predictions with lower confidence).
    crowns = stitch_crowns(tiles_path + "predictions_geo/", 1)
    clean = clean_crowns(crowns, 0.6, confidence=0) # set a confidence>0 to filter out less confident crowns
 
-By default the ``clean_crowns`` function will remove crowns with a condidence of less than 20%. The above 'clean' crowns
-includes crowns of all confidence scores (0%-100%) as ``condidence=0``. It is likely that crowns with very low
+By default the ``clean_crowns`` function will remove crowns with a confidence of less than 20%. The above 'clean' crowns
+includes crowns of all confidence scores (0%-100%) as ``confidence=0``. It is likely that crowns with very low
 confidence will be poor quality so it is usually preferable to filter these out. A suitable threshold can be determined
 by eye in QGIS or implemented as single line in Python. ``Confidence_score`` is a column in the ``crowns`` GeoDataFrame
 and is considered a tunable parameter.
