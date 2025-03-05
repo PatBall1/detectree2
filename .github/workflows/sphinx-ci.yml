@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - chris/sphinx-fix
 
 jobs:
   build:
