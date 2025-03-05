@@ -657,7 +657,7 @@ def site_f1_score2(
             tile_origin = get_tile_origin(file)
             epsg = get_epsg(file)
 
-            test_file = file.replace(".geojson", "_geo.geojson")
+            test_file = file #.replace(".geojson", "_geo.geojson")
             all_test_feats = initialise_feats2(tile_directory, test_file,
                                                lidar_img, area_threshold,
                                                conf_threshold, border_filter,
@@ -666,7 +666,7 @@ def site_f1_score2(
             new_heights = get_heights(all_test_feats, min_height, max_height)
             heights.extend(new_heights)
 
-            pred_file = "Prediction_" + file
+            pred_file = "Prediction_" + file.replace(".geojson", "_eval.geojson")
             all_pred_feats = initialise_feats2(pred_directory, pred_file,
                                                lidar_img, area_threshold,
                                                conf_threshold, border_filter,
