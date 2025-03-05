@@ -6,7 +6,7 @@ name: Detectree2 CI
 
 on:
   push:
-    branches: [ "master", "chris/pytest-fix" ]
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
