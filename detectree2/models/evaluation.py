@@ -11,6 +11,8 @@ import numpy as np
 import rasterio
 import rasterio.drivers
 from rasterio.mask import mask
+from shapely import make_valid
+from shapely.errors import GEOSException
 from shapely.geometry import Polygon, shape
 
 # Initialising the parent class so any attributes or functions that are common
@@ -403,16 +405,26 @@ def find_intersections(all_test_feats, all_pred_feats):
     """Finds the greatest intersection between predicted and manual crowns and then updates objects."""
 
     for pred_feat in all_pred_feats:
+        pred_geom = shape(pred_feat.geometry)
         for test_feat in all_test_feats:
-            if shape(test_feat.geometry).intersects(shape(pred_feat.geometry)):
+            test_geom = shape(test_feat.geometry)
+            if test_geom.intersects(pred_geom):
                 try:
-                    intersection = (shape(pred_feat.geometry).intersection(shape(test_feat.geometry))).area
+                    intersection = (pred_geom.intersection(test_geom)).area
                 except ValueError:
                     continue
+                except GEOSException:
+                    pred_geom_fixed = make_valid(pred_geom)
+                    try:
+                        intersection = (pred_geom_fixed.intersection(test_geom)).area
+                    except Exception as e:
+                        print(f'Skipping pair {pred_feat.number} - {test_feat.number}: {str(e)}')
+                        continue
+
 
                 # calculate the IoU
                 # union_area = pred_feat.crown_area + test_feat.crown_area - intersection
-                union_area = (shape(pred_feat.geometry).union(shape(test_feat.geometry))).area
+                union_area = (pred_geom.union(test_geom)).area
                 IoU = intersection / union_area
 
                 # update the objects so they only store greatest intersection value
