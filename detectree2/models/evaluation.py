@@ -411,20 +411,19 @@ def find_intersections(all_test_feats, all_pred_feats):
             if test_geom.intersects(pred_geom):
                 try:
                     intersection = (pred_geom.intersection(test_geom)).area
+                    union_area = (pred_geom.union(test_geom)).area
                 except ValueError:
                     continue
                 except GEOSException:
-                    pred_geom_fixed = make_valid(pred_geom)
+                    pred_geom = make_valid(pred_geom)
                     try:
-                        intersection = (pred_geom_fixed.intersection(test_geom)).area
+                        intersection = (pred_geom.intersection(test_geom)).area
+                        union_area = (pred_geom.union(test_geom)).area
                     except Exception as e:
                         print(f'Skipping pair {pred_feat.number} - {test_feat.number}: {str(e)}')
                         continue
 
-
                 # calculate the IoU
-                # union_area = pred_feat.crown_area + test_feat.crown_area - intersection
-                union_area = (pred_geom.union(test_geom)).area
                 IoU = intersection / union_area
 
                 # update the objects so they only store greatest intersection value
