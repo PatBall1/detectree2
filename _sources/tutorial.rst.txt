@@ -98,6 +98,10 @@ Set up the paths to the orthomosaic and corresponding manual crown data.
    img_path = site_path + "/rgb/2016/Paracou_RGB_2016_10cm.tif"
    crown_path = site_path + "/crowns/220619_AllSpLabelled.gpkg"
 
+   # Read in the tiff file (this is only necessary to deal with CRS conversion)
+   # You can skip loading the data if you know crown and mosaic CRS match
+   data = rasterio.open(img_path)
+
    # Read in crowns (then filter by an attribute if required)
    crowns = gpd.read_file(crown_path)
    crowns = crowns.to_crs(data.crs.data) # making sure CRS match

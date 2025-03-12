@@ -169,6 +169,10 @@ later on but is necessary to retain all the multispectral information.</p>
 <span class="n">img_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/rgb/2016/Paracou_RGB_2016_10cm.tif&quot;</span>
 <span class="n">crown_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/crowns/220619_AllSpLabelled.gpkg&quot;</span>
 
+<span class="c1"># Read in the tiff file (this is only necessary to deal with CRS conversion)</span>
+<span class="c1"># You can skip loading the data if you know crown and mosaic CRS match</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+
 <span class="c1"># Read in crowns (then filter by an attribute if required)</span>
 <span class="n">crowns</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">crown_path</span><span class="p">)</span>
 <span class="n">crowns</span> <span class="o">=</span> <span class="n">crowns</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="c1"># making sure CRS match</span>
