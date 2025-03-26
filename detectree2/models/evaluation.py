@@ -424,6 +424,8 @@ def find_intersections(all_test_feats, all_pred_feats):
                         continue
 
                 # calculate the IoU
+                if union_area == 0:
+                    continue    
                 IoU = intersection / union_area
 
                 # update the objects so they only store greatest intersection value
