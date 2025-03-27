@@ -19,8 +19,10 @@ import pycocotools.mask as mask_util
 import rasterio
 from rasterio.crs import CRS
 from shapely.affinity import scale
+from shapely.errors import GEOSException
 from shapely.geometry import Polygon, box, shape
 from shapely.ops import orient
+from tqdm import tqdm
 
 # Type aliases definitions
 Feature = Dict[str, Any]
@@ -316,10 +318,7 @@ def stitch_crowns(folder: str, shift: int = 1):
     total_files = len(files)
     crowns_list = []
 
-    for idx, file in enumerate(files, start=1):
-        if idx % 50 == 0:
-            print(f"Stitching file {idx} of {total_files}: {file}")
-
+    for file in tqdm(files, desc="Stitching Crowns", total=total_files):
         crowns_tile = gpd.read_file(file)  # This throws a huge amount of warnings fiona closed ring detected
 
         geo = box_filter(file, shift)
