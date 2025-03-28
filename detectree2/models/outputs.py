@@ -365,53 +365,40 @@ def clean_crowns(crowns: gpd.GeoDataFrame,
     Returns:
         gpd.GeoDataFrame: Cleaned crowns.
     """
-    # Filter any rows with empty or invalid geometry
-    crowns = crowns[~crowns.is_empty & crowns.is_valid]
+    # Filter rows with empty or invalid geometry and filter out polygons smaller than 1m² to eliminate artifacts
+    crowns = crowns[~crowns.is_empty & crowns.is_valid & (crowns.area > area_threshold)].reset_index(drop=True)
 
-    # Filter any rows with polgon of less than 1m2 as these are likely to be artifacts
-    crowns = crowns[crowns.area > area_threshold]
+    crowns_sindex = crowns.sindex()
+    checked_crowns = set()
+    cleaned_crowns = set()
 
-    crowns.reset_index(drop=True, inplace=True)
+    for index, row in tqdm(crowns.iterrows(), total=len(crowns), desc="Cleaning Crowns"):
+        if index in checked_crowns:
+            continue
 
-    cleaned_crowns = []
-    print(f"Cleaning {len(crowns)} crowns")
-
-    for index, row in crowns.iterrows():
-        if index % 1000 == 0:
-            print(f"{index} / {len(crowns)} crowns cleaned")
-
-        intersecting_rows = crowns[crowns.intersects(shape(row.geometry))]
+        # Find potential intersecting indices using spatial index
+        possible_matches = crowns.iloc[list(crowns_sindex.intersection(row.geometry.bounds))]
+        try:
+            intersecting_rows = possible_matches[possible_matches.intersects(shape(row.geometry))]
+        except GEOSException:
+            continue
 
         if len(intersecting_rows) > 1:
             iou_values = intersecting_rows.geometry.map(lambda x: calc_iou(row.geometry, x))
-            intersecting_rows = intersecting_rows.assign(iou=iou_values)
 
             # Filter rows with IoU over threshold and get the one with the highest confidence score
-            match = intersecting_rows[intersecting_rows["iou"] > iou_threshold].nlargest(1, field)
-
-            if match["iou"].iloc[0] < 1:
-                continue
+            overlap = intersecting_rows[iou_values > iou_threshold] 
+            match = overlap.nlargest(1, field)
+            cleaned_crowns.update(match.index)
+            checked_crowns.update(overlap.index)
 
         else:
-            match = row.to_frame().T
+            cleaned_crowns.add(index)
 
-        cleaned_crowns.append(match)
-
-    crowns_out = pd.concat(cleaned_crowns, ignore_index=True)
-
-    # Drop 'iou' column if it exists
-    if "iou" in crowns_out.columns:
-        crowns_out = crowns_out.drop("iou", axis=1)
-
-    # Ensuring crowns_out is a GeoDataFrame
-    if not isinstance(crowns_out, gpd.GeoDataFrame):
-        crowns_out = gpd.GeoDataFrame(crowns_out, crs=crowns.crs)
-    else:
-        crowns_out = crowns_out.set_crs(crowns.crs)
+    crowns_out = crowns.iloc[list(cleaned_crowns)]
 
     # Filter remaining crowns based on confidence score
-    if confidence != 0:
-        crowns_out = crowns_out[crowns_out[field] > confidence]
+    crowns_out = crowns_out[crowns_out[field] > confidence]
 
     return crowns_out.reset_index(drop=True)
 
