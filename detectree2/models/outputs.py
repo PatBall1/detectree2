@@ -411,7 +411,7 @@ def clean_crowns(crowns,
             union(i, j)
 
     # 5. Group crowns by their union-find root.
-    groups = {}
+    groups: Dict[int, List] = {}
     for i in range(n):
         root = find(i)
         groups.setdefault(root, []).append(i)
