@@ -21,6 +21,7 @@ from rasterio.crs import CRS
 from shapely.affinity import scale
 from shapely.geometry import Polygon, box, shape
 from shapely.ops import orient
+from tqdm import tqdm
 
 # Type aliases definitions
 Feature = Dict[str, Any]
@@ -343,78 +344,90 @@ def calc_iou(shape1, shape2):
     return iou
 
 
-def clean_crowns(crowns: gpd.GeoDataFrame,
-                 iou_threshold: float = 0.7,
-                 confidence: float = 0.2,
-                 area_threshold: float = 2,
-                 field: str = "Confidence_score") -> gpd.GeoDataFrame:
-    """Clean overlapping crowns.
-
-    Outputs can contain highly overlapping crowns including in the buffer region.
-    This function removes crowns with a high degree of overlap with others but a
-    lower Confidence Score.
-
+def clean_crowns(crowns,
+                iou_threshold= 0.7,
+                confidence= 0.2,
+                area_threshold = 2,
+                field= "Confidence_score") -> gpd.GeoDataFrame:
+    """
+    Clean overlapping crowns by first identifying all candidate overlapping pairs via a spatial join,
+    then clustering crowns into connected components (where an edge is added if two crowns have IoU
+    above a threshold), and finally keeping the best crown (by confidence or any given field) in each cluster.
+        
     Args:
         crowns (gpd.GeoDataFrame): Crowns to be cleaned.
         iou_threshold (float, optional): IoU threshold that determines whether crowns are overlapping.
         confidence (float, optional): Minimum confidence score for crowns to be retained. Defaults to 0.2. Note that
             this should be adjusted to fit "field".
-        area_threshold (float, optional): Minimum area of crowns to be retained. Defaults to 1m2 (assuming UTM).
+        area_threshold (float, optional): Minimum area of crowns to be retained. Defaults to 2m2 (assuming UTM).
         field (str): Field to used to prioritise selection of crowns. Defaults to "Confidence_score" but this should
             be changed to "Area" if using a model that outputs area.
 
     Returns:
         gpd.GeoDataFrame: Cleaned crowns.
     """
-    # Filter any rows with empty or invalid geometry
-    crowns = crowns[~crowns.is_empty & crowns.is_valid]
+    # 1. Filter out invalid geometries and tiny artifacts.
+    crowns = crowns[~crowns.is_empty & crowns.is_valid].copy()
+    crowns = crowns[crowns.area > area_threshold].copy()
 
-    # Filter any rows with polgon of less than 1m2 as these are likely to be artifacts
-    crowns = crowns[crowns.area > area_threshold]
+    if confidence:
+        crowns = crowns[crowns[field] > confidence]
 
     crowns.reset_index(drop=True, inplace=True)
 
-    cleaned_crowns = []
-    print(f"Cleaning {len(crowns)} crowns")
+    # 2. Use a spatial join to quickly find all candidate overlapping pairs.
+    #    The join will pair each crown with any crown whose bounding box intersects.
+    print("clearn_crowns: Performing spatial join...")
+    join = gpd.sjoin(crowns, crowns, how="inner", predicate="intersects")
+    # Remove self-joins (where a crown is paired with itself).
+    join = join[join.index != join.index_right]
 
-    for index, row in crowns.iterrows():
-        if index % 1000 == 0:
-            print(f"{index} / {len(crowns)} crowns cleaned")
+    # 3. Set up a union-find structure to cluster overlapping crowns.
+    n = len(crowns)
+    parent = list(range(n))  # Initially, each crown is its own group.
 
-        intersecting_rows = crowns[crowns.intersects(shape(row.geometry))]
+    def find(x):
+        # Path compression to flatten the tree.
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
 
-        if len(intersecting_rows) > 1:
-            iou_values = intersecting_rows.geometry.map(lambda x: calc_iou(row.geometry, x))
-            intersecting_rows = intersecting_rows.assign(iou=iou_values)
+    def union(x, y):
+        rx, ry = find(x), find(y)
+        if rx != ry:
+            parent[ry] = rx
 
-            # Filter rows with IoU over threshold and get the one with the highest confidence score
-            match = intersecting_rows[intersecting_rows["iou"] > iou_threshold].nlargest(1, field)
+    # 4. For each candidate pair, compute IoU and, if it exceeds the threshold, merge the groups.
+    for idx, row in tqdm(join.iterrows(), total=len(join), desc="clean_crowns: Processing candidate pairs", smoothing=0):
+        i = row.name           # index from left table (crowns)
+        j = row["index_right"] # index from right table (crowns)
+        # To avoid duplicate work, skip if i and j are already in the same group.
+        if find(i) == find(j):
+            continue
+        # Compute the IoU for the pair.
+        iou_val = calc_iou(crowns.at[i, "geometry"], crowns.at[j, "geometry"])
+        if iou_val > iou_threshold:
+            union(i, j)
 
-            if match["iou"].iloc[0] < 1:
-                continue
+    # 5. Group crowns by their union-find root.
+    groups = {}
+    for i in range(n):
+        root = find(i)
+        groups.setdefault(root, []).append(i)
 
-        else:
-            match = row.to_frame().T
+    # 6. In each group, select the crown with the highest "confidence" (or the value in `field`).
+    selected_indices = []
+    for comp in groups.values():
+        group_df = crowns.loc[comp]
+        best_idx = group_df[field].idxmax()
+        selected_indices.append(best_idx)
 
-        cleaned_crowns.append(match)
+    # 7. Assemble the cleaned crowns.
+    cleaned_crowns = crowns.loc[selected_indices].copy()
 
-    crowns_out = pd.concat(cleaned_crowns, ignore_index=True)
 
-    # Drop 'iou' column if it exists
-    if "iou" in crowns_out.columns:
-        crowns_out = crowns_out.drop("iou", axis=1)
-
-    # Ensuring crowns_out is a GeoDataFrame
-    if not isinstance(crowns_out, gpd.GeoDataFrame):
-        crowns_out = gpd.GeoDataFrame(crowns_out, crs=crowns.crs)
-    else:
-        crowns_out = crowns_out.set_crs(crowns.crs)
-
-    # Filter remaining crowns based on confidence score
-    if confidence != 0:
-        crowns_out = crowns_out[crowns_out[field] > confidence]
-
-    return crowns_out.reset_index(drop=True)
+    return gpd.GeoDataFrame(cleaned_crowns, crs=crowns.crs).reset_index(drop=True)
 
 
 def post_clean(unclean_df: gpd.GeoDataFrame,
