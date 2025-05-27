@@ -348,7 +348,8 @@ def clean_crowns(crowns,
                 iou_threshold= 0.7,
                 confidence= 0.2,
                 area_threshold = 2,
-                field= "Confidence_score") -> gpd.GeoDataFrame:
+                field= "Confidence_score",
+                verbose= True) -> gpd.GeoDataFrame:
     """
     Clean overlapping crowns by first identifying all candidate overlapping pairs via a spatial join,
     then clustering crowns into connected components (where an edge is added if two crowns have IoU
@@ -399,7 +400,7 @@ def clean_crowns(crowns,
             parent[ry] = rx
 
     # 4. For each candidate pair, compute IoU and, if it exceeds the threshold, merge the groups.
-    for idx, row in tqdm(join.iterrows(), total=len(join), desc="clean_crowns: Processing candidate pairs", smoothing=0):
+    for idx, row in tqdm(join.iterrows(), total=len(join), desc="clean_crowns: Processing candidate pairs", smoothing=0, disable=not verbose):
         i = row.name           # index from left table (crowns)
         j = row["index_right"] # index from right table (crowns)
         # To avoid duplicate work, skip if i and j are already in the same group.
