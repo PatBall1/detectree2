@@ -26,7 +26,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -yqq libgdal-dev gdal-bin python3-opencv
 
-    - name: Install Python dependencies
+    - name: Install all dependencies and project
       run: |
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
         export C_INCLUDE_PATH=/usr/include/gdal
@@ -36,25 +36,15 @@ jobs:
         pip install wheel cython
         
         pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu
-        
         pip install 'git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI'
         pip install fvcore iopath
         pip install --no-build-isolation 'git+https://github.com/facebookresearch/detectron2.git'
-
         pip install opencv-python wandb numpy==1.23.1
         pip install python-dotenv "google-auth-oauthlib" "google-api-python-client" "google-auth-httplib2"
-        
         pip install sphinx sphinx_rtd_theme nbsphinx Pygments
-        
         pip install pytest
-
-    - name: Install project
-      run: |
-        export CPLUS_INCLUDE_PATH=/usr/include/gdal
-        export C_INCLUDE_PATH=/usr/include/gdal
-        
         pip install GDAL==3.6.4
-        
+
         pip install .
 
     - name: Build Sphinx documentation
