@@ -481,6 +481,7 @@ If the input data is RGB, additional augmentations will be applied to adjust the
 lighting of the images. These augmentations are only available for RGB images and will not be applied to multispectral.
 
 .. code-block:: python
+
    # Additional augmentations for RGB images
    if cfg.IMGMODE == "rgb":
       augmentations.extend([

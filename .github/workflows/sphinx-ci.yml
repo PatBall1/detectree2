@@ -7,7 +7,7 @@ on:
       - chris/sphinx-workflow-fix
 
 jobs:
-  build:
+  build-docs:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout repository
@@ -26,7 +26,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -yqq libgdal-dev gdal-bin python3-opencv
 
-    - name: Install Python dependencies for Detectron2 and Sphinx
+    - name: Install Python dependencies
       run: |
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
         export C_INCLUDE_PATH=/usr/include/gdal
@@ -41,14 +41,14 @@ jobs:
         pip install fvcore iopath
         pip install --no-build-isolation 'git+https://github.com/facebookresearch/detectron2.git'
 
-        pip install opencv-python wandb numpy==1.23
+        pip install opencv-python wandb numpy==1.23.1
         pip install python-dotenv "google-auth-oauthlib" "google-api-python-client" "google-auth-httplib2"
         
         pip install sphinx sphinx_rtd_theme nbsphinx Pygments
         
         pip install pytest
 
-    - name: Install the project and its final dependencies (like rasterio)
+    - name: Install project
       run: |
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
         export C_INCLUDE_PATH=/usr/include/gdal
@@ -62,13 +62,13 @@ jobs:
         sphinx-apidoc -f -o ./docs/source/ detectree2/
         sphinx-build -b html docs/source/ docs/build/html
 
-    - name: Upload artifacts
+    - name: Upload documentation artifact
       uses: actions/upload-artifact@v4
       with:
         name: html-docs
         path: docs/build/html/
         
-    - name: Deploy
+    - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       if: github.ref == 'refs/heads/master' 
       with:

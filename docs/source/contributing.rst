@@ -79,7 +79,7 @@ TIP: The process of rebasing on ``master`` may need to be done multiple times du
 
 ..  Once master is updated one can either ``merge`` master or ``rebase`` on master. This can be done using the command line during a PR or at the end using the github UI. 
  
-At the end of the PR we can use GitHub's UI to commit. The available options are explained here: `Pull request merges <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges>`_.
+At the end of the PR we can use GitHub's UI to commit. The available options are explained in GitHub's documentation on `pull request merges <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges>`_.
 
 Using GitHub's UI to commit PR
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -317,7 +317,7 @@ The idea of Continuous integration (CI) is to frequently commit code to a shared
 
 Building and testing code requires a server. CI using GitHub actions offers workflows that can build the repository code and run tests. We can run on GitHub's own virtual machines (using GitHub-hosted runners), or on machines that we host ourselves (or on compute clusters). The latter is desirable as GitHub does not currently support access to GPU resources.
 
-Currently there are three files that steer workflows. The schedule is set at the top of the file. The workflows are found `here <https://github.com/PatBall1/detectree2/tree/master/.github/workflows>`_
+Currently there are three files that steer workflows. The schedule is set at the top of the file. The `workflows are found in the .github/workflows directory <https://github.com/PatBall1/detectree2/tree/master/.github/workflows>`_
 
 - ``python-app.yml``: All style CI - builds the code on Ubuntu-20.04
 - ``dockertest.yml``: All style CI - uses docker image for dependencies and installs detectree2 using pip.

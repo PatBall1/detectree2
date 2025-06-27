@@ -43,7 +43,8 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ['detectree2.data_loading.gdrive.rst',    # Ignore the gdrive module
+                    'detectree2.data_loading.gee_download.rst'] # Ignore the gee_download module]
 
 # -- Options for HTML output -------------------------------------------------
 
