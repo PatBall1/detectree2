@@ -24,40 +24,42 @@ jobs:
         sudo apt-get install -y software-properties-common
         sudo add-apt-repository -y ppa:ubuntugis/ppa 
         sudo apt-get update
-        sudo apt-get install -y libgdal-dev gdal-bin python3-opencv
+        sudo apt-get install -yqq libgdal-dev gdal-bin python3-opencv
 
-    - name: Install Python dependencies
+    - name: Install Python dependencies for Detectron2 and Sphinx
       run: |
+        export CPLUS_INCLUDE_PATH=/usr/include/gdal
+        export C_INCLUDE_PATH=/usr/include/gdal
+        
         python -m pip install --upgrade pip
         
-        # Install build tools first
-        pip install wheel
+        pip install wheel cython
         
-        # Install project dependencies
-        pip install --upgrade requests
         pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu
-        pip install opencv-python wandb numpy==1.23 # Pinning numpy here
-        pip install GDAL==$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
-        pip install python-dotenv "google-auth-oauthlib" "google-api-python-client" "google-auth-httplib2"
-        pip install pytest
-        pip install sphinx sphinx_rtd_theme nbsphinx Pygments
+        
+        pip install 'git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI'
         pip install fvcore iopath
-        python -m pip install --no-build-isolation 'git+https://github.com/facebookresearch/detectron2.git'
+        pip install --no-build-isolation 'git+https://github.com/facebookresearch/detectron2.git'
 
-        # Force reinstall rasterio from source to ensure it builds against the
-        # currently installed numpy and gdal.
-        pip install --force-reinstall --no-binary rasterio rasterio
+        pip install opencv-python wandb numpy==1.23
+        pip install python-dotenv "google-auth-oauthlib" "google-api-python-client" "google-auth-httplib2"
+        
+        pip install sphinx sphinx_rtd_theme nbsphinx Pygments
+        
+        pip install pytest
 
-    - name: Install the project itself
+    - name: Install the project and its final dependencies (like rasterio)
       run: |
-        export CPLUS_INCLUDE_PATH=/usr/include/gdal 
-        export C_INCLUDE_PATH=/usr/include/gdal 
+        export CPLUS_INCLUDE_PATH=/usr/include/gdal
+        export C_INCLUDE_PATH=/usr/include/gdal
+        
+        pip install GDAL==3.6.4
+        
         pip install .
 
     - name: Build Sphinx documentation
       run: |
         sphinx-apidoc -f -o ./docs/source/ detectree2/
-        # Temporarily remove -W and -n to allow the build to pass and show all warnings
         sphinx-build -b html docs/source/ docs/build/html
 
     - name: Upload artifacts
