@@ -31,14 +31,22 @@ jobs:
         python -m pip install --upgrade pip
         
         pip install --upgrade requests
+        
+        # Install PyTorch FIRST, as it's a hard dependency for detectron2's build
         pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu
+        
+        # Install other project dependencies that are NOT detectron2
         pip install opencv-python wandb numpy==1.23
         pip install GDAL==$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
         pip install rasterio
         pip install python-dotenv "google-auth-oauthlib" "google-api-python-client" "google-auth-httplib2"
         pip install pytest
         pip install sphinx sphinx_rtd_theme nbsphinx Pygments
-        python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
+        
+        # Install Detectron2 using --no-build-isolation
+        # It's also good practice to install its dependencies fvcore and iopath first
+        pip install fvcore iopath
+        python -m pip install --no-build-isolation 'git+https://github.com/facebookresearch/detectron2.git'
 
     - name: Install the project itself
       run: |
