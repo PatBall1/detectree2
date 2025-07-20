@@ -725,7 +725,10 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
         # Make sure we have the correct height and width
         # If image path ends in .png use cv2 to get height and width else if image path ends in .tif use rasterio
         if filename.endswith(".png"):
-            height, width = cv2.imread(filename).shape[:2]
+            img = cv2.imread(filename)
+            if img is None:
+                continue
+            height, width = img.shape[:2]
         elif filename.endswith(".tif"):
             with rasterio.open(filename) as src:
                 height, width = src.shape
@@ -744,7 +747,7 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
                 print("Skipping annotation of type", anno["type"], "in file", filename)
                 continue
             px = [a[0] for a in anno["coordinates"][0]]
-            py = [np.array(height) - a[1] for a in anno["coordinates"][0]]
+            py = [height - a[1] for a in anno["coordinates"][0]]
             poly = [(x, y) for x, y in zip(px, py)]
             poly = [p for x in poly for p in x]
 
@@ -755,7 +758,12 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
                 category_id = 0  # Default to "tree" if no class mapping is provided
 
             obj = {
-                "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
+                "bbox": [
+                    np.min(np.array(px)),
+                    np.min(np.array(py)),
+                    np.max(np.array(px)),
+                    np.max(np.array(py)),
+                ],
                 "bbox_mode": BoxMode.XYXY_ABS,
                 "segmentation": [poly],
                 "category_id": category_id,

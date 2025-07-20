@@ -66,16 +66,17 @@ def predict_on_data(
         file_ext = os.path.splitext(file_name)[1].lower()
         if file_ext == ".png":
             # RGB image, read with cv2
-            img = cv2.imread(file_name)
-            if img is None:
+            cv_img = cv2.imread(file_name)
+            if cv_img is None:
                 print(f"Failed to read image {file_name} with cv2.")
                 continue
+            img = np.array(cv_img)  # Explicitly convert to numpy array
         elif file_ext == ".tif":
             # Multispectral image, read with rasterio
             with rasterio.open(file_name) as src:
                 img = src.read()
                 # Transpose to match expected format (H, W, C)
-                img = np.transpose(img, (1, 2, 0))
+                img = img.transpose(1, 2, 0)
         else:
             print(f"Unsupported file extension {file_ext} for file {file_name}")
             continue
