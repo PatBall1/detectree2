@@ -488,7 +488,7 @@ def process_tile_train(
         nan_threshold: Max proportion of tile covered by NaNs.
         mode: Type of the raster data ("rgb" or "ms").
         class_column: Name of the column in `crowns` DataFrame for class-based tiling.
-        mask_gdf: A GeoDataFrame containing polygons tile act as masks for the tile. Only the interior is kept, the rest of the image will become nodata.
+        mask_gdf: A GeoDataFrame containing polygons that act as masks for the tile. Only the interior is kept, the rest of the image will become nodata.
         additional_nodata: List of additional pixel values to treat as nodata.
         image_statistics: A list of dictionaries where each dictionary contains information about the pixel distribution of that band. One list element per band.
         ignore_bands_indices: List of integer indices of bands to ignore during processing.
