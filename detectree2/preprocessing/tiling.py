@@ -154,9 +154,11 @@ def process_tile(img_path: str,
         mask_gdf: A GeoDataFrame containing polygons tile act as masks for the tile. Only the interior is kept, the rest of the image will become nodata.
         additional_nodata: List of additional pixel values to treat as nodata.
         image_statistics: A list of dictionaries where each dictionary contains information about the pixel distribution of that band. One list element per band.
+        ignore_bands_indices: List of integer indices of bands to ignore during processing.
+        use_convex_mask: If True, creates a convex mask around crown polygons to exclude areas outside of annotated training crowns.
 
     Returns:
-        None
+        A tuple containing the rasterio dataset, output path root, overlapping crowns, and tile parameters (minx, miny, buffer), or None if the tile is skipped.
     """
     try:
         with rasterio.open(img_path) as data:
@@ -296,7 +298,7 @@ def process_tile_ms(img_path: str,
                     image_statistics: List[Dict[str, float]] = None,
                     ignore_bands_indices: List[int] = [],
                     use_convex_mask: bool = True):
-    """Process a single tile for making predictions.
+    """Process a single multispectral tile for making predictions.
 
     Args:
         img_path: Path to the orthomosaic.
@@ -315,9 +317,11 @@ def process_tile_ms(img_path: str,
         mask_gdf: A GeoDataFrame containing polygons tile act as masks for the tile. Only the interior is kept, the rest of the image will become nodata.
         additional_nodata: List of additional pixel values to treat as nodata.
         image_statistics: A list of dictionaries where each dictionary contains information about the pixel distribution of that band. One list element per band.
+        ignore_bands_indices: List of integer indices of bands to ignore during processing.
+        use_convex_mask: If True, creates a convex mask around crown polygons to exclude areas outside of annotated crowns.
 
     Returns:
-        None
+        A tuple containing the rasterio dataset, output path root, overlapping crowns, and tile parameters (minx, miny, buffer), or None if the tile is skipped.
     """
     try:
         with rasterio.open(img_path) as data:
@@ -487,6 +491,8 @@ def process_tile_train(
         mask_gdf: A GeoDataFrame containing polygons tile act as masks for the tile. Only the interior is kept, the rest of the image will become nodata.
         additional_nodata: List of additional pixel values to treat as nodata.
         image_statistics: A list of dictionaries where each dictionary contains information about the pixel distribution of that band. One list element per band.
+        ignore_bands_indices: List of integer indices of bands to ignore during processing.
+        use_convex_mask: If True, creates a convex mask around crown polygons to exclude areas outside of annotated crowns.
 
     Returns:
         None
@@ -561,7 +567,20 @@ def _calculate_tile_placements(
     tile_placement: str = "grid",
     overlapping_tiles: bool = False,
 ) -> List[Tuple[int, int]]:
-    """Internal method for calculating the placement of tiles"""
+    """Internal method for calculating the placement of tiles.
+
+    Args:
+        img_path: Path to the orthomosaic.
+        buffer: Overlapping buffer of tiles in meters (UTM).
+        tile_width: Tile width in meters.
+        tile_height: Tile height in meters.
+        crowns: Crown polygons as a GeoDataFrame. Required for 'adaptive' placement.
+        tile_placement: Strategy for placing tiles ('grid' or 'adaptive').
+        overlapping_tiles: If True, generates additional tiles offset by half a tile size.
+
+    Returns:
+        A list of (minx, miny) coordinates for the lower-coordinates corner of each tile.
+    """
 
     if tile_placement == "grid":
         with rasterio.open(img_path) as data:
@@ -639,15 +658,15 @@ def calculate_image_statistics(file_path,
                                min_windows=100,
                                mode="rgb",
                                ignore_bands_indices: List[int] = []):
-    """
-    Calculate statistics for a raster using either whole image or sampled windows.
+    """Calculate statistics for a raster using either whole image or sampled windows.
 
     Args:
-        file_path: str, path to the raster file.
-        values_to_ignore: list, values to ignore in statistics (e.g., NaN, custom values).
-        window_size: int, size of square window for sampling.
-        min_windows: int, minimum number of valid windows to include in statistics.
-        mode: str, type of the raster data ("rgb" or "ms").
+        file_path: Path to the raster file.
+        values_to_ignore: Values to ignore in statistics (e.g., NaN, custom values).
+        window_size: Size of square window for sampling.
+        min_windows: Minimum number of valid windows to include in statistics.
+        mode: Type of the raster data ("rgb" or "ms").
+        ignore_bands_indices: List of integer indices of bands to ignore during statistics calculation.
 
     Returns:
         List of dictionaries containing statistics for each band.
@@ -813,6 +832,8 @@ def tile_data(
         random_subset: Number of random tiles it will try to process per image. If -1, all tiles are processed.
         additional_nodata: List of additional pixel values to treat as nodata.
         overlapping_tiles: Flag to enable overlapping tiles for more training data generation. More useful for training the detection part of the Mask R-CNN model.
+        ignore_bands_indices: List of integer indices of bands to ignore during processing.
+        use_convex_mask: If True, creates a convex mask around crown polygons to exclude areas outside of the crowns.
 
     Returns:
         None
@@ -1178,7 +1199,7 @@ def image_details(fileroot):
         fileroot: image filename without file extension
 
     Returns:
-        Box structure
+        A list of two tuples representing the bounding box with buffer: [(xmin, xmax), (ymin, ymax)].
     """
     image_info = fileroot.split("_")
     minx = int(image_info[-5])
@@ -1195,11 +1216,11 @@ def is_overlapping_box(test_boxes_array, train_box):
     """Check if the train box overlaps with any of the test boxes.
 
     Args:
-        test_boxes_array:
-        train_box:
+        test_boxes_array: A list of bounding boxes to check against.
+        train_box: The bounding box to test for overlap.
 
     Returns:
-        Boolean
+        True if `train_box` overlaps with any box in `test_boxes_array`, False otherwise.
     """
     for test_box in test_boxes_array:
         test_box_x = test_box[0]
@@ -1269,6 +1290,7 @@ def to_traintest_folders(  # noqa: C901
         test_frac: fraction of tiles to be used for testing
         folds: number of folds to split the data into
         strict: if True, training/validation files will be removed if there is any overlap with test files (inc buffer)
+        seed: Random seed for shuffling to ensure reproducibility.
 
     Returns:
         None
