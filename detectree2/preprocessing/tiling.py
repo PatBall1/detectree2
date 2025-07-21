@@ -314,7 +314,7 @@ def process_tile_ms(img_path: str,
         crowns: Crown polygons as a GeoDataFrame used to skip tiles if coverage is below `threshold`.
         threshold: Minimum fraction [0,1] of tile coverage by `crowns` required to avoid skipping the tile.
         nan_threshold: Maximum proportion [0,1] of the tile that can be nodata or NaN values before skipping.
-        mask_gdf: A GeoDataFrame containing polygons tile act as masks for the tile. Only the interior is kept, the rest of the image will become nodata.
+        mask_gdf: A GeoDataFrame containing polygons that act as masks for the tile. Only the interior is kept, the rest of the image will become nodata.
         additional_nodata: List of additional pixel values to treat as nodata.
         image_statistics: A list of dictionaries where each dictionary contains information about the pixel distribution of that band. One list element per band.
         ignore_bands_indices: List of integer indices of bands to ignore during processing.
