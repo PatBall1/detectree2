@@ -17,9 +17,9 @@ setup(
         "pandas>=1.3",
         "tqdm>=4.60",
         "opencv-python>=4.5",
-        # Geospatial — prefer conda for GDAL stack; avoid alpha pins
-        "shapely>=1.8,<2.0",
-        "geopandas>=0.12",
+        # Geospatial — shapely 2.x required by evaluation module (make_valid)
+        "shapely>=2.0",
+        "geopandas>=0.13",
         "rasterio>=1.2,<1.4",
         "fiona>=1.8,<1.10",
         "rtree>=0.9",
