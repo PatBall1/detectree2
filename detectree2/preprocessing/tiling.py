@@ -257,7 +257,9 @@ def process_tile(img_path: str,
             else:
                 rgb_rescaled = rgb
 
-            rgb_rescaled = np.clip(rgb_rescaled.astype(np.float32), 0.0, 255.0)
+            rgb_rescaled = np.clip(
+                rgb_rescaled.astype(np.float32), np.float32(0.0), np.float32(255.0)
+            )
 
             cv2.imwrite(str(out_path_root.with_suffix(".png").resolve()), rgb_rescaled.astype(np.uint8))
 
