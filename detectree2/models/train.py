@@ -120,6 +120,14 @@ class FlexibleDatasetMapper(DatasetMapper):
                 # Transpose image dimensions to match expected format (H, W, C)
                 img = np.transpose(img, (1, 2, 0)).astype("float32")
 
+            # Basic band-count guard for multispectral inputs
+            expected_bands = int(getattr(self.cfg.INPUT, "NUM_IN_CHANNELS", img.shape[2]))
+            if img.shape[2] != expected_bands:
+                self.logger.warning(
+                    f"Loaded image has {img.shape[2]} bands but cfg expects {expected_bands}. "
+                    "This may cause a model input mismatch."
+                )
+
             # Size check similar to utils.check_image_size
             if img.shape[:2] != (dataset_dict.get("height"), dataset_dict.get("width")):
                 self.logger.warning(
@@ -492,6 +500,21 @@ class MyTrainer(DefaultTrainer):
             # at the next iteration
             self.start_iter = self.iter + 1
 
+        # Early guard for MS: expected channels vs model conv1
+        try:
+            desired_channels = int(getattr(self.cfg.INPUT, "NUM_IN_CHANNELS", 3))
+            model_in_channels = int(self.model.backbone.bottom_up.stem.conv1.weight.shape[1])
+        except Exception:
+            desired_channels = 3
+            model_in_channels = 3
+
+        if self.cfg.IMGMODE == "ms" and desired_channels != model_in_channels:
+            raise RuntimeError(
+                f"Input channel mismatch: cfg expects {desired_channels} bands for multispectral input, "
+                f"but model conv1 expects {model_in_channels}. Please adapt the backbone's first conv to "
+                f"{desired_channels} channels or use 3-band inputs."
+            )
+
         if self.cfg.MODEL.WEIGHTS:
             device = self.model.backbone.bottom_up.stem.conv1.weight.device
             req_grad = self.model.backbone.bottom_up.stem.conv1.weight.requires_grad
@@ -528,7 +551,7 @@ class MyTrainer(DefaultTrainer):
                 )
                 with torch.no_grad():
                     self.model.backbone.bottom_up.stem.conv1.weight[:, :3] = checkpoint[:, :3]
-                multiply_conv1_weights(self.model)
+                # Do not silently expand conv1 here; rely on explicit model adaptation for MS
                 self.model.backbone.bottom_up.stem.conv1.weight.to(device)
                 self.model.backbone.bottom_up.stem.conv1.weight.requires_grad = req_grad
 
@@ -1042,13 +1065,15 @@ def setup_cfg(
     cfg.RESIZE = resize
     cfg.INPUT.MIN_SIZE_TRAIN = 1000
     cfg.IMGMODE = imgmode  # "rgb" or "ms" (multispectral)
+    # Track intended input channels for early validation
+    cfg.INPUT.NUM_IN_CHANNELS = num_bands
     if num_bands > 3:
         # Adjust PIXEL_MEAN and PIXEL_STD for the number of bands
         default_pixel_mean = cfg.MODEL.PIXEL_MEAN
         default_pixel_std = cfg.MODEL.PIXEL_STD
         # Extend or truncate the PIXEL_MEAN and PIXEL_STD based on num_bands
         cfg.MODEL.PIXEL_MEAN = (default_pixel_mean * (num_bands // len(default_pixel_mean)) +
-                                default_pixel_mean[:num_bands % len(default_pixel_mean)])
+                               default_pixel_mean[:num_bands % len(default_pixel_mean)])
         cfg.MODEL.PIXEL_STD = (default_pixel_std * (num_bands // len(default_pixel_std)) +
                                default_pixel_std[:num_bands % len(default_pixel_std)])
     if visualize_training:
