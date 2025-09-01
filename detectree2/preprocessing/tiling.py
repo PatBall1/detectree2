@@ -248,8 +248,8 @@ def process_tile(img_path: str,
                 dest.write(out_img)
 
             r, g, b = out_img[0], out_img[1], out_img[2]
-            # Reorder channels to B, G, R for OpenCV
-            rgb = np.stack((b, g, r), axis=2)
+            # Reorder channels to B, G, R for OpenCV (use list for mypy-friendly typing)
+            rgb = np.stack([b, g, r], axis=2)
 
             # Rescale to 0-255 if necessary
             if np.nanmax(g) > 255:
@@ -257,7 +257,7 @@ def process_tile(img_path: str,
             else:
                 rgb_rescaled = rgb
 
-            rgb_rescaled = np.clip(rgb_rescaled, 0, 255)
+            rgb_rescaled = np.clip(rgb_rescaled.astype(np.float32), 0.0, 255.0)
 
             cv2.imwrite(str(out_path_root.with_suffix(".png").resolve()), rgb_rescaled.astype(np.uint8))
 
@@ -551,18 +551,25 @@ def _calculate_tile_placements(
 
     if tile_placement == "grid":
         with rasterio.open(img_path) as data:
+            start_x = int(math.ceil(data.bounds[0]) + buffer)
+            stop_x = int(data.bounds[2] - tile_width - buffer)
+            start_y = int(math.ceil(data.bounds[1]) + buffer)
+            stop_y = int(data.bounds[3] - tile_height - buffer)
             coordinates = [
-                (minx, miny) for minx in np.arange(
-                    math.ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, dtype=int)
-                for miny in np.arange(
-                    math.ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, dtype=int)
+                (minx, miny)
+                for minx in range(start_x, stop_x, tile_width)
+                for miny in range(start_y, stop_y, tile_height)
             ]
             if overlapping_tiles:
-                coordinates.extend([(minx, miny) for minx in np.arange(
-                    math.ceil(data.bounds[0]) + buffer + tile_width // 2, data.bounds[2] - tile_width - buffer -
-                    tile_width // 2, tile_width, dtype=int) for miny in np.arange(
-                        math.ceil(data.bounds[1]) + buffer + tile_height // 2, data.bounds[3] - tile_height - buffer -
-                        tile_height // 2, tile_height, dtype=int)])
+                start_x2 = int(math.ceil(data.bounds[0]) + buffer + tile_width // 2)
+                stop_x2 = int(data.bounds[2] - tile_width - buffer - tile_width // 2)
+                start_y2 = int(math.ceil(data.bounds[1]) + buffer + tile_height // 2)
+                stop_y2 = int(data.bounds[3] - tile_height - buffer - tile_height // 2)
+                coordinates.extend([
+                    (minx, miny)
+                    for minx in range(start_x2, stop_x2, tile_width)
+                    for miny in range(start_y2, stop_y2, tile_height)
+                ])
     elif tile_placement == "adaptive":
 
         if crowns is None:
@@ -733,10 +740,10 @@ def calculate_image_statistics(file_path,
             if valid_data.size > 0:
                 min_val, max_val = np.percentile(valid_data, [1, 99])
                 stats = {
-                    "mean": np.mean(valid_data),
-                    "min": min_val,
-                    "max": max_val,
-                    "std_dev": np.std(valid_data),
+                    "mean": float(np.mean(valid_data)),
+                    "min": float(min_val),
+                    "max": float(max_val),
+                    "std_dev": float(np.std(valid_data)),
                 }
             else:
                 stats = {
