@@ -184,8 +184,8 @@ def process_tile(img_path: str,
 
             mask_tif = None
             if mask_gdf is not None:
-                #if mask_gdf.crs != data.crs:
-                #    mask_gdf = mask_gdf.to_crs(data.crs) #TODO is this necessary?
+                # if mask_gdf.crs != data.crs:
+                #     mask_gdf = mask_gdf.to_crs(data.crs) # TODO is this necessary?
 
                 mask_tif = rasterio.features.geometry_mask([geom for geom in mask_gdf.geometry],
                                                            transform=out_transform,
@@ -220,7 +220,14 @@ def process_tile(img_path: str,
             invalid = (zero_mask | nan_mask).sum()
             if invalid > nan_threshold * totalpix:
                 logger.warning(
-                    f"Skipping tile at ({minx}, {miny}) due to being over nodata threshold. Threshold: {nan_threshold}, nodata ration: {invalid / totalpix}"
+                    "Skipping tile at (%s, %s) due to being over nodata threshold.",
+                    minx,
+                    miny,
+                )
+                logger.warning(
+                    "Threshold: %s, nodata ratio: %s",
+                    nan_threshold,
+                    invalid / totalpix,
                 )
                 return None
 
@@ -344,8 +351,8 @@ def process_tile_ms(img_path: str,
 
             mask_tif = None
             if mask_gdf is not None:
-                #if mask_gdf.crs != data.crs:
-                #    mask_gdf = mask_gdf.to_crs(data.crs) #TODO is this necessary?
+                # if mask_gdf.crs != data.crs:
+                #     mask_gdf = mask_gdf.to_crs(data.crs) # TODO is this necessary?
 
                 mask_tif = rasterio.features.geometry_mask([geom for geom in mask_gdf.geometry],
                                                            transform=out_transform,
@@ -379,7 +386,14 @@ def process_tile_ms(img_path: str,
             invalid = (zero_mask | nan_mask).sum()
             if invalid > nan_threshold * totalpix:
                 logger.warning(
-                    f"Skipping tile at ({minx}, {miny}) due to being over nodata threshold. Threshold: {nan_threshold}, nodata ration: {invalid / totalpix}"
+                    "Skipping tile at (%s, %s) due to being over nodata threshold.",
+                    minx,
+                    miny,
+                )
+                logger.warning(
+                    "Threshold: %s, nodata ratio: %s",
+                    nan_threshold,
+                    invalid / totalpix,
                 )
                 return None
 
@@ -394,12 +408,14 @@ def process_tile_ms(img_path: str,
             else:
                 out_img = (out_img - min_vals) * 254 / (max_vals - min_vals) + 1
 
-            # additional clip to make sure
-            out_img = np.clip(out_img.astype(np.float32), 1.0, 255.0)
+            # additional clip to make sure (use float32 bounds for mypy compatibility)
+            out_img = np.clip(
+                out_img.astype(np.float32), np.float32(1.0), np.float32(255.0)
+            )
 
             # Apply nan mask across all bands (3D mask) without using np.broadcast_to
             band_mask = np.stack([nan_mask == 1] * out_img.shape[0], axis=0)
-            out_img[band_mask] = 0.0
+            out_img[band_mask] = np.float32(0.0)
 
             dtype, nodata = dtype_map.get(out_img.dtype, (None, None))
             if dtype is None:
@@ -585,7 +601,7 @@ def _calculate_tile_placements(
             unioned_crowns = crowns.union_all()
         else:
             unioned_crowns = crowns.unary_union
-        logger.info(f"Finished Union of Crowns")
+        logger.info("Finished Union of Crowns")
 
         area_width = crowns.total_bounds[2] - crowns.total_bounds[0]
         area_height = crowns.total_bounds[3] - crowns.total_bounds[1]
@@ -621,7 +637,7 @@ def _calculate_tile_placements(
                     coordinates.append(
                         (int(intersection.total_bounds[0] - x_intersection_offset) + col * tile_width + tile_width // 2,
                          int(crowns.total_bounds[1] - y_offset) + row * tile_height + tile_height // 2))
-        logger.info(f"Finished Tile Placement Generation")
+        logger.info("Finished Tile Placement Generation")
     else:
         raise ValueError('Unsupported tile_placement method. Must be "grid" or "adaptive"')
 
