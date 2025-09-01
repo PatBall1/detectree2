@@ -224,8 +224,9 @@ def process_tile(img_path: str,
                 )
                 return None
 
-            # Apply nan mask
-            out_img[np.broadcast_to((nan_mask == 1)[None, :, :], out_img.shape)] = 0
+            # Apply nan mask across all bands (3D mask) without using np.broadcast_to (typing-friendly)
+            band_mask = np.stack([nan_mask == 1] * out_img.shape[0], axis=0)
+            out_img[band_mask] = 0
 
             dtype, nodata = dtype_map.get(out_img.dtype, (None, None))
             if dtype is None:
@@ -247,7 +248,8 @@ def process_tile(img_path: str,
                 dest.write(out_img)
 
             r, g, b = out_img[0], out_img[1], out_img[2]
-            rgb = np.dstack((b, g, r))  # Reorder for cv2 (BGRA)
+            # Reorder channels to B, G, R for OpenCV
+            rgb = np.stack((b, g, r), axis=2)
 
             # Rescale to 0-255 if necessary
             if np.nanmax(g) > 255:
@@ -255,7 +257,7 @@ def process_tile(img_path: str,
             else:
                 rgb_rescaled = rgb
 
-            np.clip(rgb_rescaled, 0, 255, out=rgb_rescaled)
+            rgb_rescaled = np.clip(rgb_rescaled, 0, 255)
 
             cv2.imwrite(str(out_path_root.with_suffix(".png").resolve()), rgb_rescaled.astype(np.uint8))
 
@@ -393,8 +395,9 @@ def process_tile_ms(img_path: str,
             # additional clip to make sure
             out_img = np.clip(out_img.astype(np.float32), 1.0, 255.0)
 
-            # Apply nan mask
-            out_img[np.broadcast_to((nan_mask == 1)[None, :, :], out_img.shape)] = 0.0
+            # Apply nan mask across all bands (3D mask) without using np.broadcast_to
+            band_mask = np.stack([nan_mask == 1] * out_img.shape[0], axis=0)
+            out_img[band_mask] = 0.0
 
             dtype, nodata = dtype_map.get(out_img.dtype, (None, None))
             if dtype is None:
@@ -550,16 +553,16 @@ def _calculate_tile_placements(
         with rasterio.open(img_path) as data:
             coordinates = [
                 (minx, miny) for minx in np.arange(
-                    math.ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, int)
+                    math.ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, dtype=int)
                 for miny in np.arange(
-                    math.ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, int)
+                    math.ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, dtype=int)
             ]
             if overlapping_tiles:
                 coordinates.extend([(minx, miny) for minx in np.arange(
                     math.ceil(data.bounds[0]) + buffer + tile_width // 2, data.bounds[2] - tile_width - buffer -
-                    tile_width // 2, tile_width, int) for miny in np.arange(
+                    tile_width // 2, tile_width, dtype=int) for miny in np.arange(
                         math.ceil(data.bounds[1]) + buffer + tile_height // 2, data.bounds[3] - tile_height - buffer -
-                        tile_height // 2, tile_height, int)])
+                        tile_height // 2, tile_height, dtype=int)])
     elif tile_placement == "adaptive":
 
         if crowns is None:
@@ -737,10 +740,10 @@ def calculate_image_statistics(file_path,
                 }
             else:
                 stats = {
-                    "mean": None,
-                    "min": None,
-                    "max": None,
-                    "std_dev": None,
+                    "mean": float("nan"),
+                    "min": float("nan"),
+                    "max": float("nan"),
+                    "std_dev": float("nan"),
                 }
             band_stats.append(stats)
         return band_stats
@@ -1012,7 +1015,8 @@ def create_RGB_from_MS(tile_folder_path: Union[str, Path],
 
             # Write the PNG (we must convert shape to (H, W, 3) and then to uint8)
             output_png = out_path / f"{tif_file.stem}.png"
-            png_ready = np.moveaxis(transformed, 0, -1).astype(np.uint8)  # (H, W, 3)
+            # Move axis from (bands, H, W) -> (H, W, bands)
+            png_ready = transformed.transpose(1, 2, 0).astype(np.uint8)
             cv2.imwrite(str(output_png), cv2.cvtColor(png_ready, cv2.COLOR_RGB2BGR))
 
     elif conversion == "first-three":
@@ -1051,7 +1055,7 @@ def create_RGB_from_MS(tile_folder_path: Union[str, Path],
             # Write out the PNG (shape must be (H, W, 3))
             output_png = out_path / f"{tif_file.stem}.png"
             # Move axis from (bands, H, W) -> (H, W, bands)
-            png_ready = np.moveaxis(data, 0, -1).astype(np.uint8)
+            png_ready = data.transpose(1, 2, 0).astype(np.uint8)
             # We expect the order to be [band1, band2, band3], so interpret as R,G,B
             cv2.imwrite(str(output_png), cv2.cvtColor(png_ready, cv2.COLOR_RGB2BGR))
 
@@ -1301,7 +1305,7 @@ def to_traintest_folders(  # noqa: C901
     # random.shuffle(indices)
     num = list(range(0, len(file_roots)))
     random.shuffle(num)
-    ind_split = np.array_split(file_roots, folds)
+    ind_split = np.array_split(np.array(file_roots), folds)
 
     for i in range(0, folds):
         Path(out_dir / f"train/fold_{i + 1}").mkdir(parents=True, exist_ok=True)

@@ -75,7 +75,7 @@ def predict_on_data(
             with rasterio.open(file_name) as src:
                 img = src.read()
                 # Transpose to match expected format (H, W, C)
-                img = np.transpose(img, (1, 2, 0))
+                img = img.transpose(1, 2, 0)
         else:
             print(f"Unsupported file extension {file_ext} for file {file_name}")
             continue
