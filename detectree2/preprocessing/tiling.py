@@ -184,8 +184,8 @@ def process_tile(img_path: str,
 
             mask_tif = None
             if mask_gdf is not None:
-                #if mask_gdf.crs != data.crs:
-                #    mask_gdf = mask_gdf.to_crs(data.crs) #TODO is this necessary?
+                # if mask_gdf.crs != data.crs:
+                #     mask_gdf = mask_gdf.to_crs(data.crs) # TODO is this necessary?
 
                 mask_tif = rasterio.features.geometry_mask([geom for geom in mask_gdf.geometry],
                                                            transform=out_transform,
@@ -220,12 +220,20 @@ def process_tile(img_path: str,
             invalid = (zero_mask | nan_mask).sum()
             if invalid > nan_threshold * totalpix:
                 logger.warning(
-                    f"Skipping tile at ({minx}, {miny}) due to being over nodata threshold. Threshold: {nan_threshold}, nodata ration: {invalid / totalpix}"
+                    "Skipping tile at (%s, %s) due to being over nodata threshold.",
+                    minx,
+                    miny,
+                )
+                logger.warning(
+                    "Threshold: %s, nodata ratio: %s",
+                    nan_threshold,
+                    invalid / totalpix,
                 )
                 return None
 
-            # Apply nan mask
-            out_img[np.broadcast_to((nan_mask == 1)[None, :, :], out_img.shape)] = 0
+            # Apply nan mask across all bands (3D mask) without using np.broadcast_to (typing-friendly)
+            band_mask = np.stack([nan_mask == 1] * out_img.shape[0], axis=0)
+            out_img[band_mask] = 0
 
             dtype, nodata = dtype_map.get(out_img.dtype, (None, None))
             if dtype is None:
@@ -247,7 +255,8 @@ def process_tile(img_path: str,
                 dest.write(out_img)
 
             r, g, b = out_img[0], out_img[1], out_img[2]
-            rgb = np.dstack((b, g, r))  # Reorder for cv2 (BGRA)
+            # Reorder channels to B, G, R for OpenCV (use list for mypy-friendly typing)
+            rgb = np.stack([b, g, r], axis=2)
 
             # Rescale to 0-255 if necessary
             if np.nanmax(g) > 255:
@@ -255,7 +264,9 @@ def process_tile(img_path: str,
             else:
                 rgb_rescaled = rgb
 
-            np.clip(rgb_rescaled, 0, 255, out=rgb_rescaled)
+            rgb_rescaled = np.clip(
+                rgb_rescaled.astype(np.float32), np.float32(0.0), np.float32(255.0)
+            )
 
             cv2.imwrite(str(out_path_root.with_suffix(".png").resolve()), rgb_rescaled.astype(np.uint8))
 
@@ -340,8 +351,8 @@ def process_tile_ms(img_path: str,
 
             mask_tif = None
             if mask_gdf is not None:
-                #if mask_gdf.crs != data.crs:
-                #    mask_gdf = mask_gdf.to_crs(data.crs) #TODO is this necessary?
+                # if mask_gdf.crs != data.crs:
+                #     mask_gdf = mask_gdf.to_crs(data.crs) # TODO is this necessary?
 
                 mask_tif = rasterio.features.geometry_mask([geom for geom in mask_gdf.geometry],
                                                            transform=out_transform,
@@ -375,7 +386,14 @@ def process_tile_ms(img_path: str,
             invalid = (zero_mask | nan_mask).sum()
             if invalid > nan_threshold * totalpix:
                 logger.warning(
-                    f"Skipping tile at ({minx}, {miny}) due to being over nodata threshold. Threshold: {nan_threshold}, nodata ration: {invalid / totalpix}"
+                    "Skipping tile at (%s, %s) due to being over nodata threshold.",
+                    minx,
+                    miny,
+                )
+                logger.warning(
+                    "Threshold: %s, nodata ratio: %s",
+                    nan_threshold,
+                    invalid / totalpix,
                 )
                 return None
 
@@ -390,11 +408,14 @@ def process_tile_ms(img_path: str,
             else:
                 out_img = (out_img - min_vals) * 254 / (max_vals - min_vals) + 1
 
-            # additional clip to make sure
-            out_img = np.clip(out_img.astype(np.float32), 1.0, 255.0)
+            # additional clip to make sure (use float32 bounds for mypy compatibility)
+            out_img = np.clip(
+                out_img.astype(np.float32), np.float32(1.0), np.float32(255.0)
+            )
 
-            # Apply nan mask
-            out_img[np.broadcast_to((nan_mask == 1)[None, :, :], out_img.shape)] = 0.0
+            # Apply nan mask across all bands (3D mask) without using np.broadcast_to
+            band_mask = np.stack([nan_mask == 1] * out_img.shape[0], axis=0)
+            out_img[band_mask] = np.float32(0.0)
 
             dtype, nodata = dtype_map.get(out_img.dtype, (None, None))
             if dtype is None:
@@ -548,18 +569,25 @@ def _calculate_tile_placements(
 
     if tile_placement == "grid":
         with rasterio.open(img_path) as data:
+            start_x = int(math.ceil(data.bounds[0]) + buffer)
+            stop_x = int(data.bounds[2] - tile_width - buffer)
+            start_y = int(math.ceil(data.bounds[1]) + buffer)
+            stop_y = int(data.bounds[3] - tile_height - buffer)
             coordinates = [
-                (minx, miny) for minx in np.arange(
-                    math.ceil(data.bounds[0]) + buffer, data.bounds[2] - tile_width - buffer, tile_width, int)
-                for miny in np.arange(
-                    math.ceil(data.bounds[1]) + buffer, data.bounds[3] - tile_height - buffer, tile_height, int)
+                (minx, miny)
+                for minx in range(start_x, stop_x, tile_width)
+                for miny in range(start_y, stop_y, tile_height)
             ]
             if overlapping_tiles:
-                coordinates.extend([(minx, miny) for minx in np.arange(
-                    math.ceil(data.bounds[0]) + buffer + tile_width // 2, data.bounds[2] - tile_width - buffer -
-                    tile_width // 2, tile_width, int) for miny in np.arange(
-                        math.ceil(data.bounds[1]) + buffer + tile_height // 2, data.bounds[3] - tile_height - buffer -
-                        tile_height // 2, tile_height, int)])
+                start_x2 = int(math.ceil(data.bounds[0]) + buffer + tile_width // 2)
+                stop_x2 = int(data.bounds[2] - tile_width - buffer - tile_width // 2)
+                start_y2 = int(math.ceil(data.bounds[1]) + buffer + tile_height // 2)
+                stop_y2 = int(data.bounds[3] - tile_height - buffer - tile_height // 2)
+                coordinates.extend([
+                    (minx, miny)
+                    for minx in range(start_x2, stop_x2, tile_width)
+                    for miny in range(start_y2, stop_y2, tile_height)
+                ])
     elif tile_placement == "adaptive":
 
         if crowns is None:
@@ -573,7 +601,7 @@ def _calculate_tile_placements(
             unioned_crowns = crowns.union_all()
         else:
             unioned_crowns = crowns.unary_union
-        logger.info(f"Finished Union of Crowns")
+        logger.info("Finished Union of Crowns")
 
         area_width = crowns.total_bounds[2] - crowns.total_bounds[0]
         area_height = crowns.total_bounds[3] - crowns.total_bounds[1]
@@ -609,7 +637,7 @@ def _calculate_tile_placements(
                     coordinates.append(
                         (int(intersection.total_bounds[0] - x_intersection_offset) + col * tile_width + tile_width // 2,
                          int(crowns.total_bounds[1] - y_offset) + row * tile_height + tile_height // 2))
-        logger.info(f"Finished Tile Placement Generation")
+        logger.info("Finished Tile Placement Generation")
     else:
         raise ValueError('Unsupported tile_placement method. Must be "grid" or "adaptive"')
 
@@ -730,17 +758,17 @@ def calculate_image_statistics(file_path,
             if valid_data.size > 0:
                 min_val, max_val = np.percentile(valid_data, [1, 99])
                 stats = {
-                    "mean": np.mean(valid_data),
-                    "min": min_val,
-                    "max": max_val,
-                    "std_dev": np.std(valid_data),
+                    "mean": float(np.mean(valid_data)),
+                    "min": float(min_val),
+                    "max": float(max_val),
+                    "std_dev": float(np.std(valid_data)),
                 }
             else:
                 stats = {
-                    "mean": None,
-                    "min": None,
-                    "max": None,
-                    "std_dev": None,
+                    "mean": float("nan"),
+                    "min": float("nan"),
+                    "max": float("nan"),
+                    "std_dev": float("nan"),
                 }
             band_stats.append(stats)
         return band_stats
@@ -1012,7 +1040,8 @@ def create_RGB_from_MS(tile_folder_path: Union[str, Path],
 
             # Write the PNG (we must convert shape to (H, W, 3) and then to uint8)
             output_png = out_path / f"{tif_file.stem}.png"
-            png_ready = np.moveaxis(transformed, 0, -1).astype(np.uint8)  # (H, W, 3)
+            # Move axis from (bands, H, W) -> (H, W, bands)
+            png_ready = transformed.transpose(1, 2, 0).astype(np.uint8)
             cv2.imwrite(str(output_png), cv2.cvtColor(png_ready, cv2.COLOR_RGB2BGR))
 
     elif conversion == "first-three":
@@ -1051,7 +1080,7 @@ def create_RGB_from_MS(tile_folder_path: Union[str, Path],
             # Write out the PNG (shape must be (H, W, 3))
             output_png = out_path / f"{tif_file.stem}.png"
             # Move axis from (bands, H, W) -> (H, W, bands)
-            png_ready = np.moveaxis(data, 0, -1).astype(np.uint8)
+            png_ready = data.transpose(1, 2, 0).astype(np.uint8)
             # We expect the order to be [band1, band2, band3], so interpret as R,G,B
             cv2.imwrite(str(output_png), cv2.cvtColor(png_ready, cv2.COLOR_RGB2BGR))
 
@@ -1301,7 +1330,7 @@ def to_traintest_folders(  # noqa: C901
     # random.shuffle(indices)
     num = list(range(0, len(file_roots)))
     random.shuffle(num)
-    ind_split = np.array_split(file_roots, folds)
+    ind_split = np.array_split(np.array(file_roots), folds)
 
     for i in range(0, folds):
         Path(out_dir / f"train/fold_{i + 1}").mkdir(parents=True, exist_ok=True)

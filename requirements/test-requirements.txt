@@ -6,6 +6,8 @@ virtualenv
 -e .
 
 # external requirements
+pytest
+pytest-dependency
 click           # BSD-3-Clause
 sphinx          # BSD-3-Clause
 coverage        # MIT

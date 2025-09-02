@@ -7,7 +7,6 @@ import os
 from pathlib import Path
 
 import cv2
-import numpy as np
 import rasterio
 from detectron2.engine import DefaultPredictor
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
@@ -75,7 +74,7 @@ def predict_on_data(
             with rasterio.open(file_name) as src:
                 img = src.read()
                 # Transpose to match expected format (H, W, C)
-                img = np.transpose(img, (1, 2, 0))
+                img = img.transpose(1, 2, 0)
         else:
             print(f"Unsupported file extension {file_ext} for file {file_name}")
             continue

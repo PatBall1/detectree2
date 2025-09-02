@@ -1,1 +1,5 @@
 jinja2==3.0.3
+# Core Sphinx and extensions used by the docs build
+sphinx
+sphinx_rtd_theme
+nbsphinx
