@@ -22,8 +22,8 @@ Before getting started ensure ``detectree2`` is installed through
    (.venv) $pip install git+https://github.com/PatBall1/detectree2.git
 
 
-To train a model you will need an orthomosaic (as ``<orthmosaic>.tif``) and 
-corresponding tree crown polgons that are readable by Geopandas
+To train a model you will need an orthomosaic (as ``<orthomosaic>.tif``) and 
+corresponding tree crown polygons that are readable by Geopandas
 (e.g. ``<crowns_polygon>.gpkg``, ``<crowns_polygon>.shp``). For the best
 results, manual crowns should be supplied as dense clusters rather than
 sparsely scattered across in the landscape. The method is designed to make 
@@ -141,7 +141,7 @@ type systems or urban environments).
    tile_data(img_path, out_dir, buffer, tile_width, tile_height, crowns, threshold, mode="rgb")
 
 .. warning::
-   If tiles are outputing as blank images set ``dtype_bool = True`` in the ``tile_data`` function. This is a bug
+   If tiles are outputting as blank images set ``dtype_bool = True`` in the ``tile_data`` function. This is a bug
    and we are working on fixing it. Supplying crown polygons will cause the function to tile for
    training (as opposed to landscape prediction which is described below).
 
@@ -151,6 +151,32 @@ type systems or urban environments).
    closed canopy forests so some of the default assumptions will reflect that and parameters will need to be adjusted
    for different systems.
 
+Advanced tiling options
+-----------------------
+
+The ``tile_data`` function exposes a few knobs to better control how tiles are created, especially helpful for large
+rasters and multispectral data:
+
+- ``tile_placement``: choose how tile origins are generated.
+  - ``"grid"`` (default): lays tiles on a fixed grid across the image bounds. Fast and predictable.
+  - ``"adaptive"``: concentrates tiles where crowns exist by scanning rows that intersect the union of crowns. Requires
+    supplying ``crowns``; if ``crowns`` is ``None``, it falls back to ``"grid"`` with a warning.
+- ``overlapping_tiles``: when ``True``, adds a second set of tiles shifted by half a tile in X and Y (checkerboard
+  offset). Useful to reduce edge artifacts in predictions, or to capture crowns straddling tile boundaries. It
+  increases the number of tiles roughly 2x.
+- ``ignore_bands_indices``: zero-based indices of bands to skip (multispectral only). These bands are ignored both when
+  computing image statistics and when writing the output tiles. For example, to exclude band 0 and band 4 in a 5-band
+  raster, pass ``ignore_bands_indices=[0, 4]``.
+
+Practical tips:
+
+- For training with ``crowns``, ``tile_placement="adaptive"`` can reduce I/O by avoiding empty regions while keeping
+  good coverage. For full-image prediction, stick with ``"grid"``.
+- When running prediction, consider ``overlapping_tiles=True`` to reduce seam artifacts; you can later post-process
+  overlaps (e.g., discard detections near tile borders).
+- ``ignore_bands_indices`` is zero-based; Rasterio band numbering is one-based internally, but the function accounts for
+  this. RGB mode ignores this parameter.
+
 Send geojsons to train folder (with sub-folders for k-fold cross validation) and a test folder.
 
 .. code-block:: python
@@ -159,7 +185,7 @@ Send geojsons to train folder (with sub-folders for k-fold cross validation) and
    to_traintest_folders(data_folder, out_dir, test_frac=0.15, strict=False, folds=5)
 
 .. note::
-   If ``strict=True``, the ``to_traintest_folders`` function will automatically removes training/validation geojsons
+   If ``strict=True``, the ``to_traintest_folders`` function will automatically remove training/validation geojsons
    that have any overlap with test tiles (including the buffers), ensuring strict spatial separation of the test data.
    However, this can remove a significant proportion of the data available to train on so if validation accuracy is a 
    sufficient test of model performance ``test_frac`` can be set to ``0`` or set ``strict=False`` (which allows for 
@@ -291,7 +317,7 @@ steps to expose the model to the full range of available training data. Register
    register_train_data(train_location, "Paracou", val_fold=5) 
 
 The data will be registered as ``<name>_train`` and ``<name>_val`` (or ``Paracou_train`` and ``Paracou_val`` in the
-above example). It will be necessary to supply these registation names below...
+above example). It will be necessary to supply these registration names below...
 
 We must supply a ``base_model`` from Detectron2's  ``model_zoo``. This loads a backbone that has been pre-trained which
 saves us the pain of training a model from scratch. We are effectively transferring this model and (re)training it on
@@ -310,6 +336,11 @@ datasets should be tuples containing strings. If just a single site is being use
    out_dir = "/content/drive/Shareddrives/detectree2/240809_train_outputs"
    
    cfg = setup_cfg(base_model, trains, tests, workers = 4, eval_period=100, max_iter=3000, out_dir=out_dir) # update_model arg can be used to load in trained  model
+
+.. note::
+   ``tile_data`` also supports ``tile_placement`` ("grid" or "adaptive") and options such as
+   ``overlapping_tiles`` and ``ignore_bands_indices``. The defaults match prior behavior, so existing
+   examples continue to work, but you can use these parameters to better control tiling when needed.
 
 
 Alternatively, it is possible to train from one of ``detectree2``'s pre-trained models. This is normally recommended and
@@ -691,7 +722,7 @@ can discard partial the crowns predicted at the edge of tiles.
    tile_data(img_path, tiles_path, buffer, tile_width, tile_height, dtype_bool = True)
 
 .. warning::
-   If tiles are outputing as blank images set ``dtype_bool = True`` in the ``tile_data`` function. This is a bug
+   If tiles are outputting as blank images set ``dtype_bool = True`` in the ``tile_data`` function. This is a bug
    and we are working on fixing it. Avoid supplying crown polygons otherwise the function will run as if it is tiling
    for training.
 

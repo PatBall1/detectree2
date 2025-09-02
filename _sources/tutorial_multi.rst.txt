@@ -6,8 +6,8 @@ delineation (e.g. species mapping, disease mapping). A guide to single
 class prediction is available
 `here <https://patball1.github.io/detectree2/tutorial.html>`_ - this covers
 more detail on the fundamentals of training and should be reviewed before this
-tutorial. The multiclassprocess is slightly more intricate than single class
-prediction as the classes need to be correctly encoded and caried throughout the pipeline.
+tutorial. The multi-class process is slightly more intricate than single class
+prediction as the classes need to be correctly encoded and carried throughout the pipeline.
 
 The key steps are:
 

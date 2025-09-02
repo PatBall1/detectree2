@@ -1,0 +1,167 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>detectree2.tests.test_models &mdash; detectree2 1.0.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=aec50437"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            detectree2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">2. Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial_multi.html">3. Tutorial (multiclass)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cluster.html">4. Running in Jupyter Notebook on a HPC platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">5. Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../using-git.html">6. Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">7. API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">detectree2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">detectree2.tests.test_models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for detectree2.tests.test_models</h1><div class="highlight"><pre>
+<span></span><span class="c1"># import os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">unittest</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectron2</span><span class="w"> </span><span class="kn">import</span> <span class="n">model_zoo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cfg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">DefaultPredictor</span>
+
+
+<div class="viewcode-block" id="TestCase">
+<a class="viewcode-back" href="../../../detectree2.tests.html#detectree2.tests.test_models.TestCase">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TestCase</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TestCase.test_detectron2">
+<a class="viewcode-back" href="../../../detectree2.tests.html#detectree2.tests.test_models.TestCase.test_detectron2">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_detectron2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># !wget http://images.cocodataset.org/val2017/000000439715.jpg -O input.jpg</span>
+        <span class="n">im</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="s2">&quot;./detectree2/tests/input/input.jpg&quot;</span><span class="p">)</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="n">get_cfg</span><span class="p">()</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">MODEL</span><span class="o">.</span><span class="n">DEVICE</span> <span class="o">=</span> <span class="s1">&#39;cpu&#39;</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">merge_from_file</span><span class="p">(</span><span class="n">model_zoo</span><span class="o">.</span><span class="n">get_config_file</span><span class="p">(</span><span class="s2">&quot;COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml&quot;</span><span class="p">))</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">MODEL</span><span class="o">.</span><span class="n">ROI_HEADS</span><span class="o">.</span><span class="n">SCORE_THRESH_TEST</span> <span class="o">=</span> <span class="mf">0.5</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">MODEL</span><span class="o">.</span><span class="n">WEIGHTS</span> <span class="o">=</span> <span class="s2">&quot;detectron2://COCO-Detection/faster_rcnn_R_101_FPN_3x/137851257/model_final_f6e8b1.pkl&quot;</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">MODEL</span><span class="o">.</span><span class="n">WEIGHTS</span> <span class="o">=</span> <span class="s1">&#39;https://dl.fbaipublicfiles.com/detectron2/COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x/138205316/model_final_a3ec72.pkl&#39;</span>  <span class="c1"># noqa: E501</span>
+        <span class="n">predictor</span> <span class="o">=</span> <span class="n">DefaultPredictor</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">predictor</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
+</div>
+
+
+    <span class="c1"># @pytest.mark.dependency(</span>
+    <span class="c1">#     depends=[&quot;tests/test_preprocessing::test_tiling&quot;, &quot;tests/test_preprocessing::test_to_traintest_folders&quot;],</span>
+    <span class="c1">#     scope=&#39;session&#39;</span>
+    <span class="c1"># )</span>
+    <span class="c1"># def test_train(self):</span>
+    <span class="c1">#     &quot;&quot;&quot;Integration test: Training on Paracou dataset for a single step.</span>
+
+    <span class="c1">#     Run on CPU.</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     from detectree2.models.train import (MyTrainer, register_train_data,</span>
+    <span class="c1">#                                          setup_cfg)</span>
+    <span class="c1">#     val_fold = 1</span>
+    <span class="c1">#     site_path = os.path.abspath(&quot;detectree2-data&quot;)</span>
+    <span class="c1">#     train_location = os.path.join(site_path, &#39;ref-out/paracou/train_test_tiles/train/&#39;)</span>
+    <span class="c1">#     register_train_data(train_location, &quot;Paracou&quot;, val_fold)</span>
+    <span class="c1">#     # 10.5281/zenodo.5515408</span>
+    <span class="c1">#     model = &quot;COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml&quot;</span>
+    <span class="c1">#     trains = (&#39;Paracou_train&#39;,)</span>
+    <span class="c1">#     tests = (&#39;Paracou_val&#39;,)</span>
+    <span class="c1">#     out_dir = os.path.join(site_path, &quot;paracou-out/train_outputs&quot;)</span>
+    <span class="c1">#     cfg = setup_cfg(model, trains, tests, warm_iter=1, workers=1, eval_period=10, max_iter=1, out_dir=out_dir)</span>
+    <span class="c1">#     cfg.MODEL.DEVICE = &#39;cpu&#39;</span>
+    <span class="c1">#     trainer = MyTrainer(cfg, patience=10)</span>
+    <span class="c1">#     trainer.resume_or_load(resume=False)</span>
+    <span class="c1">#     trainer.train()</span>
+
+
+<span class="n">suite</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestLoader</span><span class="p">()</span><span class="o">.</span><span class="n">loadTestsFromTestCase</span><span class="p">(</span><span class="n">TestCase</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, James Ball.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

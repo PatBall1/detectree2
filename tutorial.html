@@ -50,19 +50,21 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">2. Tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#preparing-data-rgb-multispectral">2.1. Preparing data (RGB/multispectral)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#training-rgb">2.2. Training (RGB)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#training-multispectral">2.3. Training (multispectral)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#data-augmentation">2.4. Data augmentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#post-training-check-convergence">2.5. Post-training (check convergence)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#performance-metrics">2.6. Performance metrics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#evaluating-model-performance">2.7. Evaluating model performance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#generating-landscape-predictions">2.8. Generating landscape predictions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-tiling-options">2.2. Advanced tiling options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#training-rgb">2.3. Training (RGB)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#training-multispectral">2.4. Training (multispectral)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-augmentation">2.5. Data augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#post-training-check-convergence">2.6. Post-training (check convergence)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#performance-metrics">2.7. Performance metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluating-model-performance">2.8. Evaluating model performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#generating-landscape-predictions">2.9. Generating landscape predictions</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial_multi.html">3. Tutorial (multiclass)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cluster.html">4. Running in Jupyter Notebook on a HPC platform</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">5. Contributing guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="using-git.html">6. Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">7. API Reference</a></li>
 </ul>
 
         </div>
@@ -107,8 +109,8 @@ be used in this tutorial is available
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$</span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/PatBall1/detectree2.git
 </pre></div>
 </div>
-<p>To train a model you will need an orthomosaic (as <code class="docutils literal notranslate"><span class="pre">&lt;orthmosaic&gt;.tif</span></code>) and
-corresponding tree crown polgons that are readable by Geopandas
+<p>To train a model you will need an orthomosaic (as <code class="docutils literal notranslate"><span class="pre">&lt;orthomosaic&gt;.tif</span></code>) and
+corresponding tree crown polygons that are readable by Geopandas
 (e.g. <code class="docutils literal notranslate"><span class="pre">&lt;crowns_polygon&gt;.gpkg</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;crowns_polygon&gt;.shp</span></code>). For the best
 results, manual crowns should be supplied as dense clusters rather than
 sparsely scattered across in the landscape. The method is designed to make
@@ -209,7 +211,7 @@ type systems or urban environments).</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>If tiles are outputing as blank images set <code class="docutils literal notranslate"><span class="pre">dtype_bool</span> <span class="pre">=</span> <span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">tile_data</span></code> function. This is a bug
+<p>If tiles are outputting as blank images set <code class="docutils literal notranslate"><span class="pre">dtype_bool</span> <span class="pre">=</span> <span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">tile_data</span></code> function. This is a bug
 and we are working on fixing it. Supplying crown polygons will cause the function to tile for
 training (as opposed to landscape prediction which is described below).</p>
 </div>
@@ -220,6 +222,35 @@ want to include non-forest areas (e.g. river, roads). Remember, <code class="doc
 closed canopy forests so some of the default assumptions will reflect that and parameters will need to be adjusted
 for different systems.</p>
 </div>
+</section>
+<section id="advanced-tiling-options">
+<h2><span class="section-number">2.2. </span>Advanced tiling options<a class="headerlink" href="#advanced-tiling-options" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">tile_data</span></code> function exposes a few knobs to better control how tiles are created, especially helpful for large
+rasters and multispectral data:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">tile_placement</span></code>: choose how tile origins are generated.
+- <code class="docutils literal notranslate"><span class="pre">&quot;grid&quot;</span></code> (default): lays tiles on a fixed grid across the image bounds. Fast and predictable.
+- <code class="docutils literal notranslate"><span class="pre">&quot;adaptive&quot;</span></code>: concentrates tiles where crowns exist by scanning rows that intersect the union of crowns. Requires</p>
+<blockquote>
+<div><p>supplying <code class="docutils literal notranslate"><span class="pre">crowns</span></code>; if <code class="docutils literal notranslate"><span class="pre">crowns</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>, it falls back to <code class="docutils literal notranslate"><span class="pre">&quot;grid&quot;</span></code> with a warning.</p>
+</div></blockquote>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">overlapping_tiles</span></code>: when <code class="docutils literal notranslate"><span class="pre">True</span></code>, adds a second set of tiles shifted by half a tile in X and Y (checkerboard
+offset). Useful to reduce edge artifacts in predictions, or to capture crowns straddling tile boundaries. It
+increases the number of tiles roughly 2x.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ignore_bands_indices</span></code>: zero-based indices of bands to skip (multispectral only). These bands are ignored both when
+computing image statistics and when writing the output tiles. For example, to exclude band 0 and band 4 in a 5-band
+raster, pass <code class="docutils literal notranslate"><span class="pre">ignore_bands_indices=[0,</span> <span class="pre">4]</span></code>.</p></li>
+</ul>
+<p>Practical tips:</p>
+<ul class="simple">
+<li><p>For training with <code class="docutils literal notranslate"><span class="pre">crowns</span></code>, <code class="docutils literal notranslate"><span class="pre">tile_placement=&quot;adaptive&quot;</span></code> can reduce I/O by avoiding empty regions while keeping
+good coverage. For full-image prediction, stick with <code class="docutils literal notranslate"><span class="pre">&quot;grid&quot;</span></code>.</p></li>
+<li><p>When running prediction, consider <code class="docutils literal notranslate"><span class="pre">overlapping_tiles=True</span></code> to reduce seam artifacts; you can later post-process
+overlaps (e.g., discard detections near tile borders).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ignore_bands_indices</span></code> is zero-based; Rasterio band numbering is one-based internally, but the function accounts for
+this. RGB mode ignores this parameter.</p></li>
+</ul>
 <p>Send geojsons to train folder (with sub-folders for k-fold cross validation) and a test folder.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data_folder</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="c1"># data_folder is the folder where the .png, .tif, .geojson tiles have been stored</span>
 <span class="n">to_traintest_folders</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">test_frac</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
@@ -227,7 +258,7 @@ for different systems.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If <code class="docutils literal notranslate"><span class="pre">strict=True</span></code>, the <code class="docutils literal notranslate"><span class="pre">to_traintest_folders</span></code> function will automatically removes training/validation geojsons
+<p>If <code class="docutils literal notranslate"><span class="pre">strict=True</span></code>, the <code class="docutils literal notranslate"><span class="pre">to_traintest_folders</span></code> function will automatically remove training/validation geojsons
 that have any overlap with test tiles (including the buffers), ensuring strict spatial separation of the test data.
 However, this can remove a significant proportion of the data available to train on so if validation accuracy is a
 sufficient test of model performance <code class="docutils literal notranslate"><span class="pre">test_frac</span></code> can be set to <code class="docutils literal notranslate"><span class="pre">0</span></code> or set <code class="docutils literal notranslate"><span class="pre">strict=False</span></code> (which allows for
@@ -332,7 +363,7 @@ multispectral (<code class="docutils literal notranslate"><span class="pre">.tif
 </div>
 </section>
 <section id="training-rgb">
-<h2><span class="section-number">2.2. </span>Training (RGB)<a class="headerlink" href="#training-rgb" title="Link to this heading"></a></h2>
+<h2><span class="section-number">2.3. </span>Training (RGB)<a class="headerlink" href="#training-rgb" title="Link to this heading"></a></h2>
 <p>Before training can commence, it is necessary to register the training data. It is possible to set a validation fold for
 model evaluation (which can be helpful for tuning models). The validation fold can be changed over different training
 steps to expose the model to the full range of available training data. Register as many different folders as necessary</p>
@@ -344,7 +375,7 @@ steps to expose the model to the full range of available training data. Register
 </pre></div>
 </div>
 <p>The data will be registered as <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_train</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_val</span></code> (or <code class="docutils literal notranslate"><span class="pre">Paracou_train</span></code> and <code class="docutils literal notranslate"><span class="pre">Paracou_val</span></code> in the
-above example). It will be necessary to supply these registation names below…</p>
+above example). It will be necessary to supply these registration names below…</p>
 <p>We must supply a <code class="docutils literal notranslate"><span class="pre">base_model</span></code> from Detectron2’s  <code class="docutils literal notranslate"><span class="pre">model_zoo</span></code>. This loads a backbone that has been pre-trained which
 saves us the pain of training a model from scratch. We are effectively transferring this model and (re)training it on
 our problem for the sake of time and efficiency. The <code class="docutils literal notranslate"><span class="pre">trains</span></code> and <code class="docutils literal notranslate"><span class="pre">tests</span></code> variables containing the registered
@@ -360,6 +391,12 @@ datasets should be tuples containing strings. If just a single site is being use
 
 <span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">workers</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">eval_period</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="n">out_dir</span><span class="p">)</span> <span class="c1"># update_model arg can be used to load in trained  model</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">tile_data</span></code> also supports <code class="docutils literal notranslate"><span class="pre">tile_placement</span></code> (“grid” or “adaptive”) and options such as
+<code class="docutils literal notranslate"><span class="pre">overlapping_tiles</span></code> and <code class="docutils literal notranslate"><span class="pre">ignore_bands_indices</span></code>. The defaults match prior behavior, so existing
+examples continue to work, but you can use these parameters to better control tiling when needed.</p>
 </div>
 <p>Alternatively, it is possible to train from one of <code class="docutils literal notranslate"><span class="pre">detectree2</span></code>’s pre-trained models. This is normally recommended and
 especially useful if you only have limited training data available. To retrieve the model from the repo’s
@@ -405,7 +442,7 @@ predictions on the validation fold. This is measured as the AP50 score of the va
 </div>
 </section>
 <section id="training-multispectral">
-<h2><span class="section-number">2.3. </span>Training (multispectral)<a class="headerlink" href="#training-multispectral" title="Link to this heading"></a></h2>
+<h2><span class="section-number">2.4. </span>Training (multispectral)<a class="headerlink" href="#training-multispectral" title="Link to this heading"></a></h2>
 <p>The process for training a multispectral model is similar to that for RGB data but there are some key steps that are
 different. Data will be read from <code class="docutils literal notranslate"><span class="pre">.tif</span></code> files of 4 or more bands instead of the 3-band <code class="docutils literal notranslate"><span class="pre">.png</span></code> files.</p>
 <p>Data should be registered as before:</p>
@@ -486,7 +523,7 @@ number of images per batch. Only do this is you a getting warnings/errors about 
 </div>
 </section>
 <section id="data-augmentation">
-<h2><span class="section-number">2.4. </span>Data augmentation<a class="headerlink" href="#data-augmentation" title="Link to this heading"></a></h2>
+<h2><span class="section-number">2.5. </span>Data augmentation<a class="headerlink" href="#data-augmentation" title="Link to this heading"></a></h2>
 <p>Data augmentation is a technique used to artificially increase the size of the training dataset by applying random
 transformations to the input data. This can help improve the generalization of the model and reduce overfitting. The
 <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> library provides a range of data augmentation options that can be used during training. These include
@@ -550,7 +587,7 @@ model is to be used on a range of different resolutions, random resizing can hel
 different scales.</p>
 </section>
 <section id="post-training-check-convergence">
-<h2><span class="section-number">2.5. </span>Post-training (check convergence)<a class="headerlink" href="#post-training-check-convergence" title="Link to this heading"></a></h2>
+<h2><span class="section-number">2.6. </span>Post-training (check convergence)<a class="headerlink" href="#post-training-check-convergence" title="Link to this heading"></a></h2>
 <p>It is important to check that the model has converged and is not overfitting. This can be done by plotting the training
 and validation loss over time. The <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> training routine will output a <code class="docutils literal notranslate"><span class="pre">metrics.json</span></code> file that can be used
 to plot the training and validation loss. The following code can be used to plot the loss:</p>
@@ -608,7 +645,7 @@ preventing overfitting. If validation loss is substantially higher than training
 </div>
 </section>
 <section id="performance-metrics">
-<h2><span class="section-number">2.6. </span>Performance metrics<a class="headerlink" href="#performance-metrics" title="Link to this heading"></a></h2>
+<h2><span class="section-number">2.7. </span>Performance metrics<a class="headerlink" href="#performance-metrics" title="Link to this heading"></a></h2>
 <p>In instance segmentation, <strong>AP50</strong> refers to the <strong>Average Precision</strong> at an Intersection over Union (IoU) threshold of
 <strong>50%</strong>.</p>
 <ul class="simple">
@@ -648,11 +685,11 @@ masks in instance segmentation tasks.</p>
 </a>
 </section>
 <section id="evaluating-model-performance">
-<h2><span class="section-number">2.7. </span>Evaluating model performance<a class="headerlink" href="#evaluating-model-performance" title="Link to this heading"></a></h2>
+<h2><span class="section-number">2.8. </span>Evaluating model performance<a class="headerlink" href="#evaluating-model-performance" title="Link to this heading"></a></h2>
 <p>Coming soon! See Colab notebook for example routine (<code class="docutils literal notranslate"><span class="pre">detectree2/notebooks/colab/evaluationJB.ipynb</span></code>).</p>
 </section>
 <section id="generating-landscape-predictions">
-<h2><span class="section-number">2.8. </span>Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Link to this heading"></a></h2>
+<h2><span class="section-number">2.9. </span>Generating landscape predictions<a class="headerlink" href="#generating-landscape-predictions" title="Link to this heading"></a></h2>
 <p>Here we call the necessary functions.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.preprocessing.tiling</span><span class="w"> </span><span class="kn">import</span> <span class="n">tile_data</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.outputs</span><span class="w"> </span><span class="kn">import</span> <span class="n">project_to_geojson</span><span class="p">,</span> <span class="n">stitch_crowns</span><span class="p">,</span> <span class="n">clean_crowns</span>
@@ -682,7 +719,7 @@ can discard partial the crowns predicted at the edge of tiles.</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>If tiles are outputing as blank images set <code class="docutils literal notranslate"><span class="pre">dtype_bool</span> <span class="pre">=</span> <span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">tile_data</span></code> function. This is a bug
+<p>If tiles are outputting as blank images set <code class="docutils literal notranslate"><span class="pre">dtype_bool</span> <span class="pre">=</span> <span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">tile_data</span></code> function. This is a bug
 and we are working on fixing it. Avoid supplying crown polygons otherwise the function will run as if it is tiling
 for training.</p>
 </div>
