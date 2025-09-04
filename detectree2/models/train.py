@@ -26,6 +26,7 @@ import rasterio.features
 import shapely.geometry as geom
 import torch
 import torch.nn as nn
+from tqdm import tqdm
 from detectron2 import model_zoo
 from detectron2.checkpoint import DetectionCheckpointer  # noqa:F401
 from detectron2.config import get_cfg
@@ -453,7 +454,7 @@ class MyTrainer(DefaultTrainer):
 
         self.iter = self.start_iter = start_iter
         self.max_iter = max_iter
-        self.early_stop = False
+        self.early_stop = True
         self.APs = []
 
         with EventStorage(start_iter) as self.storage:
@@ -722,7 +723,7 @@ class MyTrainer(DefaultTrainer):
         return build_detection_test_loader(cfg, dataset_name, mapper=FlexibleDatasetMapper(cfg, is_train=False))
 
 
-def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:
+def get_tree_dicts(directory: str | Path, class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:
     """Get the tree dictionaries.
 
     Args:
@@ -737,29 +738,28 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
 
     dataset_dicts = []
 
-    for filename in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
-        json_file = os.path.join(directory, filename)
+    for json_file in Path(directory).glob("*.geojson"):
         with open(json_file) as f:
             img_anns = json.load(f)
 
         record: Dict[str, Any] = {}
-        filename = img_anns["imagePath"]
+        file_path = Path(img_anns["imagePath"])
 
         # Make sure we have the correct height and width
         # If image path ends in .png use cv2 to get height and width else if image path ends in .tif use rasterio
-        if filename.endswith(".png"):
-            img = cv2.imread(filename)
+        if file_path.suffix == ".png":
+            img = cv2.imread(str(file_path))
             if img is None:
                 continue
             height, width = img.shape[:2]
-        elif filename.endswith(".tif"):
-            with rasterio.open(filename) as src:
+        elif file_path.suffix == ".tif":
+            with rasterio.open(str(file_path)) as src:
                 height, width = src.shape
 
-        record["file_name"] = filename
+        record["file_name"] = str(file_path)
         record["height"] = height
         record["width"] = width
-        record["image_id"] = filename[0:400]
+        record["image_id"] = str(file_path)[0:400]
         record["annotations"] = {}
         # print(filename[0:400])
 
@@ -767,7 +767,7 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
         for features in img_anns["features"]:
             anno = features["geometry"]
             if anno["type"] != "Polygon" and anno["type"] != "MultiPolygon":
-                print("Skipping annotation of type", anno["type"], "in file", filename)
+                print("Skipping annotation of type", anno["type"], "in file", file_path)
                 continue
             px = [a[0] for a in anno["coordinates"][0]]
             py = [height - a[1] for a in anno["coordinates"][0]]
@@ -824,10 +824,9 @@ def combine_dicts(root_dir: str,
     Returns:
         List of combined dictionaries from the specified directories.
     """
-    # Get the list of directories within the root directory, sorted alphabetically
-    train_dirs = sorted([
-        os.path.join(root_dir, dir) for dir in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, dir))
-    ])
+    # Get the list of directories within the root directory
+    root_dir = Path(root_dir)
+    train_dirs = [d for d in root_dir.iterdir() if d.is_dir()]
     # Handle the different modes for combining dictionaries
     if mode == "train":
         # Exclude the validation directory from the list of directories
@@ -847,7 +846,7 @@ def combine_dicts(root_dir: str,
     return tree_dicts
 
 
-def get_filenames(directory: str):
+def get_filenames(directory: str | Path):
     """Get the file names from the directory, handling both RGB (.png) and multispectral (.tif) images.
 
     Args:
@@ -858,11 +857,11 @@ def get_filenames(directory: str):
             - dataset_dicts (list): List of dictionaries with 'file_name' keys.
             - mode (str): 'rgb' if .png files are used, 'ms' if .tif files are used.
     """
-    dataset_dicts = []
+    directory = Path(directory)
 
     # Get list of .png and .tif files
-    png_files = glob.glob(os.path.join(directory, "*.png"))
-    tif_files = glob.glob(os.path.join(directory, "*.tif"))
+    png_files = list(directory.glob("*.png"))
+    tif_files = list(directory.glob("*.tif"))
 
     if png_files and tif_files:
         # Both .png and .tif files are present, select only .png files
@@ -881,10 +880,7 @@ def get_filenames(directory: str):
         files = []
         mode = None
 
-    for filename in files:
-        file = {}
-        file["file_name"] = filename
-        dataset_dicts.append(file)
+    dataset_dicts = [{"file_name": str(f)} for f in files]
     return dataset_dicts, mode
 
 
@@ -1117,16 +1113,17 @@ def predictions_on_data(
     Returns:
         None
     """
-    pred_dir = os.path.join(directory, "predictions")
-    Path(pred_dir).mkdir(parents=True, exist_ok=True)
+    directory = Path(directory)
+    pred_dir = directory / "predictions"
+    pred_dir.mkdir(parents=True, exist_ok=True)
 
-    test_location = os.path.join(directory, "test")
+    test_location = directory / "test"
 
     if geos_exist:
         dataset_dicts = get_tree_dicts(test_location)
         if len(dataset_dicts) > 0:
-            sample_file = dataset_dicts[0]["file_name"]
-            _, mode = get_filenames(os.path.dirname(sample_file))
+            sample_file = Path(dataset_dicts[0]["file_name"])
+            _, mode = get_filenames(sample_file.parent)
         else:
             mode = None
     else:
@@ -1135,9 +1132,9 @@ def predictions_on_data(
     # Decide how many items to predict on
     num_to_pred = len(dataset_dicts) if num_predictions == 0 else num_predictions
 
-    for d in random.sample(dataset_dicts, num_to_pred):
-        file_name = d["file_name"]
-        file_ext = os.path.splitext(file_name)[1].lower()
+    for d in tqdm(random.sample(dataset_dicts, num_to_pred), desc='Predicting'):
+        file_name = Path(d["file_name"])
+        file_ext = file_name.suffix.lower()
         if file_ext == ".png":
             # RGB image, read with cv2
             img = cv2.imread(file_name)
@@ -1168,14 +1165,12 @@ def predictions_on_data(
         v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
 
         # Create the output file name
-        file_name_only = os.path.basename(file_name)
-        file_name_json = os.path.splitext(file_name_only)[0] + ".json"
-        output_file = os.path.join(pred_dir, f"Prediction_{file_name_json}")
+        output_file = pred_dir / f"Prediction_{file_name.stem}.json"
 
         if save:
             # Save predictions to JSON file
-            evaluations = instances_to_coco_json(outputs["instances"].to("cpu"), file_name)
-            with open(output_file, "w") as dest:
+            evaluations = instances_to_coco_json(outputs["instances"].to("cpu"), str(file_name))
+            with output_file.open("w") as dest:
                 json.dump(evaluations, dest)
 
 
@@ -1240,13 +1235,10 @@ def get_latest_model_path(output_dir: str) -> str:
     # Regular expression to match model files with the pattern "model_X.pth"
     model_pattern = re.compile(r"model_(\d+)\.pth")
 
-    # List all files in the output directory
-    files = os.listdir(output_dir)
-
     # Find all files that match the pattern and extract their indices
     model_files = []
-    for f in files:
-        match = model_pattern.search(f)
+    for f in Path(output_dir).iterdir():
+        match = model_pattern.match(f.name)
         if match:
             model_files.append((f, int(match.group(1))))
 
@@ -1257,7 +1249,7 @@ def get_latest_model_path(output_dir: str) -> str:
     latest_model_file = max(model_files, key=lambda x: x[1])[0]
 
     # Return the full path to the latest model file
-    return os.path.join(output_dir, latest_model_file)
+    return str(latest_model_file)
 
 
 if __name__ == "__main__":

@@ -36,8 +36,7 @@ def polygon_from_mask(masked_arr):
     https://github.com/hazirbas/coco-json-converter/blob/master/generate_coco_json.py <-- adapted from here
     """
 
-    contours, _ = cv2.findContours(
-        masked_arr, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(masked_arr, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     segmentation = []
     for contour in contours:
@@ -50,7 +49,7 @@ def polygon_from_mask(masked_arr):
                 contour.extend(contour[:2])  # small artifacts due to this?
             segmentation.append(contour)
 
-    [x, y, w, h] = cv2.boundingRect(masked_arr)
+    # [x, y, w, h] = cv2.boundingRect(masked_arr)
 
     if len(segmentation) > 0:
         return segmentation[0]  # , [x, y, w, h], area
@@ -64,89 +63,87 @@ def to_eval_geojson(directory=None):  # noqa:N803
     Reproject the crowns to overlay with the cropped crowns and cropped pngs.
     Another copy is produced to overlay with pngs.
     """
+    directory = Path(directory)
 
-    entries = os.listdir(directory)
+    for file in directory.iterdir():
+        if file.suffix != ".json":
+            continue
 
-    for file in entries:
-        if ".json" in file:
+        # create a dictionary for each file to store data used multiple times
+        img_dict = {"filename": file.name}
 
-            # create a dictionary for each file to store data used multiple times
-            img_dict = {}
-            img_dict["filename"] = file
-
-            file_mins = file.replace(".json", "")
-            file_mins_split = file_mins.split("_")
-            img_dict["minx"] = file_mins_split[-5]
-            img_dict["miny"] = file_mins_split[-4]
-            epsg = file_mins_split[-1]
-            # create a geofile for each tile --> the EPSG value should be done
-            # automatically
-            geofile = {
-                "type": "FeatureCollection",
-                "crs": {
-                    "type": "name",
-                    "properties": {
-                        "name": "urn:ogc:def:crs:EPSG::" + epsg
-                    },
+        file_mins = file.stem
+        file_mins_split = file_mins.split("_")
+        img_dict["minx"] = file_mins_split[-5]
+        img_dict["miny"] = file_mins_split[-4]
+        epsg = file_mins_split[-1]
+        # create a geofile for each tile --> the EPSG value should be done
+        # automatically
+        geofile = {
+            "type": "FeatureCollection",
+            "crs": {
+                "type": "name",
+                "properties": {
+                    "name": f"urn:ogc:def:crs:EPSG::{epsg}"
                 },
-                "features": [],
-            }
+            },
+            "features": [],
+        }
 
-            # load the json file we need to convert into a geojson
-            with open(directory + "/" + img_dict["filename"]) as prediction_file:
-                datajson = json.load(prediction_file)
+        # load the json file we need to convert into a geojson
+        with file.open()  as prediction_file:
+            datajson = json.load(prediction_file)
 
-            img_dict["width"] = datajson[0]["segmentation"]["size"][0]
-            img_dict["height"] = datajson[0]["segmentation"]["size"][1]
-            # print(img_dict)
+        img_dict["width"] = datajson[0]["segmentation"]["size"][0]
+        img_dict["height"] = datajson[0]["segmentation"]["size"][1]
+        # print(img_dict)
 
-            # json file is formated as a list of segmentation polygons so cycle through each one
-            for crown_data in datajson:
-                # just a check that the crown image is correct
-                if img_dict["minx"] + "_" + img_dict["miny"] in crown_data["image_id"]:
-                    crown = crown_data["segmentation"]
-                    confidence_score = crown_data["score"]
+        # json file is formated as a list of segmentation polygons so cycle through each one
+        for crown_data in datajson:
+            # just a check that the crown image is correct
+            if f"{img_dict['minx']}_{img_dict['miny']}" not in crown_data["image_id"]:
+                continue
 
-                    # changing the coords from RLE format so can be read as numbers, here the numbers are
-                    # integers so a bit of info on position is lost
-                    mask_of_coords = mask_util.decode(crown)
-                    crown_coords = polygon_from_mask(mask_of_coords)
-                    if crown_coords == 0:
-                        continue
-                    rescaled_coords = []
+            crown = crown_data["segmentation"]
+            confidence_score = crown_data["score"]
 
-                    # coords from json are in a list of [x1, y1, x2, y2,... ] so convert them to [[x1, y1], ...]
-                    # format and at the same time rescale them so they are in the correct position for QGIS
-                    for c in range(0, len(crown_coords), 2):
-                        x_coord = crown_coords[c]
-                        y_coord = crown_coords[c + 1]
-                        # TODO: make flexible to deal with hemispheres
-                        if epsg == "26917":
-                            rescaled_coords.append([x_coord, -y_coord])
-                        else:
-                            rescaled_coords.append(
-                                [x_coord, -y_coord + int(img_dict["height"])])
+            # changing the coords from RLE format so can be read as numbers, here the numbers are
+            # integers so a bit of info on position is lost
+            mask_of_coords = mask_util.decode(crown)
+            crown_coords = polygon_from_mask(mask_of_coords)
+            if crown_coords == 0:
+                continue
 
-                    geofile["features"].append({
-                        "type": "Feature",
-                        "properties": {
-                            "Confidence_score": confidence_score
-                        },
-                        "geometry": {
-                            "type": "Polygon",
-                            "coordinates": [rescaled_coords],
-                        },
-                    })
+            rescaled_coords = []
+            # coords from json are in a list of [x1, y1, x2, y2,... ] so convert them to [[x1, y1], ...]
+            # format and at the same time rescale them so they are in the correct position for QGIS
+            for c in range(0, len(crown_coords), 2):
+                x_coord = crown_coords[c]
+                y_coord = crown_coords[c + 1]
+                # TODO: make flexible to deal with hemispheres
+                if epsg == "26917":
+                    rescaled_coords.append([x_coord, -y_coord])
+                else:
+                    rescaled_coords.append([x_coord, -y_coord + int(img_dict["height"])])
 
-            # Check final form is correct - compare to a known geojson file if
-            # error appears.
-            # print(geofile)
+            geofile["features"].append({
+                "type": "Feature",
+                "properties": {
+                    "Confidence_score": confidence_score
+                },
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [rescaled_coords],
+                },
+            })
 
-            output_geo_file = os.path.join(
-                directory, img_dict["filename"].replace(".json", "_eval.geojson"))
-            # print(output_geo_file)
-            with open(output_geo_file, "w") as dest:
-                json.dump(geofile, dest)
+        # Check final form is correct - compare to a known geojson file if error appears.
+        # print(geofile)
+
+        output_geo_file = file.with_name(f"{file.stem}_eval.geojson")
+        # print(output_geo_file)
+        with output_geo_file.open("w") as dest:
+            json.dump(geofile, dest)
 
 
 def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class: bool = False):  # noqa:N803
@@ -156,28 +153,25 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
     with PNGs.
 
     Args:
-        tiles_path (str): Path to the tiles folder.
-        pred_fold (str): Path to the predictions folder.
-        output_fold (str): Path to the output folder.
+        tiles_path (str | Path): Path to the tiles folder.
+        pred_fold (str | Path): Path to the predictions folder.
+        output_fold (str | Path): Path to the output folder.
 
     Returns:
         None
     """
-    Path(output_fold).mkdir(parents=True, exist_ok=True)
-    entries = list(Path(pred_fold) / file for file in os.listdir(pred_fold) if Path(file).suffix == ".json")
-    total_files = len(entries)
-    print(f"Projecting {total_files} files")
+    output_fold = Path(output_fold)
 
-    for idx, filename in enumerate(entries, start=1):
-        if idx % 50 == 0:
-            print(f"Projecting file {idx} of {total_files}: {filename}")
+    output_fold.mkdir(parents=True, exist_ok=True)
+    entries = [file for file in Path(pred_fold).iterdir() if file.suffix == ".json"]
 
-        tifpath = Path(tiles_path) / Path(filename.name.replace("Prediction_", "")).with_suffix(".tif")
+    for file in tqdm(entries, desc="Projecting files",):
 
-        data = rasterio.open(tifpath)
-        epsg = CRS.from_string(data.crs.wkt)
-        epsg = epsg.to_epsg()
-        raster_transform = data.transform
+        tifpath = Path(tiles_path) / f"{file.stem.removeprefix('Prediction_')}.tif"
+
+        with rasterio.open(tifpath) as data:
+            epsg = data.crs.to_epsg()
+            raster_transform = data.transform
 
         geofile = {
             "type": "FeatureCollection",
@@ -191,14 +185,14 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
         }  # type: GeoFile
 
         # load the json file we need to convert into a geojson
-        with open(filename, "r") as prediction_file:
+        with file.open("r") as prediction_file:
             datajson = json.load(prediction_file)
 
         # json file is formated as a list of segmentation polygons so cycle through each one
         for crown_data in datajson:
             if multi_class:
                 category = crown_data["category_id"]
-                # print(category)
+
             crown = crown_data["segmentation"]
             confidence_score = crown_data["score"]
 
@@ -206,7 +200,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
             # integers so a bit of info on position is lost
             mask_of_coords = mask_util.decode(crown)
             crown_coords = polygon_from_mask(mask_of_coords)
-            if crown_coords == 0:
+            if not crown_coords:
                 continue
 
             crown_coords_array = np.array(crown_coords).reshape(-1, 2)
@@ -214,47 +208,34 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
                                                        rows=crown_coords_array[:, 1],
                                                        cols=crown_coords_array[:, 0])
             moved_coords = list(zip(x_coords, y_coords))
+
+            feature: Feature = {
+                "type": "Feature",
+                "properties": {
+                    "Confidence_score": confidence_score,
+                },
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [moved_coords],
+                },                
+            }
+
             if multi_class:
-                geofile["features"].append({
-                    "type": "Feature",
-                    "properties": {
-                        "Confidence_score": confidence_score,
-                        "category": category,
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [moved_coords],
-                    },
-                })
-            else:
-                geofile["features"].append({
-                    "type": "Feature",
-                    "properties": {
-                        "Confidence_score": confidence_score
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [moved_coords],
-                    },
-                })
-                # print(geofile["features"])
+                feature["properties"]["category"] = category
+        
+            geofile["features"].append(feature)
 
-        output_geo_file = os.path.join(output_fold, filename.with_suffix(".geojson").name)
+        output_geo_file = output_fold / file.with_suffix(".geojson").name
 
-        with open(output_geo_file, "w") as dest:
+        with output_geo_file.open("w") as dest:
             json.dump(geofile, dest)
 
 
 def filename_geoinfo(filename):
     """Return geographic info of a tile from its filename."""
-    parts = os.path.basename(filename).replace(".geojson", "").split("_")
-
-    parts = [int(part) for part in parts[-5:]]  # type: ignore
-    minx = parts[0]
-    miny = parts[1]
-    width = parts[2]
-    buffer = parts[3]
-    crs = parts[4]
+    name = Path(filename).stem
+    parts = name.split("_")[-5:]
+    minx, miny, width, buffer, crs = map(int, parts)
     return (minx, miny, width, buffer, crs)
 
 
@@ -308,25 +289,18 @@ def stitch_crowns(folder: str, shift: int = 1):
         gpd.GeoDataFrame: A GeoDataFrame containing all the crowns.
     """
     crowns_path = Path(folder)
-    files = list(crowns_path.glob("*geojson"))
-    if len(files) == 0:
-        raise FileNotFoundError("No geojson files found in folder.")
+    files = list(crowns_path.glob("*.geojson"))
+    if not files:
+        raise FileNotFoundError(f"No geojson files found in {crowns_path}.")
 
     _, _, _, _, crs = filename_geoinfo(files[0])
 
-    total_files = len(files)
     crowns_list = []
 
-    for idx, file in enumerate(files, start=1):
-        if idx % 50 == 0:
-            print(f"Stitching file {idx} of {total_files}: {file}")
-
+    for file in tqdm(files, desc="Stitching crowns", unit="file"):
         crowns_tile = gpd.read_file(file)  # This throws a huge amount of warnings fiona closed ring detected
-
         geo = box_filter(file, shift)
-
         crowns_tile = gpd.sjoin(crowns_tile, geo, "inner", "within")
-
         crowns_list.append(crowns_tile)
 
     crowns = pd.concat(crowns_list, ignore_index=True)
@@ -380,7 +354,7 @@ def clean_crowns(
 
     # 2. Use a spatial join to quickly find all candidate overlapping pairs.
     #    The join will pair each crown with any crown whose bounding box intersects.
-    print("clearn_crowns: Performing spatial join...")
+    print("clean_crowns: Performing spatial join...")
     join = gpd.sjoin(crowns, crowns, how="inner", predicate="intersects")
     # Remove self-joins (where a crown is paired with itself).
     join = join[join.index != join.index_right]
