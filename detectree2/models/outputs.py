@@ -164,13 +164,14 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
         None
     """
     Path(output_fold).mkdir(parents=True, exist_ok=True)
-    entries = list(Path(pred_fold) / file for file in os.listdir(pred_fold) if Path(file).suffix == ".json")
+    entries = [file for file in Path(pred_fold).iterdir() if file.suffix == ".json"]
     total_files = len(entries)
-    print(f"Projecting {total_files} files")
 
-    for idx, filename in enumerate(entries, start=1):
-        if idx % 50 == 0:
-            print(f"Projecting file {idx} of {total_files}: {filename}")
+    for filename in tqdm(
+        entries, 
+        desc=f"Projecting files",
+        total=total_files
+    ):
 
         tifpath = Path(tiles_path) / Path(filename.name.replace("Prediction_", "")).with_suffix(".tif")
 
@@ -308,25 +309,18 @@ def stitch_crowns(folder: str, shift: int = 1):
         gpd.GeoDataFrame: A GeoDataFrame containing all the crowns.
     """
     crowns_path = Path(folder)
-    files = list(crowns_path.glob("*geojson"))
-    if len(files) == 0:
-        raise FileNotFoundError("No geojson files found in folder.")
+    files = list(crowns_path.glob("*.geojson"))
+    if not files:
+        raise FileNotFoundError(f"No geojson files found in {crowns_path}.")
 
     _, _, _, _, crs = filename_geoinfo(files[0])
 
-    total_files = len(files)
     crowns_list = []
 
-    for idx, file in enumerate(files, start=1):
-        if idx % 50 == 0:
-            print(f"Stitching file {idx} of {total_files}: {file}")
-
+    for file in tqdm(files, desc="Stitching crowns", unit="file"):
         crowns_tile = gpd.read_file(file)  # This throws a huge amount of warnings fiona closed ring detected
-
         geo = box_filter(file, shift)
-
         crowns_tile = gpd.sjoin(crowns_tile, geo, "inner", "within")
-
         crowns_list.append(crowns_tile)
 
     crowns = pd.concat(crowns_list, ignore_index=True)
