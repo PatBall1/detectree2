@@ -157,16 +157,23 @@ Advanced tiling options
 The ``tile_data`` function exposes a few knobs to better control how tiles are created, especially helpful for large
 rasters and multispectral data:
 
-- ``tile_placement``: choose how tile origins are generated.
-  - ``"grid"`` (default): lays tiles on a fixed grid across the image bounds. Fast and predictable.
-  - ``"adaptive"``: concentrates tiles where crowns exist by scanning rows that intersect the union of crowns. Requires
+- ``tile_placement``: Choose how tile origins are generated.
+  - ``"grid"`` (default): Lays tiles on a fixed grid across the image bounds. Fast and predictable.
+  - ``"adaptive"``: Concentrates tiles where crowns exist by scanning rows that intersect the union of crowns. Requires
     supplying ``crowns``; if ``crowns`` is ``None``, it falls back to ``"grid"`` with a warning.
-- ``overlapping_tiles``: when ``True``, adds a second set of tiles shifted by half a tile in X and Y (checkerboard
+- ``overlapping_tiles``: When ``True``, adds a second set of tiles shifted by half a tile in X and Y (checkerboard
   offset). Useful to reduce edge artifacts in predictions, or to capture crowns straddling tile boundaries. It
   increases the number of tiles roughly 2x.
-- ``ignore_bands_indices``: zero-based indices of bands to skip (multispectral only). These bands are ignored both when
+- ``ignore_bands_indices``: Zero-based indices of bands to skip (multispectral only). These bands are ignored both when
   computing image statistics and when writing the output tiles. For example, to exclude band 0 and band 4 in a 5-band
   raster, pass ``ignore_bands_indices=[0, 4]``.
+- ``nan_threshold``: The maximum proportion of a tile that can be NaN (or other no-data values) before it is discarded.
+- ``mask_path``: Path to a vector file (e.g., GeoPackage) to mask the tiling area. Only tiles that intersect with this mask will be created.
+- ``multithreaded``: When ``True``, uses multiple processes to speed up tiling.
+- ``random_subset``: If set to a positive integer, a random subset of this many tiles will be created.
+- ``additional_nodata``: A list of additional values to be treated as no-data.
+- ``use_convex_mask``: When ``True``, creates a convex hull around crown polygons to mask out areas outside the crowns.
+- ``enhance_rgb_contrast``: When ``True``, enhances the contrast of RGB images.
 
 Practical tips:
 
@@ -187,9 +194,9 @@ Send geojsons to train folder (with sub-folders for k-fold cross validation) and
 .. note::
    If ``strict=True``, the ``to_traintest_folders`` function will automatically remove training/validation geojsons
    that have any overlap with test tiles (including the buffers), ensuring strict spatial separation of the test data.
-   However, this can remove a significant proportion of the data available to train on so if validation accuracy is a 
-   sufficient test of model performance ``test_frac`` can be set to ``0`` or set ``strict=False`` (which allows for 
-   overlap in the buffers between test and train/val tiles).
+   However, this can remove a significant proportion of the data available to train on. If validation accuracy is a 
+   sufficient test of model performance, you can either not create a test set (``test_frac=0``) or allow for 
+   overlap in the buffers between test and train/val tiles (``strict=False``).
 
 
 The data has now been tiled and partitioned for model training, tuning and evaluation.
@@ -325,6 +332,11 @@ our problem for the sake of time and efficiency. The ``trains`` and ``tests`` va
 datasets should be tuples containing strings. If just a single site is being used a comma should still be supplied (e.g. 
 ``trains = ("Paracou_train",)``) otherwise the data loader will malfunction.
 
+.. note::
+   The ``tile_data`` function offers several parameters like ``tile_placement`` ("grid" or "adaptive"),
+   ``overlapping_tiles``, and ``ignore_bands_indices`` to control the tiling process.
+   While the defaults match previous behavior, you can use these to fine-tune tile generation.
+
 .. code-block:: python
    
    # Set the base (pre-trained) model from the detectron2 model_zoo
@@ -335,12 +347,7 @@ datasets should be tuples containing strings. If just a single site is being use
    
    out_dir = "/content/drive/Shareddrives/detectree2/240809_train_outputs"
    
-   cfg = setup_cfg(base_model, trains, tests, workers = 4, eval_period=100, max_iter=3000, out_dir=out_dir) # update_model arg can be used to load in trained  model
-
-.. note::
-   ``tile_data`` also supports ``tile_placement`` ("grid" or "adaptive") and options such as
-   ``overlapping_tiles`` and ``ignore_bands_indices``. The defaults match prior behavior, so existing
-   examples continue to work, but you can use these parameters to better control tiling when needed.
+   cfg = setup_cfg(base_model, trains, tests, workers=4, eval_period=100, max_iter=3000, out_dir=out_dir, resize="random") # update_model arg can be used to load in trained  model
 
 
 Alternatively, it is possible to train from one of ``detectree2``'s pre-trained models. This is normally recommended and
@@ -386,6 +393,7 @@ Training outputs, including model weights and training metrics, will be stored i
    trainer = MyTrainer(cfg, patience = 5) 
    trainer.resume_or_load(resume=False)
    trainer.train()
+
 
 .. note::
 
@@ -666,7 +674,7 @@ combination of the model's ability to correctly detect objects and how complete 
 in object detection) and the ground truth mask. It is calculated as the area of overlap divided by the area of union
 between the predicted and true masks.
 
-- **AP50**: Specifically, **AP50** computes the average precision for all object classes at a threshold of **50% IoU**. 
+- **AP50**: Specifically, **AP50** computes the average precision for all object classes at a threshold of **50% IoU**.
 This means that a predicted object is considered correct (a true positive) if the IoU between the predicted and ground
 truth masks is greater than or equal to 0.5 (50%). It is a relatively lenient threshold, focusing on whether the
 detected objects overlap reasonably with the ground truth, even if the boundaries aren't perfectly aligned.
