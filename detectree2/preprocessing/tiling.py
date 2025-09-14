@@ -136,6 +136,8 @@ def process_tile(img_path: str,
                  ignore_bands_indices: List[int] = [],
                  use_convex_mask: bool = True,
                  enhance_rgb_contrast: bool = True):
+                 use_convex_mask: bool = True,
+                 enhance_rgb_contrast: bool = True):
     """Process a single tile for making predictions.
 
     Args:
@@ -759,10 +761,6 @@ def calculate_image_statistics(file_path,
             if valid_data.size > 0:
                 min_val, max_val = np.percentile(valid_data, [1, 99])
                 stats = {
-                    "mean": float(np.mean(valid_data)),
-                    "min": float(min_val),
-                    "max": float(max_val),
-                    "std_dev": float(np.std(valid_data)),
                     "mean": float(np.mean(valid_data)),
                     "min": float(min_val),
                     "max": float(max_val),
