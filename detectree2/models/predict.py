@@ -19,13 +19,13 @@ from detectree2.models.train import get_filenames, get_tree_dicts
 
 
 def predict_on_data(
-    directory: str = "./",
-    out_folder: str = "predictions",
+    directory: str | Path = "./",
+    out_folder: str | Path = "predictions",
     predictor=DefaultPredictor,
-    eval=False,
+    eval: bool=False,
     save: bool = True,
     num_predictions=0,
-):
+) -> None:
     """Make predictions on tiled data.
 
     Predicts crowns for all images (.png or .tif) present in a directory and outputs masks as JSON files.
@@ -41,14 +41,15 @@ def predict_on_data(
     Returns:
         None
     """
-    pred_dir = Path(directory) / Path(out_folder)
+    directory = Path(directory)
+    pred_dir = directory / out_folder
     pred_dir.mkdir(parents=True, exist_ok=True)
 
     if eval:
         dataset_dicts = get_tree_dicts(directory)
-        if len(dataset_dicts) > 0:
-            sample_file = dataset_dicts[0]["file_name"]
-            _, mode = get_filenames(os.path.dirname(sample_file))
+        if dataset_dicts:
+            sample_file = Path(dataset_dicts[0]["file_name"])
+            _, mode = get_filenames(sample_file.parent)
         else:
             mode = None
     else:
@@ -83,12 +84,9 @@ def predict_on_data(
 
         outputs = predictor(img)
 
-        # Create the output file name
-        file_name_json = f"{file_name.stem}.json"
-        output_file = pred_dir / f"Prediction_{file_name_json}"
-
         if save:
             # Save predictions to JSON file
+            output_file = pred_dir / f"Prediction_{file_name.stem}.json"
             evaluations = instances_to_coco_json(outputs["instances"].to("cpu"),
                                                  str(file_name))
             output_file.write_text(json.dumps(evaluations))
