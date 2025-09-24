@@ -826,7 +826,7 @@ def tile_data(
     if mask_path is not None:
         mask_gdf = gpd.read_file(mask_path)
     out_path = Path(out_dir)
-    os.makedirs(out_path, exist_ok=True)
+    out_path.mkdir(parents=True, exist_ok=True)
     tilename = Path(img_path).stem
     with rasterio.open(img_path) as data:
         crs = data.crs.to_epsg()  # Update CRS handling to avoid deprecated syntax
@@ -1243,7 +1243,7 @@ def record_classes(crowns: gpd.GeoDataFrame, out_dir: str, column: str = 'status
 
     # Save the class-to-index mapping to disk
     out_path = Path(out_dir)
-    os.makedirs(out_path, exist_ok=True)
+    out_path.mkdir(parents=True, exist_ok=True)
 
     if save_format == 'json':
         with open(out_path / 'class_to_idx.json', 'w') as f:
@@ -1281,7 +1281,7 @@ def to_traintest_folders(  # noqa: C901
     tiles_dir = Path(tiles_folder)
     out_dir = Path(out_folder)
 
-    if not os.path.exists(tiles_dir):
+    if not tiles_dir.exists():
         raise IOError
 
     if Path(out_dir / "train").exists() and Path(out_dir / "train").is_dir():
