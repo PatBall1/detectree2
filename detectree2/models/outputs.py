@@ -166,13 +166,13 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
     output_fold.mkdir(parents=True, exist_ok=True)
     entries = [file for file in Path(pred_fold).iterdir() if file.suffix == ".json"]
 
-    for filename in tqdm(
+    for file in tqdm(
         entries, 
         desc=f"Projecting files",
         total=len(entries)
     ):
 
-        tifpath = Path(tiles_path) / filename.name.replace("Prediction_", "").with_suffix(".tif")
+        tifpath = Path(tiles_path) / (file.stem.replace("Prediction_", "") + ".tif")
 
         with rasterio.open(tifpath) as data:
             epsg = CRS.from_string(data.crs.wkt).to_epsg()
@@ -190,7 +190,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
         }  # type: GeoFile
 
         # load the json file we need to convert into a geojson
-        with filename.open("r") as prediction_file:
+        with file.open("r") as prediction_file:
             datajson = json.load(prediction_file)
 
         # json file is formated as a list of segmentation polygons so cycle through each one
@@ -230,7 +230,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
         
             geofile["features"].append(feature)
 
-        output_geo_file = output_fold / filename.with_suffix(".geojson").name
+        output_geo_file = output_fold / file.with_suffix(".geojson").name
 
         with output_geo_file.open("w") as dest:
             json.dump(geofile, dest)
