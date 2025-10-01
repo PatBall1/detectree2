@@ -336,7 +336,7 @@ class VisualizerHook(HookBase):
             eval_period (int): The number of iterations between evaluations.
             model (torch.nn.Module): The model to evaluate.
             data_loader (torch.utils.data.DataLoader): The data loader for evaluation.
-            patience (int): The number of evaluation periods to wait for improvement before early stopping.
+            img_per_dataset (int): The number of images per dataset to visualize.
         """
         self._model = model
         self._period = eval_period
@@ -347,11 +347,11 @@ class VisualizerHook(HookBase):
 
     def after_step(self):
         """
-        Hook to be called after each training iteration to evaluate the model and manage checkpoints.
+        Hook to be called after each training iteration to visualize model predictions.
 
-        - Evaluates the model at regular intervals.
-        - Saves the best model checkpoint based on the AP50 metric.
-        - Implements early stopping if the AP50 does not improve after a set number of evaluations.
+        This hook runs at regular intervals to perform inference on a sample of the validation dataset.
+        It then visualizes the predictions and logs the resulting images to the event storage,
+        making them accessible through tools like TensorBoard.
         """
         next_iter = self.trainer.iter + 1
         is_final = next_iter == self.trainer.max_iter
@@ -726,9 +726,9 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
     """Get the tree dictionaries.
 
     Args:
-        directory: Path to directory
-        classes: List of classes to include
-        classes_at: Signifies which column (if any) corresponds to the class labels
+        directory: Path to directory containing geojson annotation files.
+        class_mapping: A dictionary mapping class labels from geojson properties to category indices.
+                       If None, all annotations are assigned to category 0 (tree).
 
     Returns:
         List of dictionaries corresponding to segmentations of trees. Each dictionary includes
@@ -945,12 +945,13 @@ def remove_registered_data(name="tree"):
         MetadataCatalog.remove(name + "_" + d)
 
 
-def register_test_data(test_location, name="tree"):
+def register_test_data(test_location, name="tree", class_mapping_file=None):
     """Register data for testing.
 
     Args:
         test_location: directory containing test data
         name: string to name data
+        class_mapping_file: Path to the class mapping file (json or pickle).
     """
     d = "test"
 
@@ -1019,7 +1020,6 @@ def setup_cfg(
         base_lr: base learning rate
         weight_decay: weight decay for optimizer
         max_iter: maximum number of iterations
-        num_classes: number of classes
         eval_period: number of iterations between evaluations
         out_dir: directory to save outputs
         resize: resize strategy for images
