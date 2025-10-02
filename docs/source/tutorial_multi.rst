@@ -170,6 +170,40 @@ the model. By passing the class mapping file to the configuration set up, the
     trainer.train()
 
 
+Advanced Multi-Class Techniques
+-------------------------------
+
+Handling Class Imbalance with Federated Loss
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Real-world datasets for multi-class problems like species mapping are often imbalanced, with many examples of common species and few examples of rare ones. This can cause the model to become biased. To counteract this, you can enable Federated Loss, a technique that gives more weight to rare classes during training. You can enable this by setting a few parameters on the `cfg` object after it has been created.
+
+.. code-block:: python
+
+    # After creating the cfg object with setup_cfg(...)
+
+    # Enable Federated Loss
+    cfg.MODEL.ROI_BOX_HEAD.USE_FED_LOSS = True
+    cfg.MODEL.ROI_BOX_HEAD.USE_SIGMOID_CE = True
+
+    # This power parameter controls how much to weight the rare classes
+    cfg.MODEL.ROI_BOX_HEAD.FED_LOSS_FREQ_WEIGHT_POWER = 0.7
+
+    # You can also set the number of classes for the federated loss
+    # For example, to focus on 75% of the classes
+    from detectree2.preprocessing.tiling import get_class_distribution
+    class_distribution = get_class_distribution(tiles_paths[0], 5)
+    cfg.MODEL.ROI_BOX_HEAD.FED_LOSS_NUM_CLASSES = int(len(class_distribution) * 0.75)
+
+
+Pro Tip: Transfer Learning with a Different Number of Classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A common scenario is fine-tuning a model that was pre-trained on a different number of classes than your new dataset. You might expect this to cause an error, but the `resume_or_load` method is designed to handle this automatically.
+
+If a mismatch in the number of classes is detected between the checkpoint and the new model, the **Detectron2** library will adapt the architecture. It does this by taking the randomly initializing the affected parts of the model. This provides a reasonable starting point for the new classes and allows training to proceed without crashing.
+
+
 Landscape predictions
 ---------------------
 

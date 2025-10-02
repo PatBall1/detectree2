@@ -154,26 +154,31 @@ type systems or urban environments).
 Advanced tiling options
 -----------------------
 
-The ``tile_data`` function exposes a few knobs to better control how tiles are created, especially helpful for large
-rasters and multispectral data:
+The ``tile_data`` function exposes many parameters to control how tiles are created. Here are some of the most useful ones in more detail:
 
 - ``tile_placement``: Choose how tile origins are generated.
+
   - ``"grid"`` (default): Lays tiles on a fixed grid across the image bounds. Fast and predictable.
-  - ``"adaptive"``: Concentrates tiles where crowns exist by scanning rows that intersect the union of crowns. Requires
-    supplying ``crowns``; if ``crowns`` is ``None``, it falls back to ``"grid"`` with a warning.
-- ``overlapping_tiles``: When ``True``, adds a second set of tiles shifted by half a tile in X and Y (checkerboard
-  offset). Useful to reduce edge artifacts in predictions, or to capture crowns straddling tile boundaries. It
-  increases the number of tiles roughly 2x.
-- ``ignore_bands_indices``: Zero-based indices of bands to skip (multispectral only). These bands are ignored both when
-  computing image statistics and when writing the output tiles. For example, to exclude band 0 and band 4 in a 5-band
-  raster, pass ``ignore_bands_indices=[0, 4]``.
+  - ``"adaptive"``: A more efficient method for training. It works by first creating a single polygon that is the union of all your training crowns, then intelligently places tiles only in rows that intersect this polygon. This avoids creating empty tiles in areas where you have no training data. Requires supplying ``crowns``; if ``crowns`` is ``None``, it falls back to ``"grid"`` with a warning.
+
+- ``overlapping_tiles``: When ``True``, adds a second set of tiles shifted by half a tile's width and height, creating a "checkerboard" pattern. This is useful for ensuring crowns that fall on a tile boundary are fully captured in at least one tile and can help reduce prediction artifacts at tile edges.
+
+- ``ignore_bands_indices``: Zero-based indices of bands to skip (multispectral only). These bands are ignored both when computing image statistics and when writing the output tiles. For example, to exclude band 0 and band 4 in a 5-band raster, pass ``ignore_bands_indices=[0, 4]``.
+
 - ``nan_threshold``: The maximum proportion of a tile that can be NaN (or other no-data values) before it is discarded.
-- ``mask_path``: Path to a vector file (e.g., GeoPackage) to mask the tiling area. Only tiles that intersect with this mask will be created.
-- ``multithreaded``: When ``True``, uses multiple processes to speed up tiling.
-- ``random_subset``: If set to a positive integer, a random subset of this many tiles will be created.
-- ``additional_nodata``: A list of additional values to be treated as no-data.
-- ``use_convex_mask``: When ``True``, creates a convex hull around crown polygons to mask out areas outside the crowns.
-- ``enhance_rgb_contrast``: When ``True``, enhances the contrast of RGB images.
+
+- ``use_convex_mask``: When ``True``, this creates a tight "wrapper" polygon (a convex hull) around all the training crowns within a tile. Any pixels outside this wrapper are masked out. This is a way to reduce noise by forcing the model to ignore parts of the tile that are far from any labeled object.
+
+- ``enhance_rgb_contrast``: When ``True`` (for RGB images only), this applies a percentile contrast stretch. It calculates the 0.2 and 99.8 percentile pixel values and rescales the image to a 1-255 range. This is effective for normalizing hazy, dark, or washed-out imagery. It allows the model to more easily differentiate between tree crowns. 0 is reserved for masked-out areas.
+
+- ``additional_nodata``: Provide a list of pixel values that should be treated as "no data". This is a data cleaning tool for real-world rasters that may have multiple invalid or uncommon values (e.g., -9999, 0, 65535) from sensor errors or previous processing steps.
+
+- ``mask_path``: Path to a vector file (e.g., a GeoPackage) that defines your area of interest. If provided, no tiles will be created outside of this area.
+
+- ``ignore_bands_indices``: For multispectral data, a list of zero-based band indices to exclude from the output tiles.
+
+- ``multithreaded``: When ``True``, uses multiple CPU cores to process tiles in parallel, significantly speeding up the tiling process for large orthomosaics. Currently, this can cost a linear amount of added memory.
+
 
 Practical tips:
 
@@ -181,8 +186,118 @@ Practical tips:
   good coverage. For full-image prediction, stick with ``"grid"``.
 - When running prediction, consider ``overlapping_tiles=True`` to reduce seam artifacts; you can later post-process
   overlaps (e.g., discard detections near tile borders).
-- ``ignore_bands_indices`` is zero-based; Rasterio band numbering is one-based internally, but the function accounts for
-  this. RGB mode ignores this parameter.
+
+Practical Recipes and Advanced Examples
+---------------------------------------
+
+Here are some practical examples, showing how to combine parameters to solve common tasks.
+
+**Recipe 1: Batch Tiling from Multiple Orthomosaics**
+To create a larger, more diverse training dataset, you can tile data from several orthomosaics at once and combine them into a single output directory. This can be done by iterating through your data sources in Python.
+.. code-block:: python
+   from detectree2.preprocessing.tiling import tile_data
+   import geopandas as gpd
+   import rasterio
+   sites = [
+       {
+           "img_path": "/path/to/data/SiteA/ortho.tif",
+           "crown_path": "/path/to/data/SiteA/crowns.gpkg",
+       },
+       {
+           "img_path": "/path/to/data/SiteB/ortho.tif",
+           "crown_path": "/path/to/data/SiteB/crowns.gpkg",
+       },
+   ]
+   output_dir = "/path/to/my-combined-training-data/"
+   for site in sites:
+       # Read crowns and ensure CRS matches the raster
+       with rasterio.open(site["img_path"]) as raster:
+           crowns = gpd.read_file(site["crown_path"])
+           crowns = crowns.to_crs(raster.crs)
+           tile_data(
+               img_path=site["img_path"],
+               out_dir=output_dir,
+               crowns=crowns,
+               tile_placement="adaptive",
+               mode="ms",
+               # other parameters...
+               buffer=30,
+               tile_width=40,
+               tile_height=40,
+               threshold=0.6,
+           )
+
+
+**Recipe 2: Tiling Noisy Multispectral Rasters**
+
+This recipe is ideal for large, real-world multispectral datasets that may contain various "no data" artifacts.
+
+.. code-block:: python
+
+   from detectree2.preprocessing.tiling import tile_data
+   import geopandas as gpd
+   import rasterio
+
+   img_path = "/path/to/your/large_ms_ortho.tif"
+   crown_path = "/path/to/your/crowns.gpkg"
+   output_dir = "/path/to/ms_tiles"
+
+   # Read crowns and ensure CRS matches the raster
+   with rasterio.open(img_path) as raster:
+       crowns = gpd.read_file(crown_path)
+       crowns = crowns.to_crs(raster.crs)
+
+       tile_data(
+           img_path=img_path,
+           out_dir=output_dir,
+           crowns=crowns,
+           mode="ms",
+           tile_placement="adaptive",
+           additional_nodata=[-10000, -20000],
+           tile_width=80,
+           buffer=10,
+           # other parameters...
+           tile_height=80,
+           threshold=0.6,
+       )
+
+What this does:
+  - ``mode="ms"``: Activates the multispectral workflow.
+  - ``tile_placement="adaptive"``: Saves time and disk space by only creating tiles where crown data exists.
+  - ``additional_nodata=[-10000, -20000]``: Cleans the data by masking out multiple different invalid pixel values.
+  - ``tile_width=80, buffer=10``: The tile size and buffer are customized to match the data's scale.
+
+Converting Multispectral Tiles to RGB
+-------------------------------------
+
+If you have multispectral (MS) tiles but want to use them with an RGB-trained model or simply visualize them easily, you can use the ``create_RGB_from_MS`` utility. This function converts a folder of MS tiles into a new folder of 3-band RGB tiles.
+
+.. note::
+  This utility is very powerful. It not only converts the images but also copies all ``.geojson`` annotation files and the ``train/test`` folder structure, automatically updating the image paths inside the ``.geojson`` files to point to the new RGB ``.png`` files.
+
+The function offers two conversion methods:
+- ``conversion="pca"``: Performs a Principal Component Analysis to find the 3 most important components and maps them to R, G, and B. This is great for visualization.
+- ``conversion="first-three"``: Simply takes the first three bands of the MS image.
+
+Here is how you would use it in Python:
+
+.. code-block:: python
+
+    from detectree2.preprocessing.tiling import create_RGB_from_MS
+
+    # Path to the folder containing your multispectral .tif tiles
+    ms_tile_folder = "/path/to/ms_tiles/"
+
+    # Path for the new RGB tiles
+    rgb_output_folder = "/path/to/rgb_tiles_from_ms/"
+
+    # Convert the tiles using PCA
+    create_RGB_from_MS(
+        tile_folder_path=ms_tile_folder,
+        out_dir=rgb_output_folder,
+        conversion="pca"
+    )
+
 
 Send geojsons to train folder (with sub-folders for k-fold cross validation) and a test folder.
 
@@ -356,7 +471,7 @@ especially useful if you only have limited training data available. To retrieve 
 
 .. code-block:: python
 
-   !wget https://zenodo.org/records/10522461/files/230103_randresize_full.pth
+   !wget https://zenodo.org/records/15863800/files/250312_flexi.pth
 
 Then set up the configurations as before but with the trained model also supplied:
 
@@ -487,13 +602,77 @@ number of images per batch. Only do this is you a getting warnings/errors about 
    cfg.SOLVER.IMS_PER_BATCH = 1
 
 
-Training can now commence as before:
-
-.. code-block::
-
    trainer = MyTrainer(cfg, patience = 5) 
    trainer.resume_or_load(resume=False)
    trainer.train()
+
+
+Advanced Multispectral Options
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For developers looking to experiment further with multispectral data, here are some advanced techniques.
+
+Pro Tip: Selective Band Usage
+*****************************
+
+You may want to experiment with tiling the full spectral image but only using a subset of your available spectral bands without creating new image files. You would do this to quickly test which bands are most informative for your task, without having to retile all combinations, which takes time, resources, and storage.
+This can be achieved by creating a custom data mapper that reads only specific bands from your `.tif` files.
+
+First, define a list of the 1-based band indices you wish to use. Then, define a custom `FlexibleDatasetMapper` that incorporates this logic, and pass it to the training loader.
+
+.. code-block:: python
+
+   import detectree2.models.train as t
+   import detectron2.data.transforms as T
+   import rasterio
+   import torch
+   import numpy as np
+
+   # Define which bands to read (1-based indices)
+   only_read_bands = [4, 5, 6, 7]
+   
+   # You must update num_bands in the cfg to match the number of selected bands
+   cfg.INPUT.NUM_IN_CHANNELS = len(only_read_bands)
+   
+   # Create a custom mapper class to read only specific bands
+   class CustomBandMapper(t.FlexibleDatasetMapper):
+       def __call__(self, dataset_dict):
+           try:
+               with rasterio.open(dataset_dict["file_name"]) as src:
+                   # Read only the specified bands
+                   img = src.read(indexes=only_read_bands)
+               
+               # Transpose to (H, W, C)
+               img = np.transpose(img, (1, 2, 0)).astype("float32")
+
+               aug_input = T.AugInput(img)
+               transforms = self.augmentations(aug_input)
+               img = aug_input.image
+               dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(img.transpose(2, 0, 1)))
+
+               # ... Potentially here the rest that is also in FlexibleDatasetMapper
+
+               if "annotations" in dataset_dict:
+                   self._transform_annotations(dataset_dict, transforms, img.shape[:2])
+               
+               return dataset_dict
+           except Exception as e:
+               print(f"Error processing {dataset_dict.get('file_name', 'unknown')}: {e}")
+               return None
+
+   # Override the default train loader with one that uses the custom mapper
+   t.FlexibleDatasetMapper = CustomBandMapper
+
+   # After this, you can proceed with other steps as usual and then call t.MyTrainer(cfg)
+   # Now, when you run trainer.train(), it will use only the bands specified.
+
+
+Pro Tip: Advanced Weight Initialization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The default method for adapting a 3-channel (RGB) pre-trained model to more input channels is to repeat the weights of the first three channels. The `detectree2` library provides a utility function to perform this weight adaptation.
+
+For developers who need to adapt an existing model to a different number of input bands (e.g., for 4-band imagery), the `multiply_conv1_weights` function located in `detectree2.models.train` automatically copies weights of an existing model round-robin style. Without the call to this method, the model's weights would be initialized randomly across the whole input convolution layer.
 
 
 Data augmentation
@@ -520,6 +699,7 @@ If the input data is RGB, additional augmentations will be applied to adjust the
 lighting of the images. These augmentations are only available for RGB images and will not be applied to multispectral.
 
 .. code-block:: python
+
    # Additional augmentations for RGB images
    if cfg.IMGMODE == "rgb":
       augmentations.extend([
@@ -649,6 +829,50 @@ To understand how the segmentation performance improves through training, it is 
    :alt: AP50 score
    :align: center
 |
+
+Pro Tip: Advanced Fine-grained Layer Freezing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When you load a pre-trained model, you are benefiting from features learned on a very large dataset. However, you may not want to retrain the entire network, especially if your own dataset is small, as this can lead to overfitting. A powerful technique is to "freeze" parts of the network, making their weights non-trainable, and only fine-tune the higher-level layers. Here’s how you can apply this technique after creating the `trainer` object and before calling `trainer.train()`:
+
+.. code-block:: python
+
+   trainer = MyTrainer(cfg, patience=10)
+   trainer.resume_or_load(resume=False)
+
+   # --- Advanced: Freeze layers of the pre-trained backbone ---
+
+   # By default, Detectron2 unfreezes the entire backbone after a certain
+   # point in the model (controlled by cfg.MODEL.BACKBONE.FREEZE_AT). For more control,
+   # you can manually freeze specific stages.
+
+   # Example: Freeze the initial "stem" and the first two residual stages
+   # This is useful when your dataset is small and you want to preserve
+   # the robust, low-level features (edges, textures) from the pre-trained model.
+
+   print("Applying custom layer freezing...")
+
+   # Freeze the initial convolutional stem
+   trainer.model.backbone.bottom_up.stem.freeze()
+
+   # Freeze the blocks within the first residual stage (res2)
+   for block in trainer.model.backbone.bottom_up.stages[0].children():
+       block.freeze()
+
+   # You could extend this to freeze more stages if needed:
+   # Freeze res3
+   # for block in trainer.model.backbone.bottom_up.stages[1].children():
+   #     block.freeze()
+
+   print("Starting training with custom frozen layers.")
+   trainer.train()
+
+**Why is this useful?**
+
+*   **Prevents Overfitting:** On small datasets, allowing the full network to train can cause it to "forget" the powerful general features it learned and instead memorize your small dataset. Freezing the early layers prevents this.
+*   **Faster Training:** With fewer trainable parameters, each training iteration is faster.
+*   **Experimentation:** It gives you, the developer, a crucial tool for experimentation. If your new images are very different from the original training data, you might only freeze the `stem`. If they are very similar, you might freeze everything up to `res4`. This example provides the insight and the code to enable that level of control.
+
 
 Performance metrics
 -------------------
