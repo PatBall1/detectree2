@@ -40,11 +40,11 @@ below for an example of the required input crowns and image.
 |
 
 If you would just like to make predictions on an orthomosaic with a pre-trained
-model from the ``model_garden``, skip to step 3.
+model from the ``model_garden``, skip to `Making Landscape-Level Predictions`_.
 
-----------------------
-Step 1: Preparing Data
-----------------------
+--------------
+Preparing Data
+--------------
 
 First, we tile our large orthomosaic and crown data into smaller images suitable for training.
 
@@ -91,9 +91,9 @@ Finally, partition the tiled data into `train` and `test` sets.
    # Create train/test folders
    to_traintest_folders(out_dir, out_dir, test_frac=0.15)
 
-------------------------
-Step 2: Training a Model
-------------------------
+----------------
+Training a Model
+----------------
 
 Before training can commence, it is necessary to register the training data.
 
@@ -128,9 +128,9 @@ Now, we can start training.
 
 Training outputs, including model weights, will be stored in ``model_output_dir``.
 
-------------------------------------------
-Step 3: Making Landscape-Level Predictions
-------------------------------------------
+----------------------------------
+Making Landscape-Level Predictions
+----------------------------------
 
 To make predictions on a full orthomosaic, we first tile it into manageable pieces.
 
@@ -173,9 +173,9 @@ Once predictions are made on the tiles, project them back into geographic space,
    crowns = stitch_crowns(pred_tiles_path + "predictions_geo/")
    clean = clean_crowns(crowns, 0.6, confidence=0.5) # Filter low-confidence and overlapping crowns
 
-------------------------------------------
-Step 4: Saving and Visualizing Your Crowns
-------------------------------------------
+----------------------------------
+Saving and Visualizing Your Crowns
+----------------------------------
 
 Finally, save your cleaned-up crown map to a file.
 
