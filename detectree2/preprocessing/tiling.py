@@ -136,8 +136,6 @@ def process_tile(img_path: str,
                  ignore_bands_indices: List[int] = [],
                  use_convex_mask: bool = True,
                  enhance_rgb_contrast: bool = True):
-                 use_convex_mask: bool = True,
-                 enhance_rgb_contrast: bool = True):
     """Process a single tile for making predictions.
 
     Args:
