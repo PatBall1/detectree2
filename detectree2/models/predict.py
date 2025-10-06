@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 
 import cv2
+import numpy as np
 import rasterio
 from detectron2.engine import DefaultPredictor
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
