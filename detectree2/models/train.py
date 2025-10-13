@@ -1117,16 +1117,17 @@ def predictions_on_data(
     Returns:
         None
     """
-    pred_dir = os.path.join(directory, "predictions")
-    Path(pred_dir).mkdir(parents=True, exist_ok=True)
+    directory = Path(directory)
+    pred_dir = directory / "predictions"
+    pred_dir.mkdir(parents=True, exist_ok=True)
 
-    test_location = os.path.join(directory, "test")
+    test_location = directory / "test"
 
     if geos_exist:
         dataset_dicts = get_tree_dicts(test_location)
         if len(dataset_dicts) > 0:
-            sample_file = dataset_dicts[0]["file_name"]
-            _, mode = get_filenames(os.path.dirname(sample_file))
+            sample_file = Path(dataset_dicts[0]["file_name"])
+            _, mode = get_filenames(sample_file.parent)
         else:
             mode = None
     else:
@@ -1136,8 +1137,8 @@ def predictions_on_data(
     num_to_pred = len(dataset_dicts) if num_predictions == 0 else num_predictions
 
     for d in random.sample(dataset_dicts, num_to_pred):
-        file_name = d["file_name"]
-        file_ext = os.path.splitext(file_name)[1].lower()
+        file_name = Path(d["file_name"])
+        file_ext = file_name.suffix.lower()
         if file_ext == ".png":
             # RGB image, read with cv2
             img = cv2.imread(file_name)
@@ -1168,14 +1169,12 @@ def predictions_on_data(
         v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
 
         # Create the output file name
-        file_name_only = os.path.basename(file_name)
-        file_name_json = os.path.splitext(file_name_only)[0] + ".json"
-        output_file = os.path.join(pred_dir, f"Prediction_{file_name_json}")
+        output_file = pred_dir / f"Prediction_{file_name.stem}.json"
 
         if save:
             # Save predictions to JSON file
-            evaluations = instances_to_coco_json(outputs["instances"].to("cpu"), file_name)
-            with open(output_file, "w") as dest:
+            evaluations = instances_to_coco_json(outputs["instances"].to("cpu"), str(file_name))
+            with output_file.open("w") as dest:
                 json.dump(evaluations, dest)
 
 

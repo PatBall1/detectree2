@@ -43,7 +43,7 @@ def predict_on_data(
         None
     """
     directory = Path(directory)
-    pred_dir = directory / out_folder
+    pred_dir = Path(out_folder)
     pred_dir.mkdir(parents=True, exist_ok=True)
 
     if eval:
