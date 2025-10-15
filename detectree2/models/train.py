@@ -748,10 +748,10 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
         # Make sure we have the correct height and width
         # If image path ends in .png use cv2 to get height and width else if image path ends in .tif use rasterio
         if filename.endswith(".png"):
-            img_arr = cv2.imread(filename)
-            if img_arr is None:
-                raise FileNotFoundError(f"Failed to read image at path: {filename}")
-            height, width = img_arr.shape[:2]
+            img = cv2.imread(filename)
+            if img is None:
+                continue
+            height, width = img.shape[:2]
         elif filename.endswith(".tif"):
             with rasterio.open(filename) as src:
                 height, width = src.shape
@@ -781,7 +781,12 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
                 category_id = 0  # Default to "tree" if no class mapping is provided
 
             obj = {
-                "bbox": [min(px), min(py), max(px), max(py)],
+                "bbox": [
+                    np.min(np.array(px)),
+                    np.min(np.array(py)),
+                    np.max(np.array(px)),
+                    np.max(np.array(py)),
+                ],
                 "bbox_mode": BoxMode.XYXY_ABS,
                 "segmentation": [poly],
                 "category_id": category_id,

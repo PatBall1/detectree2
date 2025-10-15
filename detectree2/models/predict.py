@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 
 import cv2
+import numpy as np
 import rasterio
 from tqdm import tqdm
 from detectron2.engine import DefaultPredictor
@@ -72,6 +73,7 @@ def predict_on_data(
             if img is None:
                 print(f"Failed to read image {file_name} with cv2.")
                 continue
+            img = np.array(cv_img)  # Explicitly convert to numpy array
         elif file_ext == ".tif":
             # Multispectral image, read with rasterio
             with rasterio.open(file_name) as src:

@@ -59,6 +59,7 @@ jobs:
         flake8 detectree2 --count --exit-zero --max-complexity=10 --statistics
     - name: pytest checks
       run: |
+        pip install --upgrade --force-reinstall "numpy>=1.20,<2.0"
         pip install pytest-order
         pytest
     - name: mypy checks
