@@ -69,11 +69,11 @@ def predict_on_data(
 
         if file_ext == ".png":
             # RGB image, read with cv2
-            img = cv2.imread(str(file_name))
-            if img is None:
+            cv_img = cv2.imread(str(file_name))
+            if cv_img is None:
                 print(f"Failed to read image {file_name} with cv2.")
                 continue
-            img = np.array(img)  # Explicitly convert to numpy array
+            img = np.array(cv_img)  # Explicitly convert to numpy array
         elif file_ext == ".tif":
             # Multispectral image, read with rasterio
             with rasterio.open(file_name) as src:
