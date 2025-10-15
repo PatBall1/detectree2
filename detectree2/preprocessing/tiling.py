@@ -134,7 +134,8 @@ def process_tile(img_path: str,
                  additional_nodata: List[Any] = [],
                  image_statistics: List[Dict[str, float]] = None,
                  ignore_bands_indices: List[int] = [],
-                 use_convex_mask: bool = True):
+                 use_convex_mask: bool = True,
+                 enhance_rgb_contrast: bool = True):
     """Process a single tile for making predictions.
 
     Args:
@@ -199,7 +200,7 @@ def process_tile(img_path: str,
                     unioned_crowns = overlapping_crowns.union_all()
                 else:
                     unioned_crowns = overlapping_crowns.unary_union
-                convex_mask_tif = rasterio.features.geometry_mask([unioned_crowns.convex_hull.buffer(5)],
+                convex_mask_tif = rasterio.features.geometry_mask([unioned_crowns.convex_hull.buffer(3)],
                                                                   transform=out_transform,
                                                                   invert=True,
                                                                   out_shape=(out_img.shape[1], out_img.shape[2]))
@@ -231,9 +232,18 @@ def process_tile(img_path: str,
                 )
                 return None
 
-            # Apply nan mask across all bands (3D mask) without using np.broadcast_to (typing-friendly)
-            band_mask = np.stack([nan_mask == 1] * out_img.shape[0], axis=0)
-            out_img[band_mask] = 0
+            if enhance_rgb_contrast:
+                # rescale image to 1-255 (0 is reserved for nodata)
+                min_vals, max_vals = np.percentile(
+                    out_img.reshape(3, -1)[:, ~nan_mask.reshape(-1).astype(bool)], [0.2, 99.8])
+
+                out_img = (out_img - min_vals) / (max_vals - min_vals) * 254 + 1
+
+            # Apply nan mask
+            out_img[np.broadcast_to((nan_mask == 1)[None, :, :], out_img.shape)] = 0  # type: ignore[attr-defined]
+
+            if enhance_rgb_contrast:
+                out_img = np.clip(out_img, 0, 255)
 
             dtype, nodata = dtype_map.get(out_img.dtype, (None, None))
             if dtype is None:
@@ -255,25 +265,22 @@ def process_tile(img_path: str,
                 dest.write(out_img)
 
             r, g, b = out_img[0], out_img[1], out_img[2]
-            # Reorder channels to B, G, R for OpenCV (use list for mypy-friendly typing)
-            rgb = np.stack([b, g, r], axis=2)
+            rgb = np.dstack((b, g, r))  # type: ignore[attr-defined] # Reorder for cv2 (BGRA)
 
-            # Rescale to 0-255 if necessary
-            if np.nanmax(g) > 255:
-                rgb_rescaled = rgb / 65535 * 255
-            else:
-                rgb_rescaled = rgb
+            if not enhance_rgb_contrast:
+                # If not enhancing contrast, ensure the dtype is uint8
+                if dtype_bool:
+                    rgb = rgb.astype(np.uint8)
+                else:
+                    rgb = rgb.astype(np.float32)
+                np.clip(rgb, 0, 255, out=rgb)  # type: ignore[call-arg]
 
-            rgb_rescaled = np.clip(
-                rgb_rescaled.astype(np.float32), np.float32(0.0), np.float32(255.0)
-            )
-
-            cv2.imwrite(str(out_path_root.with_suffix(".png").resolve()), rgb_rescaled.astype(np.uint8))
+            cv2.imwrite(str(out_path_root.with_suffix(".png").resolve()), rgb.astype(np.uint8))
 
             if overlapping_crowns is not None:
-                return data, out_path_root, overlapping_crowns, minx, miny, buffer
+                return out_transform, out_path_root, overlapping_crowns, minx, miny, buffer
 
-            return data, out_path_root, None, minx, miny, buffer
+            return out_transform, out_path_root, None, minx, miny, buffer
 
     except RasterioIOError as e:
         logger.error(f"RasterioIOError while applying mask {coords}: {e}")
@@ -413,9 +420,8 @@ def process_tile_ms(img_path: str,
                 out_img.astype(np.float32), np.float32(1.0), np.float32(255.0)
             )
 
-            # Apply nan mask across all bands (3D mask) without using np.broadcast_to
-            band_mask = np.stack([nan_mask == 1] * out_img.shape[0], axis=0)
-            out_img[band_mask] = np.float32(0.0)
+            # Apply nan mask
+            out_img[np.broadcast_to((nan_mask == 1)[None, :, :], out_img.shape)] = 0.0  # type: ignore[attr-defined]
 
             dtype, nodata = dtype_map.get(out_img.dtype, (None, None))
             if dtype is None:
@@ -442,9 +448,9 @@ def process_tile_ms(img_path: str,
             # cv2.imwrite(str(out_path_root.with_suffix(".png").resolve()), rgb)
 
             if overlapping_crowns is not None:
-                return data, out_path_root, overlapping_crowns, minx, miny, buffer
+                return out_transform, out_path_root, overlapping_crowns, minx, miny, buffer
 
-            return data, out_path_root, None, minx, miny, buffer
+            return out_transform, out_path_root, None, minx, miny, buffer
 
     except RasterioIOError as e:
         logger.error(f"RasterioIOError while applying mask {coords}: {e}")
@@ -474,7 +480,9 @@ def process_tile_train(
         additional_nodata: List[Any] = [],
         image_statistics: List[Dict[str, float]] = None,
         ignore_bands_indices: List[int] = [],
-        use_convex_mask: bool = True) -> None:
+        use_convex_mask: bool = True,
+        enhance_rgb_contrast: bool = True
+    ) -> None:
     """Process a single tile for training data.
 
     Args:
@@ -498,7 +506,7 @@ def process_tile_train(
     if mode == "rgb":
         result = process_tile(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename,
                               crowns, threshold, nan_threshold, mask_gdf, additional_nodata, image_statistics,
-                              ignore_bands_indices, use_convex_mask)
+                              ignore_bands_indices, use_convex_mask, enhance_rgb_contrast)
     elif mode == "ms":
         result = process_tile_ms(img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs,
                                  tilename, crowns, threshold, nan_threshold, mask_gdf, additional_nodata,
@@ -508,13 +516,13 @@ def process_tile_train(
         # logger.warning(f"Skipping tile at ({minx}, {miny}) due to insufficient data.")
         return
 
-    data, out_path_root, overlapping_crowns, minx, miny, buffer = result
+    out_transform, out_path_root, overlapping_crowns, minx, miny, buffer = result
 
     if overlapping_crowns is not None and not overlapping_crowns.empty:
         overlapping_crowns = overlapping_crowns.explode(index_parts=True)
         moved = overlapping_crowns.translate(-minx + buffer, -miny + buffer)
-        scalingx = 1 / (data.transform[0])
-        scalingy = -1 / (data.transform[4])
+        scalingx = 1 / (out_transform[0])
+        scalingy = -1 / (out_transform[4])
         moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
 
         if mode == "rgb":
@@ -566,28 +574,22 @@ def _calculate_tile_placements(
     overlapping_tiles: bool = False,
 ) -> List[Tuple[int, int]]:
     """Internal method for calculating the placement of tiles"""
-
+    coordinates: List[Tuple[int, int]] = []
     if tile_placement == "grid":
         with rasterio.open(img_path) as data:
-            start_x = int(math.ceil(data.bounds[0]) + buffer)
-            stop_x = int(data.bounds[2] - tile_width - buffer)
-            start_y = int(math.ceil(data.bounds[1]) + buffer)
-            stop_y = int(data.bounds[3] - tile_height - buffer)
-            coordinates = [
-                (minx, miny)
-                for minx in range(start_x, stop_x, tile_width)
-                for miny in range(start_y, stop_y, tile_height)
+            grid_coords = [
+                (int(minx), int(miny)) for minx in np.arange(
+                    int(math.ceil(data.bounds[0])) + buffer, int(data.bounds[2] - tile_width - buffer), tile_width)
+                for miny in np.arange(
+                    int(math.ceil(data.bounds[1])) + buffer, int(data.bounds[3] - tile_height - buffer), tile_height)
             ]
             if overlapping_tiles:
-                start_x2 = int(math.ceil(data.bounds[0]) + buffer + tile_width // 2)
-                stop_x2 = int(data.bounds[2] - tile_width - buffer - tile_width // 2)
-                start_y2 = int(math.ceil(data.bounds[1]) + buffer + tile_height // 2)
-                stop_y2 = int(data.bounds[3] - tile_height - buffer - tile_height // 2)
-                coordinates.extend([
-                    (minx, miny)
-                    for minx in range(start_x2, stop_x2, tile_width)
-                    for miny in range(start_y2, stop_y2, tile_height)
-                ])
+                grid_coords.extend([(int(minx), int(miny)) for minx in np.arange(
+                    int(math.ceil(data.bounds[0])) + buffer + tile_width // 2, int(data.bounds[2] - tile_width - buffer -
+                    tile_width // 2), tile_width) for miny in np.arange(
+                        int(math.ceil(data.bounds[1])) + buffer + tile_height // 2, int(data.bounds[3] - tile_height - buffer -
+                        tile_height // 2), tile_height)])
+            coordinates = grid_coords
     elif tile_placement == "adaptive":
 
         if crowns is None:
@@ -613,7 +615,6 @@ def _calculate_tile_placements(
         y_offset = (combined_tiles_height - area_height) / 2
 
         logger.info("Starting Tile Placement Generation")
-        coordinates = []
         for row in range(required_tiles_y):
             bar = gpd.GeoSeries([
                 box(crowns.total_bounds[0] - x_offset, crowns.total_bounds[1] - y_offset + row * tile_height,
@@ -684,17 +685,17 @@ def calculate_image_statistics(file_path,
                     min_val, max_val = np.percentile(valid_data, [1, 99])
 
                     stats = {
-                        "mean": np.mean(valid_data),
-                        "min": min_val,
-                        "max": max_val,
-                        "std_dev": np.std(valid_data),
+                        "mean": float(np.mean(valid_data)),
+                        "min": float(min_val),
+                        "max": float(max_val),
+                        "std_dev": float(np.std(valid_data)),
                     }
                 else:
                     stats = {
-                        "mean": None,
-                        "min": None,
-                        "max": None,
-                        "std_dev": None,
+                        "mean": np.nan,
+                        "min": np.nan,
+                        "max": np.nan,
+                        "std_dev": np.nan,
                     }
                 band_stats.append(stats)
             return band_stats
@@ -765,10 +766,10 @@ def calculate_image_statistics(file_path,
                 }
             else:
                 stats = {
-                    "mean": float("nan"),
-                    "min": float("nan"),
-                    "max": float("nan"),
-                    "std_dev": float("nan"),
+                    "mean": np.nan,
+                    "min": np.nan,
+                    "max": np.nan,
+                    "std_dev": np.nan,
                 }
             band_stats.append(stats)
         return band_stats
@@ -794,6 +795,7 @@ def tile_data(
     overlapping_tiles: bool = False,
     ignore_bands_indices: List[int] = [],
     use_convex_mask: bool = True,
+    enhance_rgb_contrast: bool = True,
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
@@ -841,7 +843,7 @@ def tile_data(
     tile_args = [
         (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold,
          nan_threshold, mode, class_column, mask_gdf, additional_nodata, image_statistics, ignore_bands_indices,
-         use_convex_mask) for minx, miny in tile_coordinates
+         use_convex_mask, enhance_rgb_contrast) for minx, miny in tile_coordinates
         if mask_path is None or (mask_path is not None and mask_gdf.intersects(
             box(minx, miny, minx + tile_width, miny + tile_height)  #TODO maybe add to_crs here
         ).any())
@@ -1040,8 +1042,7 @@ def create_RGB_from_MS(tile_folder_path: Union[str, Path],
 
             # Write the PNG (we must convert shape to (H, W, 3) and then to uint8)
             output_png = out_path / f"{tif_file.stem}.png"
-            # Move axis from (bands, H, W) -> (H, W, bands)
-            png_ready = transformed.transpose(1, 2, 0).astype(np.uint8)
+            png_ready = np.moveaxis(transformed, 0, -1).astype(np.uint8)  # type: ignore[attr-defined] # (H, W, 3)
             cv2.imwrite(str(output_png), cv2.cvtColor(png_ready, cv2.COLOR_RGB2BGR))
 
     elif conversion == "first-three":
@@ -1080,7 +1081,7 @@ def create_RGB_from_MS(tile_folder_path: Union[str, Path],
             # Write out the PNG (shape must be (H, W, 3))
             output_png = out_path / f"{tif_file.stem}.png"
             # Move axis from (bands, H, W) -> (H, W, bands)
-            png_ready = data.transpose(1, 2, 0).astype(np.uint8)
+            png_ready = np.moveaxis(data, 0, -1).astype(np.uint8)  # type: ignore[attr-defined]
             # We expect the order to be [band1, band2, band3], so interpret as R,G,B
             cv2.imwrite(str(output_png), cv2.cvtColor(png_ready, cv2.COLOR_RGB2BGR))
 
