@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>4. Running in Jupyter Notebook on a HPC platform &mdash; detectree2 1.0.8 documentation</title>
+  <title>Running in Jupyter Notebook on a HPC platform &mdash; detectree2 1.0.8 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
@@ -20,8 +20,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="5. Contributing guide" href="contributing.html" />
-    <link rel="prev" title="3. Tutorial (multiclass)" href="tutorial_multi.html" /> 
+    <link rel="next" title="Usage" href="usage.html" />
+    <link rel="prev" title="5. Advanced Topics &amp; “Pro Tips”" href="tutorials/05_advanced_topics.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,20 +45,20 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">2. Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial_multi.html">3. Tutorial (multiclass)</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">4. Running in Jupyter Notebook on a HPC platform</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#setting-up-a-virtual-environment-for-jupyter-notebook">4.1. Setting Up a Virtual Environment for Jupyter Notebook</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#running-jupyter-notebook-on-the-login-node-cpu-only">4.2. Running Jupyter Notebook on the Login Node (CPU Only)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#running-jupyter-notebook-on-a-compute-node-cpu-or-gpu">4.3. Running Jupyter Notebook on a Compute Node (CPU or GPU)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#installing-detectree2">4.4. Installing Detectree2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#running-detectree2-on-a-gpu-compute-node">4.5. Running Detectree2 on a GPU Compute Node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Running in Jupyter Notebook on a HPC platform</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#setting-up-a-virtual-environment-for-jupyter-notebook">Setting Up a Virtual Environment for Jupyter Notebook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-jupyter-notebook-on-the-login-node-cpu-only">Running Jupyter Notebook on the Login Node (CPU Only)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-jupyter-notebook-on-a-compute-node-cpu-or-gpu">Running Jupyter Notebook on a Compute Node (CPU or GPU)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-detectree2">Installing Detectree2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-detectree2-on-a-gpu-compute-node">Running Detectree2 on a GPU Compute Node</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">5. Contributing guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="using-git.html">6. Git/Github</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">7. API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -75,7 +75,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active"><span class="section-number">4. </span>Running in Jupyter Notebook on a HPC platform</li>
+      <li class="breadcrumb-item active">Running in Jupyter Notebook on a HPC platform</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/cluster.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -86,7 +86,7 @@
            <div itemprop="articleBody">
              
   <section id="running-in-jupyter-notebook-on-a-hpc-platform">
-<h1><a class="toc-backref" href="#id1" role="doc-backlink"><span class="section-number">4. </span>Running in Jupyter Notebook on a HPC platform</a><a class="headerlink" href="#running-in-jupyter-notebook-on-a-hpc-platform" title="Link to this heading"></a></h1>
+<h1><a class="toc-backref" href="#id1" role="doc-backlink">Running in Jupyter Notebook on a HPC platform</a><a class="headerlink" href="#running-in-jupyter-notebook-on-a-hpc-platform" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This example is based on CSD3 for people associated with the University of Cambridge but the workflow can be applied to other HPC clusters.</p>
@@ -107,7 +107,7 @@
 </ul>
 </nav>
 <section id="setting-up-a-virtual-environment-for-jupyter-notebook">
-<h2><a class="toc-backref" href="#id2" role="doc-backlink"><span class="section-number">4.1. </span>Setting Up a Virtual Environment for Jupyter Notebook</a><a class="headerlink" href="#setting-up-a-virtual-environment-for-jupyter-notebook" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Setting Up a Virtual Environment for Jupyter Notebook</a><a class="headerlink" href="#setting-up-a-virtual-environment-for-jupyter-notebook" title="Link to this heading"></a></h2>
 <p>First, create a virtual environment to run Jupyter Notebook. This step only needs to be done once.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Load<span class="w"> </span>the<span class="w"> </span>Python<span class="w"> </span>module
 <span class="go">module load python/3.8</span>
@@ -124,7 +124,7 @@
 </div>
 </section>
 <section id="running-jupyter-notebook-on-the-login-node-cpu-only">
-<h2><a class="toc-backref" href="#id3" role="doc-backlink"><span class="section-number">4.2. </span>Running Jupyter Notebook on the Login Node (CPU Only)</a><a class="headerlink" href="#running-jupyter-notebook-on-the-login-node-cpu-only" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Running Jupyter Notebook on the Login Node (CPU Only)</a><a class="headerlink" href="#running-jupyter-notebook-on-the-login-node-cpu-only" title="Link to this heading"></a></h2>
 <p>Follow these steps to run Jupyter Notebook on the login node using CPU resources only.</p>
 <p><strong>Steps:</strong>
 1. <strong>Activate the Virtual Environment:</strong></p>
@@ -166,7 +166,7 @@
 </ol>
 </section>
 <section id="running-jupyter-notebook-on-a-compute-node-cpu-or-gpu">
-<h2><a class="toc-backref" href="#id4" role="doc-backlink"><span class="section-number">4.3. </span>Running Jupyter Notebook on a Compute Node (CPU or GPU)</a><a class="headerlink" href="#running-jupyter-notebook-on-a-compute-node-cpu-or-gpu" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Running Jupyter Notebook on a Compute Node (CPU or GPU)</a><a class="headerlink" href="#running-jupyter-notebook-on-a-compute-node-cpu-or-gpu" title="Link to this heading"></a></h2>
 <p>To run Jupyter Notebook on a compute node, follow these steps.</p>
 <p><strong>Steps:</strong>
 1. <strong>Note the Login Node Hostname:</strong></p>
@@ -253,7 +253,7 @@
 </div>
 </section>
 <section id="installing-detectree2">
-<h2><a class="toc-backref" href="#id5" role="doc-backlink"><span class="section-number">4.4. </span>Installing Detectree2</a><a class="headerlink" href="#installing-detectree2" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Installing Detectree2</a><a class="headerlink" href="#installing-detectree2" title="Link to this heading"></a></h2>
 <p>Follow these steps to install the <code class="docutils literal notranslate"><span class="pre">detectree2</span></code> package on a GPU compute node.</p>
 <p><strong>Steps:</strong>
 1. <strong>Request a GPU Interactive Session:</strong></p>
@@ -305,7 +305,7 @@
 </ol>
 </section>
 <section id="running-detectree2-on-a-gpu-compute-node">
-<h2><a class="toc-backref" href="#id6" role="doc-backlink"><span class="section-number">4.5. </span>Running Detectree2 on a GPU Compute Node</a><a class="headerlink" href="#running-detectree2-on-a-gpu-compute-node" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Running Detectree2 on a GPU Compute Node</a><a class="headerlink" href="#running-detectree2-on-a-gpu-compute-node" title="Link to this heading"></a></h2>
 <p>When running any <code class="docutils literal notranslate"><span class="pre">detectree2</span></code> tasks on a GPU compute node, ensure the following modules are loaded and the Python environment is active.</p>
 <p><strong>Steps:</strong>
 1. <strong>Request a GPU Interactive Session:</strong></p>
@@ -344,8 +344,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="tutorial_multi.html" class="btn btn-neutral float-left" title="3. Tutorial (multiclass)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="contributing.html" class="btn btn-neutral float-right" title="5. Contributing guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="tutorials/05_advanced_topics.html" class="btn btn-neutral float-left" title="5. Advanced Topics &amp; “Pro Tips”" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="usage.html" class="btn btn-neutral float-right" title="Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

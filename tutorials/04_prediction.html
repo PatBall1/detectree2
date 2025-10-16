@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4. In-Depth Guide: Prediction &mdash; detectree2 1.0.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=aec50437"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5. Advanced Topics &amp; “Pro Tips”" href="05_advanced_topics.html" />
+    <link rel="prev" title="3. In-Depth Guide: Model Training &amp; Evaluation" href="03_training_and_evaluation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            detectree2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="01_getting_started.html">1. Getting Started: Your First Prediction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="02_data_preparation.html">2. In-Depth Guide: Data Preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="03_training_and_evaluation.html">3. In-Depth Guide: Model Training &amp; Evaluation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">4. In-Depth Guide: Prediction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#generating-landscape-predictions">4.1. Generating Landscape Predictions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#landscape-predictions-multi-class">4.2. Landscape Predictions (Multi-Class)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="05_advanced_topics.html">5. Advanced Topics &amp; “Pro Tips”</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cluster.html">Running in Jupyter Notebook on a HPC platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../using-git.html">Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">detectree2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Tutorials</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">4. </span>In-Depth Guide: Prediction</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/04_prediction.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="in-depth-guide-prediction">
+<h1><span class="section-number">4. </span>In-Depth Guide: Prediction<a class="headerlink" href="#in-depth-guide-prediction" title="Link to this heading"></a></h1>
+<p>This guide covers how to use a trained <code class="docutils literal notranslate"><span class="pre">detectree2</span></code> model to make predictions on large-scale orthomosaics.</p>
+<section id="generating-landscape-predictions">
+<h2><span class="section-number">4.1. </span>Generating Landscape Predictions<a class="headerlink" href="#generating-landscape-predictions" title="Link to this heading"></a></h2>
+<p>Here we call the necessary functions.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.preprocessing.tiling</span><span class="w"> </span><span class="kn">import</span> <span class="n">tile_data</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.outputs</span><span class="w"> </span><span class="kn">import</span> <span class="n">project_to_geojson</span><span class="p">,</span> <span class="n">stitch_crowns</span><span class="p">,</span> <span class="n">clean_crowns</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.predict</span><span class="w"> </span><span class="kn">import</span> <span class="n">predict_on_data</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_cfg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">DefaultPredictor</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span>
+</pre></div>
+</div>
+<p>Start by tiling up the entire orthomosaic so that a crown map can be made for the entire landscape. Tiles should be
+approximately the same size as those trained on (typically ~ 100 m). A buffer (here 30 m) should be included so that we
+can discard the partial crowns predicted at the edge of tiles.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Path to site folder and orthomosaic</span>
+<span class="n">site_path</span> <span class="o">=</span> <span class="s2">&quot;/path/to/data/BCI_50ha&quot;</span>
+<span class="n">img_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/rgb/2015.06.10_07cm_ORTHO.tif&quot;</span>
+<span class="n">tiles_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/tilespred/&quot;</span>
+
+<span class="c1"># Location of trained model</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="s2">&quot;/path/to/models/220629_ParacouSepilokDanum_JB.pth&quot;</span>
+
+<span class="c1"># Specify tiling</span>
+<span class="n">buffer</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">tile_width</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">tile_height</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">tile_data</span><span class="p">(</span><span class="n">img_path</span><span class="p">,</span> <span class="n">tiles_path</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">dtype_bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If tiles are outputting as blank images set <code class="docutils literal notranslate"><span class="pre">dtype_bool</span> <span class="pre">=</span> <span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">tile_data</span></code> function. This is a bug
+and we are working on fixing it. Avoid supplying crown polygons otherwise the function will run as if it is tiling
+for training.</p>
+</div>
+<p>To download a pre-trained model from the <code class="docutils literal notranslate"><span class="pre">model_garden</span></code> you can run <code class="docutils literal notranslate"><span class="pre">wget</span></code> on the package repo</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">!wget https://zenodo.org/records/15863800/files/250312_flexi.pth</span>
+</pre></div>
+</div>
+<p>Point to a trained model, set up the configuration state and make predictions on the tiles.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">trained_model</span> <span class="o">=</span> <span class="s2">&quot;./230103_randresize_full.pth&quot;</span>
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span><span class="n">update_model</span><span class="o">=</span><span class="n">trained_model</span><span class="p">)</span>
+<span class="n">predict_on_data</span><span class="p">(</span><span class="n">tiles_path</span><span class="p">,</span> <span class="n">predictor</span><span class="o">=</span><span class="n">DefaultPredictor</span><span class="p">(</span><span class="n">cfg</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Once the predictions have been made on the tiles, it is necessary to project them back into geographic space.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_to_geojson</span><span class="p">(</span><span class="n">tiles_path</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions/&quot;</span><span class="p">,</span> <span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions_geo/&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To create a useful output it is necessary to stitch the crowns together while handling overlaps in the buffer.
+Invalid geometries may arise when converting from a mask to a polygon - it is usually best to simply remove these.
+Cleaning the crowns will remove instances where there is large overlaps between predicted crowns (removing the
+predictions with lower confidence).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">crowns</span> <span class="o">=</span> <span class="n">stitch_crowns</span><span class="p">(</span><span class="n">tiles_path</span> <span class="o">+</span> <span class="s2">&quot;predictions_geo/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">clean</span> <span class="o">=</span> <span class="n">clean_crowns</span><span class="p">(</span><span class="n">crowns</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># set a confidence&gt;0 to filter out less confident crowns</span>
+</pre></div>
+</div>
+<p>By default the <code class="docutils literal notranslate"><span class="pre">clean_crowns</span></code> function will remove crowns with a confidence of less than 20%. The above ‘clean’ crowns
+includes crowns of all confidence scores (0%-100%) as <code class="docutils literal notranslate"><span class="pre">confidence=0</span></code>. It is likely that crowns with very low
+confidence will be poor quality so it is usually preferable to filter these out. A suitable threshold can be determined
+by eye in QGIS or implemented as single line in Python. <code class="docutils literal notranslate"><span class="pre">Confidence_score</span></code> is a column in the <code class="docutils literal notranslate"><span class="pre">crowns</span></code> GeoDataFrame
+and is considered a tunable parameter.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">clean</span> <span class="o">=</span> <span class="n">clean</span><span class="p">[</span><span class="n">clean</span><span class="p">[</span><span class="s2">&quot;Confidence_score&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">]</span> <span class="c1"># step included for illustration - can be done in clean_crowns func</span>
+</pre></div>
+</div>
+<p>The outputted crown polygons will have many vertices because they are generated from a mask which is pixelwise. If you
+will need to edit the crowns in QGIS it is best to simplify them to a reasonable number of vertices. This can be done
+with <code class="docutils literal notranslate"><span class="pre">simplify</span></code> method. The <code class="docutils literal notranslate"><span class="pre">tolerance</span></code> will determine the coarseness of the simplification it has the same units as
+the coordinate reference system of the GeoSeries (meters when working with UTM).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">clean</span> <span class="o">=</span> <span class="n">clean</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">clean</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="mf">0.3</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Once we’re happy with the crown map, save the crowns to file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">clean</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/crowns_out.gpkg&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="landscape-predictions-multi-class">
+<h2><span class="section-number">4.2. </span>Landscape Predictions (Multi-Class)<a class="headerlink" href="#landscape-predictions-multi-class" title="Link to this heading"></a></h2>
+<p>COMING SOON</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="03_training_and_evaluation.html" class="btn btn-neutral float-left" title="3. In-Depth Guide: Model Training &amp; Evaluation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="05_advanced_topics.html" class="btn btn-neutral float-right" title="5. Advanced Topics &amp; “Pro Tips”" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, James Ball.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

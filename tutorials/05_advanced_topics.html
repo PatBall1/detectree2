@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5. Advanced Topics &amp; “Pro Tips” &mdash; detectree2 1.0.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=aec50437"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Running in Jupyter Notebook on a HPC platform" href="../cluster.html" />
+    <link rel="prev" title="4. In-Depth Guide: Prediction" href="04_prediction.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            detectree2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="01_getting_started.html">1. Getting Started: Your First Prediction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="02_data_preparation.html">2. In-Depth Guide: Data Preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="03_training_and_evaluation.html">3. In-Depth Guide: Model Training &amp; Evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04_prediction.html">4. In-Depth Guide: Prediction</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">5. Advanced Topics &amp; “Pro Tips”</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#advanced-multispectral-training">5.1. Advanced Multispectral Training</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pro-tip-selective-band-usage">5.1.1. Pro Tip: Selective Band Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pro-tip-advanced-weight-initialization">5.1.2. Pro Tip: Advanced Weight Initialization</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#advanced-multi-class-techniques">5.2. Advanced Multi-Class Techniques</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#handling-class-imbalance-with-federated-loss">5.2.1. Handling Class Imbalance with Federated Loss</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pro-tip-transfer-learning-with-a-different-number-of-classes">5.2.2. Pro Tip: Transfer Learning with a Different Number of Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#advanced-fine-tuning">5.3. Advanced Fine-Tuning</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pro-tip-advanced-fine-grained-layer-freezing">5.3.1. Pro Tip: Advanced Fine-grained Layer Freezing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cluster.html">Running in Jupyter Notebook on a HPC platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../using-git.html">Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">detectree2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Tutorials</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">5. </span>Advanced Topics &amp; “Pro Tips”</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/05_advanced_topics.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="advanced-topics-pro-tips">
+<h1><span class="section-number">5. </span>Advanced Topics &amp; “Pro Tips”<a class="headerlink" href="#advanced-topics-pro-tips" title="Link to this heading"></a></h1>
+<p>This section contains a collection of advanced techniques and tips for expert users
+and special cases, such as training with multispectral data and handling class imbalance.</p>
+<section id="advanced-multispectral-training">
+<h2><span class="section-number">5.1. </span>Advanced Multispectral Training<a class="headerlink" href="#advanced-multispectral-training" title="Link to this heading"></a></h2>
+<p>The process for training a multispectral model is similar to that for RGB data but there are some key steps that are
+different. Data will be read from <code class="docutils literal notranslate"><span class="pre">.tif</span></code> files of 4 or more bands instead of the 3-band <code class="docutils literal notranslate"><span class="pre">.png</span></code> files.</p>
+<p>First, ensure your data is tiled with <code class="docutils literal notranslate"><span class="pre">mode=&quot;ms&quot;</span></code> and registered correctly.</p>
+<p>The number of bands can be checked with rasterio:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+
+<span class="n">folder_path</span> <span class="o">=</span> <span class="s2">&quot;/path/to/tilesMS/&quot;</span>
+<span class="n">img_paths</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">folder_path</span> <span class="o">+</span> <span class="s2">&quot;*.tif&quot;</span><span class="p">)</span>
+<span class="n">img_path</span> <span class="o">=</span> <span class="n">img_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">dataset</span><span class="p">:</span>
+   <span class="n">num_bands</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">count</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The raster has </span><span class="si">{</span><span class="n">num_bands</span><span class="si">}</span><span class="s1"> bands.&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Due to the additional bands, the weights of the first convolutional layer (conv1) are modified to accommodate a
+variable number of input channels. This is automatically done when <code class="docutils literal notranslate"><span class="pre">imgmode</span></code> is set to <code class="docutils literal notranslate"><span class="pre">&quot;ms&quot;</span></code>. The <code class="docutils literal notranslate"><span class="pre">setup_cfg</span></code> function also automatically extends <code class="docutils literal notranslate"><span class="pre">cfg.MODEL.PIXEL_MEAN</span></code> and <code class="docutils literal notranslate"><span class="pre">cfg.MODEL.PIXEL_STD</span></code> to include the additional bands when <code class="docutils literal notranslate"><span class="pre">num_bands</span></code> is set to a value greater than 3.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">MyTrainer</span><span class="p">,</span> <span class="n">setup_cfg</span>
+
+<span class="n">trains</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ParacouMS_train&quot;</span><span class="p">,)</span>
+<span class="n">tests</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ParacouMS_val&quot;</span><span class="p">,)</span>
+<span class="n">out_dir</span> <span class="o">=</span> <span class="s2">&quot;./ms_outputs&quot;</span>
+
+<span class="n">base_model</span> <span class="o">=</span> <span class="s2">&quot;COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml&quot;</span>
+
+<span class="c1"># Set up the configuration for multispectral training</span>
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">workers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">eval_period</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+               <span class="n">max_iter</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="n">out_dir</span><span class="p">,</span> <span class="n">imgmode</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span>
+               <span class="n">num_bands</span><span class="o">=</span><span class="n">num_bands</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>With additional bands, you may need to reduce the number of images per batch if you encounter memory errors (e.g., <code class="docutils literal notranslate"><span class="pre">CUDA</span> <span class="pre">out</span> <span class="pre">of</span> <span class="pre">memory</span></code>).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">IMS_PER_BATCH</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">MyTrainer</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">resume_or_load</span><span class="p">(</span><span class="n">resume</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</pre></div>
+</div>
+<section id="pro-tip-selective-band-usage">
+<h3><span class="section-number">5.1.1. </span>Pro Tip: Selective Band Usage<a class="headerlink" href="#pro-tip-selective-band-usage" title="Link to this heading"></a></h3>
+<p>You may want to experiment with using only a subset of your available spectral bands without creating new image files. This can be achieved by creating a custom data mapper that reads only specific bands from your <code class="docutils literal notranslate"><span class="pre">.tif</span></code> files.</p>
+<p>First, define a list of the 1-based band indices you wish to use. Then, define a custom <cite>FlexibleDatasetMapper</cite> that incorporates this logic, and pass it to the training loader.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">t</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">detectron2.data.transforms</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">T</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="c1"># Define which bands to read (1-based indices)</span>
+<span class="n">only_read_bands</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">]</span>
+
+<span class="c1"># You must update num_bands in the cfg to match the number of selected bands</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">INPUT</span><span class="o">.</span><span class="n">NUM_IN_CHANNELS</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">only_read_bands</span><span class="p">)</span>
+
+<span class="c1"># Create a custom mapper class to read only specific bands</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomBandMapper</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">FlexibleDatasetMapper</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">dataset_dict</span><span class="p">[</span><span class="s2">&quot;file_name&quot;</span><span class="p">])</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+                <span class="c1"># Read only the specified bands</span>
+                <span class="n">img</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">indexes</span><span class="o">=</span><span class="n">only_read_bands</span><span class="p">)</span>
+
+            <span class="c1"># Transpose to (H, W, C)</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+
+            <span class="n">aug_input</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">AugInput</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+            <span class="n">transforms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">augmentations</span><span class="p">(</span><span class="n">aug_input</span><span class="p">)</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">aug_input</span><span class="o">.</span><span class="n">image</span>
+            <span class="n">dataset_dict</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+
+            <span class="k">if</span> <span class="s2">&quot;annotations&quot;</span> <span class="ow">in</span> <span class="n">dataset_dict</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_transform_annotations</span><span class="p">(</span><span class="n">dataset_dict</span><span class="p">,</span> <span class="n">transforms</span><span class="p">,</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+
+            <span class="k">return</span> <span class="n">dataset_dict</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error processing </span><span class="si">{</span><span class="n">dataset_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;file_name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;unknown&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+<span class="c1"># Override the default train loader with one that uses the custom mapper</span>
+<span class="n">t</span><span class="o">.</span><span class="n">FlexibleDatasetMapper</span> <span class="o">=</span> <span class="n">CustomBandMapper</span>
+
+<span class="c1"># Now, when you run trainer.train(), it will use only the bands specified.</span>
+</pre></div>
+</div>
+</section>
+<section id="pro-tip-advanced-weight-initialization">
+<h3><span class="section-number">5.1.2. </span>Pro Tip: Advanced Weight Initialization<a class="headerlink" href="#pro-tip-advanced-weight-initialization" title="Link to this heading"></a></h3>
+<p>The default method for adapting a 3-channel (RGB) pre-trained model to more input channels is to repeat the weights of the first three channels. The <cite>detectree2</cite> library provides a utility function to perform this weight adaptation.</p>
+<p>For developers who need to adapt an existing model to a different number of input bands (e.g., for 4-band imagery), the <cite>multiply_conv1_weights</cite> function located in <cite>detectree2.models.train</cite> automatically copies weights of an existing model round-robin style. Without the call to this method, the model’s weights would be initialized randomly across the whole input convolution layer.</p>
+</section>
+</section>
+<section id="advanced-multi-class-techniques">
+<h2><span class="section-number">5.2. </span>Advanced Multi-Class Techniques<a class="headerlink" href="#advanced-multi-class-techniques" title="Link to this heading"></a></h2>
+<section id="handling-class-imbalance-with-federated-loss">
+<h3><span class="section-number">5.2.1. </span>Handling Class Imbalance with Federated Loss<a class="headerlink" href="#handling-class-imbalance-with-federated-loss" title="Link to this heading"></a></h3>
+<p>Real-world datasets for multi-class problems are often imbalanced. To counteract this, you can enable Federated Loss, a technique that gives more weight to rare classes during training. You can enable this by setting a few parameters on the <cite>cfg</cite> object after it has been created.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># After creating the cfg object with setup_cfg(...)</span>
+
+<span class="c1"># Enable Federated Loss</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">MODEL</span><span class="o">.</span><span class="n">ROI_BOX_HEAD</span><span class="o">.</span><span class="n">USE_FED_LOSS</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">MODEL</span><span class="o">.</span><span class="n">ROI_BOX_HEAD</span><span class="o">.</span><span class="n">USE_SIGMOID_CE</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1"># This power parameter controls how much to weight the rare classes</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">MODEL</span><span class="o">.</span><span class="n">ROI_BOX_HEAD</span><span class="o">.</span><span class="n">FED_LOSS_FREQ_WEIGHT_POWER</span> <span class="o">=</span> <span class="mf">0.7</span>
+
+<span class="c1"># You can also set the number of classes for the federated loss</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.preprocessing.tiling</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_class_distribution</span>
+<span class="n">class_distribution</span> <span class="o">=</span> <span class="n">get_class_distribution</span><span class="p">(</span><span class="n">tiles_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">MODEL</span><span class="o">.</span><span class="n">ROI_BOX_HEAD</span><span class="o">.</span><span class="n">FED_LOSS_NUM_CLASSES</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">class_distribution</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.75</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="pro-tip-transfer-learning-with-a-different-number-of-classes">
+<h3><span class="section-number">5.2.2. </span>Pro Tip: Transfer Learning with a Different Number of Classes<a class="headerlink" href="#pro-tip-transfer-learning-with-a-different-number-of-classes" title="Link to this heading"></a></h3>
+<p>A common scenario is fine-tuning a model that was pre-trained on a different number of classes than your new dataset. The <cite>resume_or_load</cite> method is designed to handle this automatically.</p>
+<p>If a mismatch in the number of classes is detected between the checkpoint and the new model, <strong>Detectron2</strong> will adapt the architecture by randomly initializing the affected parts of the model. This provides a reasonable starting point for the new classes and allows training to proceed without crashing.</p>
+</section>
+</section>
+<section id="advanced-fine-tuning">
+<h2><span class="section-number">5.3. </span>Advanced Fine-Tuning<a class="headerlink" href="#advanced-fine-tuning" title="Link to this heading"></a></h2>
+<section id="pro-tip-advanced-fine-grained-layer-freezing">
+<h3><span class="section-number">5.3.1. </span>Pro Tip: Advanced Fine-grained Layer Freezing<a class="headerlink" href="#pro-tip-advanced-fine-grained-layer-freezing" title="Link to this heading"></a></h3>
+<p>When you load a pre-trained model, you may not want to retrain the entire network, especially if your own dataset is small. A powerful technique is to “freeze” parts of the network, making their weights non-trainable, and only fine-tune the higher-level layers. Here’s how you can apply this technique after creating the <cite>trainer</cite> object and before calling <cite>trainer.train()</cite>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span> <span class="o">=</span> <span class="n">MyTrainer</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">resume_or_load</span><span class="p">(</span><span class="n">resume</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># --- Advanced: Freeze layers of the pre-trained backbone ---</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Applying custom layer freezing...&quot;</span><span class="p">)</span>
+
+<span class="c1"># Freeze the initial convolutional stem</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">backbone</span><span class="o">.</span><span class="n">bottom_up</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">freeze</span><span class="p">()</span>
+
+<span class="c1"># Freeze the blocks within the first residual stage (res2)</span>
+<span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">trainer</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">backbone</span><span class="o">.</span><span class="n">bottom_up</span><span class="o">.</span><span class="n">stages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
+    <span class="n">block</span><span class="o">.</span><span class="n">freeze</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting training with custom frozen layers.&quot;</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Why is this useful?</strong></p>
+<ul class="simple">
+<li><p><strong>Prevents Overfitting:</strong> On small datasets, allowing the full network to train can cause it to “forget” the powerful general features it learned and instead memorize your small dataset. Freezing the early layers prevents this.</p></li>
+<li><p><strong>Faster Training:</strong> With fewer trainable parameters, each training iteration is faster.</p></li>
+<li><p><strong>Experimentation:</strong> It gives you a crucial tool for experimentation. If your new images are very different from the original training data, you might only freeze the <cite>stem</cite>. If they are very similar, you might freeze everything up to <cite>res4</cite>.</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="04_prediction.html" class="btn btn-neutral float-left" title="4. In-Depth Guide: Prediction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../cluster.html" class="btn btn-neutral float-right" title="Running in Jupyter Notebook on a HPC platform" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, James Ball.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

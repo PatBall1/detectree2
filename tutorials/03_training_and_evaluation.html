@@ -1,0 +1,282 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3. In-Depth Guide: Model Training &amp; Evaluation &mdash; detectree2 1.0.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=aec50437"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4. In-Depth Guide: Prediction" href="04_prediction.html" />
+    <link rel="prev" title="2. In-Depth Guide: Data Preparation" href="02_data_preparation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            detectree2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="01_getting_started.html">1. Getting Started: Your First Prediction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="02_data_preparation.html">2. In-Depth Guide: Data Preparation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">3. In-Depth Guide: Model Training &amp; Evaluation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-training-workflow">3.1. The Training Workflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-augmentation">3.2. Data Augmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#post-training-analysis">3.3. Post-Training Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#evaluating-model-performance">3.4. Evaluating Model Performance</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="04_prediction.html">4. In-Depth Guide: Prediction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05_advanced_topics.html">5. Advanced Topics &amp; “Pro Tips”</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cluster.html">Running in Jupyter Notebook on a HPC platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../using-git.html">Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">detectree2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Tutorials</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">3. </span>In-Depth Guide: Model Training &amp; Evaluation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/03_training_and_evaluation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="in-depth-guide-model-training-evaluation">
+<h1><span class="section-number">3. </span>In-Depth Guide: Model Training &amp; Evaluation<a class="headerlink" href="#in-depth-guide-model-training-evaluation" title="Link to this heading"></a></h1>
+<p>This guide covers the model training process in detail, including dataset registration,
+configuration for single and multi-class problems, and how to evaluate model performance.</p>
+<section id="the-training-workflow">
+<h2><span class="section-number">3.1. </span>The Training Workflow<a class="headerlink" href="#the-training-workflow" title="Link to this heading"></a></h2>
+<p><strong>1. Registering Datasets</strong></p>
+<p>Before training can commence, you must register your tiled training and validation datasets with Detectron2.</p>
+<p>For <strong>single-class</strong> datasets:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_train_data</span>
+
+<span class="n">train_location</span> <span class="o">=</span> <span class="s2">&quot;/path/to/Danum/tiles/train/&quot;</span>
+<span class="n">register_train_data</span><span class="p">(</span><span class="n">train_location</span><span class="p">,</span> <span class="s1">&#39;Danum&#39;</span><span class="p">,</span> <span class="n">val_fold</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For <strong>multi-class</strong> datasets, you must also provide the path to the <code class="docutils literal notranslate"><span class="pre">class_to_idx.json</span></code> file you created during data preparation. This ensures the model knows about all possible classes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_train_data</span>
+
+<span class="n">train_dir</span> <span class="o">=</span> <span class="s2">&quot;/path/to/Danum_lianas/tiles/train&quot;</span>
+<span class="n">class_mapping_file</span> <span class="o">=</span> <span class="s2">&quot;/path/to/Danum_lianas/tiles/class_to_idx.json&quot;</span>
+<span class="n">data_name</span> <span class="o">=</span> <span class="s2">&quot;DanumLiana&quot;</span>
+
+<span class="n">register_train_data</span><span class="p">(</span><span class="n">train_dir</span><span class="p">,</span> <span class="n">data_name</span><span class="p">,</span> <span class="n">val_fold</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">class_mapping_file</span><span class="o">=</span><span class="n">class_mapping_file</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The data will be registered as <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_train</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_val</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">Danum_train</span></code> and <code class="docutils literal notranslate"><span class="pre">Danum_val</span></code>).</p>
+<p><strong>2. Configuring the Model</strong></p>
+<p>We must supply a <code class="docutils literal notranslate"><span class="pre">base_model</span></code> from Detectron2’s <code class="docutils literal notranslate"><span class="pre">model_zoo</span></code>. This loads a backbone that has been pre-trained, which saves time and improves performance.</p>
+<p>For <strong>single-class</strong> training:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_cfg</span>
+
+<span class="c1"># Set the base (pre-trained) model from the detectron2 model_zoo</span>
+<span class="n">base_model</span> <span class="o">=</span> <span class="s2">&quot;COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml&quot;</span>
+
+<span class="n">trains</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Danum_train&quot;</span><span class="p">,</span> <span class="s2">&quot;Paracou_train&quot;</span><span class="p">)</span> <span class="c1"># Registered train data</span>
+<span class="n">tests</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Danum_val&quot;</span><span class="p">,</span> <span class="s2">&quot;Paracou_val&quot;</span><span class="p">)</span>     <span class="c1"># Registered validation data</span>
+
+<span class="n">out_dir</span> <span class="o">=</span> <span class="s2">&quot;./train_outputs&quot;</span>
+
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">eval_period</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="n">out_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Alternatively, it is possible to train from one of <code class="docutils literal notranslate"><span class="pre">detectree2</span></code>’s pre-trained models. This is recommended if you have limited training data.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download a pre-trained model</span>
+<span class="c1"># !wget https://zenodo.org/records/15863800/files/250312_flexi.pth</span>
+
+<span class="n">trained_model</span> <span class="o">=</span> <span class="s2">&quot;./250312_flexi.pth&quot;</span>
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">trained_model</span><span class="p">,</span> <span class="n">workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">eval_period</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="n">out_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For <strong>multi-class</strong> training, you must pass the <code class="docutils literal notranslate"><span class="pre">class_mapping_file</span></code> to the configuration setup. This automatically registers the correct number of classes with the model.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">setup_cfg</span><span class="p">(</span>
+    <span class="n">base_model</span><span class="o">=</span><span class="s2">&quot;COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml&quot;</span><span class="p">,</span>
+    <span class="n">trains</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;DanumLiana_train&quot;</span><span class="p">,),</span>
+    <span class="n">tests</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;DanumLiana_val&quot;</span><span class="p">,),</span>
+    <span class="n">max_iter</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
+    <span class="n">eval_period</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="n">base_lr</span><span class="o">=</span><span class="mf">0.003</span><span class="p">,</span>
+    <span class="n">out_dir</span><span class="o">=</span><span class="s2">&quot;./liana_outputs&quot;</span><span class="p">,</span>
+    <span class="n">class_mapping_file</span><span class="o">=</span><span class="n">class_mapping_file</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>3. Running the Trainer</strong></p>
+<p>Once configured, you can start the training. The trainer includes “early stopping” via the <code class="docutils literal notranslate"><span class="pre">patience</span></code> parameter, which stops training if validation accuracy does not improve for a set number of epochs.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">MyTrainer</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">MyTrainer</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">resume_or_load</span><span class="p">(</span><span class="n">resume</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="data-augmentation">
+<h2><span class="section-number">3.2. </span>Data Augmentation<a class="headerlink" href="#data-augmentation" title="Link to this heading"></a></h2>
+<p>Data augmentation artificially increases the size of the training dataset by applying random transformations to the input data, which helps improve model generalization.</p>
+<p>By default, random rotations and flips will be performed on input images.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">augmentations</span> <span class="o">=</span> <span class="p">[</span>
+   <span class="n">T</span><span class="o">.</span><span class="n">RandomRotation</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="p">],</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+   <span class="n">T</span><span class="o">.</span><span class="n">RandomFlip</span><span class="p">(</span><span class="n">prob</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">horizontal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">vertical</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>If the input data is RGB, additional augmentations will be applied to adjust the brightness, contrast, saturation, and lighting of the images.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Additional augmentations for RGB images</span>
+<span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">IMGMODE</span> <span class="o">==</span> <span class="s2">&quot;rgb&quot;</span><span class="p">:</span>
+   <span class="n">augmentations</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
+         <span class="n">T</span><span class="o">.</span><span class="n">RandomBrightness</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">),</span>
+         <span class="n">T</span><span class="o">.</span><span class="n">RandomLighting</span><span class="p">(</span><span class="mf">0.7</span><span class="p">),</span>
+         <span class="n">T</span><span class="o">.</span><span class="n">RandomContrast</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">),</span>
+         <span class="n">T</span><span class="o">.</span><span class="n">RandomSaturation</span><span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">)</span>
+   <span class="p">])</span>
+</pre></div>
+</div>
+<p>There are three resizing modes for the input data: <code class="docutils literal notranslate"><span class="pre">fixed</span></code>, <code class="docutils literal notranslate"><span class="pre">random</span></code>, and <code class="docutils literal notranslate"><span class="pre">rand_fixed</span></code>, set in the <code class="docutils literal notranslate"><span class="pre">setup_cfg</span></code> function.</p>
+<ul class="simple">
+<li><p><strong>fixed</strong>: Resizes images to a fixed width/height (e.g., 1000 pixels). Efficient but less flexible.</p></li>
+<li><p><strong>random</strong>: Randomly resizes images between 0.6x and 1.4x their original size. Helps the model learn to detect objects at different scales.</p></li>
+<li><p><strong>rand_fixed</strong>: Randomly resizes images but constrains them to a fixed pixel range (e.g., 600-1400 pixels). A good compromise between flexibility and memory usage.</p></li>
+</ul>
+</section>
+<section id="post-training-analysis">
+<h2><span class="section-number">3.3. </span>Post-Training Analysis<a class="headerlink" href="#post-training-analysis" title="Link to this heading"></a></h2>
+<p>It is important to check that the model has converged and is not overfitting. You can do this by plotting the training and validation loss from the <code class="docutils literal notranslate"><span class="pre">metrics.json</span></code> file output by the trainer.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_json_arr</span>
+
+<span class="n">experiment_folder</span> <span class="o">=</span> <span class="s2">&quot;./train_outputs&quot;</span>
+<span class="n">experiment_metrics</span> <span class="o">=</span> <span class="n">load_json_arr</span><span class="p">(</span><span class="n">experiment_folder</span> <span class="o">+</span> <span class="s1">&#39;/metrics.json&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+   <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;iteration&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">experiment_metrics</span> <span class="k">if</span> <span class="s1">&#39;validation_loss&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">],</span>
+   <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;validation_loss&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">experiment_metrics</span> <span class="k">if</span> <span class="s1">&#39;validation_loss&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Total Validation Loss&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+   <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;iteration&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">experiment_metrics</span> <span class="k">if</span> <span class="s1">&#39;total_loss&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">],</span>
+   <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;total_loss&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">experiment_metrics</span> <span class="k">if</span> <span class="s1">&#39;total_loss&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Total Training Loss&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Comparison of the training and validation loss of detectree2&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Total Loss&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Number of Iterations&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/train_val_loss.png"><img alt="Train and validation loss" class="align-center" src="../_images/train_val_loss.png" style="width: 400px;" />
+</a>
+<p>To understand how segmentation performance improves, you can also plot the AP50 score over iterations.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+   <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;iteration&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">experiment_metrics</span> <span class="k">if</span> <span class="s1">&#39;bbox/AP50&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">],</span>
+   <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;bbox/AP50&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">experiment_metrics</span> <span class="k">if</span> <span class="s1">&#39;bbox/AP50&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Validation AP50&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;lower right&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Validation AP50 over training iterations&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;AP50&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Number of Iterations&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/val_AP50.png"><img alt="AP50 score" class="align-center" src="../_images/val_AP50.png" style="width: 400px;" />
+</a>
+</section>
+<section id="evaluating-model-performance">
+<h2><span class="section-number">3.4. </span>Evaluating Model Performance<a class="headerlink" href="#evaluating-model-performance" title="Link to this heading"></a></h2>
+<p>Coming soon! See Colab notebook for an example routine (<code class="docutils literal notranslate"><span class="pre">detectree2/notebooks/colab/evaluationJB.ipynb</span></code>).</p>
+<p><strong>Performance Metrics Explained</strong></p>
+<p>In instance segmentation, <strong>AP50</strong> refers to the <strong>Average Precision</strong> at an Intersection over Union (IoU) threshold of <strong>50%</strong>.</p>
+<ul class="simple">
+<li><p><strong>IoU (Intersection over Union)</strong>: IoU measures the overlap between the predicted segmentation mask and the ground truth mask. It is calculated as the area of overlap divided by the area of union.</p></li>
+<li><p><strong>AP50</strong>: A predicted object is considered a true positive if its IoU with a ground truth mask is &gt;= 0.5 (50%). AP50 is the average precision calculated at this 50% threshold. It is a standard metric for evaluating how well a model detects objects.</p></li>
+</ul>
+<a class="reference internal image-reference" href="../_images/IoU_AP.png"><img alt="IoU and AP illustration" class="align-center" src="../_images/IoU_AP.png" style="width: 400px;" />
+</a>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="02_data_preparation.html" class="btn btn-neutral float-left" title="2. In-Depth Guide: Data Preparation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="04_prediction.html" class="btn btn-neutral float-right" title="4. In-Depth Guide: Prediction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, James Ball.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

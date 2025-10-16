@@ -17,12 +17,10 @@
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="1. Installation" href="installation.html" /> 
+    <link rel="next" title="Installation" href="installation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -46,13 +44,13 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">2. Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial_multi.html">3. Tutorial (multiclass)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cluster.html">4. Running in Jupyter Notebook on a HPC platform</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">5. Contributing guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="using-git.html">6. Git/Github</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">7. API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html">Running in Jupyter Notebook on a HPC platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -88,9 +86,6 @@ trees in challenging dense tropical forests for a range of ecological
 applications. Below is an example image of the predictions made by Detectree2.</p>
 <a class="reference internal image-reference" href="_images/seg.gif"><img alt="Prediction" class="align-center" src="_images/seg.gif" style="width: 500px;" />
 </a>
-<div class="line-block">
-<div class="line"><br /></div>
-</div>
 <p>Code developed by James Ball, Seb Hickman, Thomas Koay, Oscar Jiang, Luran Wang, Panagiotis Ioannou, James Hinton and Matthew Archer in the <a class="reference external" href="https://coomeslab.org/">Forest Ecology and Conservation Group</a>
 at the University of Cambridge.  The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge <a class="reference external" href="https://www.conservation.cam.ac.uk/">Conservation Research Institute</a>.
 MRes project repo available <a class="reference external" href="https://github.com/shmh40/detectreeRGB/">here</a>.</p>
@@ -102,52 +97,43 @@ Accurate delineation of individual tree crowns in tropical forests from aerial R
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#building-detectree2">1.1. Building Detectree2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#building-detectree2">Building Detectree2</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">2. Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#preparing-data-rgb-multispectral">2.1. Preparing data (RGB/multispectral)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#advanced-tiling-options">2.2. Advanced tiling options</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#training-rgb">2.3. Training (RGB)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#training-multispectral">2.4. Training (multispectral)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#data-augmentation">2.5. Data augmentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#post-training-check-convergence">2.6. Post-training (check convergence)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#performance-metrics">2.7. Performance metrics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#evaluating-model-performance">2.8. Evaluating model performance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#generating-landscape-predictions">2.9. Generating landscape predictions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/01_getting_started.html">1. Getting Started: Your First Prediction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_data_preparation.html">2. In-Depth Guide: Data Preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_training_and_evaluation.html">3. In-Depth Guide: Model Training &amp; Evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/04_prediction.html">4. In-Depth Guide: Prediction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/05_advanced_topics.html">5. Advanced Topics &amp; “Pro Tips”</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial_multi.html">3. Tutorial (multiclass)</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_multi.html#preparing-data">3.1. Preparing data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_multi.html#training-models">3.2. Training models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_multi.html#landscape-predictions">3.3. Landscape predictions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html">Running in Jupyter Notebook on a HPC platform</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cluster.html#setting-up-a-virtual-environment-for-jupyter-notebook">Setting Up a Virtual Environment for Jupyter Notebook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cluster.html#running-jupyter-notebook-on-the-login-node-cpu-only">Running Jupyter Notebook on the Login Node (CPU Only)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cluster.html#running-jupyter-notebook-on-a-compute-node-cpu-or-gpu">Running Jupyter Notebook on a Compute Node (CPU or GPU)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cluster.html#installing-detectree2">Installing Detectree2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cluster.html#running-detectree2-on-a-gpu-compute-node">Running Detectree2 on a GPU Compute Node</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="cluster.html">4. Running in Jupyter Notebook on a HPC platform</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="cluster.html#setting-up-a-virtual-environment-for-jupyter-notebook">4.1. Setting Up a Virtual Environment for Jupyter Notebook</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cluster.html#running-jupyter-notebook-on-the-login-node-cpu-only">4.2. Running Jupyter Notebook on the Login Node (CPU Only)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cluster.html#running-jupyter-notebook-on-a-compute-node-cpu-or-gpu">4.3. Running Jupyter Notebook on a Compute Node (CPU or GPU)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cluster.html#installing-detectree2">4.4. Installing Detectree2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cluster.html#running-detectree2-on-a-gpu-compute-node">4.5. Running Detectree2 on a GPU Compute Node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#contributing-to-detectree2">Contributing to Detectree2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#detectree2-setup-for-developers">Detectree2 setup for developers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#continuous-integration">Continuous integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#automatic-documentation">Automatic Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#tests">Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#building-detectree2">Building Detectree2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#python-development-environment">Python development environment</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">5. Contributing guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#contributing-to-detectree2">5.1. Contributing to Detectree2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#detectree2-setup-for-developers">5.2. Detectree2 setup for developers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#continuous-integration">5.3. Continuous integration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#automatic-documentation">5.4. Automatic Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#tests">5.5. Tests</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#building-detectree2">5.6. Building Detectree2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#python-development-environment">5.7. Python development environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-git.html">Git/Github</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="using-git.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using-git.html#more-advanced-git-practices">More advanced Git Practices</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="using-git.html">6. Git/Github</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="using-git.html#overview">6.1. Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="using-git.html#more-advanced-git-practices">6.2. More advanced Git Practices</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">7. API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 </div>
 </section>
@@ -165,7 +151,7 @@ Accurate delineation of individual tree crowns in tropical forests from aerial R
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="installation.html" class="btn btn-neutral float-right" title="1. Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

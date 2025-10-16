@@ -1,0 +1,460 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2. In-Depth Guide: Data Preparation &mdash; detectree2 1.0.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=aec50437"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3. In-Depth Guide: Model Training &amp; Evaluation" href="03_training_and_evaluation.html" />
+    <link rel="prev" title="1. Getting Started: Your First Prediction" href="01_getting_started.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            detectree2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="01_getting_started.html">1. Getting Started: Your First Prediction</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">2. In-Depth Guide: Data Preparation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#core-tiling-concepts-rgb-multispectral">2.1. Core Tiling Concepts (RGB &amp; Multispectral)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#advanced-tiling-options">2.2. Advanced Tiling Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#practical-recipes-for-tiling">2.3. Practical Recipes for Tiling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#handling-multi-class-data">2.4. Handling Multi-Class Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#utilities-for-tiled-data">2.5. Utilities for Tiled Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visually-inspecting-your-tiles">2.6. Visually Inspecting Your Tiles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="03_training_and_evaluation.html">3. In-Depth Guide: Model Training &amp; Evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04_prediction.html">4. In-Depth Guide: Prediction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05_advanced_topics.html">5. Advanced Topics &amp; “Pro Tips”</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cluster.html">Running in Jupyter Notebook on a HPC platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../using-git.html">Git/Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">detectree2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Tutorials</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">2. </span>In-Depth Guide: Data Preparation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/02_data_preparation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="in-depth-guide-data-preparation">
+<h1><span class="section-number">2. </span>In-Depth Guide: Data Preparation<a class="headerlink" href="#in-depth-guide-data-preparation" title="Link to this heading"></a></h1>
+<p>This guide provides a detailed look at preparing your data for use with <code class="docutils literal notranslate"><span class="pre">detectree2</span></code>,
+covering everything from basic tiling to advanced options and multi-class data handling.</p>
+<section id="core-tiling-concepts-rgb-multispectral">
+<h2><span class="section-number">2.1. </span>Core Tiling Concepts (RGB &amp; Multispectral)<a class="headerlink" href="#core-tiling-concepts-rgb-multispectral" title="Link to this heading"></a></h2>
+<p>An example of the recommended file structure when training a new model is as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>├──<span class="w"> </span>Danum<span class="w">                                       </span><span class="o">(</span>site<span class="w"> </span>directory<span class="o">)</span>
+│<span class="w">   </span>├──<span class="w"> </span>rgb
+│<span class="w">   </span>│<span class="w">   </span>└──<span class="w"> </span>Dan_2014_RGB_project_to_CHM.tif<span class="w">     </span><span class="o">(</span>RGB<span class="w"> </span>orthomosaic<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">local</span><span class="w"> </span>UTM<span class="w"> </span>CRS<span class="o">)</span>
+│<span class="w">   </span>└──<span class="w"> </span>crowns
+│<span class="w">       </span>└──<span class="w"> </span>Danum.gpkg<span class="w">                          </span><span class="o">(</span>Crown<span class="w"> </span>polygons<span class="w"> </span>readable<span class="w"> </span>by<span class="w"> </span>geopandas<span class="w"> </span>e.g.<span class="w"> </span>Geopackage,<span class="w"> </span>shapefile<span class="o">)</span>
+│
+└──<span class="w"> </span>Paracou<span class="w">                                     </span><span class="o">(</span>site<span class="w"> </span>directory<span class="o">)</span>
+<span class="w">    </span>├──<span class="w"> </span>rgb
+<span class="w">    </span>│<span class="w">   </span>├──<span class="w"> </span>Paracou_RGB_2016_10cm.tif<span class="w">           </span><span class="o">(</span>RGB<span class="w"> </span>orthomosaic<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">local</span><span class="w"> </span>UTM<span class="w"> </span>CRS<span class="o">)</span>
+<span class="w">    </span>│<span class="w">   </span>└──<span class="w"> </span>Paracou_RGB_2019.tif<span class="w">                </span><span class="o">(</span>RGB<span class="w"> </span>orthomosaic<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">local</span><span class="w"> </span>UTM<span class="w"> </span>CRS<span class="o">)</span>
+<span class="w">    </span>├──<span class="w"> </span>ms
+<span class="w">    </span>│<span class="w">   </span>└──<span class="w"> </span>Paracou_MS_2016.tif<span class="w">                 </span><span class="o">(</span>Multispectral<span class="w"> </span>orthomosaic<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">local</span><span class="w"> </span>UTM<span class="w"> </span>CRS<span class="o">)</span>
+<span class="w">    </span>└──<span class="w"> </span>crowns
+<span class="w">        </span>└──<span class="w"> </span>UpdatedCrowns8.gpkg<span class="w">                 </span><span class="o">(</span>Crown<span class="w"> </span>polygons<span class="w"> </span>readable<span class="w"> </span>by<span class="w"> </span>geopandas<span class="w"> </span>e.g.<span class="w"> </span>Geopackage,<span class="w"> </span>shapefile<span class="o">)</span>
+</pre></div>
+</div>
+<p>Here we have two sites available to train on (Danum and Paracou). Several site directories can be
+included in the training and testing phase (but only a single site directory is required).
+If available, several RGB orthomosaics can be included in a single site directory (see e.g <code class="docutils literal notranslate"><span class="pre">Paracou</span> <span class="pre">-&gt;</span> <span class="pre">RGB</span></code>).</p>
+<p>For Paracou, we also have a multispectral scan available (5-bands). For this data, the <code class="docutils literal notranslate"><span class="pre">mode</span></code> parameter in the
+<code class="docutils literal notranslate"><span class="pre">tile_data</span></code> function should be set to <code class="docutils literal notranslate"><span class="pre">&quot;ms&quot;</span></code>. This calls a different routine for tiling the data that retains the
+<code class="docutils literal notranslate"><span class="pre">.tif</span></code> format instead of converting to <code class="docutils literal notranslate"><span class="pre">.png</span></code> as in the case of <code class="docutils literal notranslate"><span class="pre">rgb</span></code>. This comes at a slight expense of speed
+later on but is necessary to retain all the multispectral information.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.preprocessing.tiling</span><span class="w"> </span><span class="kn">import</span> <span class="n">tile_data</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span>
+
+<span class="c1"># Set up input paths</span>
+<span class="n">site_path</span> <span class="o">=</span> <span class="s2">&quot;/path/to/data/Paracou&quot;</span>
+<span class="n">img_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/rgb/2016/Paracou_RGB_2016_10cm.tif&quot;</span>
+<span class="n">crown_path</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/crowns/220619_AllSpLabelled.gpkg&quot;</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+<span class="n">crowns</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">crown_path</span><span class="p">)</span>
+<span class="n">crowns</span> <span class="o">=</span> <span class="n">crowns</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+<span class="c1"># Set tiling parameters</span>
+<span class="n">buffer</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">tile_width</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">tile_height</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.6</span>
+<span class="n">out_dir</span> <span class="o">=</span> <span class="n">site_path</span> <span class="o">+</span> <span class="s2">&quot;/tiles/&quot;</span>
+
+<span class="n">tile_data</span><span class="p">(</span><span class="n">img_path</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">tile_width</span><span class="p">,</span> <span class="n">tile_height</span><span class="p">,</span> <span class="n">crowns</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rgb&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If tiles are outputting as blank images set <code class="docutils literal notranslate"><span class="pre">dtype_bool</span> <span class="pre">=</span> <span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">tile_data</span></code> function. This is a bug
+and we are working on fixing it.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You will want to relax the <code class="docutils literal notranslate"><span class="pre">threshold</span></code> value if your trees are sparsely distributed across your landscape or if you
+want to include non-forest areas (e.g. river, roads). Remember, <code class="docutils literal notranslate"><span class="pre">detectree2</span></code> was initially designed for dense,
+closed canopy forests so some of the default assumptions will reflect that and parameters will need to be adjusted
+for different systems.</p>
+</div>
+</section>
+<section id="advanced-tiling-options">
+<h2><span class="section-number">2.2. </span>Advanced Tiling Options<a class="headerlink" href="#advanced-tiling-options" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">tile_data</span></code> function exposes many parameters to control how tiles are created. Here are some of the most useful ones in more detail:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tile_placement</span></code>: Choose how tile origins are generated.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;grid&quot;</span></code> (default): Lays tiles on a fixed grid across the image bounds. Fast and predictable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;adaptive&quot;</span></code>: A more efficient method for training. It works by first creating a single polygon that is the union of all your training crowns, then intelligently places tiles only in rows that intersect this polygon. This avoids creating empty tiles in areas where you have no training data. Requires supplying <code class="docutils literal notranslate"><span class="pre">crowns</span></code>; if <code class="docutils literal notranslate"><span class="pre">crowns</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>, it falls back to <code class="docutils literal notranslate"><span class="pre">&quot;grid&quot;</span></code> with a warning.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">overlapping_tiles</span></code>: When <code class="docutils literal notranslate"><span class="pre">True</span></code>, adds a second set of tiles shifted by half a tile’s width and height, creating a “checkerboard” pattern. This is useful for ensuring crowns that fall on a tile boundary are fully captured in at least one tile and can help reduce prediction artifacts at tile edges.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ignore_bands_indices</span></code>: Zero-based indices of bands to skip (multispectral only). These bands are ignored both when computing image statistics and when writing the output tiles. For example, to exclude band 0 and band 4 in a 5-band raster, pass <code class="docutils literal notranslate"><span class="pre">ignore_bands_indices=[0,</span> <span class="pre">4]</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nan_threshold</span></code>: The maximum proportion of a tile that can be NaN (or other no-data values) before it is discarded.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">use_convex_mask</span></code>: When <code class="docutils literal notranslate"><span class="pre">True</span></code>, this creates a tight “wrapper” polygon (a convex hull) around all the training crowns within a tile. Any pixels outside this wrapper are masked out. This is a way to reduce noise by forcing the model to ignore parts of the tile that are far from any labeled object.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">enhance_rgb_contrast</span></code>: When <code class="docutils literal notranslate"><span class="pre">True</span></code> (for RGB images only), this applies a percentile contrast stretch. It calculates the 0.2 and 99.8 percentile pixel values and rescales the image to a 1-255 range. This is effective for normalizing hazy, dark, or washed-out imagery. It allows the model to more easily differentiate between tree crowns. 0 is reserved for masked-out areas.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">additional_nodata</span></code>: Provide a list of pixel values that should be treated as “no data”. This is a data cleaning tool for real-world rasters that may have multiple invalid or uncommon values (e.g., -9999, 0, 65535) from sensor errors or previous processing steps.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mask_path</span></code>: Path to a vector file (e.g., a GeoPackage) that defines your area of interest. If provided, no tiles will be created outside of this area.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">multithreaded</span></code>: When <code class="docutils literal notranslate"><span class="pre">True</span></code>, uses multiple CPU cores to process tiles in parallel, significantly speeding up the tiling process for large orthomosaics. Currently, this can cost a linear amount of added memory.</p></li>
+</ul>
+</section>
+<section id="practical-recipes-for-tiling">
+<h2><span class="section-number">2.3. </span>Practical Recipes for Tiling<a class="headerlink" href="#practical-recipes-for-tiling" title="Link to this heading"></a></h2>
+<p><strong>Recipe 1: Batch Tiling from Multiple Orthomosaics</strong></p>
+<p>To create a larger, more diverse training dataset, you can tile data from several orthomosaics at once and combine them into a single output directory. This can be done by iterating through your data sources in Python.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.preprocessing.tiling</span><span class="w"> </span><span class="kn">import</span> <span class="n">tile_data</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span>
+
+<span class="n">sites</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;img_path&quot;</span><span class="p">:</span> <span class="s2">&quot;/path/to/data/SiteA/ortho.tif&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;crown_path&quot;</span><span class="p">:</span> <span class="s2">&quot;/path/to/data/SiteA/crowns.gpkg&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;img_path&quot;</span><span class="p">:</span> <span class="s2">&quot;/path/to-data/SiteB/ortho.tif&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;crown_path&quot;</span><span class="p">:</span> <span class="s2">&quot;/path/to/data/SiteB/crowns.gpkg&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">]</span>
+
+<span class="n">output_dir</span> <span class="o">=</span> <span class="s2">&quot;/path/to/my-combined-training-data/&quot;</span>
+
+<span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">sites</span><span class="p">:</span>
+    <span class="c1"># Read crowns and ensure CRS matches the raster</span>
+    <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">site</span><span class="p">[</span><span class="s2">&quot;img_path&quot;</span><span class="p">])</span> <span class="k">as</span> <span class="n">raster</span><span class="p">:</span>
+        <span class="n">crowns</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">site</span><span class="p">[</span><span class="s2">&quot;crown_path&quot;</span><span class="p">])</span>
+        <span class="n">crowns</span> <span class="o">=</span> <span class="n">crowns</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">raster</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+        <span class="n">tile_data</span><span class="p">(</span>
+            <span class="n">img_path</span><span class="o">=</span><span class="n">site</span><span class="p">[</span><span class="s2">&quot;img_path&quot;</span><span class="p">],</span>
+            <span class="n">out_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span>
+            <span class="n">crowns</span><span class="o">=</span><span class="n">crowns</span><span class="p">,</span>
+            <span class="n">tile_placement</span><span class="o">=</span><span class="s2">&quot;adaptive&quot;</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span>
+            <span class="c1"># other parameters...</span>
+            <span class="n">buffer</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+            <span class="n">tile_width</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+            <span class="n">tile_height</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+            <span class="n">threshold</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Recipe 2: Tiling Noisy Multispectral Rasters</strong></p>
+<p>This recipe is ideal for large, real-world multispectral datasets that may contain various “no data” artifacts.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.preprocessing.tiling</span><span class="w"> </span><span class="kn">import</span> <span class="n">tile_data</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span>
+
+<span class="n">img_path</span> <span class="o">=</span> <span class="s2">&quot;/path/to/your/large_ms_ortho.tif&quot;</span>
+<span class="n">crown_path</span> <span class="o">=</span> <span class="s2">&quot;/path/to/your/crowns.gpkg&quot;</span>
+<span class="n">output_dir</span> <span class="o">=</span> <span class="s2">&quot;/path/to/ms_tiles&quot;</span>
+
+<span class="c1"># Read crowns and ensure CRS matches the raster</span>
+<span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">raster</span><span class="p">:</span>
+    <span class="n">crowns</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">crown_path</span><span class="p">)</span>
+    <span class="n">crowns</span> <span class="o">=</span> <span class="n">crowns</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">raster</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+
+    <span class="n">tile_data</span><span class="p">(</span>
+        <span class="n">img_path</span><span class="o">=</span><span class="n">img_path</span><span class="p">,</span>
+        <span class="n">out_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span>
+        <span class="n">crowns</span><span class="o">=</span><span class="n">crowns</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span>
+        <span class="n">tile_placement</span><span class="o">=</span><span class="s2">&quot;adaptive&quot;</span><span class="p">,</span>
+        <span class="n">additional_nodata</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">10000</span><span class="p">,</span> <span class="o">-</span><span class="mi">20000</span><span class="p">],</span>
+        <span class="n">tile_width</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span>
+        <span class="n">buffer</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="c1"># other parameters...</span>
+        <span class="n">tile_height</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span>
+        <span class="n">threshold</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="handling-multi-class-data">
+<h2><span class="section-number">2.4. </span>Handling Multi-Class Data<a class="headerlink" href="#handling-multi-class-data" title="Link to this heading"></a></h2>
+<p>For multi-class problems (e.g., species or disease mapping), you need to provide a class label for each crown polygon.</p>
+<p>First, ensure your crowns GeoDataFrame has a column specifying the class for each polygon.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+
+<span class="n">crown_path</span> <span class="o">=</span> <span class="s2">&quot;/path/to/crowns/Danum_lianas_full2017.gpkg&quot;</span>
+<span class="n">crowns</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">crown_path</span><span class="p">)</span>
+
+<span class="c1"># The &#39;status&#39; column here indicates the class of each crown</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">crowns</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="n">class_column</span> <span class="o">=</span> <span class="s1">&#39;status&#39;</span>
+</pre></div>
+</div>
+<p>Next, use the <code class="docutils literal notranslate"><span class="pre">record_classes</span></code> function to create a class mapping file. This JSON file stores the relationship between class names and their integer indices, which is crucial for training.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.preprocessing.tiling</span><span class="w"> </span><span class="kn">import</span> <span class="n">record_classes</span>
+
+<span class="n">out_dir</span> <span class="o">=</span> <span class="s2">&quot;/path/to/tiles/&quot;</span>
+<span class="n">record_classes</span><span class="p">(</span>
+    <span class="n">crowns</span><span class="o">=</span><span class="n">crowns</span><span class="p">,</span>          <span class="c1"># Geopandas dataframe with crowns</span>
+    <span class="n">out_dir</span><span class="o">=</span><span class="n">out_dir</span><span class="p">,</span>        <span class="c1"># Output directory to save class mapping</span>
+    <span class="n">column</span><span class="o">=</span><span class="n">class_column</span><span class="p">,</span>    <span class="c1"># Column to be used for classes</span>
+    <span class="n">save_format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span>      <span class="c1"># Choose between &#39;json&#39; or &#39;pickle&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This creates a <code class="docutils literal notranslate"><span class="pre">class_to_idx.json</span></code> in your output directory. When you tile the data, provide the <code class="docutils literal notranslate"><span class="pre">class_column</span></code> argument to embed this class information into the training tiles.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Tile the data with class information</span>
+<span class="n">tile_data</span><span class="p">(</span>
+    <span class="n">img_path</span><span class="o">=</span><span class="n">img_path</span><span class="p">,</span>
+    <span class="n">out_dir</span><span class="o">=</span><span class="n">out_dir</span><span class="p">,</span>
+    <span class="n">crowns</span><span class="o">=</span><span class="n">crowns</span><span class="p">,</span>
+    <span class="n">class_column</span><span class="o">=</span><span class="n">class_column</span><span class="p">,</span> <span class="c1"># Specify the column with class labels</span>
+    <span class="c1"># ... other parameters</span>
+    <span class="n">buffer</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">tile_width</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+    <span class="n">tile_height</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+    <span class="n">threshold</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="utilities-for-tiled-data">
+<h2><span class="section-number">2.5. </span>Utilities for Tiled Data<a class="headerlink" href="#utilities-for-tiled-data" title="Link to this heading"></a></h2>
+<p><strong>Converting Multispectral Tiles to RGB</strong></p>
+<p>If you have multispectral (MS) tiles but want to use them with an RGB-trained model or simply visualize them easily, you can use the <code class="docutils literal notranslate"><span class="pre">create_RGB_from_MS</span></code> utility. This function converts a folder of MS tiles into a new folder of 3-band RGB tiles.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This utility is very powerful. It not only converts the images but also copies all <code class="docutils literal notranslate"><span class="pre">.geojson</span></code> annotation files and the <code class="docutils literal notranslate"><span class="pre">train/test</span></code> folder structure, automatically updating the image paths inside the <code class="docutils literal notranslate"><span class="pre">.geojson</span></code> files to point to the new RGB <code class="docutils literal notranslate"><span class="pre">.png</span></code> files.</p>
+</div>
+<p>The function offers two conversion methods:
+- <code class="docutils literal notranslate"><span class="pre">conversion=&quot;pca&quot;</span></code>: Performs a Principal Component Analysis to find the 3 most important components and maps them to R, G, and B. This is great for visualization.
+- <code class="docutils literal notranslate"><span class="pre">conversion=&quot;first-three&quot;</span></code>: Simply takes the first three bands of the MS image.</p>
+<p>Here is how you would use it in Python:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.preprocessing.tiling</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_RGB_from_MS</span>
+
+<span class="c1"># Path to the folder containing your multispectral .tif tiles</span>
+<span class="n">ms_tile_folder</span> <span class="o">=</span> <span class="s2">&quot;/path/to/ms_tiles/&quot;</span>
+
+<span class="c1"># Path for the new RGB tiles</span>
+<span class="n">rgb_output_folder</span> <span class="o">=</span> <span class="s2">&quot;/path/to/rgb_tiles_from_ms/&quot;</span>
+
+<span class="c1"># Convert the tiles using PCA</span>
+<span class="n">create_RGB_from_MS</span><span class="p">(</span>
+    <span class="n">tile_folder_path</span><span class="o">=</span><span class="n">ms_tile_folder</span><span class="p">,</span>
+    <span class="n">out_dir</span><span class="o">=</span><span class="n">rgb_output_folder</span><span class="p">,</span>
+    <span class="n">conversion</span><span class="o">=</span><span class="s2">&quot;pca&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Splitting Data into Train/Test/Validation Folds</strong></p>
+<p>After tiling, send geojsons to a train folder (with sub-folders for k-fold cross validation) and a test folder.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.preprocessing.tiling</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_traintest_folders</span>
+
+<span class="n">data_folder</span> <span class="o">=</span> <span class="s2">&quot;/path/to/tiles/&quot;</span>
+<span class="n">to_traintest_folders</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="n">data_folder</span><span class="p">,</span> <span class="n">test_frac</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">strict=True</span></code>, the <code class="docutils literal notranslate"><span class="pre">to_traintest_folders</span></code> function will automatically remove training/validation geojsons
+that have any overlap with test tiles (including the buffers), ensuring strict spatial separation of the test data.
+However, this can remove a significant proportion of the data available to train on. If validation accuracy is a
+sufficient test of model performance, you can either not create a test set (<code class="docutils literal notranslate"><span class="pre">test_frac=0</span></code>) or allow for
+overlap in the buffers between test and train/val tiles (<code class="docutils literal notranslate"><span class="pre">strict=False</span></code>).</p>
+</div>
+</section>
+<section id="visually-inspecting-your-tiles">
+<h2><span class="section-number">2.6. </span>Visually Inspecting Your Tiles<a class="headerlink" href="#visually-inspecting-your-tiles" title="Link to this heading"></a></h2>
+<p>It is recommended to visually inspect the tiles before training to ensure that the tiling has worked as expected and
+that crowns and images align. This can be done with the inbuilt <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> visualisation tools. For RGB tiles
+(<code class="docutils literal notranslate"><span class="pre">.png</span></code>), the following code can be used to visualise the training data.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetCatalog</span><span class="p">,</span> <span class="n">MetadataCatalog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.utils.visualizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Visualizer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">combine_dicts</span><span class="p">,</span> <span class="n">register_train_data</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Danum&quot;</span>
+<span class="n">train_location</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/Shareddrives/detectree2/data/&quot;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;/tiles_&quot;</span> <span class="o">+</span> <span class="n">appends</span> <span class="o">+</span> <span class="s2">&quot;/train&quot;</span>
+<span class="n">dataset_dicts</span> <span class="o">=</span> <span class="n">combine_dicts</span><span class="p">(</span><span class="n">train_location</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># The number gives the fold to visualise</span>
+<span class="n">trees_metadata</span> <span class="o">=</span> <span class="n">MetadataCatalog</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_train&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dataset_dicts</span><span class="p">:</span>
+   <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;file_name&quot;</span><span class="p">])</span>
+   <span class="n">visualizer</span> <span class="o">=</span> <span class="n">Visualizer</span><span class="p">(</span><span class="n">img</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">metadata</span><span class="o">=</span><span class="n">trees_metadata</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+   <span class="n">out</span> <span class="o">=</span> <span class="n">visualizer</span><span class="o">.</span><span class="n">draw_dataset_dict</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+   <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">get_image</span><span class="p">()[:,</span> <span class="p">:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">)</span>
+   <span class="n">display</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">image</span><span class="p">))</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/trees_train1.png"><img alt="Training tile 1" class="align-center" src="../_images/trees_train1.png" style="width: 400px;" />
+</a>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<a class="reference internal image-reference" href="../_images/trees_train2.png"><img alt="Training tile 2" class="align-center" src="../_images/trees_train2.png" style="width: 400px;" />
+</a>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>Alternatively, with some adaptation the <code class="docutils literal notranslate"><span class="pre">detectron2</span></code> visualisation tools can also be used to visualise the
+multispectral (<code class="docutils literal notranslate"><span class="pre">.tif</span></code>) tiles.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.utils.visualizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Visualizer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectree2.models.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">combine_dicts</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">detectron2.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetCatalog</span><span class="p">,</span> <span class="n">MetadataCatalog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+
+<span class="n">val_fold</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Paracou&quot;</span>
+<span class="n">tiles</span> <span class="o">=</span> <span class="s2">&quot;/tilesMS_&quot;</span> <span class="o">+</span> <span class="n">appends</span> <span class="o">+</span> <span class="s2">&quot;/train&quot;</span>
+<span class="n">train_location</span> <span class="o">=</span> <span class="s2">&quot;/content/drive/MyDrive/WORK/detectree2/data/&quot;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="n">tiles</span>
+<span class="n">dataset_dicts</span> <span class="o">=</span> <span class="n">combine_dicts</span><span class="p">(</span><span class="n">train_location</span><span class="p">,</span> <span class="n">val_fold</span><span class="p">)</span>
+<span class="n">trees_metadata</span> <span class="o">=</span> <span class="n">MetadataCatalog</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_train&quot;</span><span class="p">)</span>
+
+<span class="c1"># Function to normalize and convert multi-band image to RGB if needed</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_image_for_visualization</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+   <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+      <span class="c1"># If the image has 3 bands, assume it&#39;s RGB</span>
+      <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">NORM_MINMAX</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+      <span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+   <span class="k">else</span><span class="p">:</span>
+      <span class="c1"># If the image has more than 3 bands, choose the first 3 for visualization</span>
+      <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>  <span class="c1"># Or select specific bands</span>
+      <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">NORM_MINMAX</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+      <span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+   <span class="k">return</span> <span class="n">image</span>
+
+<span class="c1"># Visualize each image in the dataset</span>
+<span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dataset_dicts</span><span class="p">:</span>
+   <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;file_name&quot;</span><span class="p">])</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+      <span class="n">img</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>  <span class="c1"># Read all bands</span>
+      <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>  <span class="c1"># Convert to HWC format</span>
+      <span class="n">img</span> <span class="o">=</span> <span class="n">prepare_image_for_visualization</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>  <span class="c1"># Normalize and prepare for visualization</span>
+
+   <span class="n">visualizer</span> <span class="o">=</span> <span class="n">Visualizer</span><span class="p">(</span><span class="n">img</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">trees_metadata</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+   <span class="n">out</span> <span class="o">=</span> <span class="n">visualizer</span><span class="o">.</span><span class="n">draw_dataset_dict</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+   <span class="n">image</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">get_image</span><span class="p">()[:,</span> <span class="p">:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+   <span class="n">display</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">image</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="01_getting_started.html" class="btn btn-neutral float-left" title="1. Getting Started: Your First Prediction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="03_training_and_evaluation.html" class="btn btn-neutral float-right" title="3. In-Depth Guide: Model Training &amp; Evaluation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, James Ball.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
