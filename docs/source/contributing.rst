@@ -317,7 +317,7 @@ The idea of Continuous integration (CI) is to frequently commit code to a shared
 
 Building and testing code requires a server. CI using GitHub actions offers workflows that can build the repository code and run tests. We can run on GitHub's own virtual machines (using GitHub-hosted runners), or on machines that we host ourselves (or on compute clusters). The latter is desirable as GitHub does not currently support access to GPU resources.
 
-Currently there are three files that steer workflows. The schedule is set at the top of the file. The workflows are found `here <https://github.com/PatBall1/detectree2/tree/master/.github/workflows>`_
+Currently there are three files that steer workflows. The schedule is set at the top of the file. The workflows are found `here <https://github.com/PatBall1/detectree2/tree/master/.github/workflows>`__
 
 - ``python-app.yml``: All style CI - builds the code on Ubuntu-20.04
 - ``dockertest.yml``: All style CI - uses docker image for dependencies and installs detectree2 using pip.
