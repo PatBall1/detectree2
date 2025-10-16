@@ -1309,19 +1309,15 @@ def to_traintest_folders(  # noqa: C901
         # copy to test
         if i < len(file_roots) * test_frac:
             test_boxes.append(image_details(file_roots[num[i]]))
-            shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(Path(file_roots[num[i]]).suffix + ".geojson"),
-                        out_dir / "test")
+            shutil.copy(tiles_dir / f"{file_roots[num[i]]}.geojson", out_dir / "test")
         else:
             # copy to train
             train_box = image_details(file_roots[num[i]])
             if strict:  # check if there is overlap with test boxes
                 if not is_overlapping_box(test_boxes, train_box):
-                    shutil.copy(
-                        (tiles_dir / file_roots[num[i]]).with_suffix(Path(file_roots[num[i]]).suffix + ".geojson"),
-                        out_dir / "train")
+                    shutil.copy(tiles_dir / f"{file_roots[num[i]]}.geojson", out_dir / "train")
             else:
-                shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(Path(file_roots[num[i]]).suffix + ".geojson"),
-                            out_dir / "train")
+                shutil.copy(tiles_dir / f"{file_roots[num[i]]}.geojson", out_dir / "train")
 
     # COMMENT NECESSARY HERE
     file_names = (out_dir / "train").glob("*.geojson")
