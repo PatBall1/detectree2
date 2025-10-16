@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="detectree2",
-    version="2.0.1",
+    version="2.1.1",
     author="James G. C. Ball",
     author_email="ball.jgc@gmail.com",
     description="Detectree packaging",
