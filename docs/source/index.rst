@@ -22,8 +22,6 @@ applications. Below is an example image of the predictions made by Detectree2.
    :alt: Prediction
    :align: center
 
-
-|
 Code developed by James Ball, Seb Hickman, Thomas Koay, Oscar Jiang, Luran Wang, Panagiotis Ioannou, James Hinton and Matthew Archer in the `Forest Ecology and Conservation Group <https://coomeslab.org/>`_ 
 at the University of Cambridge.  The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge `Conservation Research Institute <https://www.conservation.cam.ac.uk/>`_.
 MRes project repo available `here <https://github.com/shmh40/detectreeRGB/>`_.
@@ -36,19 +34,16 @@ Accurate delineation of individual tree crowns in tropical forests from aerial R
 *Remote Sens Ecol Conserv*. `https://doi.org/10.1002/rse2.332 <https://doi.org/10.1002/rse2.332>`_
 
 .. toctree::
-   :numbered:
    :maxdepth: 2
    :caption: Contents:
 
    installation
-   tutorial
-   tutorial_multi
+   tutorials/index
    cluster
+   usage
    contributing
    using-git
    api
-   .. _notebooks/contributing_guide
-   .. _notebooks/trainingJB
 
 
 Indices and tables

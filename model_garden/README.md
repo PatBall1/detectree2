@@ -1,13 +1,13 @@
 # Model garden
 
 Welcome to the model garden. Here live the pretrained models (now hosted on 
-[Zenodo](https://zenodo.org/records/15014353)). Please feel free to pick what
+[Zenodo](https://zenodo.org/records/15863800)). Please feel free to pick what
 is ripe for your tree crown delineation problem.
 
 Download with e.g.
 
 ```
-!wget https://zenodo.org/records/15014353/files/250312_flexi.pth
+!wget https://zenodo.org/records/15863800/files/250312_flexi.pth
 ```
 
 and load with:
