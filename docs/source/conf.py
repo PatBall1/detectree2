@@ -23,7 +23,7 @@ copyright = "2023, James Ball"
 author = "James Ball"
 
 # The full version, including alpha/beta/rc tags
-release = "1.0.8"
+release = "2.1.1"
 
 # -- General configuration ---------------------------------------------------
 
