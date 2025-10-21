@@ -453,7 +453,7 @@ class MyTrainer(DefaultTrainer):
 
         self.iter = self.start_iter = start_iter
         self.max_iter = max_iter
-        self.early_stop = False
+        self.early_stop = True
         self.APs = []
 
         with EventStorage(start_iter) as self.storage:
@@ -737,29 +737,28 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
 
     dataset_dicts = []
 
-    for filename in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
-        json_file = os.path.join(directory, filename)
+    for json_file in Path(directory).glob("*.geojson"):
         with open(json_file) as f:
             img_anns = json.load(f)
 
         record: Dict[str, Any] = {}
-        filename = img_anns["imagePath"]
+        file_path = Path(img_anns["imagePath"])
 
         # Make sure we have the correct height and width
         # If image path ends in .png use cv2 to get height and width else if image path ends in .tif use rasterio
-        if filename.endswith(".png"):
-            img = cv2.imread(filename)
+        if file_path.suffix == ".png":
+            img = cv2.imread(str(file_path))
             if img is None:
                 continue
             height, width = img.shape[:2]
-        elif filename.endswith(".tif"):
-            with rasterio.open(filename) as src:
+        elif file_path.suffix == ".tif":
+            with rasterio.open(str(file_path)) as src:
                 height, width = src.shape
 
-        record["file_name"] = filename
+        record["file_name"] = str(file_path)
         record["height"] = height
         record["width"] = width
-        record["image_id"] = filename[0:400]
+        record["image_id"] = str(file_path)[0:400]
         record["annotations"] = {}
         # print(filename[0:400])
 
@@ -767,7 +766,7 @@ def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = Non
         for features in img_anns["features"]:
             anno = features["geometry"]
             if anno["type"] != "Polygon" and anno["type"] != "MultiPolygon":
-                print("Skipping annotation of type", anno["type"], "in file", filename)
+                print("Skipping annotation of type", anno["type"], "in file", file_path)
                 continue
             px = [a[0] for a in anno["coordinates"][0]]
             py = [height - a[1] for a in anno["coordinates"][0]]
@@ -824,10 +823,9 @@ def combine_dicts(root_dir: str,
     Returns:
         List of combined dictionaries from the specified directories.
     """
-    # Get the list of directories within the root directory, sorted alphabetically
-    train_dirs = sorted([
-        os.path.join(root_dir, dir) for dir in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, dir))
-    ])
+    # Get the list of directories within the root directory
+    root_dir = Path(root_dir)
+    train_dirs = [d for d in root_dir.iterdir() if d.is_dir()]
     # Handle the different modes for combining dictionaries
     if mode == "train":
         # Exclude the validation directory from the list of directories
@@ -1239,13 +1237,10 @@ def get_latest_model_path(output_dir: str) -> str:
     # Regular expression to match model files with the pattern "model_X.pth"
     model_pattern = re.compile(r"model_(\d+)\.pth")
 
-    # List all files in the output directory
-    files = os.listdir(output_dir)
-
     # Find all files that match the pattern and extract their indices
     model_files = []
-    for f in files:
-        match = model_pattern.search(f)
+    for f in Path(output_dir).iterdir():
+        match = model_pattern.match(f.name)
         if match:
             model_files.append((f, int(match.group(1))))
 
@@ -1256,7 +1251,7 @@ def get_latest_model_path(output_dir: str) -> str:
     latest_model_file = max(model_files, key=lambda x: x[1])[0]
 
     # Return the full path to the latest model file
-    return os.path.join(output_dir, latest_model_file)
+    return str(latest_model_file)
 
 
 if __name__ == "__main__":
