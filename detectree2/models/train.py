@@ -824,9 +824,10 @@ def combine_dicts(root_dir: str,
     Returns:
         List of combined dictionaries from the specified directories.
     """
-    # Get the list of directories within the root directory
-    root_dir = Path(root_dir)
-    train_dirs = [d for d in root_dir.iterdir() if d.is_dir()]
+    # Get the list of directories within the root directory, sorted alphabetically
+    train_dirs = sorted([
+        dir for dir in Path(root_dir).iterdir() if dir.is_dir()
+    ])
     # Handle the different modes for combining dictionaries
     if mode == "train":
         # Exclude the validation directory from the list of directories
