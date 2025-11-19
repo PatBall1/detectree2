@@ -34,14 +34,15 @@ jobs:
         sudo apt install -yqq software-properties-common
         sudo add-apt-repository -y ppa:ubuntugis/ppa
         sudo apt -yqq update
-        sudo apt install -yqq libgdal-dev gdal-bin python3-pip git python3-opencv
+        sudo apt install -yqq libgdal-dev gdal-bin python3-pip git python3-dev build-essential
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
         export C_INCLUDE_PATH=/usr/include/gdal
-        python -m pip install --upgrade pip wheel cython
-        python -m pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu \
-        opencv-python wandb sphinx
+        python -m pip install --upgrade pip wheel
+        python -m pip install opencv-python
         python -m pip install cython
-        python -m pip install 'git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI'
+        python -m pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu
+        python -m pip install wandb sphinx
+        python -m pip install pycocotools
         python -m pip install --no-build-isolation 'git+https://github.com/facebookresearch/detectron2.git'
     - name: Show GDAL version installed via apt
       run: |
