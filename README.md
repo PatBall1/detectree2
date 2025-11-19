@@ -41,7 +41,7 @@ Tree Crown Detection and Delineation in a Temperate Deciduous Forest from UAV RG
 
 ## Requirements
 
-- Python 3.8+
+- Python ≥3.8, <3.12
 - [gdal](https://gdal.org/download.html) geospatial libraries
 - [PyTorch ≥ 1.8 and torchvision](https://pytorch.org/get-started/previous-versions/) versions that match
 - For training models GPU access (with CUDA) is recommended
@@ -60,7 +60,15 @@ See [Installation Instructions](https://patball1.github.io/detectree2/installati
 
 ### conda
 
-*Under development*
+```
+ENV_NAME="env_name”  
+conda create -n $ENV_NAME python=3.11
+conda activate $ENV_NAME
+conda install -c conda-forge gdal rtree pytorch torchvision torchaudio
+pip install git+https://github.com/PatBall1/detectree2.git
+```
+
+Set the `ENV_NAME` to the desired name of your virtual environment.
 
 ## Getting started
 
