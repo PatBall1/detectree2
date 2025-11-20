@@ -209,7 +209,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
                                                        cols=crown_coords_array[:, 0])
             moved_coords = list(zip(x_coords, y_coords))
 
-            feature = {
+            feature: Feature = {
                 "type": "Feature",
                 "properties": {
                     "Confidence_score": confidence_score,
