@@ -61,8 +61,6 @@ def predict_on_data(
     for d in tqdm(
         dataset_dicts[:num_to_pred],
         desc=f"Predicting files in mode {mode}",
-        total=num_to_pred,
-        unit="file"
     ):
         file_name = Path(d["file_name"])
         file_ext = file_name.suffix.lower()
@@ -91,7 +89,8 @@ def predict_on_data(
             output_file = pred_dir / f"Prediction_{file_name.stem}.json"
             evaluations = instances_to_coco_json(outputs["instances"].to("cpu"),
                                                  str(file_name))
-            output_file.write_text(json.dumps(evaluations))
+            with output_file.open("w") as f:
+                json.dump(evaluations, f)
 
 
 if __name__ == "__main__":

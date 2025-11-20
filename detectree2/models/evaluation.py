@@ -14,6 +14,7 @@ from rasterio.mask import mask
 from shapely import make_valid
 from shapely.errors import GEOSException
 from shapely.geometry import Polygon, shape
+from tqdm import tqdm
 
 # Initialising the parent class so any attributes or functions that are common
 # to both features should be placed in here
@@ -598,10 +599,10 @@ def site_f1_score(
             find_intersections(all_test_feats, all_pred_feats)
             tps, fps, fns = positives_test(all_test_feats, all_pred_feats, IoU_threshold, height_threshold)
 
-            print("tps:", tps)
-            print("fps:", fps)
-            print("fns:", fns)
-            print("")
+            # print("tps:", tps)
+            # print("fps:", fps)
+            # print("fns:", fns)
+            # print("")
 
             total_tps = total_tps + tps
             total_fps = total_fps + fps
@@ -611,7 +612,7 @@ def site_f1_score(
         prec, rec = prec_recall(total_tps, total_fps, total_fns)
         f1_score = f1_cal(prec, rec)  # noqa: F841
         print("Precision  ", "Recall  ", "F1")
-        print(prec, rec, f1_score)
+        print("{:.2f}".format(prec), "{:.2f}".format(rec), "{:.2f}".format(f1_score))
     except ZeroDivisionError:
         print("ZeroDivisionError: Height threshold is too large.")
 
@@ -656,11 +657,11 @@ def site_f1_score2(
     heights = []
     # total_tests = 0
 
-    for file in test_directory.iterdir():
+    for file in tqdm(test_directory.iterdir(), desc='Calculating eval scores'):
         if file.suffix != ".geojson":
             continue
 
-        print(file.name)
+        # print(file.name)
 
         # work out the area threshold to ignore these crowns in the tiles
         # tile_width = get_tile_width(file) * scaling[0]
@@ -692,9 +693,9 @@ def site_f1_score2(
         tps, fps, fns = positives_test(all_test_feats, all_pred_feats,
                                         IoU_threshold, min_height, max_height)
 
-        print(f"tps: {tps}")
-        print(f"fps: {fps}")
-        print(f"fns: {fns}\n")
+        # print(f"tps: {tps}")
+        # print(f"fps: {fps}")
+        # print(f"fns: {fns}\n")
 
         total_tps += tps
         total_fps += fps
@@ -706,7 +707,7 @@ def site_f1_score2(
         f1_score = f1_cal(prec, rec)    # noqa: F841
         med_height = median(heights)
         print("Precision  ", "Recall  ", "F1")
-        print(prec, rec, f1_score, "\n")
+        print("{:.2f}".format(prec), "{:.2f}".format(rec), "{:.2f}".format(f1_score), "\n")
         print(f"Total_trees = {len(heights)}")
         print(f"med_height = {med_height}")
 

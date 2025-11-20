@@ -36,8 +36,7 @@ def polygon_from_mask(masked_arr):
     https://github.com/hazirbas/coco-json-converter/blob/master/generate_coco_json.py <-- adapted from here
     """
 
-    contours, _ = cv2.findContours(
-        masked_arr, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(masked_arr, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     segmentation = []
     for contour in contours:
@@ -50,7 +49,7 @@ def polygon_from_mask(masked_arr):
                 contour.extend(contour[:2])  # small artifacts due to this?
             segmentation.append(contour)
 
-    [x, y, w, h] = cv2.boundingRect(masked_arr)
+    # [x, y, w, h] = cv2.boundingRect(masked_arr)
 
     if len(segmentation) > 0:
         return segmentation[0]  # , [x, y, w, h], area
@@ -166,16 +165,12 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
     output_fold.mkdir(parents=True, exist_ok=True)
     entries = [file for file in Path(pred_fold).iterdir() if file.suffix == ".json"]
 
-    for file in tqdm(
-        entries, 
-        desc=f"Projecting files",
-        total=len(entries)
-    ):
+    for file in tqdm(entries, desc="Projecting files",):
 
-        tifpath = Path(tiles_path) / (file.stem.replace("Prediction_", "") + ".tif")
+        tifpath = Path(tiles_path) / f"{file.stem.removeprefix('Prediction_')}.tif"
 
         with rasterio.open(tifpath) as data:
-            epsg = CRS.from_string(data.crs.wkt).to_epsg()
+            epsg = data.crs.to_epsg()
             raster_transform = data.transform
 
         geofile = {
@@ -197,7 +192,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
         for crown_data in datajson:
             if multi_class:
                 category = crown_data["category_id"]
-                # print(category)
+
             crown = crown_data["segmentation"]
             confidence_score = crown_data["score"]
 
@@ -205,7 +200,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
             # integers so a bit of info on position is lost
             mask_of_coords = mask_util.decode(crown)
             crown_coords = polygon_from_mask(mask_of_coords)
-            if crown_coords == 0:
+            if not crown_coords:
                 continue
 
             crown_coords_array = np.array(crown_coords).reshape(-1, 2)
@@ -359,7 +354,7 @@ def clean_crowns(
 
     # 2. Use a spatial join to quickly find all candidate overlapping pairs.
     #    The join will pair each crown with any crown whose bounding box intersects.
-    print("clearn_crowns: Performing spatial join...")
+    print("clean_crowns: Performing spatial join...")
     join = gpd.sjoin(crowns, crowns, how="inner", predicate="intersects")
     # Remove self-joins (where a crown is paired with itself).
     join = join[join.index != join.index_right]

@@ -26,6 +26,7 @@ import rasterio.features
 import shapely.geometry as geom
 import torch
 import torch.nn as nn
+from tqdm import tqdm
 from detectron2 import model_zoo
 from detectron2.checkpoint import DetectionCheckpointer  # noqa:F401
 from detectron2.config import get_cfg
@@ -1134,7 +1135,7 @@ def predictions_on_data(
     # Decide how many items to predict on
     num_to_pred = len(dataset_dicts) if num_predictions == 0 else num_predictions
 
-    for d in random.sample(dataset_dicts, num_to_pred):
+    for d in tqdm(random.sample(dataset_dicts, num_to_pred), desc='Predicting'):
         file_name = Path(d["file_name"])
         file_ext = file_name.suffix.lower()
         if file_ext == ".png":
