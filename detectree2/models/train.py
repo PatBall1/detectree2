@@ -723,7 +723,7 @@ class MyTrainer(DefaultTrainer):
         return build_detection_test_loader(cfg, dataset_name, mapper=FlexibleDatasetMapper(cfg, is_train=False))
 
 
-def get_tree_dicts(directory: str, class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:
+def get_tree_dicts(directory: str | Path, class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:
     """Get the tree dictionaries.
 
     Args:
@@ -847,7 +847,7 @@ def combine_dicts(root_dir: str,
     return tree_dicts
 
 
-def get_filenames(directory: str):
+def get_filenames(directory: str | Path):
     """Get the file names from the directory, handling both RGB (.png) and multispectral (.tif) images.
 
     Args:
@@ -858,11 +858,11 @@ def get_filenames(directory: str):
             - dataset_dicts (list): List of dictionaries with 'file_name' keys.
             - mode (str): 'rgb' if .png files are used, 'ms' if .tif files are used.
     """
-    dataset_dicts = []
+    directory = Path(directory)
 
     # Get list of .png and .tif files
-    png_files = glob.glob(os.path.join(directory, "*.png"))
-    tif_files = glob.glob(os.path.join(directory, "*.tif"))
+    png_files = list(directory.glob("*.png"))
+    tif_files = list(directory.glob("*.tif"))
 
     if png_files and tif_files:
         # Both .png and .tif files are present, select only .png files
@@ -881,10 +881,7 @@ def get_filenames(directory: str):
         files = []
         mode = None
 
-    for filename in files:
-        file = {}
-        file["file_name"] = filename
-        dataset_dicts.append(file)
+    dataset_dicts = [{"file_name": str(f)} for f in files]
     return dataset_dicts, mode
 
 
