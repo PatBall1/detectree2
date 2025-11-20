@@ -3,15 +3,15 @@
 This module contains the code to generate predictions on tiled data.
 """
 import json
-import os
 from pathlib import Path
 
 import cv2
 import numpy as np
 import rasterio
-from tqdm import tqdm
 from detectron2.engine import DefaultPredictor
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
+from tqdm import tqdm
+
 from detectree2.models.train import get_filenames, get_tree_dicts
 
 # Code to convert RLE data from the output instances into Polygons,

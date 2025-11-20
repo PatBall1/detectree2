@@ -4,7 +4,6 @@ Classes and functions to train a model based on othomosaics and corresponding
 manual crown data.
 """
 import datetime
-import glob
 import json
 import logging
 import os
@@ -26,7 +25,6 @@ import rasterio.features
 import shapely.geometry as geom
 import torch
 import torch.nn as nn
-from tqdm import tqdm
 from detectron2 import model_zoo
 from detectron2.checkpoint import DetectionCheckpointer  # noqa:F401
 from detectron2.config import get_cfg
@@ -44,10 +42,13 @@ from detectron2.evaluation import COCOEvaluator, verify_results
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 from detectron2.layers.wrappers import Conv2d
 from detectron2.structures import BoxMode
-from detectron2.utils.events import get_event_storage  # noqa:F401
-from detectron2.utils.events import EventStorage
+from detectron2.utils.events import (  # noqa:F401
+    EventStorage,
+    get_event_storage,
+)
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
+from tqdm import tqdm
 
 from detectree2.models.outputs import clean_crowns
 from detectree2.preprocessing.tiling import load_class_mapping
