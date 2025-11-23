@@ -81,6 +81,22 @@ def predict_on_data(
             print(f"Unsupported file extension {file_ext} for file {file_name}")
             continue
 
+        # Ensure the image has exactly 3 channels for the Swin backbone weights
+        if img.ndim == 2:
+            # Single-band image: repeat to create a 3-channel input
+            img = np.repeat(img[:, :, None], 3, axis=2)
+        elif img.shape[2] > 3:
+            # Drop extra bands (e.g., alpha channel in 4-band GeoTIFFs)
+            print(
+                f"{file_name} has {img.shape[2]} bands; keeping the first 3 for inference."
+            )
+            img = img[:, :, :3]
+        elif img.shape[2] < 3:
+            # Pad fewer channels to reach 3
+            pad = 3 - img.shape[2]
+            img = np.concatenate([img, np.repeat(img[:, :, -1:], pad, axis=2)], axis=2)
+
+        img = np.ascontiguousarray(img)
         outputs = predictor(img)
 
         # Create the output file name
