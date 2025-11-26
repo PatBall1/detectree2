@@ -59,18 +59,21 @@ def _get_swint_root() -> Path:
 
     try:
         swint_module = importlib.import_module("swint")
-    except ImportError as exc:
-        raise FileNotFoundError(
-            "Failed to import vendored SwinT_detectron2. Ensure third_party/SwinT_detectron2 is present "
-            "and contains the swint package."
-        ) from exc
+    except ImportError:
+        # Retry once by re-downloading if import fails
+        _download_swint_repo()
+        swint_module = importlib.import_module("swint")
 
     swint_root = Path(swint_module.__file__).resolve().parent.parent
     if not (swint_root / "configs").exists() or not (swint_root / "models").exists():
-        raise FileNotFoundError(
-            f"Vendored SwinT_detectron2 at {BUNDLED_SWINT} is missing configs/ or models/. "
-            "Ensure you cloned the full repository."
-        )
+        # Attempt to re-download once if files are missing
+        _download_swint_repo()
+        swint_root = Path(importlib.import_module("swint").__file__).resolve().parent.parent
+        if not (swint_root / "configs").exists() or not (swint_root / "models").exists():
+            raise FileNotFoundError(
+                f"Vendored SwinT_detectron2 at {BUNDLED_SWINT} is missing configs/ or models/. "
+                "Automatic download was attempted and failed; clone the repository manually."
+            )
 
     return swint_root
 
