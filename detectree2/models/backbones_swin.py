@@ -19,6 +19,35 @@ SWINT_WEIGHTS_URL = "https://github.com/xiaohu2015/SwinT_detectron2/releases/dow
 SWINT_REPO_ZIP = "https://github.com/xiaohu2015/SwinT_detectron2/archive/refs/heads/master.zip"
 
 
+def _import_swint_from(bundled_root: Path):
+    """Import swint preferring the bundled root, clearing any prior module."""
+    if "swint" in sys.modules:
+        del sys.modules["swint"]
+    if str(bundled_root) not in sys.path:
+        sys.path.insert(0, str(bundled_root))
+    return importlib.import_module("swint")
+
+
+def _ensure_bundled_swint() -> Path:
+    """Make sure the bundled SwinT repo exists and has configs."""
+    if not SWINT_PACKAGE.exists():
+        _download_swint_repo()
+
+    configs_dir = BUNDLED_SWINT / "configs"
+    models_dir = BUNDLED_SWINT / "models"
+    if not configs_dir.exists():
+        # Retry download if configs are missing
+        _download_swint_repo()
+        if not configs_dir.exists():
+            raise FileNotFoundError(
+                f"Vendored SwinT_detectron2 at {BUNDLED_SWINT} is missing configs/. "
+                "Automatic download was attempted and failed; clone the repository manually."
+            )
+
+    models_dir.mkdir(parents=True, exist_ok=True)
+    return BUNDLED_SWINT
+
+
 def _download_swint_repo() -> None:
     """Download and unpack SwinT_detectron2 into the vendored third_party location."""
     BUNDLED_SWINT.parent.mkdir(parents=True, exist_ok=True)
@@ -51,37 +80,24 @@ def _download_swint_repo() -> None:
 
 def _get_swint_root() -> Path:
     """Load the vendored SwinT_detectron2 and return its root directory."""
-    if not SWINT_PACKAGE.exists():
-        _download_swint_repo()
-
-    if str(BUNDLED_SWINT) not in sys.path:
-        sys.path.insert(0, str(BUNDLED_SWINT))
-
-    try:
-        swint_module = importlib.import_module("swint")
-    except ImportError:
-        # Retry once by re-downloading if import fails
-        _download_swint_repo()
-        swint_module = importlib.import_module("swint")
-
+    bundled_root = _ensure_bundled_swint()
+    swint_module = _import_swint_from(bundled_root)
     swint_root = Path(swint_module.__file__).resolve().parent.parent
+
+    # If import resolved elsewhere, force the bundled copy
+    if swint_root != bundled_root:
+        swint_module = _import_swint_from(bundled_root)
+        swint_root = Path(swint_module.__file__).resolve().parent.parent
+
     configs_dir = swint_root / "configs"
     models_dir = swint_root / "models"
     if not configs_dir.exists():
-        # Attempt to re-download once if files are missing
-        _download_swint_repo()
-        swint_root = Path(importlib.import_module("swint").__file__).resolve().parent.parent
-        configs_dir = swint_root / "configs"
-        models_dir = swint_root / "models"
-        if not configs_dir.exists():
-            raise FileNotFoundError(
-                f"Vendored SwinT_detectron2 at {BUNDLED_SWINT} is missing configs/. "
-                "Automatic download was attempted and failed; clone the repository manually."
-            )
+        raise FileNotFoundError(
+            f"Vendored SwinT_detectron2 at {bundled_root} is missing configs/. "
+            "Automatic download was attempted and failed; clone the repository manually."
+        )
 
-    # Ensure models directory exists even if empty (weights may be downloaded later)
     models_dir.mkdir(parents=True, exist_ok=True)
-
     return swint_root
 
 def _default_swint_paths() -> tuple[Path, Path]:
