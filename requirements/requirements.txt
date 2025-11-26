@@ -19,6 +19,7 @@ debugpy @ file:///home/conda/feedstock_root/build_artifacts/debugpy_163604325943
 decorator @ file:///home/conda/feedstock_root/build_artifacts/decorator_1641555617451/work
 descartes==1.1.0
 detectron2==0.6+cu111
+git+https://github.com/xiaohu2015/SwinT_detectron2.git#egg=swint
 entrypoints @ file:///home/conda/feedstock_root/build_artifacts/entrypoints_1643888246732/work
 executing @ file:///home/conda/feedstock_root/build_artifacts/executing_1646044401614/work
 Fiona==1.8.21

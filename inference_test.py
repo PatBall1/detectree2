@@ -11,6 +11,10 @@ from detectree2.models.outputs import clean_crowns, project_to_geojson, stitch_c
 from detectree2.models.predict import predict_on_data
 from detectree2.models.train import setup_cfg
 from detectree2.preprocessing.tiling import tile_data
+from detectree2.models.backbones_swin import (
+    DEFAULT_SWINT_CONFIG,
+    DEFAULT_SWINT_WEIGHTS,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent
 
@@ -27,22 +31,6 @@ CLEAN_CONFIDENCE = 0.5
 EDGE_SHIFT = 1
 SIMPLIFY_TOLERANCE = 0.3
 DEVICE = "cpu"
-
-DEFAULT_SWINT_CONFIG = (
-    REPO_ROOT
-    / "third_party"
-    / "SwinT_detectron2"
-    / "configs"
-    / "SwinT"
-    / "mask_rcnn_swint_T_FPN_3x.yaml"
-)
-DEFAULT_SWINT_WEIGHTS = (
-    REPO_ROOT
-    / "third_party"
-    / "SwinT_detectron2"
-    / "models"
-    / "mask_rcnn_swint_T_coco17.pth"
-)
 
 
 def parse_args() -> argparse.Namespace:

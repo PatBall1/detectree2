@@ -1039,7 +1039,7 @@ def setup_cfg(
         num_bands: number of bands in the image
         class_mapping_file: path to class mapping file
         visualize_training: whether to visualize training. Images can be accessed via TensorBoard
-        use_swint_backbone: swap the ResNet backbone for Swin (third_party/SwinT_detectron2)
+        use_swint_backbone: swap the ResNet backbone for Swin (requires swint package)
         swint_config_path: optional override for the Swin config YAML
         swint_weights_path: optional override for the Swin backbone weights
     """
