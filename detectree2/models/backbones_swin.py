@@ -65,15 +65,22 @@ def _get_swint_root() -> Path:
         swint_module = importlib.import_module("swint")
 
     swint_root = Path(swint_module.__file__).resolve().parent.parent
-    if not (swint_root / "configs").exists() or not (swint_root / "models").exists():
+    configs_dir = swint_root / "configs"
+    models_dir = swint_root / "models"
+    if not configs_dir.exists():
         # Attempt to re-download once if files are missing
         _download_swint_repo()
         swint_root = Path(importlib.import_module("swint").__file__).resolve().parent.parent
-        if not (swint_root / "configs").exists() or not (swint_root / "models").exists():
+        configs_dir = swint_root / "configs"
+        models_dir = swint_root / "models"
+        if not configs_dir.exists():
             raise FileNotFoundError(
-                f"Vendored SwinT_detectron2 at {BUNDLED_SWINT} is missing configs/ or models/. "
+                f"Vendored SwinT_detectron2 at {BUNDLED_SWINT} is missing configs/. "
                 "Automatic download was attempted and failed; clone the repository manually."
             )
+
+    # Ensure models directory exists even if empty (weights may be downloaded later)
+    models_dir.mkdir(parents=True, exist_ok=True)
 
     return swint_root
 
