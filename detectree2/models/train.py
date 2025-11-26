@@ -1056,13 +1056,19 @@ def setup_cfg(
         raise ValueError(f"Invalid resize option '{resize}'. Must be 'fixed', 'random', or 'rand_fixed'.")
 
     cfg = get_cfg()
+    cfg_path = Path(base_model).expanduser()
+    use_local_config = False
 
     if use_swint_backbone:
         config_to_merge = prepare_swint_config(cfg, swint_config_path)
-        cfg.merge_from_file(config_to_merge)
+        use_local_config = True
+    elif cfg_path.is_file():
+        config_to_merge = str(cfg_path)
+        use_local_config = True
     else:
-        cfg.merge_from_file(model_zoo.get_config_file(base_model))
+        config_to_merge = model_zoo.get_config_file(base_model)
 
+    cfg.merge_from_file(config_to_merge)
     cfg.DATASETS.TRAIN = trains
     cfg.DATASETS.TEST = tests
     cfg.DATALOADER.NUM_WORKERS = workers
@@ -1084,7 +1090,7 @@ def setup_cfg(
             if swint_weights_path
             else DEFAULT_SWINT_WEIGHTS
         )
-    else:
+    elif not use_local_config:
         cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
 
     cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
