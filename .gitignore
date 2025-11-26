@@ -99,6 +99,3 @@ tmp_infer/
 train_outputs/
 outputs/
 outputs_swin/
-
-# Vendored or downloaded third-party code
-third_party/
