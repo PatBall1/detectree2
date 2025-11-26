@@ -49,7 +49,7 @@ from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
 
 from detectree2.models.backbones_swin import (
-    DEFAULT_SWINT_WEIGHTS,
+    ensure_swint_weights,
     prepare_swint_config,
 )
 from detectree2.models.outputs import clean_crowns
@@ -1079,11 +1079,7 @@ def setup_cfg(
     if update_model is not None:
         cfg.MODEL.WEIGHTS = update_model
     elif use_swint_backbone:
-        cfg.MODEL.WEIGHTS = str(
-            Path(swint_weights_path).expanduser()
-            if swint_weights_path
-            else DEFAULT_SWINT_WEIGHTS
-        )
+        cfg.MODEL.WEIGHTS = ensure_swint_weights(swint_weights_path)
     else:
         cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
 

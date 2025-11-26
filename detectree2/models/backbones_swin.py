@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import importlib
+import shutil
+import urllib.request
 import sys
 from pathlib import Path
 from typing import Optional
@@ -11,6 +13,7 @@ from typing import Optional
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BUNDLED_SWINT = REPO_ROOT / "third_party" / "SwinT_detectron2"
 SWINT_PACKAGE = BUNDLED_SWINT / "swint"
+SWINT_WEIGHTS_URL = "https://github.com/xiaohu2015/SwinT_detectron2/releases/download/v1.0/mask_rcnn_swint_T_coco17.pth"
 
 
 def _get_swint_root() -> Path:
@@ -44,7 +47,7 @@ def _get_swint_root() -> Path:
 
 SWINT_ROOT = _get_swint_root()
 DEFAULT_SWINT_CONFIG = SWINT_ROOT / "configs" / "SwinT" / "mask_rcnn_swint_T_FPN_3x.yaml"
-DEFAULT_SWINT_WEIGHTS = SWINT_ROOT / "models" / "swin_tiny_patch4_window7_224_d2.pth"
+DEFAULT_SWINT_WEIGHTS = SWINT_ROOT / "models" / "mask_rcnn_swint_T_coco17.pth"
 
 
 def prepare_swint_config(
@@ -64,3 +67,35 @@ def prepare_swint_config(
 
     add_swint_config(cfg)
     return str(cfg_path)
+
+
+def ensure_swint_weights(weights_path: Optional[str] = None) -> str:
+    """
+    Ensure SwinT weights are present locally. If no path is provided, download the
+    default Swin-T Mask R-CNN weights into the vendored models directory.
+    """
+    target = Path(weights_path).expanduser() if weights_path else DEFAULT_SWINT_WEIGHTS
+    if target.exists():
+        return str(target)
+
+    if weights_path:
+        raise FileNotFoundError(
+            f"Swin weights not found at {target}. Provide a valid path or remove "
+            "swint_weights_path to download the default weights automatically."
+        )
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    tmp = target.with_suffix(target.suffix + ".tmp")
+    try:
+        with urllib.request.urlopen(SWINT_WEIGHTS_URL) as resp, open(tmp, "wb") as out:
+            shutil.copyfileobj(resp, out)
+        tmp.rename(target)
+    except Exception as exc:  # noqa: BLE001
+        if tmp.exists():
+            tmp.unlink()
+        raise RuntimeError(
+            f"Failed to download Swin weights from {SWINT_WEIGHTS_URL}. "
+            "Download manually and place in third_party/SwinT_detectron2/models/."
+        ) from exc
+
+    return str(target)
