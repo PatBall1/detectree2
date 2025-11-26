@@ -90,8 +90,15 @@ def prepare_swint_config(
     config_path: Optional[str] = None,
 ) -> str:
     """Register Swin config nodes/backbone builders and return the config path to merge."""
-    default_cfg, _ = _default_swint_paths()
-    cfg_path = Path(config_path) if config_path else default_cfg
+    if config_path:
+        cfg_path = Path(config_path)
+        swint_root = cfg_path.resolve().parents[2]
+        if str(swint_root) not in sys.path:
+            sys.path.insert(0, str(swint_root))
+    else:
+        default_cfg, _ = _default_swint_paths()
+        cfg_path = default_cfg
+        swint_root = cfg_path.parent.parent
     if not cfg_path.exists():
         raise FileNotFoundError(
             f"Swin config not found at {cfg_path}. Verify your vendored SwinT_detectron2 or override config_path."
@@ -110,16 +117,19 @@ def ensure_swint_weights(weights_path: Optional[str] = None) -> str:
     Ensure SwinT weights are present locally. If no path is provided, download the
     default Swin-T Mask R-CNN weights into the vendored models directory.
     """
-    _, default_weights = _default_swint_paths()
-    target = Path(weights_path).expanduser() if weights_path else default_weights
-    if target.exists():
-        return str(target)
-
     if weights_path:
+        target = Path(weights_path).expanduser()
+        if target.exists():
+            return str(target)
         raise FileNotFoundError(
             f"Swin weights not found at {target}. Provide a valid path or remove "
             "swint_weights_path to download the default weights automatically."
         )
+
+    _, default_weights = _default_swint_paths()
+    target = default_weights
+    if target.exists():
+        return str(target)
 
     target.parent.mkdir(parents=True, exist_ok=True)
     tmp = target.with_suffix(target.suffix + ".tmp")
