@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import importlib
 import shutil
+import tempfile
+import zipfile
 import urllib.request
 import sys
 from pathlib import Path
@@ -14,15 +16,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 BUNDLED_SWINT = REPO_ROOT / "third_party" / "SwinT_detectron2"
 SWINT_PACKAGE = BUNDLED_SWINT / "swint"
 SWINT_WEIGHTS_URL = "https://github.com/xiaohu2015/SwinT_detectron2/releases/download/v1.0/mask_rcnn_swint_T_coco17.pth"
+SWINT_REPO_ZIP = "https://github.com/xiaohu2015/SwinT_detectron2/archive/refs/heads/master.zip"
 
 
 def _get_swint_root() -> Path:
     """Load the vendored SwinT_detectron2 and return its root directory."""
     if not SWINT_PACKAGE.exists():
-        raise FileNotFoundError(
-            "Vendored SwinT_detectron2 not found. Clone https://github.com/xiaohu2015/SwinT_detectron2.git "
-            f"into {BUNDLED_SWINT} so that {SWINT_PACKAGE} exists."
-        )
+        _download_swint_repo()
 
     if str(BUNDLED_SWINT) not in sys.path:
         sys.path.insert(0, str(BUNDLED_SWINT))
@@ -67,6 +67,36 @@ def prepare_swint_config(
 
     add_swint_config(cfg)
     return str(cfg_path)
+
+
+def _download_swint_repo() -> None:
+    """Download and unpack SwinT_detectron2 into the vendored third_party location."""
+    BUNDLED_SWINT.parent.mkdir(parents=True, exist_ok=True)
+
+    tmp_dir = Path(tempfile.mkdtemp(prefix="swint_repo_"))
+    archive_path = tmp_dir / "swint_repo.zip"
+    try:
+        with urllib.request.urlopen(SWINT_REPO_ZIP) as resp, open(archive_path, "wb") as out:
+            shutil.copyfileobj(resp, out)
+
+        with zipfile.ZipFile(archive_path) as zf:
+            zf.extractall(tmp_dir)
+
+        extracted_dirs = list(tmp_dir.glob("SwinT_detectron2-*"))
+        if not extracted_dirs:
+            raise RuntimeError("Downloaded SwinT_detectron2 archive did not contain expected folder.")
+
+        extracted = extracted_dirs[0]
+        if BUNDLED_SWINT.exists():
+            shutil.rmtree(BUNDLED_SWINT)
+        shutil.move(str(extracted), str(BUNDLED_SWINT))
+    except Exception as exc:  # noqa: BLE001
+        raise FileNotFoundError(
+            f"Vendored SwinT_detectron2 not found and automatic download from {SWINT_REPO_ZIP} failed. "
+            "Download or clone the repository manually into third_party/SwinT_detectron2."
+        ) from exc
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
 def ensure_swint_weights(weights_path: Optional[str] = None) -> str:
