@@ -25,6 +25,8 @@ setup(
         "rtree>=0.9",
         # Evaluation utils
         "pycocotools>=2.0.4",
+        # Swin backbone (direct VCS dependency)
+        "swint @ git+https://github.com/xiaohu2015/SwinT_detectron2.git#egg=swint",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
