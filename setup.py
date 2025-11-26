@@ -1,4 +1,10 @@
+from glob import glob
 from setuptools import find_packages, setup
+
+SWINT_PACKAGE = "swint"
+SWINT_PACKAGE_DIR = "third_party/SwinT_detectron2/swint"
+SWINT_CONFIGS = glob("third_party/SwinT_detectron2/configs/SwinT/*.yaml")
+SWINT_MODELS = glob("third_party/SwinT_detectron2/models/*.pth")
 
 setup(
     name="detectree2",
@@ -7,7 +13,12 @@ setup(
     author_email="ball.jgc@gmail.com",
     description="Detectree packaging",
     url="https://github.com/PatBall1/detectree2",
-    packages=find_packages(),
+    packages=find_packages() + [SWINT_PACKAGE],
+    package_dir={SWINT_PACKAGE: SWINT_PACKAGE_DIR},
+    data_files=[
+        ("swint/configs/SwinT", SWINT_CONFIGS),
+        ("swint/models", SWINT_MODELS),
+    ],
     test_suite="detectree2.tests.test_all.suite",
     python_requires=">=3.8",
     install_requires=[
@@ -25,8 +36,6 @@ setup(
         "rtree>=0.9",
         # Evaluation utils
         "pycocotools>=2.0.4",
-        # Swin backbone (direct VCS dependency)
-        "swint @ git+https://github.com/xiaohu2015/SwinT_detectron2.git#egg=swint",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

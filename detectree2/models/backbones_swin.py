@@ -10,7 +10,7 @@ def _get_swint_root() -> Path:
     """Locate the SwinT_detectron2 install (pip-installed)."""
     try:
         swint_module = importlib.import_module("swint")
-        swint_root = Path(swint_module.__file__).resolve().parent.parent
+        swint_root = Path(swint_module.__file__).resolve().parent
     except ImportError as exc:
         raise FileNotFoundError(
             "SwinT_detectron2 is not available. Install it with "
