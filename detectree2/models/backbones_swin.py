@@ -77,10 +77,12 @@ def _get_swint_root() -> Path:
 
     return swint_root
 
-
-SWINT_ROOT = _get_swint_root()
-DEFAULT_SWINT_CONFIG = SWINT_ROOT / "configs" / "SwinT" / "mask_rcnn_swint_T_FPN_3x.yaml"
-DEFAULT_SWINT_WEIGHTS = SWINT_ROOT / "models" / "mask_rcnn_swint_T_coco17.pth"
+def _default_swint_paths() -> tuple[Path, Path]:
+    """Return default config and weights paths, resolving the vendored root lazily."""
+    swint_root = _get_swint_root()
+    default_cfg = swint_root / "configs" / "SwinT" / "mask_rcnn_swint_T_FPN_3x.yaml"
+    default_weights = swint_root / "models" / "mask_rcnn_swint_T_coco17.pth"
+    return default_cfg, default_weights
 
 
 def prepare_swint_config(
@@ -88,7 +90,8 @@ def prepare_swint_config(
     config_path: Optional[str] = None,
 ) -> str:
     """Register Swin config nodes/backbone builders and return the config path to merge."""
-    cfg_path = Path(config_path) if config_path else DEFAULT_SWINT_CONFIG
+    default_cfg, _ = _default_swint_paths()
+    cfg_path = Path(config_path) if config_path else default_cfg
     if not cfg_path.exists():
         raise FileNotFoundError(
             f"Swin config not found at {cfg_path}. Verify your vendored SwinT_detectron2 or override config_path."
@@ -107,7 +110,8 @@ def ensure_swint_weights(weights_path: Optional[str] = None) -> str:
     Ensure SwinT weights are present locally. If no path is provided, download the
     default Swin-T Mask R-CNN weights into the vendored models directory.
     """
-    target = Path(weights_path).expanduser() if weights_path else DEFAULT_SWINT_WEIGHTS
+    _, default_weights = _default_swint_paths()
+    target = Path(weights_path).expanduser() if weights_path else default_weights
     if target.exists():
         return str(target)
 
