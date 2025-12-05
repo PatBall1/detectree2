@@ -88,7 +88,7 @@ The ``tile_data`` function exposes many parameters to control how tiles are crea
 
 - ``nan_threshold``: The maximum proportion of a tile that can be NaN (or other no-data values) before it is discarded.
 
-- ``use_convex_mask``: When ``True``, this creates a tight "wrapper" polygon (a convex hull) around all the training crowns within a tile. Any pixels outside this wrapper are masked out. This is a way to reduce noise by forcing the model to ignore parts of the tile that are far from any labeled object.
+- ``use_convex_mask``: When ``True``, this creates a tight "wrapper" polygon (a convex hull) around all the training crowns within a tile. Any pixels outside this wrapper are masked out. This is a way to reduce noise by forcing the model to ignore parts of the tile that are far from any labeled object. Note that the masked out area counts towards the ``nan_threshold``, so you may need to increase ``nan_threshold`` when using this option.
 
 - ``enhance_rgb_contrast``: When ``True`` (for RGB images only), this applies a percentile contrast stretch. It calculates the 0.2 and 99.8 percentile pixel values and rescales the image to a 1-255 range. This is effective for normalizing hazy, dark, or washed-out imagery. It allows the model to more easily differentiate between tree crowns. 0 is reserved for masked-out areas.
 
