@@ -574,21 +574,56 @@ def _calculate_tile_placements(
     overlapping_tiles: bool = False,
 ) -> List[Tuple[int, int]]:
     """Internal method for calculating the placement of tiles"""
+    # Ensure integer pixel/metre steps for grid generation
+    buffer = int(round(buffer))
+    tile_width = max(1, int(round(tile_width)))
+    tile_height = max(1, int(round(tile_height)))
     coordinates: List[Tuple[int, int]] = []
     if tile_placement == "grid":
         with rasterio.open(img_path) as data:
-            grid_coords = [
-                (int(minx), int(miny)) for minx in np.arange(
-                    int(math.ceil(data.bounds[0])) + buffer, int(data.bounds[2] - tile_width - buffer), tile_width)
-                for miny in np.arange(
-                    int(math.ceil(data.bounds[1])) + buffer, int(data.bounds[3] - tile_height - buffer), tile_height)
-            ]
+            # Define inclusive start and desired last starts
+            x0 = int(math.ceil(data.bounds[0])) + buffer
+            y0 = int(math.ceil(data.bounds[1])) + buffer
+            x_last = int(math.floor(data.bounds[2]) - tile_width - buffer)
+            y_last = int(math.floor(data.bounds[3]) - tile_height - buffer)
+
+            # Base grid (may not reach x_last / y_last exactly)
+            x_starts = list(range(x0, x_last + 1, tile_width)) if x_last >= x0 else []
+            y_starts = list(range(y0, y_last + 1, tile_height)) if y_last >= y0 else []
+
+
+            if not x_starts:
+                x_starts = [x0]
+            elif x_starts[-1] < x_last:
+                x_starts.append(x_last)
+            if not y_starts:
+                y_starts = [y0]
+            elif y_starts[-1] < y_last:
+                y_starts.append(y_last)
+
+            grid_coords = [(int(minx), int(miny)) for minx in x_starts for miny in y_starts]
+
             if overlapping_tiles:
-                grid_coords.extend([(int(minx), int(miny)) for minx in np.arange(
-                    int(math.ceil(data.bounds[0])) + buffer + tile_width // 2, int(data.bounds[2] - tile_width - buffer -
-                    tile_width // 2), tile_width) for miny in np.arange(
-                        int(math.ceil(data.bounds[1])) + buffer + tile_height // 2, int(data.bounds[3] - tile_height - buffer -
-                        tile_height // 2), tile_height)])
+                # Half-shifted grid
+                x0_h = x0 + tile_width // 2
+                y0_h = y0 + tile_height // 2
+                x_last_h = x_last + tile_width // 2
+                y_last_h = y_last + tile_height // 2
+
+                x_starts_h = list(range(x0_h, x_last_h + 1, tile_width)) if x_last_h >= x0_h else []
+                y_starts_h = list(range(y0_h, y_last_h + 1, tile_height)) if y_last_h >= y0_h else []
+
+                if not x_starts_h and x_last_h >= x0_h:
+                    x_starts_h = [x0_h]
+                elif x_starts_h and x_starts_h[-1] < x_last_h:
+                    x_starts_h.append(x_last_h)
+                if not y_starts_h and y_last_h >= y0_h:
+                    y_starts_h = [y0_h]
+                elif y_starts_h and y_starts_h[-1] < y_last_h:
+                    y_starts_h.append(y_last_h)
+
+                grid_coords.extend([(int(minx), int(miny)) for minx in x_starts_h for miny in y_starts_h])
+
             coordinates = grid_coords
     elif tile_placement == "adaptive":
 
