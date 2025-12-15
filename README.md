@@ -4,7 +4,7 @@
 </p>
 
 
- [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Detectree CI](https://github.com/patball1/detectree2/actions/workflows/python-ci.yml/badge.svg)](https://github.com/patball1/detectree2/actions/workflows/python-ci.yml) [![PEP8](https://img.shields.io/badge/code%20style-pep8-orange.svg)](https://www.python.org/dev/peps/pep-0008/) [![DOI](https://zenodo.org/badge/470698486.svg)](https://zenodo.org/badge/latestdoi/470698486)
+ [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Detectree CI](https://github.com/patball1/detectree2/actions/workflows/python-ci.yml/badge.svg)](https://github.com/patball1/detectree2/actions/workflows/python-ci.yml) [![PEP8](https://img.shields.io/badge/code%20style-pep8-orange.svg)](https://www.python.org/dev/peps/pep-0008/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17367058.svg)](https://doi.org/10.5281/zenodo.17367058)
 
 
 <!-- <a href="https://github.com/hhatto/autopep8"><img alt="Code style: autopep8" src="https://img.shields.io/badge/code%20style-autopep8-000000.svg"></a> -->
@@ -129,42 +129,58 @@ Here is an example image of the predictions made by Detectree2.
 ## Project Organization
 
 ```
+├── .github/                 # CI workflows, badges and logos
+│   └── workflows/
+├── CODE_OF_CONDUCT.md
 ├── LICENSE
 ├── Makefile
 ├── README.md
-├── detectree2
-│   ├── data_loading
-│   ├── models
-│   ├── preprocessing
-│   ├── R
-│   └── tests
-├── docs
-│   └── source
-├── model_garden
-├── notebooks
-│   ├── colab
-│   ├── colabJB
-│   ├── colabJH
-│   ├── colabKoay
-│   ├── colabPan
-│   ├── colabSeb
-│   ├── exploratory
-│   ├── mask_rcnn
-│   │   ├── testing
-│   │   └── training
-│   ├── reports
-│   └── turing
-├── report
-│   ├── figures
-│   └── sections
-└── requirements
+├── detectree2/              # Python package (models, data loading, preprocessing, tests, etc.)
+│   ├── data_loading/
+│   ├── models/
+│   ├── preprocessing/
+│   ├── R/
+│   └── tests/
+├── docker/                  # Container recipe for reproducible builds
+│   └── Dockerfile
+├── docs/                    # Sphinx documentation sources
+│   └── source/
+├── model_garden/            # Pre-trained model metadata
+├── notebooks/               # Exploratory, Colab, and Turing workflows
+│   ├── colab/
+│   ├── exploratory/
+│   ├── reports/
+│   └── turing/
+├── report/                  # Paper figures and manuscript sections
+│   ├── figures/
+│   └── sections/
+├── requirements/            # Runtime, test, and dev requirement files
+│   ├── requirements.txt
+│   ├── dev-requirements.txt
+│   └── test-requirements.txt
+├── setup.cfg                # Lint/format config used by CI
+├── setup.py
+└── .setup_scripts/          # Helper scripts for local tooling
 ```
 
 ## Code formatting
 
-To automatically format your code, make sure you have `black` installed (`pip install black`) and call
-```black .```
-from within the project directory.
+We rely on the `pre-commit` hooks defined in `.pre-commit-config.yaml` to keep formatting, linting, and type checking consistent (yapf, isort, flake8, and mypy share the configuration in `setup.cfg`).
+
+```bash
+python -m pip install pre-commit -r requirements/dev-requirements.txt
+pre-commit install
+pre-commit run --all-files
+```
+
+If you need to run the tools individually you can use:
+
+```bash
+yapf -ir detectree2
+isort detectree2
+flake8 detectree2
+mypy detectree2
+```
 
 ---
 

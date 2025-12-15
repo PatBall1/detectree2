@@ -1,0 +1,19 @@
+{
+	"name": "Detectree2 Dev Container",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-toolsai.jupyter",
+				"njpwerner.autodocstring",
+				"donjayamanne.githistory"
+			]
+		}
+	},
+	"postCreateCommand": "python3 -m pip install -e . && sed '/^-e/d' requirements/dev-requirements.txt > /tmp/dev-reqs.txt && python3 -m pip install -r /tmp/dev-reqs.txt",
+	"remoteUser": "vscode"
+}
