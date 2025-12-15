@@ -100,5 +100,5 @@ train_outputs/
 outputs/
 outputs_swin/
 
-# Vendored or downloaded third-party code
-third_party/SwinT_detectron2/models/*.pth
+# Vendored third-party weights
+detectree2/third_party/SwinT_detectron2/models/*.pth
