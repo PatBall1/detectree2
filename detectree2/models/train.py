@@ -503,6 +503,17 @@ class MyTrainer(DefaultTrainer):
             # The checkpoint stores the training iteration that just finished, thus we start
             # at the next iteration
             self.start_iter = self.iter + 1
+        
+        # If Swin is selected, STOP (no stem.conv1, no conv1 hacks).
+        backbone_name = str(getattr(self.cfg.MODEL.BACKBONE, "NAME", "")).lower()
+        if "swint" in backbone_name or hasattr(self.cfg.MODEL, "SWINT"):
+            return
+        
+        try:
+            conv1 = self.model.backbone.bottom_up.stem.conv1
+            _ = conv1.weight
+        except Exception:
+            return
 
         # Early guard for MS: expected channels vs model conv1
         try:
@@ -518,6 +529,9 @@ class MyTrainer(DefaultTrainer):
                 f"but model conv1 expects {model_in_channels}. Please adapt the backbone's first conv to "
                 f"{desired_channels} channels or use 3-band inputs."
             )
+        
+        if resume and self.checkpointer.has_checkpoint():
+            return
 
         if self.cfg.MODEL.WEIGHTS:
             device = self.model.backbone.bottom_up.stem.conv1.weight.device
