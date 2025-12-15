@@ -12,8 +12,8 @@ from pathlib import Path
 from typing import Optional
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-BUNDLED_SWINT = REPO_ROOT / "third_party" / "SwinT_detectron2"
+PKG_ROOT = Path(__file__).resolve().parents[1]  # detectree2/
+BUNDLED_SWINT = PKG_ROOT / "third_party" / "SwinT_detectron2"
 # Extra fallback locations for hosted environments (e.g., Colab)
 FALLBACK_SWINT_LOCATIONS = [
     Path.home() / ".cache" / "detectree2" / "SwinT_detectron2",
