@@ -101,5 +101,4 @@ outputs/
 outputs_swin/
 
 # Vendored or downloaded third-party code
-third_party/detectron2/
 third_party/SwinT_detectron2/models/*.pth
