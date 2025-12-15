@@ -15,8 +15,25 @@ from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 from detectree2.models.train import get_filenames, get_tree_dicts
 
 # Code to convert RLE data from the output instances into Polygons,
-# a small amout of info is lost but is fine.
+# a small amount of info is lost but is fine.
 # https://github.com/hazirbas/coco-json-converter/blob/master/generate_coco_json.py <-- found here
+
+
+def _using_swint_backbone(predictor) -> bool:
+    """
+    Return True if the given predictor is configured to use the SwinT backbone.
+    Works for DefaultPredictor and anything with a .cfg attribute.
+    """
+    cfg = getattr(predictor, "cfg", None)
+    if cfg is None:
+        return False
+
+    backbone_name = str(getattr(cfg.MODEL.BACKBONE, "NAME", ""))
+    if "swint" in backbone_name.lower():
+        return True
+
+    # Swin configs add cfg.MODEL.SWINT
+    return hasattr(cfg.MODEL, "SWINT")
 
 
 def predict_on_data(
@@ -34,14 +51,17 @@ def predict_on_data(
     Args:
         directory (str): Directory containing the images.
         out_folder (str): Output folder for predictions.
-        predictor (DefaultPredictor): The predictor object.
+        predictor (DefaultPredictor): The predictor object (MUST be an instance, e.g. DefaultPredictor(cfg)).
         eval (bool): Whether to use evaluation mode.
         save (bool): Whether to save the predictions.
-        num_predictions (int): Number of predictions to make.
+        num_predictions (int): Number of predictions to make (0 = all).
 
     Returns:
         None
     """
+    is_swint = _using_swint_backbone(predictor)
+
+    cfg = getattr(predictor, "cfg", None)
     pred_dir = os.path.join(directory, out_folder)
     Path(pred_dir).mkdir(parents=True, exist_ok=True)
 
@@ -59,7 +79,7 @@ def predict_on_data(
     num_to_pred = len(
         dataset_dicts) if num_predictions == 0 else num_predictions
 
-    print(f"Predicting {num_to_pred} files in mode {mode}")
+    print(f"Predicting {num_to_pred} files in mode {mode} (swin={is_swint})")
 
     for i, d in enumerate(dataset_dicts[:num_to_pred], start=1):
         file_name = d["file_name"]
@@ -81,6 +101,21 @@ def predict_on_data(
             print(f"Unsupported file extension {file_ext} for file {file_name}")
             continue
 
+        # Only coerce channels when using Swin (your requirement)
+        if is_swint:
+            if img.ndim == 2:
+                # Single-band image: repeat to create a 3-channel input
+                img = np.repeat(img[:, :, None], 3, axis=2)
+            elif img.shape[2] > 3:
+                # Drop extra bands (e.g., alpha channel in 4-band GeoTIFFs)
+                print(f"{file_name} has {img.shape[2]} bands; keeping the first 3 for inference.")
+                img = img[:, :, :3]
+            elif img.shape[2] < 3:
+                # Pad fewer channels to reach 3
+                pad = 3 - img.shape[2]
+                img = np.concatenate([img, np.repeat(img[:, :, -1:], pad, axis=2)], axis=2)
+
+        img = np.ascontiguousarray(img)
         outputs = predictor(img)
 
         # Create the output file name

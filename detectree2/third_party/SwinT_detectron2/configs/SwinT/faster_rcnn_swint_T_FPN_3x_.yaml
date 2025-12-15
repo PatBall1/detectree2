@@ -1,0 +1,21 @@
+_BASE_: "../Base-RCNN-FPN.yaml"
+MODEL:
+  WEIGHTS: "swin_tiny_patch4_window7_224_d2.pth"
+  MASK_ON: False
+  RESNETS:
+    DEPTH: 50
+  BACKBONE:
+    NAME: "build_swint_fpn_backbone"
+  SWINT:
+    OUT_FEATURES: ["stage2", "stage3", "stage4", "stage5"]
+  FPN:
+    IN_FEATURES: ["stage2", "stage3", "stage4", "stage5"]
+SOLVER:
+  STEPS: (210000, 250000)
+  MAX_ITER: 270000
+  WEIGHT_DECAY: 0.05
+  BASE_LR: 0.0001
+  AMP:
+    ENABLED: True
+TEST:
+  EVAL_PERIOD: 20000 

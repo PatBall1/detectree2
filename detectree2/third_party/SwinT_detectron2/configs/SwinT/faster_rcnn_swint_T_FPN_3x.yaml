@@ -1,0 +1,26 @@
+_BASE_: "../Base-RCNN-FPN.yaml"
+MODEL:
+  WEIGHTS: "swin_tiny_patch4_window7_224_d2.pth"
+  PIXEL_MEAN: [123.675, 116.28, 103.53]
+  PIXEL_STD: [58.395, 57.12, 57.375] # I use the dafault config PIXEL_MEAN, PIXEL_STD, INPUT.FORMAT , that is a mistake, but it affects performance negligently.
+  MASK_ON: False
+  RESNETS:
+    DEPTH: 50
+  BACKBONE:
+    NAME: "build_swint_fpn_backbone"
+  SWINT:
+    OUT_FEATURES: ["stage2", "stage3", "stage4", "stage5"]
+  FPN:
+    IN_FEATURES: ["stage2", "stage3", "stage4", "stage5"]
+INPUT:
+  FORMAT: "BGR"
+SOLVER:
+  STEPS: (210000, 250000)
+  MAX_ITER: 270000
+  WEIGHT_DECAY: 0.05
+  BASE_LR: 0.0001
+  AMP:
+    ENABLED: True
+TEST:
+  EVAL_PERIOD: 20000 
+

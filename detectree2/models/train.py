@@ -48,6 +48,10 @@ from detectron2.utils.events import EventStorage
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
 
+from detectree2.models.backbones_swin import (
+    ensure_swint_weights,
+    prepare_swint_config,
+)
 from detectree2.models.outputs import clean_crowns
 from detectree2.preprocessing.tiling import load_class_mapping
 
@@ -499,6 +503,17 @@ class MyTrainer(DefaultTrainer):
             # The checkpoint stores the training iteration that just finished, thus we start
             # at the next iteration
             self.start_iter = self.iter + 1
+        
+        # If Swin is selected, STOP (no stem.conv1, no conv1 hacks).
+        backbone_name = str(getattr(self.cfg.MODEL.BACKBONE, "NAME", "")).lower()
+        if "swint" in backbone_name or hasattr(self.cfg.MODEL, "SWINT"):
+            return
+        
+        try:
+            conv1 = self.model.backbone.bottom_up.stem.conv1
+            _ = conv1.weight
+        except Exception:
+            return
 
         # Early guard for MS: expected channels vs model conv1
         try:
@@ -514,6 +529,9 @@ class MyTrainer(DefaultTrainer):
                 f"but model conv1 expects {model_in_channels}. Please adapt the backbone's first conv to "
                 f"{desired_channels} channels or use 3-band inputs."
             )
+        
+        if resume and self.checkpointer.has_checkpoint():
+            return
 
         if self.cfg.MODEL.WEIGHTS:
             device = self.model.backbone.bottom_up.stem.conv1.weight.device
@@ -1006,6 +1024,9 @@ def setup_cfg(
     num_bands=3,
     class_mapping_file=None,
     visualize_training=False,
+    use_swint_backbone: bool = False,
+    swint_config_path: Optional[str] = None,
+    swint_weights_path: Optional[str] = None,
 ):
     """Set up config object # noqa: D417.
 
@@ -1032,6 +1053,9 @@ def setup_cfg(
         num_bands: number of bands in the image
         class_mapping_file: path to class mapping file
         visualize_training: whether to visualize training. Images can be accessed via TensorBoard
+        use_swint_backbone: swap the ResNet backbone for Swin (requires swint package)
+        swint_config_path: optional override for the Swin config YAML
+        swint_weights_path: optional override for the Swin backbone weights
     """
 
     # Load the class mapping if provided
@@ -1046,7 +1070,13 @@ def setup_cfg(
         raise ValueError(f"Invalid resize option '{resize}'. Must be 'fixed', 'random', or 'rand_fixed'.")
 
     cfg = get_cfg()
-    cfg.merge_from_file(model_zoo.get_config_file(base_model))
+
+    if use_swint_backbone:
+        config_to_merge = prepare_swint_config(cfg, swint_config_path)
+        cfg.merge_from_file(config_to_merge)
+    else:
+        cfg.merge_from_file(model_zoo.get_config_file(base_model))
+
     cfg.DATASETS.TRAIN = trains
     cfg.DATASETS.TEST = tests
     cfg.DATALOADER.NUM_WORKERS = workers
@@ -1062,6 +1092,8 @@ def setup_cfg(
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
     if update_model is not None:
         cfg.MODEL.WEIGHTS = update_model
+    elif use_swint_backbone:
+        cfg.MODEL.WEIGHTS = ensure_swint_weights(swint_weights_path)
     else:
         cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
 

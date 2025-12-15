@@ -8,6 +8,16 @@ setup(
     description="Detectree packaging",
     url="https://github.com/PatBall1/detectree2",
     packages=find_packages(),
+    include_package_data=True,
+    package_data={
+        "detectree2": [
+            "third_party/SwinT_detectron2/**/*.yaml",
+            "third_party/SwinT_detectron2/**/*.yml",
+            "third_party/SwinT_detectron2/**/*.md",
+            "third_party/SwinT_detectron2/LICENSE",
+            "third_party/SwinT_detectron2/swint/**/*.py",
+        ],
+    },
     test_suite="detectree2.tests.test_all.suite",
     python_requires=">=3.8",
     install_requires=[
