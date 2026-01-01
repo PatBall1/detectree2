@@ -802,7 +802,7 @@ def get_tree_dicts(directory: str | Path, class_mapping: Optional[Dict[str, int]
     return dataset_dicts
 
 
-def combine_dicts(root_dir: str,
+def combine_dicts(root_dir: str | Path,
                   val_dir: int,
                   mode: str = "train",
                   class_mapping: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:
