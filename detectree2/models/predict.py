@@ -32,8 +32,8 @@ def predict_on_data(
     Predicts crowns for all images (.png or .tif) present in a directory and outputs masks as JSON files.
 
     Args:
-        directory (str): Directory containing the images.
-        out_folder (str): Output folder for predictions.
+        directory (str | Path): Directory containing the images.
+        out_folder (str | Path): Output folder for predictions.
         predictor (DefaultPredictor): The predictor object.
         eval (bool): Whether to use evaluation mode.
         save (bool): Whether to save the predictions.

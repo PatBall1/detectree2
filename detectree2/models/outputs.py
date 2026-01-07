@@ -217,7 +217,7 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
                 "geometry": {
                     "type": "Polygon",
                     "coordinates": [moved_coords],
-                },                
+                }, 
             }
 
             if multi_class:
@@ -598,39 +598,42 @@ def combine_and_average_polygons(gdfs, iou=0.9):
 
 def clean_predictions(directory, iou_threshold=0.7):
     """Clean predictions prior to accuracy assessment."""
-    pred_fold = directory
-    entries = os.listdir(pred_fold)
+    pred_fold = Path(directory)
 
-    for file in entries:
-        if ".json" in file:
-            print(file)
-            with open(pred_fold + "/" + file) as prediction_file:
-                datajson = json.load(prediction_file)
+    for file in pred_fold.iterdir():
+        if file.suffix != "json":
+            continue
 
-            crowns = gpd.GeoDataFrame()
+        print(file.name)
+        with file.open("r") as prediction_file:
+            datajson = json.load(prediction_file)
 
-            for shp in datajson:
-                crown_coords = polygon_from_mask(
-                    mask_util.decode(shp["segmentation"]))
-                if crown_coords == 0:
-                    continue
-                rescaled_coords = []
-                # coords from json are in a list of [x1, y1, x2, y2,... ] so convert them to [[x1, y1], ...]
-                # format and at the same time rescale them so they are in the correct position for QGIS
-                for c in range(0, len(crown_coords), 2):
-                    x_coord = crown_coords[c]
-                    y_coord = crown_coords[c + 1]
-                    rescaled_coords.append([x_coord, y_coord])
-                crowns = pd.concat([crowns, gpd.GeoDataFrame({'Confidence_score': shp['score'],
-                                                              'geometry': [Polygon(rescaled_coords)]},
-                                                             geometry=[Polygon(rescaled_coords)])])
+        crowns = gpd.GeoDataFrame()
 
-            crowns = crowns.reset_index().drop('index', axis=1)
-            crowns, indices = clean_outputs(crowns, iou_threshold)
-            datajson_reduced = [datajson[i] for i in indices]
-            print("data_json:", len(datajson), " ", len(datajson_reduced))
-            with open(pred_fold + "/" + file, "w") as dest:
-                json.dump(datajson_reduced, dest)
+        for shp in datajson:
+            crown_coords = polygon_from_mask(
+                mask_util.decode(shp["segmentation"]))
+            if crown_coords == 0:
+                continue
+            
+            # convert coords from json [x1, y1, x2, y2,... ] -> [[x1, y1], ...]
+            # format and at the same time rescale them so they are in the correct position for QGIS
+            rescaled_coords = [
+                [crown_coords[i], crown_coords[i + 1]]
+                for i in range(0, len(crown_coords), 2)
+            ]
+
+            crowns = pd.concat([crowns, gpd.GeoDataFrame({'Confidence_score': shp['score'],
+                                                            'geometry': [Polygon(rescaled_coords)]},
+                                                            geometry='geometry')])
+
+        crowns = crowns.reset_index(drop=True)
+        crowns, indices = clean_outputs(crowns, iou_threshold)
+        datajson_reduced = [datajson[i] for i in indices]
+        print(f"data_json: {len(datajson)} {len(datajson_reduced)}")
+
+        with file.open("w") as dest:
+            json.dump(datajson_reduced, dest)
 
 
 def clean_outputs(crowns: gpd.GeoDataFrame, iou_threshold=0.7):

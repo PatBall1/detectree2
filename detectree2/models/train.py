@@ -455,7 +455,7 @@ class MyTrainer(DefaultTrainer):
 
         self.iter = self.start_iter = start_iter
         self.max_iter = max_iter
-        self.early_stop = True
+        self.early_stop = False
         self.APs = []
 
         with EventStorage(start_iter) as self.storage:
@@ -814,7 +814,7 @@ def combine_dicts(root_dir: str | Path,
     all except a specified validation directory, or only from the validation directory.
 
     Args:
-        root_dir (str): The root directory containing subdirectories with tree dictionaries.
+        root_dir (str | Path): The root directory containing subdirectories with tree dictionaries.
         val_dir (int): The index (1-based) of the validation directory to exclude or use depending on the mode.
         mode (str, optional): The mode of operation. Can be "train", "val", or "full".
                               "train" excludes the validation directory,
@@ -851,7 +851,7 @@ def get_filenames(directory: str | Path):
     """Get the file names from the directory, handling both RGB (.png) and multispectral (.tif) images.
 
     Args:
-        directory (str): Directory of images to be predicted on.
+        directory (str | Path): Directory of images to be predicted on.
 
     Returns:
         tuple: A tuple containing:
@@ -1138,7 +1138,7 @@ def predictions_on_data(
         file_ext = file_name.suffix.lower()
         if file_ext == ".png":
             # RGB image, read with cv2
-            img = cv2.imread(file_name)
+            img = cv2.imread(str(file_name))
             if img is None:
                 print(f"Failed to read image {file_name} with cv2.")
                 continue
