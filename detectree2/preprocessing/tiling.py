@@ -673,36 +673,36 @@ def calculate_image_statistics(file_path,
         def calc_on_everything():
             logger.info("Processing entire image...")
             band_stats = []
-            
+
             # Define chunk size for reading (e.g. 2048 rows)
             chunk_height = 2048
-            
+
             for band_idx in range(1, src.count + 1):
                 if band_idx - 1 in ignore_bands_indices:
                     continue
-                
+
                 # Accumulators for exact stats
                 total_count = 0
                 total_sum = 0.0
                 total_sum_sq = 0.0
                 global_min = float('inf')
                 global_max = float('-inf')
-                
+
                 # Buffer for percentiles
                 percentile_buffer = []
                 buffer_size = 0
                 MAX_BUFFER = 5_000_000 # 5 million pixels ~ 40MB
-                
+
                 for row_off in tqdm(range(0, height, chunk_height), desc=f"Calculating stats for band {band_idx}", leave=False):
                     h = min(chunk_height, height - row_off)
                     window = rasterio.windows.Window(0, row_off, width, h)
-                    
+
                     band_chunk = src.read(band_idx, window=window).astype(float)
-                    
+
                     # Mask out bad values
                     mask = (np.isnan(band_chunk) | np.isin(band_chunk, values_to_ignore))
                     valid_chunk = band_chunk[~mask]
-                    
+
                     if valid_chunk.size > 0:
                         # Update exact stats
                         c_min = np.min(valid_chunk)
@@ -710,21 +710,21 @@ def calculate_image_statistics(file_path,
                         c_sum = np.sum(valid_chunk)
                         c_sum_sq = np.sum(valid_chunk ** 2)
                         c_count = valid_chunk.size
-                        
+
                         if c_min < global_min: global_min = c_min
                         if c_max > global_max: global_max = c_max
                         total_sum += c_sum
                         total_sum_sq += c_sum_sq
                         total_count += c_count
-                        
+
                         # Update percentile buffer
                         percentile_buffer.append(valid_chunk)
                         buffer_size += c_count
-                        
+
                         if buffer_size > MAX_BUFFER:
                             merged = np.concatenate(percentile_buffer)
                             # Downsample to keep memory usage low
-                            merged = merged[::2] 
+                            merged = merged[::2]
                             percentile_buffer = [merged]
                             buffer_size = merged.size
 
@@ -892,12 +892,12 @@ def tile_data(
 
     tile_coordinates = _calculate_tile_placements(img_path, buffer, tile_width, tile_height, crowns, tile_placement,
                                                   overlapping_tiles)
-    
+
     image_statistics = calculate_image_statistics(img_path,
                                                   values_to_ignore=additional_nodata,
                                                   mode=mode,
                                                   ignore_bands_indices=ignore_bands_indices) if mode == "ms" else None # Only needed for multispectral data
-    
+
     tile_args = [
         (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold,
          nan_threshold, mode, class_column, mask_gdf, additional_nodata, image_statistics, ignore_bands_indices,

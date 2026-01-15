@@ -378,7 +378,7 @@ class VisualizerHook(HookBase):
                                                         size=output["instances"].image_size).squeeze(0)
                         img = np.transpose(img[:3], (1, 2, 0))
                         v = Visualizer(img, metadata=MetadataCatalog.get(self.trainer.cfg.DATASETS.TEST[0]), scale=1)
-                        #v = v.draw_instance_predictions(output['instances'][output['instances'].scores > 0.5].to("cpu"))
+                        # v = v.draw_instance_predictions(output['instances'][output['instances'].scores > 0.5].to("cpu"))
 
                         masks = output["instances"].pred_masks.to("cpu").numpy()
                         scores = output["instances"].scores.to("cpu").numpy()
@@ -396,8 +396,8 @@ class VisualizerHook(HookBase):
                             "Confidence_score": scores,
                             "indices": list(range(len(scores)))
                         },
-                                               geometry=geoms,
-                                               crs="EPSG:3857")
+                        geometry=geoms,
+                        crs="EPSG:3857")
 
                         gdf = clean_crowns(gdf, iou_threshold=0.3, confidence=0.3, area_threshold=0, verbose=False)
 
@@ -407,7 +407,7 @@ class VisualizerHook(HookBase):
 
                         if self.trainer.cfg.IMGMODE == "rgb":
                             image = np.transpose(image.astype("uint8"), (2, 0, 1))
-                        else:  #ms
+                        else:  # ms
                             image = np.transpose(image.astype("uint8"), (2, 0, 1))[[1, 0, 2]]
 
                         storage.put_image(f"val/prediction/{img_data['file_name'].split('/')[-1]}", image)
@@ -546,10 +546,12 @@ class MyTrainer(DefaultTrainer):
                 logger = logging.getLogger("detectree2")
                 if input_channels_in_checkpoint != 3:
                     logger.warning(
-                        "Input channel modification only works if checkpoint was trained on RGB images (3 channels). The first three channels will be copied and then repeated in the model."
+                        "Input channel modification only works if checkpoint was trained on RGB images (3 channels). " \
+                        "The first three channels will be copied and then repeated in the model."
                     )
                 logger.warning(
-                    "Mismatch in input channels in checkpoint and model, meaning fvcommon would not have been able to automatically load them. Adjusting weights for 'backbone.bottom_up.stem.conv1.weight' manually."
+                    "Mismatch in input channels in checkpoint and model, meaning fvcommon would not have been able to automatically load them. " \
+                    "Adjusting weights for 'backbone.bottom_up.stem.conv1.weight' manually."
                 )
                 with torch.no_grad():
                     self.model.backbone.bottom_up.stem.conv1.weight[:, :3] = checkpoint[:, :3]
@@ -1078,7 +1080,7 @@ def setup_cfg(
         default_pixel_std = cfg.MODEL.PIXEL_STD
         # Extend or truncate the PIXEL_MEAN and PIXEL_STD based on num_bands
         cfg.MODEL.PIXEL_MEAN = (default_pixel_mean * (num_bands // len(default_pixel_mean)) +
-                               default_pixel_mean[:num_bands % len(default_pixel_mean)])
+                                default_pixel_mean[:num_bands % len(default_pixel_mean)])
         cfg.MODEL.PIXEL_STD = (default_pixel_std * (num_bands // len(default_pixel_std)) +
                                default_pixel_std[:num_bands % len(default_pixel_std)])
     if visualize_training:
@@ -1223,12 +1225,12 @@ def multiply_conv1_weights(model):
         model.backbone.bottom_up.stem.conv1 = new_conv
 
 
-def get_latest_model_path(output_dir: str) -> str:
+def get_latest_model_path(output_dir: str | Path) -> str:
     """
     Find the model file with the highest index in the specified output directory.
 
     Args:
-        output_dir (str): The directory where the model files are stored.
+        output_dir (str | Path): The directory where the model files are stored.
 
     Returns:
         str: The path to the model file with the highest index.
@@ -1238,7 +1240,8 @@ def get_latest_model_path(output_dir: str) -> str:
 
     # Find all files that match the pattern and extract their indices
     model_files = []
-    for f in Path(output_dir).iterdir():
+    output_dir = Path(output_dir)  # ADD THIS
+    for f in output_dir.iterdir():
         match = model_pattern.match(f.name)
         if match:
             model_files.append((f, int(match.group(1))))

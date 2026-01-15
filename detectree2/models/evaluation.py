@@ -423,7 +423,7 @@ def find_intersections(all_test_feats, all_pred_feats):
 
                 # calculate the IoU
                 if union_area == 0:
-                    continue    
+                    continue
                 IoU = intersection / union_area
 
                 # update the objects so they only store greatest intersection value
@@ -672,18 +672,18 @@ def site_f1_score2(
         epsg = get_epsg(file)
 
         all_test_feats = initialise_feats2(tile_directory, file.name,
-                                            lidar_img, area_threshold,
-                                            conf_threshold, border_filter,
-                                            tile_width, tile_origin, epsg)
+                                           lidar_img, area_threshold,
+                                           conf_threshold, border_filter,
+                                           tile_width, tile_origin, epsg)
 
         new_heights = get_heights(all_test_feats, min_height, max_height)
         heights.extend(new_heights)
 
-        pred_file = "Prediction_" + file.stem + "_eval.geojson"
+        pred_file = f"Prediction_{file.stem}_eval.geojson"
         all_pred_feats = initialise_feats2(pred_directory, pred_file,
-                                            lidar_img, area_threshold,
-                                            conf_threshold, border_filter,
-                                            tile_width, tile_origin, epsg)
+                                           lidar_img, area_threshold,
+                                           conf_threshold, border_filter,
+                                           tile_width, tile_origin, epsg)
 
         if save:
             save_feats(tile_directory, all_test_feats)
@@ -691,7 +691,7 @@ def site_f1_score2(
 
         find_intersections(all_test_feats, all_pred_feats)
         tps, fps, fns = positives_test(all_test_feats, all_pred_feats,
-                                        IoU_threshold, min_height, max_height)
+                                       IoU_threshold, min_height, max_height)
 
         # print(f"tps: {tps}")
         # print(f"fps: {fps}")

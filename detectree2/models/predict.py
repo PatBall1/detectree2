@@ -23,7 +23,7 @@ def predict_on_data(
     directory: str | Path = "./",
     out_folder: str | Path = "predictions",
     predictor=DefaultPredictor,
-    eval: bool=False,
+    eval: bool = False,
     save: bool = True,
     num_predictions=0,
 ) -> None:

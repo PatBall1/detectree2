@@ -5,7 +5,6 @@ mapping crowns in geographic space.
 """
 import glob
 import json
-import os
 import re
 from http.client import REQUEST_URI_TOO_LONG  # noqa: F401
 from pathlib import Path
@@ -91,7 +90,7 @@ def to_eval_geojson(directory=None):  # noqa:N803
         }
 
         # load the json file we need to convert into a geojson
-        with file.open()  as prediction_file:
+        with file.open() as prediction_file:
             datajson = json.load(prediction_file)
 
         img_dict["width"] = datajson[0]["segmentation"]["size"][0]
@@ -217,12 +216,12 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
                 "geometry": {
                     "type": "Polygon",
                     "coordinates": [moved_coords],
-                }, 
+                },
             }
 
             if multi_class:
                 feature["properties"]["category"] = category
-        
+
             geofile["features"].append(feature)
 
         output_geo_file = output_fold / file.with_suffix(".geojson").name
@@ -330,7 +329,7 @@ def clean_crowns(
     Clean overlapping crowns by first identifying all candidate overlapping pairs via a spatial join,
     then clustering crowns into connected components (where an edge is added if two crowns have IoU
     above a threshold), and finally keeping the best crown (by confidence or any given field) in each cluster.
-        
+
     Args:
         crowns (gpd.GeoDataFrame): Crowns to be cleaned.
         iou_threshold (float, optional): IoU threshold that determines whether crowns are overlapping.
@@ -408,7 +407,6 @@ def clean_crowns(
 
     # 7. Assemble the cleaned crowns.
     cleaned_crowns = crowns.loc[selected_indices].copy()
-
 
     return gpd.GeoDataFrame(cleaned_crowns, crs=crowns.crs).reset_index(drop=True)
 
@@ -601,7 +599,7 @@ def clean_predictions(directory, iou_threshold=0.7):
     pred_fold = Path(directory)
 
     for file in pred_fold.iterdir():
-        if file.suffix != "json":
+        if file.suffix != ".json":
             continue
 
         print(file.name)
@@ -615,17 +613,17 @@ def clean_predictions(directory, iou_threshold=0.7):
                 mask_util.decode(shp["segmentation"]))
             if crown_coords == 0:
                 continue
-            
+
             # convert coords from json [x1, y1, x2, y2,... ] -> [[x1, y1], ...]
             # format and at the same time rescale them so they are in the correct position for QGIS
             rescaled_coords = [
                 [crown_coords[i], crown_coords[i + 1]]
                 for i in range(0, len(crown_coords), 2)
-            ]
+                ]
 
             crowns = pd.concat([crowns, gpd.GeoDataFrame({'Confidence_score': shp['score'],
-                                                            'geometry': [Polygon(rescaled_coords)]},
-                                                            geometry='geometry')])
+                                                          'geometry': [Polygon(rescaled_coords)]},
+                                                          geometry='geometry')])
 
         crowns = crowns.reset_index(drop=True)
         crowns, indices = clean_outputs(crowns, iou_threshold)
