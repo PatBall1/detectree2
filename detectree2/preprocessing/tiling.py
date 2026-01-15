@@ -673,36 +673,36 @@ def calculate_image_statistics(file_path,
         def calc_on_everything():
             logger.info("Processing entire image...")
             band_stats = []
-            
+
             # Define chunk size for reading (e.g. 2048 rows)
             chunk_height = 2048
-            
+
             for band_idx in range(1, src.count + 1):
                 if band_idx - 1 in ignore_bands_indices:
                     continue
-                
+
                 # Accumulators for exact stats
                 total_count = 0
                 total_sum = 0.0
                 total_sum_sq = 0.0
                 global_min = float('inf')
                 global_max = float('-inf')
-                
+
                 # Buffer for percentiles
                 percentile_buffer = []
                 buffer_size = 0
                 MAX_BUFFER = 5_000_000 # 5 million pixels ~ 40MB
-                
+
                 for row_off in tqdm(range(0, height, chunk_height), desc=f"Calculating stats for band {band_idx}", leave=False):
                     h = min(chunk_height, height - row_off)
                     window = rasterio.windows.Window(0, row_off, width, h)
-                    
+
                     band_chunk = src.read(band_idx, window=window).astype(float)
-                    
+
                     # Mask out bad values
                     mask = (np.isnan(band_chunk) | np.isin(band_chunk, values_to_ignore))
                     valid_chunk = band_chunk[~mask]
-                    
+
                     if valid_chunk.size > 0:
                         # Update exact stats
                         c_min = np.min(valid_chunk)
@@ -710,21 +710,21 @@ def calculate_image_statistics(file_path,
                         c_sum = np.sum(valid_chunk)
                         c_sum_sq = np.sum(valid_chunk ** 2)
                         c_count = valid_chunk.size
-                        
+
                         if c_min < global_min: global_min = c_min
                         if c_max > global_max: global_max = c_max
                         total_sum += c_sum
                         total_sum_sq += c_sum_sq
                         total_count += c_count
-                        
+
                         # Update percentile buffer
                         percentile_buffer.append(valid_chunk)
                         buffer_size += c_count
-                        
+
                         if buffer_size > MAX_BUFFER:
                             merged = np.concatenate(percentile_buffer)
                             # Downsample to keep memory usage low
-                            merged = merged[::2] 
+                            merged = merged[::2]
                             percentile_buffer = [merged]
                             buffer_size = merged.size
 
@@ -885,19 +885,19 @@ def tile_data(
     if mask_path is not None:
         mask_gdf = gpd.read_file(mask_path)
     out_path = Path(out_dir)
-    os.makedirs(out_path, exist_ok=True)
+    out_path.mkdir(parents=True, exist_ok=True)
     tilename = Path(img_path).stem
     with rasterio.open(img_path) as data:
         crs = data.crs.to_epsg()  # Update CRS handling to avoid deprecated syntax
 
     tile_coordinates = _calculate_tile_placements(img_path, buffer, tile_width, tile_height, crowns, tile_placement,
                                                   overlapping_tiles)
-    
+
     image_statistics = calculate_image_statistics(img_path,
                                                   values_to_ignore=additional_nodata,
                                                   mode=mode,
                                                   ignore_bands_indices=ignore_bands_indices) if mode == "ms" else None # Only needed for multispectral data
-    
+
     tile_args = [
         (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold,
          nan_threshold, mode, class_column, mask_gdf, additional_nodata, image_statistics, ignore_bands_indices,
@@ -1302,7 +1302,7 @@ def record_classes(crowns: gpd.GeoDataFrame, out_dir: str, column: str = 'status
 
     # Save the class-to-index mapping to disk
     out_path = Path(out_dir)
-    os.makedirs(out_path, exist_ok=True)
+    out_path.mkdir(parents=True, exist_ok=True)
 
     if save_format == 'json':
         with open(out_path / 'class_to_idx.json', 'w') as f:
@@ -1340,7 +1340,7 @@ def to_traintest_folders(  # noqa: C901
     tiles_dir = Path(tiles_folder)
     out_dir = Path(out_folder)
 
-    if not os.path.exists(tiles_dir):
+    if not tiles_dir.exists():
         raise IOError
 
     if Path(out_dir / "train").exists() and Path(out_dir / "train").is_dir():
@@ -1367,19 +1367,15 @@ def to_traintest_folders(  # noqa: C901
         # copy to test
         if i < len(file_roots) * test_frac:
             test_boxes.append(image_details(file_roots[num[i]]))
-            shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(Path(file_roots[num[i]]).suffix + ".geojson"),
-                        out_dir / "test")
+            shutil.copy(tiles_dir / f"{file_roots[num[i]]}.geojson", out_dir / "test")
         else:
             # copy to train
             train_box = image_details(file_roots[num[i]])
             if strict:  # check if there is overlap with test boxes
                 if not is_overlapping_box(test_boxes, train_box):
-                    shutil.copy(
-                        (tiles_dir / file_roots[num[i]]).with_suffix(Path(file_roots[num[i]]).suffix + ".geojson"),
-                        out_dir / "train")
+                    shutil.copy(tiles_dir / f"{file_roots[num[i]]}.geojson", out_dir / "train")
             else:
-                shutil.copy((tiles_dir / file_roots[num[i]]).with_suffix(Path(file_roots[num[i]]).suffix + ".geojson"),
-                            out_dir / "train")
+                shutil.copy(tiles_dir / f"{file_roots[num[i]]}.geojson", out_dir / "train")
 
     # COMMENT NECESSARY HERE
     file_names = (out_dir / "train").glob("*.geojson")

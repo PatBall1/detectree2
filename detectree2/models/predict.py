@@ -3,7 +3,6 @@
 This module contains the code to generate predictions on tiled data.
 """
 import json
-import os
 from pathlib import Path
 
 import cv2
@@ -11,6 +10,7 @@ import numpy as np
 import rasterio
 from detectron2.engine import DefaultPredictor
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
+from tqdm import tqdm
 
 from detectree2.models.train import get_filenames, get_tree_dicts
 
@@ -20,20 +20,20 @@ from detectree2.models.train import get_filenames, get_tree_dicts
 
 
 def predict_on_data(
-    directory: str = "./",
-    out_folder: str = "predictions",
+    directory: str | Path = "./",
+    out_folder: str | Path = "predictions",
     predictor=DefaultPredictor,
-    eval=False,
+    eval: bool = False,
     save: bool = True,
     num_predictions=0,
-):
+) -> None:
     """Make predictions on tiled data.
 
     Predicts crowns for all images (.png or .tif) present in a directory and outputs masks as JSON files.
 
     Args:
-        directory (str): Directory containing the images.
-        out_folder (str): Output folder for predictions.
+        directory (str | Path): Directory containing the images.
+        out_folder (str | Path): Output folder for predictions.
         predictor (DefaultPredictor): The predictor object.
         eval (bool): Whether to use evaluation mode.
         save (bool): Whether to save the predictions.
@@ -42,35 +42,36 @@ def predict_on_data(
     Returns:
         None
     """
-    pred_dir = os.path.join(directory, out_folder)
-    Path(pred_dir).mkdir(parents=True, exist_ok=True)
+    directory = Path(directory)
+    pred_dir = Path(out_folder)
+    pred_dir.mkdir(parents=True, exist_ok=True)
 
     if eval:
         dataset_dicts = get_tree_dicts(directory)
-        if len(dataset_dicts) > 0:
-            sample_file = dataset_dicts[0]["file_name"]
-            _, mode = get_filenames(os.path.dirname(sample_file))
+        if dataset_dicts:
+            sample_file = Path(dataset_dicts[0]["file_name"])
+            _, mode = get_filenames(sample_file.parent)
         else:
             mode = None
     else:
         dataset_dicts, mode = get_filenames(directory)
 
-    total_files = len(dataset_dicts)
-    num_to_pred = len(
-        dataset_dicts) if num_predictions == 0 else num_predictions
+    num_to_pred = len(dataset_dicts) if num_predictions == 0 else num_predictions
 
-    print(f"Predicting {num_to_pred} files in mode {mode}")
+    for d in tqdm(
+        dataset_dicts[:num_to_pred],
+        desc=f"Predicting files in mode {mode}",
+    ):
+        file_name = Path(d["file_name"])
+        file_ext = file_name.suffix.lower()
 
-    for i, d in enumerate(dataset_dicts[:num_to_pred], start=1):
-        file_name = d["file_name"]
-        file_ext = os.path.splitext(file_name)[1].lower()
         if file_ext == ".png":
             # RGB image, read with cv2
-            cv_img = cv2.imread(file_name)
-            if cv_img is None:
+            img = cv2.imread(str(file_name))
+            if img is None:
                 print(f"Failed to read image {file_name} with cv2.")
                 continue
-            img = np.array(cv_img)  # Explicitly convert to numpy array
+            img = np.array(img)  # Explicitly convert to numpy array
         elif file_ext == ".tif":
             # Multispectral image, read with rasterio
             with rasterio.open(file_name) as src:
@@ -83,20 +84,13 @@ def predict_on_data(
 
         outputs = predictor(img)
 
-        # Create the output file name
-        file_name_only = os.path.basename(file_name)
-        file_name_json = os.path.splitext(file_name_only)[0] + ".json"
-        output_file = os.path.join(pred_dir, f"Prediction_{file_name_json}")
-
         if save:
             # Save predictions to JSON file
+            output_file = pred_dir / f"Prediction_{file_name.stem}.json"
             evaluations = instances_to_coco_json(outputs["instances"].to("cpu"),
-                                                 file_name)
-            with open(output_file, "w") as dest:
-                json.dump(evaluations, dest)
-
-        if i % 50 == 0:
-            print(f"Predicted {i} files of {total_files}")
+                                                 str(file_name))
+            with output_file.open("w") as f:
+                json.dump(evaluations, f)
 
 
 if __name__ == "__main__":
