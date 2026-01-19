@@ -377,7 +377,8 @@ class VisualizerHook(HookBase):
                         img = nn.functional.interpolate(img.unsqueeze(0),
                                                         size=output["instances"].image_size).squeeze(0)
                         img = np.transpose(img[:3], (1, 2, 0))
-                        v = Visualizer(img, metadata=MetadataCatalog.get(self.trainer.cfg.DATASETS.TEST[0]), scale=1)
+                        metadata = MetadataCatalog.get(self.trainer.cfg.DATASETS.TEST[0])
+                        v = Visualizer(img, metadata=metadata, scale=1)
                         # v = v.draw_instance_predictions(output['instances'][output['instances'].scores > 0.5].to("cpu"))
 
                         masks = output["instances"].pred_masks.to("cpu").numpy()
@@ -392,12 +393,13 @@ class VisualizerHook(HookBase):
                             else:
                                 geoms.append(None)
 
-                        gdf = gpd.GeoDataFrame(data={
-                            "Confidence_score": scores,
-                            "indices": list(range(len(scores)))
-                        },
-                        geometry=geoms,
-                        crs="EPSG:3857")
+                        gdf = gpd.GeoDataFrame(
+                            data={
+                                "Confidence_score": scores,
+                                "indices": list(range(len(scores)))
+                            },
+                            geometry=geoms,
+                            crs="EPSG:3857")
 
                         gdf = clean_crowns(gdf, iou_threshold=0.3, confidence=0.3, area_threshold=0, verbose=False)
 
@@ -546,12 +548,12 @@ class MyTrainer(DefaultTrainer):
                 logger = logging.getLogger("detectree2")
                 if input_channels_in_checkpoint != 3:
                     logger.warning(
-                        "Input channel modification only works if checkpoint was trained on RGB images (3 channels). " \
+                        "Input channel modification only works if checkpoint was trained on RGB images (3 channels). "
                         "The first three channels will be copied and then repeated in the model."
                     )
                 logger.warning(
-                    "Mismatch in input channels in checkpoint and model, meaning fvcommon would not have been able to automatically load them. " \
-                    "Adjusting weights for 'backbone.bottom_up.stem.conv1.weight' manually."
+                    "Mismatch in input channels in checkpoint and model, meaning fvcommon would not have been able "
+                    "to automatically load them. Adjusting weights for 'backbone.bottom_up.stem.conv1.weight' manually."
                 )
                 with torch.no_grad():
                     self.model.backbone.bottom_up.stem.conv1.weight[:, :3] = checkpoint[:, :3]
@@ -1079,10 +1081,12 @@ def setup_cfg(
         default_pixel_mean = cfg.MODEL.PIXEL_MEAN
         default_pixel_std = cfg.MODEL.PIXEL_STD
         # Extend or truncate the PIXEL_MEAN and PIXEL_STD based on num_bands
-        cfg.MODEL.PIXEL_MEAN = (default_pixel_mean * (num_bands // len(default_pixel_mean)) +
-                                default_pixel_mean[:num_bands % len(default_pixel_mean)])
-        cfg.MODEL.PIXEL_STD = (default_pixel_std * (num_bands // len(default_pixel_std)) +
-                               default_pixel_std[:num_bands % len(default_pixel_std)])
+        cfg.MODEL.PIXEL_MEAN = (
+            default_pixel_mean * (num_bands // len(default_pixel_mean))
+            + default_pixel_mean[:num_bands % len(default_pixel_mean)])
+        cfg.MODEL.PIXEL_STD = (
+            default_pixel_std * (num_bands // len(default_pixel_std))
+            + default_pixel_std[:num_bands % len(default_pixel_std)])
     if visualize_training:
         cfg.VALIDATION_VIS_PERIOD = eval_period
     else:
@@ -1204,8 +1208,8 @@ def multiply_conv1_weights(model):
 
         # Multiply weights round-robin
         for i in range(in_channels):
-            new_weights[:, i, :, :] = old_weights[:, (i + 1) % 3, :, :] / ((in_channels // 3) +
-                                                                           (1 if i % 3 < in_channels % 3 else 0))
+            new_weights[:, i, :, :] = old_weights[:, (i + 1) % 3, :, :] / (
+                (in_channels // 3) + (1 if i % 3 < in_channels % 3 else 0))
 
         # Create a fresh Conv2d that has the correct shape
         new_conv = Conv2d(in_channels=in_channels,

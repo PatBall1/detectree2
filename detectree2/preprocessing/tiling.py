@@ -481,8 +481,7 @@ def process_tile_train(
         image_statistics: List[Dict[str, float]] = None,
         ignore_bands_indices: List[int] = [],
         use_convex_mask: bool = True,
-        enhance_rgb_contrast: bool = True
-    ) -> None:
+        enhance_rgb_contrast: bool = True) -> None:
     """Process a single tile for training data.
 
     Args:
@@ -584,17 +583,24 @@ def _calculate_tile_placements(
                     int(math.ceil(data.bounds[1])) + buffer, int(data.bounds[3] - tile_height - buffer), tile_height)
             ]
             if overlapping_tiles:
-                grid_coords.extend([(int(minx), int(miny)) for minx in np.arange(
-                    int(math.ceil(data.bounds[0])) + buffer + tile_width // 2, int(data.bounds[2] - tile_width - buffer -
-                    tile_width // 2), tile_width) for miny in np.arange(
-                        int(math.ceil(data.bounds[1])) + buffer + tile_height // 2, int(data.bounds[3] - tile_height - buffer -
-                        tile_height // 2), tile_height)])
+                grid_coords.extend([
+                    (int(minx), int(miny)) for minx in np.arange(
+                        int(math.ceil(data.bounds[0])) + buffer + tile_width // 2,
+                        int(data.bounds[2] - tile_width - buffer - tile_width // 2),
+                        tile_width)
+                    for miny in np.arange(
+                        int(math.ceil(data.bounds[1])) + buffer + tile_height // 2,
+                        int(data.bounds[3] - tile_height - buffer - tile_height // 2),
+                        tile_height)
+                ])
             coordinates = grid_coords
     elif tile_placement == "adaptive":
 
         if crowns is None:
             logger.warning(
-                'Crowns must be supplied if tile_placement="adaptive" (crowns is None). Assuming tiling for test dataset, and tile placement will be done with tile_placement == "grid" instead.'
+                'Crowns must be supplied if tile_placement="adaptive" (crowns is None). '
+                'Assuming tiling for test dataset, and tile placement will be done with '
+                'tile_placement == "grid" instead.'
             )
             return _calculate_tile_placements(img_path, buffer, tile_width, tile_height)
 
@@ -619,8 +625,7 @@ def _calculate_tile_placements(
             bar = gpd.GeoSeries([
                 box(crowns.total_bounds[0] - x_offset, crowns.total_bounds[1] - y_offset + row * tile_height,
                     crowns.total_bounds[2] + x_offset, crowns.total_bounds[1] - y_offset + (row + 1) * tile_height)
-            ],
-                                crs=crowns.crs)
+            ], crs=crowns.crs)
 
             intersection = unioned_crowns.intersection(bar)
             if intersection.is_empty.all():
@@ -691,9 +696,10 @@ def calculate_image_statistics(file_path,
                 # Buffer for percentiles
                 percentile_buffer = []
                 buffer_size = 0
-                MAX_BUFFER = 5_000_000 # 5 million pixels ~ 40MB
+                MAX_BUFFER = 5_000_000  # 5 million pixels ~ 40MB
 
-                for row_off in tqdm(range(0, height, chunk_height), desc=f"Calculating stats for band {band_idx}", leave=False):
+                for row_off in tqdm(range(0, height, chunk_height),
+                                    desc=f"Calculating stats for band {band_idx}", leave=False):
                     h = min(chunk_height, height - row_off)
                     window = rasterio.windows.Window(0, row_off, width, h)
 
@@ -711,8 +717,10 @@ def calculate_image_statistics(file_path,
                         c_sum_sq = np.sum(valid_chunk ** 2)
                         c_count = valid_chunk.size
 
-                        if c_min < global_min: global_min = c_min
-                        if c_max > global_max: global_max = c_max
+                        if c_min < global_min:
+                            global_min = c_min
+                        if c_max > global_max:
+                            global_max = c_max
                         total_sum += c_sum
                         total_sum_sq += c_sum_sq
                         total_count += c_count
@@ -857,9 +865,9 @@ def tile_data(
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
     Tiles up large rasters into manageable tiles for training and prediction. If crowns are not supplied, the function
-    will tile up the entire landscape for prediction. If crowns are supplied, the function will tile these with the image
-    and skip tiles without a minimum coverage of crowns. The 'threshold' can be varied to ensure good coverage of
-    crowns across a training tile. Tiles that do not have sufficient coverage are skipped.
+    will tile up the entire landscape for prediction. If crowns are supplied, the function will tile these with the
+    image and skip tiles without a minimum coverage of crowns. The 'threshold' can be varied to ensure good coverage
+    of crowns across a training tile. Tiles that do not have sufficient coverage are skipped.
 
     Args:
         img_path: Path to the orthomosaic
@@ -875,7 +883,8 @@ def tile_data(
         class_column: Name of the column in `crowns` DataFrame for class-based tiling
         tile_placement: Strategy for placing tiles.
             "grid" for fixed grid placement based on the bounds of the input image, optimized for speed.
-            "adaptive" for dynamic placement of tiles based on crowns, adjusts based on data features for better coverage.
+            "adaptive" for dynamic placement of tiles based on crowns, adjusts based on data features for better
+            coverage.
 
     Returns:
         None
@@ -893,24 +902,27 @@ def tile_data(
     tile_coordinates = _calculate_tile_placements(img_path, buffer, tile_width, tile_height, crowns, tile_placement,
                                                   overlapping_tiles)
 
-    image_statistics = calculate_image_statistics(img_path,
-                                                  values_to_ignore=additional_nodata,
-                                                  mode=mode,
-                                                  ignore_bands_indices=ignore_bands_indices) if mode == "ms" else None # Only needed for multispectral data
+    # Only needed for multispectral data
+    image_statistics = calculate_image_statistics(
+        img_path,
+        values_to_ignore=additional_nodata,
+        mode=mode,
+        ignore_bands_indices=ignore_bands_indices) if mode == "ms" else None
 
     tile_args = [
         (img_path, out_dir, buffer, tile_width, tile_height, dtype_bool, minx, miny, crs, tilename, crowns, threshold,
          nan_threshold, mode, class_column, mask_gdf, additional_nodata, image_statistics, ignore_bands_indices,
          use_convex_mask, enhance_rgb_contrast) for minx, miny in tile_coordinates
         if mask_path is None or (mask_path is not None and mask_gdf.intersects(
-            box(minx, miny, minx + tile_width, miny + tile_height)  #TODO maybe add to_crs here
+            box(minx, miny, minx + tile_width, miny + tile_height)  # TODO maybe add to_crs here
         ).any())
     ]
 
     if random_subset > -1:
         if random_subset > len(tile_args):
             logger.warning(
-                f"random_subset is larger than the amount of tile places ({len(tile_args)}>{random_subset}). Using all possible tiles instead."
+                f"random_subset is larger than the amount of tile places ({len(tile_args)}>{random_subset}). "
+                f"Using all possible tiles instead."
             )
         else:
             tile_args = random.sample(tile_args, random_subset)
@@ -947,8 +959,8 @@ def create_RGB_from_MS(tile_folder_path: Union[str, Path],
             Path to the folder containing multispectral .tif files, along with any .geojson, train, or test subdirectories.
         out_dir (str or Path, optional):
             Path to the output directory where RGB images will be saved. If None, a default folder with a suffix
-            "_<conversion>-rgb" is created alongside the input tile folder. If `out_dir` already exists and is not empty,
-            we append also append the current date and time to avoid overwriting.
+            "_<conversion>-rgb" is created alongside the input tile folder. If `out_dir` already exists and is not
+            empty, we append also append the current date and time to avoid overwriting.
         conversion (str, optional):
             The method of converting multispectral imagery to three bands:
             - "pca": perform a principal-component analysis reduction to three components.
@@ -1115,7 +1127,8 @@ def create_RGB_from_MS(tile_folder_path: Union[str, Path],
                     data = src.read(indexes=[1, 2, 3])
                     if np.nanmax(data) > 255:
                         logger.exception(
-                            "The input folder seems to be an RGB folder and you are taking the first three bands. This will not change the output. Did you choose the wrong folder? Aborting."
+                            "The input folder seems to be an RGB folder and you are taking the first three bands. "
+                            "This will not change the output. Did you choose the wrong folder? Aborting."
                         )
                         return
             except RasterioIOError as e:

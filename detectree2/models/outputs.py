@@ -619,11 +619,11 @@ def clean_predictions(directory, iou_threshold=0.7):
             rescaled_coords = [
                 [crown_coords[i], crown_coords[i + 1]]
                 for i in range(0, len(crown_coords), 2)
-                ]
+            ]
 
             crowns = pd.concat([crowns, gpd.GeoDataFrame({'Confidence_score': shp['score'],
-                                                          'geometry': [Polygon(rescaled_coords)]},
-                                                          geometry='geometry')])
+                                                           'geometry': [Polygon(rescaled_coords)]},
+                                                           geometry='geometry')])
 
         crowns = crowns.reset_index(drop=True)
         crowns, indices = clean_outputs(crowns, iou_threshold)
