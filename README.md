@@ -13,9 +13,9 @@
 Python package for automatic tree crown delineation in aerial RGB and multispectral imagery based on Mask R-CNN. Pre-trained models can be picked in the [`model_garden`](https://github.com/PatBall1/detectree2/tree/master/model_garden).
 Tutorials on how to prepare data, train models and make predictions are available [here](https://patball1.github.io/detectree2/tutorials/index.html). For questions, collaboration proposals and requests for data email [James Ball](mailto:ball.jgc@gmail.com). Some example data is available to download [here](https://doi.org/10.5281/zenodo.8136161).
 
-### 🌳 Want to see what detectree2 can do?
+### 🌳 Want a quick taster of what detectree2 can do?
 
-**Upload your own aerial imagery and get tree crown predictions in seconds — no install, no code, no GPU required.**
+**Upload a sample of your aerial imagery and see tree crown predictions in seconds — no install, no code, no GPU required. Get a feel for the results before diving into the full package.**
 
 <p>
 <a href="https://huggingface.co/spaces/forestmap-ai/Detectree2">
