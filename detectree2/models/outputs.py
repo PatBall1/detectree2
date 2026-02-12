@@ -167,7 +167,8 @@ def project_to_geojson(tiles_path, pred_fold=None, output_fold=None, multi_class
 
     for file in tqdm(entries, desc="Projecting files",):
 
-        tifpath = Path(tiles_path) / f"{file.stem.removeprefix('Prediction_')}.tif"
+        stem = file.stem[len('Prediction_'):] if file.stem.startswith('Prediction_') else file.stem
+        tifpath = Path(tiles_path) / f"{stem}.tif"
 
         with rasterio.open(tifpath) as data:
             epsg = data.crs.to_epsg()
