@@ -3,6 +3,7 @@
 Classes and functions to train a model based on othomosaics and corresponding
 manual crown data.
 """
+from __future__ import annotations
 import datetime
 import json
 import logging

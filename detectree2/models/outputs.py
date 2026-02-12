@@ -3,6 +3,7 @@
 Funtions to process model predictions into outputs for model evaluation and
 mapping crowns in geographic space.
 """
+from __future__ import annotations
 import glob
 import json
 import re
