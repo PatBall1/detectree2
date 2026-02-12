@@ -26,6 +26,9 @@ Code developed by James Ball, Seb Hickman, Thomas Koay, Oscar Jiang, Luran Wang,
 at the University of Cambridge.  The Forest Ecology and Conservation Group is led by Professor David Coomes and is part of the University of Cambridge `Conservation Research Institute <https://www.conservation.cam.ac.uk/>`_.
 MRes project repo available `here <https://github.com/shmh40/detectreeRGB/>`_.
 
+Supported by `forestmap.ai <https://forestmap.ai>`_.
+Try the online demo on `Hugging Face Spaces <https://huggingface.co/spaces/forestmap-ai/Detectree2>`_ — no install needed.
+
 Citation
 --------
 
