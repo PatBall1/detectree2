@@ -13,7 +13,17 @@
 Python package for automatic tree crown delineation in aerial RGB and multispectral imagery based on Mask R-CNN. Pre-trained models can be picked in the [`model_garden`](https://github.com/PatBall1/detectree2/tree/master/model_garden).
 Tutorials on how to prepare data, train models and make predictions are available [here](https://patball1.github.io/detectree2/tutorials/index.html). For questions, collaboration proposals and requests for data email [James Ball](mailto:ball.jgc@gmail.com). Some example data is available to download [here](https://doi.org/10.5281/zenodo.8136161).
 
-> **Try detectree2 instantly -- no install needed:** [Open the demo on Hugging Face Spaces](https://huggingface.co/spaces/forestmap-ai/Detectree2)
+### 🌳 Want to see what detectree2 can do?
+
+**Upload your own aerial imagery and get tree crown predictions in seconds — no install, no code, no GPU required.**
+
+<p>
+<a href="https://huggingface.co/spaces/forestmap-ai/Detectree2">
+<img src="https://img.shields.io/badge/%F0%9F%A4%97%20Try%20the%20Online%20Demo-Hugging%20Face%20Spaces-blue?style=for-the-badge" alt="Try the Online Demo">
+</a>
+</p>
+
+<sub>Online demo supported by <a href="https://forestmap.ai">forestmap.ai</a></sub>
 
 Detectree2是一个基于Mask R-CNN的自动树冠检测与分割的Python包。您可以在[`model_garden`](https://github.com/PatBall1/detectree2/tree/master/model_garden)中选择预训练模型。[这里](https://patball1.github.io/detectree2/tutorials/index.html)提供了如何准备数据、训练模型和进行预测的教程。如果有任何问题，合作提案或者需要样例数据，可以邮件联系[James Ball](mailto:ball.jgc@gmail.com)。一些示例数据可以在[这里](https://doi.org/10.5281/zenodo.8136161)下载。
 
