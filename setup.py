@@ -7,6 +7,11 @@ setup(
     author_email="ball.jgc@gmail.com",
     description="Detectree packaging",
     url="https://github.com/PatBall1/detectree2",
+    project_urls={
+        "Documentation": "https://patball1.github.io/detectree2/",
+        "Demo": "https://huggingface.co/spaces/forestmap-ai/Detectree2",
+        "Sponsor": "https://forestmap.ai",
+    },
     packages=find_packages(),
     test_suite="detectree2.tests.test_all.suite",
     python_requires=">=3.8",
