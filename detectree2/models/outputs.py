@@ -325,14 +325,12 @@ def clean_crowns(
     confidence=0.2,
     area_threshold=2,
     field="Confidence_score",
-    containment_threshold=0.85,
     verbose=True,
 ) -> gpd.GeoDataFrame:
     """
     Clean overlapping crowns by first identifying all candidate overlapping pairs via a spatial join,
     then clustering crowns into connected components (where an edge is added if two crowns have IoU
-    above a threshold or one crown is largely contained within the other), and finally keeping the
-    best crown (by confidence or any given field) in each cluster.
+    above a threshold), and finally keeping the best crown (by confidence or any given field) in each cluster.
 
     Args:
         crowns (gpd.GeoDataFrame): Crowns to be cleaned.
@@ -342,10 +340,6 @@ def clean_crowns(
         area_threshold (float, optional): Minimum area of crowns to be retained. Defaults to 2m2 (assuming UTM).
         field (str): Field to used to prioritise selection of crowns. Defaults to "Confidence_score" but this should
             be changed to "Area" if using a model that outputs area.
-        containment_threshold (float, optional): Threshold for the containment ratio
-            (intersection area / smaller crown area). When a small crown is mostly inside a larger one,
-            IoU can be deceptively low because the union is dominated by the large crown. This check
-            catches those nested duplicates. Set to None to disable. Defaults to 0.85.
 
     Returns:
         gpd.GeoDataFrame: Cleaned crowns.
@@ -382,7 +376,7 @@ def clean_crowns(
         if rx != ry:
             parent[ry] = rx
 
-    # 4. For each candidate pair, check IoU and containment; merge if either exceeds its threshold.
+    # 4. For each candidate pair, compute IoU and, if it exceeds the threshold, merge the groups.
     for idx, row in tqdm(
         join.iterrows(),
         total=len(join),
@@ -395,23 +389,10 @@ def clean_crowns(
         # To avoid duplicate work, skip if i and j are already in the same group.
         if find(i) == find(j):
             continue
-
-        geom_i = crowns.at[i, "geometry"]
-        geom_j = crowns.at[j, "geometry"]
-        intersection_area = geom_i.intersection(geom_j).area
-
-        # IoU check
-        union_area = geom_i.area + geom_j.area - intersection_area
-        iou_val = intersection_area / union_area if union_area > 0 else 0
+        # Compute the IoU for the pair.
+        iou_val = calc_iou(crowns.at[i, "geometry"], crowns.at[j, "geometry"])
         if iou_val > iou_threshold:
             union(i, j)
-            continue
-
-        # Containment check: intersection / smaller crown area
-        if containment_threshold is not None:
-            min_area = min(geom_i.area, geom_j.area)
-            if min_area > 0 and (intersection_area / min_area) > containment_threshold:
-                union(i, j)
 
     # 5. Group crowns by their union-find root.
     groups: Dict[int, List] = {}
@@ -435,7 +416,6 @@ def clean_crowns(
 def post_clean(unclean_df: gpd.GeoDataFrame,
                clean_df: gpd.GeoDataFrame,
                iou_threshold: float = 0.3,
-               containment_threshold: float = 0.85,
                field: str = "Confidence_score",
                max_iterations: int = 5,
                verbose: bool = True) -> gpd.GeoDataFrame:
@@ -451,9 +431,6 @@ def post_clean(unclean_df: gpd.GeoDataFrame,
         clean_df (gpd.GeoDataFrame): Clean crowns.
         iou_threshold (float, optional): IoU threshold that determines whether predictions are
             considered overlapping. Defaults to 0.3.
-        containment_threshold (float, optional): Threshold for the containment ratio
-            (intersection area / smaller crown area). Catches small crowns nested inside larger ones
-            that IoU alone would miss. Set to None to disable. Defaults to 0.85.
         field (str): Field used to prioritise selection of crowns. Defaults to "Confidence_score".
         max_iterations (int, optional): Maximum number of gap-filling rounds. Defaults to 5.
         verbose (bool, optional): Print progress information. Defaults to True.
@@ -477,22 +454,9 @@ def post_clean(unclean_df: gpd.GeoDataFrame,
             if idx in to_remove:
                 continue  # Already marked for removal, skip remaining pairs
 
-            unclean_geom = unclean_df.loc[idx, "geometry"]
-            clean_geom = current_clean.loc[row["index_right"], "geometry"]
-            intersection_area = unclean_geom.intersection(clean_geom).area
-
-            # IoU check
-            union_area = unclean_geom.area + clean_geom.area - intersection_area
-            iou = intersection_area / union_area if union_area > 0 else 0
+            iou = calc_iou(unclean_df.loc[idx, "geometry"], current_clean.loc[row["index_right"], "geometry"])
             if iou > iou_threshold:
                 to_remove.add(idx)
-                continue
-
-            # Containment check: intersection / smaller crown area
-            if containment_threshold is not None:
-                min_area = min(unclean_geom.area, clean_geom.area)
-                if min_area > 0 and (intersection_area / min_area) > containment_threshold:
-                    to_remove.add(idx)
 
         reduced_unclean_df = unclean_df.drop(index=to_remove)
 
@@ -515,6 +479,78 @@ def post_clean(unclean_df: gpd.GeoDataFrame,
             break
 
     return current_clean
+
+
+def remove_contained_crowns(
+    crowns: gpd.GeoDataFrame,
+    containment_threshold: float = 0.85,
+    verbose: bool = True,
+) -> gpd.GeoDataFrame:
+    """Remove small crowns that are largely contained within larger crowns.
+
+    This is intended as a final cleanup step *after* clean_crowns and post_clean have run.
+    It catches nested duplicates that IoU-based cleaning misses: when a small crown sits inside
+    a much larger one, IoU is low (the union is dominated by the large crown) but the small
+    crown adds visual clutter rather than useful information.
+
+    The larger crown is always kept. Only the smaller (contained) crown is removed.
+
+    Args:
+        crowns (gpd.GeoDataFrame): Cleaned crowns to check for nesting.
+        containment_threshold (float, optional): Proportion of the smaller crown's area that must
+            fall inside the larger crown for it to be considered contained. Defaults to 0.85.
+        verbose (bool, optional): Print progress information. Defaults to True.
+
+    Returns:
+        gpd.GeoDataFrame: Crowns with nested duplicates removed.
+    """
+    crowns = crowns.copy()
+    crowns["geometry"] = crowns.geometry.buffer(0)
+    crowns.reset_index(drop=True, inplace=True)
+
+    # Spatial join to find candidate overlapping pairs
+    join = gpd.sjoin(crowns, crowns, how="inner", predicate="intersects")
+    join = join[join.index != join.index_right]
+
+    to_remove = set()
+    for _, row in tqdm(
+        join.iterrows(),
+        total=len(join),
+        desc="remove_contained_crowns: checking pairs",
+        smoothing=0,
+        disable=not verbose,
+    ):
+        i = row.name
+        j = row["index_right"]
+
+        # Skip if either crown is already marked for removal
+        if i in to_remove or j in to_remove:
+            continue
+
+        geom_i = crowns.at[i, "geometry"]
+        geom_j = crowns.at[j, "geometry"]
+
+        # Determine which is smaller
+        if geom_i.area <= geom_j.area:
+            small_idx, small_geom, large_geom = i, geom_i, geom_j
+        else:
+            small_idx, small_geom, large_geom = j, geom_j, geom_i
+
+        if small_geom.area == 0:
+            to_remove.add(small_idx)
+            continue
+
+        intersection_area = small_geom.intersection(large_geom).area
+        containment_ratio = intersection_area / small_geom.area
+
+        if containment_ratio > containment_threshold:
+            to_remove.add(small_idx)
+
+    if verbose:
+        print(f"remove_contained_crowns: removed {len(to_remove)} nested crowns "
+              f"({len(crowns)} → {len(crowns) - len(to_remove)})")
+
+    return crowns.drop(index=to_remove).reset_index(drop=True)
 
 
 def load_geopandas_dataframes(folder):
