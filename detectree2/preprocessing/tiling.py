@@ -571,27 +571,39 @@ def _calculate_tile_placements(
     crowns: gpd.GeoDataFrame = None,
     tile_placement: str = "grid",
     overlapping_tiles: bool = False,
+    full_coverage: bool = False,
 ) -> List[Tuple[int, int]]:
-    """Internal method for calculating the placement of tiles"""
+    """Internal method for calculating the placement of tiles.
+
+    Args:
+        full_coverage: If True, extend the grid to cover the full raster extent including edges.
+            Edge tiles may extend beyond the raster bounds; rasterio will fill out-of-bounds
+            areas with nodata. Useful for prediction to ensure no pixels are missed.
+    """
     coordinates: List[Tuple[int, int]] = []
     if tile_placement == "grid":
         with rasterio.open(img_path) as data:
+            if full_coverage:
+                start_x = int(math.ceil(data.bounds[0]))
+                end_x = int(math.ceil(data.bounds[2]))
+                start_y = int(math.ceil(data.bounds[1]))
+                end_y = int(math.ceil(data.bounds[3]))
+            else:
+                start_x = int(math.ceil(data.bounds[0])) + buffer
+                end_x = int(data.bounds[2] - tile_width - buffer)
+                start_y = int(math.ceil(data.bounds[1])) + buffer
+                end_y = int(data.bounds[3] - tile_height - buffer)
+
             grid_coords = [
-                (int(minx), int(miny)) for minx in np.arange(
-                    int(math.ceil(data.bounds[0])) + buffer, int(data.bounds[2] - tile_width - buffer), tile_width)
-                for miny in np.arange(
-                    int(math.ceil(data.bounds[1])) + buffer, int(data.bounds[3] - tile_height - buffer), tile_height)
+                (int(minx), int(miny))
+                for minx in np.arange(start_x, end_x, tile_width)
+                for miny in np.arange(start_y, end_y, tile_height)
             ]
             if overlapping_tiles:
                 grid_coords.extend([
-                    (int(minx), int(miny)) for minx in np.arange(
-                        int(math.ceil(data.bounds[0])) + buffer + tile_width // 2,
-                        int(data.bounds[2] - tile_width - buffer - tile_width // 2),
-                        tile_width)
-                    for miny in np.arange(
-                        int(math.ceil(data.bounds[1])) + buffer + tile_height // 2,
-                        int(data.bounds[3] - tile_height - buffer - tile_height // 2),
-                        tile_height)
+                    (int(minx), int(miny))
+                    for minx in np.arange(start_x + tile_width // 2, end_x - tile_width // 2, tile_width)
+                    for miny in np.arange(start_y + tile_height // 2, end_y - tile_height // 2, tile_height)
                 ])
             coordinates = grid_coords
     elif tile_placement == "adaptive":
@@ -861,6 +873,7 @@ def tile_data(
     ignore_bands_indices: List[int] = [],
     use_convex_mask: bool = True,
     enhance_rgb_contrast: bool = True,
+    full_coverage: bool = False,
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns (if supplied) into training/prediction tiles.
 
@@ -885,6 +898,10 @@ def tile_data(
             "grid" for fixed grid placement based on the bounds of the input image, optimized for speed.
             "adaptive" for dynamic placement of tiles based on crowns, adjusts based on data features for better
             coverage.
+        full_coverage: If True, extend the tile grid to cover the full raster extent including edges.
+            Edge tiles may extend beyond the raster bounds and will be filled with nodata. This is
+            recommended for prediction to ensure no pixels are missed. Default False for backward
+            compatibility.
 
     Returns:
         None
@@ -900,7 +917,7 @@ def tile_data(
         crs = data.crs.to_epsg()  # Update CRS handling to avoid deprecated syntax
 
     tile_coordinates = _calculate_tile_placements(img_path, buffer, tile_width, tile_height, crowns, tile_placement,
-                                                  overlapping_tiles)
+                                                  overlapping_tiles, full_coverage=full_coverage)
 
     # Only needed for multispectral data
     image_statistics = calculate_image_statistics(
