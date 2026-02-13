@@ -416,44 +416,69 @@ def clean_crowns(
 def post_clean(unclean_df: gpd.GeoDataFrame,
                clean_df: gpd.GeoDataFrame,
                iou_threshold: float = 0.3,
-               field: str = "Confidence_score") -> gpd.GeoDataFrame:
+               field: str = "Confidence_score",
+               max_iterations: int = 5,
+               verbose: bool = True) -> gpd.GeoDataFrame:
     """Fill in the gaps left by clean_crowns.
+
+    Takes the original (unclean) crowns and the cleaned set, then iteratively adds back crowns
+    from the unclean set that do not significantly overlap with any cleaned crown. Each round,
+    the combined result is re-cleaned to handle mutual overlaps among the newly added crowns.
+    Iteration continues until no new crowns are added or ``max_iterations`` is reached.
 
     Args:
         unclean_df (gpd.GeoDataFrame): Unclean crowns.
         clean_df (gpd.GeoDataFrame): Clean crowns.
-        iou_threshold (float, optional): IoU threshold that determines whether predictions are considered overlapping.
-        crowns are overlapping. Defaults to 0.3.
+        iou_threshold (float, optional): IoU threshold that determines whether predictions are
+            considered overlapping. Defaults to 0.3.
+        field (str): Field used to prioritise selection of crowns. Defaults to "Confidence_score".
+        max_iterations (int, optional): Maximum number of gap-filling rounds. Defaults to 5.
+        verbose (bool, optional): Print progress information. Defaults to True.
     """
-    # Spatial join between unclean and clean dataframes using the new syntax
-    joined_df = gpd.sjoin(unclean_df, clean_df, how="inner", predicate="intersects")
+    # Fix invalid geometries once upfront, not per-row
+    unclean_df = unclean_df.copy()
+    unclean_df["geometry"] = unclean_df.geometry.buffer(0)
 
-    to_remove = []
-    for idx, row in joined_df.iterrows():
-        # Using the default suffix 'left' for columns from the unclean_df and 'right' for columns from the clean_df
-        unclean_shape = unclean_df.loc[idx, "geometry"]
-        clean_shape = clean_df.loc[row["index_right"], "geometry"]
+    current_clean = clean_df.copy()
+    current_clean["geometry"] = current_clean.geometry.buffer(0)
 
-        unclean_shape = unclean_shape.buffer(0)
-        clean_shape = clean_shape.buffer(0)
+    for iteration in range(1, max_iterations + 1):
+        prev_count = len(current_clean)
 
-        intersection_area = unclean_shape.intersection(clean_shape).area
-        union_area = unclean_shape.union(clean_shape).area
-        iou = intersection_area / union_area
+        # Spatial join to find candidate overlapping pairs (bbox intersection)
+        joined_df = gpd.sjoin(unclean_df, current_clean, how="inner", predicate="intersects")
 
-        if iou > iou_threshold:
-            to_remove.append(idx)
+        # Use a set for O(1) lookup; skip further pairs once an unclean crown is marked
+        to_remove = set()
+        for idx, row in joined_df.iterrows():
+            if idx in to_remove:
+                continue  # Already marked for removal, skip remaining pairs
 
-    reduced_unclean_df = unclean_df.drop(index=to_remove)
+            iou = calc_iou(unclean_df.loc[idx, "geometry"], current_clean.loc[row["index_right"], "geometry"])
+            if iou > iou_threshold:
+                to_remove.add(idx)
 
-    # Concatenate the reduced unclean dataframe with the clean dataframe
-    result_df = pd.concat([clean_df, reduced_unclean_df], ignore_index=True)
+        reduced_unclean_df = unclean_df.drop(index=to_remove)
 
-    result_df.reset_index(drop=True, inplace=True)
+        # Concatenate the reduced unclean dataframe with the clean dataframe
+        result_df = pd.concat([current_clean, reduced_unclean_df], ignore_index=True)
+        result_df.reset_index(drop=True, inplace=True)
 
-    reclean_df = clean_crowns(result_df, iou_threshold=iou_threshold, field=field)
+        # Re-clean the combined set to resolve any mutual overlaps among newly added crowns
+        current_clean = clean_crowns(result_df, iou_threshold=iou_threshold, field=field, verbose=verbose)
+        current_clean.reset_index(drop=True, inplace=True)
 
-    return reclean_df.reset_index(drop=True)
+        new_count = len(current_clean)
+        if verbose:
+            print(f"post_clean: iteration {iteration} — {prev_count} → {new_count} crowns "
+                  f"(+{new_count - prev_count})")
+
+        if new_count == prev_count:
+            if verbose:
+                print("post_clean: converged, no new crowns added.")
+            break
+
+    return current_clean
 
 
 def load_geopandas_dataframes(folder):
