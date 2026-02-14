@@ -15,11 +15,13 @@ The key steps are:
 2. Training a model
 3. Making landscape-level predictions
 
-Before getting started ensure ``detectree2`` is installed through
+Before getting started ensure ``detectree2`` is installed:
 
 .. code-block:: console
 
-   (.venv) $pip install git+https://github.com/PatBall1/detectree2.git
+   (.venv) $ pip install torch torchvision
+   (.venv) $ pip install 'git+https://github.com/facebookresearch/detectron2.git'
+   (.venv) $ pip install detectree2
 
 
 To train a model you will need an orthomosaic (as ``<orthomosaic>.tif``) and 

@@ -105,8 +105,10 @@ walkthrough to get you from an orthomosaic to a final crown prediction map.</p>
 <li><p>Training a model</p></li>
 <li><p>Making landscape-level predictions</p></li>
 </ol>
-<p>Before getting started ensure <code class="docutils literal notranslate"><span class="pre">detectree2</span></code> is installed through</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$</span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/PatBall1/detectree2.git
+<p>Before getting started ensure <code class="docutils literal notranslate"><span class="pre">detectree2</span></code> is installed:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>torchvision
+<span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s1">&#39;git+https://github.com/facebookresearch/detectron2.git&#39;</span>
+<span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>detectree2
 </pre></div>
 </div>
 <p>To train a model you will need an orthomosaic (as <code class="docutils literal notranslate"><span class="pre">&lt;orthomosaic&gt;.tif</span></code>) and
