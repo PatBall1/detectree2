@@ -59,5 +59,5 @@ RUN pip install -e detectron2_repo
 # ENV FVCORE_CACHE="/tmp"
 # WORKDIR /home/appuser/detectron2_repo
 RUN pip install ipython
-RUN pip install git+https://github.com/PatBall1/detectree2.git
+RUN pip install detectree2
 

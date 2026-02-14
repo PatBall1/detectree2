@@ -3,11 +3,14 @@ Installation
 ************
 For a guide on installation and usage on a cluster, see the cluster dedicated page.
 
-To use detectree2, install it using:
+To use detectree2, first install `PyTorch <https://pytorch.org/get-started>`_ and
+`Detectron2 <https://github.com/facebookresearch/detectron2>`_, then install detectree2:
 
 .. code-block:: console
 
-   (.venv) $ pip install git+https://github.com/PatBall1/detectree2.git
+   (.venv) $ pip install torch torchvision
+   (.venv) $ pip install 'git+https://github.com/facebookresearch/detectron2.git'
+   (.venv) $ pip install detectree2
 
 Below we describe some issues that may arise.
 
@@ -58,10 +61,7 @@ then::
 
 .. todo:: 
 
-    * Pin torch and torchvision versions in setup.py
     * https://detectron2.readthedocs.io/en/latest/tutorials/install.html
-    * http://www.tekroi.in/detectron2/projects/DensePose/setup.py
-    * https://stackoverflow.com/questions/66738473/installing-pytorch-with-cuda-in-setup-py
 
 Fixing detectron2 version
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -69,15 +69,8 @@ We can fix the version of ``detectron2`` by pointing to the pre-built wheel usin
 
     python -m pip install detectron2==0.6 -f \ https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html
 
-Or by changing the ``detectron2`` line in setup.py (which will build the latest version from source)::
-
-    detectron2@https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/detectron2-0.6%2Bcu113-cp38-cp38-linux_x86_64.whl
-
-It may be preferable to do this as errors have a tendency to be introduced into the ``detectron2`` codebase and may take a day or two to fix. 
-We can also point to a specific working commit::
+It may be preferable to pin a specific version as errors have a tendency to be introduced into the ``detectron2`` codebase and may take a day or two to fix.
+You can point to a specific working commit::
 
     pip install git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13
-
-    # or within setup.py (not tested):
-    detectron2@git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13
 

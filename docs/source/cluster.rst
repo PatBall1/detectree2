@@ -211,11 +211,12 @@ Follow these steps to install the ``detectree2`` package on a GPU compute node.
       export LIBRARY_PATH=/usr/local/software/cuda/12.1/lib64:/usr/local/software/cuda/12.1/lib:/usr/local/software/cuda/12.1/nvvm/lib64:$LIBRARY_PATH
       export LD_LIBRARY_PATH=/usr/local/software/cuda/12.1/lib64:/usr/local/software/cuda/12.1/lib:/usr/local/software/cuda/12.1/nvvm/lib64:$LD_LIBRARY_PATH
 
-7. **Install Detectree2:**
+7. **Install Detectron2 and Detectree2:**
 
    .. code-block:: console
 
-      pip install git+https://github.com/PatBall1/detectree2.git
+      pip install 'git+https://github.com/facebookresearch/detectron2.git'
+      pip install detectree2
 
 
 
