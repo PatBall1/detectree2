@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "detectree2"
-version = "2.1.1"
+version = "2.1.2"
 description = "Automatic tree crown delineation in aerial RGB imagery based on Mask R-CNN."
 readme = "README.md"
 license = {text = "MIT"}
