@@ -1,0 +1,113 @@
+[build-system]
+requires = ["setuptools>=68.0", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "detectree2"
+version = "2.1.1"
+description = "Automatic tree crown delineation in aerial RGB imagery based on Mask R-CNN."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+authors = [
+    {name = "James G. C. Ball", email = "ball.jgc@gmail.com"},
+]
+keywords = ["tree-crown", "remote-sensing", "instance-segmentation", "Mask-RCNN", "detectron2"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+dependencies = [
+    # Core
+    "pyyaml>=5.1",
+    "numpy>=1.20",
+    "pandas>=1.3",
+    "tqdm>=4.60",
+    "opencv-python>=4.5",
+    # Geospatial — shapely 2.x required by evaluation module (make_valid)
+    "shapely>=2.0",
+    "geopandas>=0.13",
+    "rasterio>=1.2",
+    "fiona>=1.8",
+    "rtree>=0.9",
+    # Evaluation utils
+    "pycocotools>=2.0.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=3.0",
+    "flake8>=6.0",
+    "pep8-naming",
+    "pydocstyle",
+    "isort>=5.0",
+    "yapf",
+    "mypy>=1.0",
+]
+test = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-order",
+]
+docs = [
+    "sphinx>=7.0",
+    "sphinx-rtd-theme>=2.0",
+    "nbsphinx>=0.9",
+]
+
+[project.urls]
+Homepage = "https://github.com/PatBall1/detectree2"
+Documentation = "https://patball1.github.io/detectree2/"
+Repository = "https://github.com/PatBall1/detectree2"
+Issues = "https://github.com/PatBall1/detectree2/issues"
+Demo = "https://huggingface.co/spaces/forestmap-ai/Detectree2"
+Sponsor = "https://forestmap.ai"
+
+[tool.setuptools.packages.find]
+include = ["detectree2*"]
+
+[tool.setuptools.package-data]
+"detectree2" = ["tests/input/**/*.geojson"]
+
+# ---------- Tool configuration (migrated from setup.cfg) ----------
+
+[tool.flake8]
+max-line-length = 120
+docstring-convention = "google"
+ignore = ["D100", "D101", "D102", "D103", "D104", "D202", "D212", "W503", "N803", "N806"]
+exclude = ["detectree2/data_loading", "detectree2/models/train_tune.py"]
+max-complexity = 10
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+
+[tool.mypy]
+disallow_untyped_defs = false
+disallow_any_unimported = false
+no_implicit_optional = false
+check_untyped_defs = false
+warn_unused_ignores = false
+show_error_codes = true
+ignore_missing_imports = true
+mypy_path = ".stubs"
+warn_return_any = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = "detectree2.data_loading.*"
+ignore_errors = true
+
+[tool.pytest.ini_options]
+testpaths = ["detectree2/tests"]

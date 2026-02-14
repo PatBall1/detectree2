@@ -4,7 +4,7 @@
 </p>
 
 
- [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Detectree CI](https://github.com/patball1/detectree2/actions/workflows/python-ci.yml/badge.svg)](https://github.com/patball1/detectree2/actions/workflows/python-ci.yml) [![PEP8](https://img.shields.io/badge/code%20style-pep8-orange.svg)](https://www.python.org/dev/peps/pep-0008/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17367058.svg)](https://doi.org/10.5281/zenodo.17367058) [![Open in Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/forestmap-ai/Detectree2)
+ [![PyPI](https://img.shields.io/pypi/v/detectree2.svg)](https://pypi.org/project/detectree2/) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Detectree CI](https://github.com/patball1/detectree2/actions/workflows/python-ci.yml/badge.svg)](https://github.com/patball1/detectree2/actions/workflows/python-ci.yml) [![PEP8](https://img.shields.io/badge/code%20style-pep8-orange.svg)](https://www.python.org/dev/peps/pep-0008/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17367058.svg)](https://doi.org/10.5281/zenodo.17367058) [![Open in Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/forestmap-ai/Detectree2)
 
 
 <!-- <a href="https://github.com/hhatto/autopep8"><img alt="Code style: autopep8" src="https://img.shields.io/badge/code%20style-autopep8-000000.svg"></a> -->
@@ -56,25 +56,46 @@ Tree Crown Detection and Delineation in a Temperate Deciduous Forest from UAV RG
 ## Requirements
 
 - Python 3.8+
-- [gdal](https://gdal.org/download.html) geospatial libraries
-- [PyTorch ≥ 1.8 and torchvision](https://pytorch.org/get-started/previous-versions/) versions that match
-- For training models GPU access (with CUDA) is recommended
-
-e.g.
-```pip3 install torch torchvision torchaudio```
+- [GDAL](https://gdal.org/download.html) geospatial libraries
+- [PyTorch >= 1.8 and torchvision](https://pytorch.org/get-started/previous-versions/) (matching versions)
+- [Detectron2](https://github.com/facebookresearch/detectron2) (Facebook's object detection library)
+- For training models, GPU access (with CUDA) is recommended
 
 ## Installation
 
-### pip
+### Step 1: Install PyTorch
 
-```pip install git+https://github.com/PatBall1/detectree2.git```
+Follow the [official instructions](https://pytorch.org/get-started) to install PyTorch with the appropriate CUDA version for your system:
 
-Currently works on Google Colab (Pro version recommended). May struggle on clusters if geospatial libraries are not configured.
-See [Installation Instructions](https://patball1.github.io/detectree2/installation.html) if you are having trouble.
+```bash
+# Example: CPU-only
+pip install torch torchvision torchaudio
 
-### conda
+# Example: CUDA 12.4
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+```
 
-*Under development*
+### Step 2: Install Detectron2
+
+```bash
+pip install 'git+https://github.com/facebookresearch/detectron2.git'
+```
+
+### Step 3: Install detectree2
+
+```bash
+pip install detectree2
+```
+
+Or install from source for development:
+
+```bash
+git clone https://github.com/PatBall1/detectree2.git
+cd detectree2
+pip install -e ".[dev,test]"
+```
+
+> **Note:** If you have trouble with geospatial dependencies (GDAL, rasterio, fiona), using conda to install them first is recommended: `conda install -c conda-forge gdal rasterio fiona`. See [Installation Instructions](https://patball1.github.io/detectree2/installation.html) for more details.
 
 ## Getting started
 
@@ -172,8 +193,7 @@ Here is an example image of the predictions made by Detectree2.
 │   ├── requirements.txt
 │   ├── dev-requirements.txt
 │   └── test-requirements.txt
-├── setup.cfg                # Lint/format config used by CI
-├── setup.py
+├── pyproject.toml           # Package config, deps, tool settings
 └── .setup_scripts/          # Helper scripts for local tooling
 ```
 

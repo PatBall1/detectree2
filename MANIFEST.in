@@ -1,0 +1,14 @@
+include LICENSE
+include README.md
+include pyproject.toml
+recursive-include detectree2 *.py *.geojson *.jpg
+
+# Exclude non-package directories from sdist
+prune report
+prune notebooks
+prune docker
+prune docs
+prune model_garden
+prune .devcontainer
+prune .setup_scripts
+prune .github
