@@ -505,6 +505,26 @@ def post_clean(unclean_df: gpd.GeoDataFrame,
 
     return current_clean
 
+def remove_very_small_polygons(crowns:gpd.GeoDataFrame, size_threshold=1.0) -> gpd.GeoDataFrame:
+    """Removes small fragmentary crowns below or equal to the threshold.
+
+    Args:
+        crowns (gpd.GeoDataFrame): A GeoDataFrame with small fragmentary crowns.
+        size_threshold (float, optional): given in m² (square meter). Defaults to 1.0.
+
+    Returns:
+        gpd.GeoDataFrame: A GeoDataFrame with no small fragmentary crowns.
+    """
+    areas = [(row.geometry.area, index) for index, row in crowns.iterrows()]
+    areas.sort()
+    indexes_to_remove = [area[1] for area in areas if area[0] <= size_threshold] # threshold may differ across inference images
+    indexes_to_remove = list(set(indexes_to_remove))
+    indexes_to_keep = set(range(crowns.shape[0])) - set(indexes_to_remove)
+    print("Removed",len(indexes_to_remove),"very small crowns!")
+    output_gdf = crowns.take(list(indexes_to_keep))
+    output_gdf = output_gdf.reset_index(drop=True)
+    return output_gdf
+
 
 def load_geopandas_dataframes(folder):
     """Load all GeoPackage files in a folder into a list of GeoDataFrames."""
